@@ -3,6 +3,8 @@ pragma solidity ^0.4.21;
 import "./MainContracts.sol";
 
 contract Vault is Ownable {
+    using SafeMath for uint;
+
     uint NbOfValidDocument;
     TalaoToken myToken;
 
@@ -18,9 +20,9 @@ contract Vault is Ownable {
 
     //address is owner of document
     //Certified
-    mapping(bytes32 => certifiedDocument) public Talentsdocuments;
+    mapping(bytes32 => certifiedDocument) public talentsDocuments;
 
-    enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved }
+    enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved, keywordAdded }
 
     event VaultLog (
         address indexed user, 
@@ -36,81 +38,103 @@ contract Vault is Ownable {
         _;
     }
 
-    //constructor
+    /*
+    add new certification document to Talent Vault
+    accessibility : only for authorized user and owner of this contract
+    */
     function Vault(address token) 
-    public 
+        public 
     {
         myToken = TalaoToken(token);
     }
 
-    // add new certification document to Talent Vault
-    // accessible only for the owner and if authorized
-    function AddDocument(bytes32 documentId, bytes32 description, bytes32 keyword) 
-    onlyOwner 
-    allowance 
-    public 
-    returns (bool)
+    /*
+    add new certification document to Talent Vault
+    accessibility : only for authorized user and owner of this contract
+    */
+    function addDocument(bytes32 documentId, bytes32 description, bytes32 keyword) 
+        onlyOwner 
+        allowance 
+        public 
+        returns (bool)
     {
         require(documentId != 0 && keyword.length != 0);
-        require(!Talentsdocuments[documentId].isAlive);
-        NbOfValidDocument++;
+        require(!talentsDocuments[documentId].isAlive);
+        SafeMath.add(NbOfValidDocument,1);
 
-        Talentsdocuments[documentId].description = description;
-        Talentsdocuments[documentId].isAlive = true;
-        Talentsdocuments[documentId].index = documentIndex.push(documentId)-1;
-        Talentsdocuments[documentId].keywords.push(keyword);
+        talentsDocuments[documentId].description = description;
+        talentsDocuments[documentId].isAlive = true;
+        talentsDocuments[documentId].index = documentIndex.push(documentId)-1;
+        talentsDocuments[documentId].keywords.push(keyword);
 
         emit VaultLog(msg.sender, VaultLife.DocumentAdded, documentId);
 
         return true;
     }
 
-    function AddKeyword(bytes32 documentId,bytes32 keyword)
-    onlyOwner
-    allowance
-    public
-    returns (bool)
+    /*
+    Add keyword to a specified document using document Id
+    accessibility : only for authorized user and owner of this contract
+    */
+    function addKeyword(bytes32 documentId,bytes32 keyword)
+        onlyOwner
+        allowance
+        public
+        returns (bool)
     {
         require(documentId != 0 && keyword.length != 0);
-        require(Talentsdocuments[documentId].isAlive);
+        require(talentsDocuments[documentId].isAlive);
 
-        Talentsdocuments[documentId].keywords.push(keyword);
+        talentsDocuments[documentId].keywords.push(keyword);
+        emit VaultLog(msg.sender, VaultLife.keywordAdded, documentId);
         return true;
     }
 
-    // Remove existing document using document id
-    // accessible only for the owner and authorized user
-    function RemoveDocument (bytes32 documentId) 
-    onlyOwner 
-    allowance 
-    public returns (bool) 
+    /*
+    Remove existing document using document id
+    accessibility : only for authorized user and owner of this contract
+    */
+    function removeDocument (bytes32 documentId) 
+        onlyOwner 
+        allowance 
+        public
     {
         require(documentId != 0);
-        if(Talentsdocuments[documentId].description.length != 0) {
+        if(talentsDocuments[documentId].description.length != 0) {
             NbOfValidDocument--;
-            delete Talentsdocuments[documentId]; //set isValid to false
+            delete talentsDocuments[documentId]; //set isValid to false
+            assert(talentsDocuments[documentId].isAlive==false);
             emit VaultLog(msg.sender, VaultLife.DocumentRemoved, documentId);
+            
         }
     }
 
+    /*
+    get a Keywords number to allow clients to loop on each keywords
+    accessibility : only for authorized user
+    */
     function getKeywordsNumber(bytes32 documentId)
-    allowance
-    constant
-    public
-    returns (uint)
+        allowance
+        constant
+        public
+        returns (uint)
     {
         require(documentId != 0);
-        return Talentsdocuments[documentId].keywords.length;
+        return talentsDocuments[documentId].keywords.length;
     }
 
+    /*
+    get a Keywords using index
+    accessibility : only for authorized user
+    */
     function getKeywordsByIndex(bytes32 documentId, uint index)
-    allowance
-    constant
-    public
-    returns (bytes32)
+        allowance
+        constant
+        public
+        returns (bytes32)
     {
         require(documentId != 0);
-        return Talentsdocuments[documentId].keywords[index];
+        return talentsDocuments[documentId].keywords[index];
     }
 
     /*
@@ -119,14 +143,13 @@ contract Vault is Ownable {
     accessibility : only for authorized user
     */
     function getCertifiedDocumentById (bytes32 documentId) 
-    allowance 
-    public
-    constant 
-    returns (bytes32 docId, bytes32 desc, uint keywordNumber) 
+        allowance 
+        public
+        constant 
+        returns (bytes32 docId, bytes32 desc, uint keywordNumber) 
     {
-        require(documentId != 0 && Talentsdocuments[documentId].isAlive == true);
-
-        return (documentId, Talentsdocuments[documentId].description, Talentsdocuments[documentId].keywords.length);
+        require(documentId != 0 && talentsDocuments[documentId].isAlive == true);
+        return (documentId, talentsDocuments[documentId].description, talentsDocuments[documentId].keywords.length);
     }
 
     /*
@@ -134,30 +157,38 @@ contract Vault is Ownable {
     accessibility : only for authorized user
     */
     function getCertifiedDocumentsByIndex (uint index)
-    allowance
-    constant
-    public
-    returns (bytes32 docId, bytes32 desc, uint keywordNumber)
+        allowance
+        constant
+        public
+        returns (bytes32 docId, bytes32 desc, uint keywordNumber)
     {
         bytes32 dId = documentIndex[index];
-        return (dId, Talentsdocuments[dId].description, Talentsdocuments[dId].keywords.length);
+        return (dId, talentsDocuments[dId].description, talentsDocuments[dId].keywords.length);
     }
 
-    //get list of interestng document based on search keyword
-    //accessible only for authorized user
+    /*
+    get list of interestng document based on search keyword
+    accessibility : only for authorized user
+    */
     function getMatchCertifiedDocument (uint index, bytes32 keyword)
-    allowance
-    constant
-    public
-    returns(bytes32 docId, bytes32 desc)
+        allowance
+        constant
+        public
+        returns(bytes32 docId, bytes32 desc)
     {
         bytes32 dId = documentIndex[index];
         bytes32 valueFounded;
-        for (uint i = 0; i < Talentsdocuments[dId].keywords.length; i++) {
-            valueFounded = Talentsdocuments[dId].keywords[i];
+        for (uint i = 0; i < talentsDocuments[dId].keywords.length; i++) {
+            valueFounded = talentsDocuments[dId].keywords[i];
             if(keccak256(valueFounded) == keccak256(keyword)){
-                return (dId, Talentsdocuments[dId].description);  
+                return (dId, talentsDocuments[dId].description);  
             }
         }
+    }
+
+    function () 
+        public 
+    {
+        revert();
     }
 }
