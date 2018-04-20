@@ -63,7 +63,7 @@ class Vault extends React.Component {
                 <div className="box blue">
                     <p className="big">
                         <Button value="Create Your Vault" icon={faBan} onClick={this.submit} />
-                        <Button value="Add file to vault" icon={faBan} onClick={this.submit} />
+                        <Button value="Add file to vault" icon={faBan} />
                     </p>
                 </div>
             </div>
