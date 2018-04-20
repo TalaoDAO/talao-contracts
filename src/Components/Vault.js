@@ -42,14 +42,18 @@ class Vault extends React.Component {
     
     submit() {
         //event.preventDefault();
-        this.state.vaultFactory.methods.CreateVaultContract().send(
-            {from:this.context.web3.selectedAccount, 
-                gas: 4700000, 
-                gasPrice:100000000000 }
-        ).then(addressVault => {
-            alert(addressVault);
-        },e => {
-            alert(e);
+        // this.state.vaultFactory.methods.CreateVaultContract().send(
+        //     {from:this.context.web3.selectedAccount, 
+        //         gas: 4700000, 
+        //         gasPrice:100000000000 }
+        // ).then(addressVault => {
+        //     alert(addressVault);
+        // },e => {
+        //     alert(e);
+        // });
+
+        this.state.vaultFactory.methods.getMyToken().call().then(token =>{
+            alert(token);
         });
     }
 

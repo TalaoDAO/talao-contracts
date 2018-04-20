@@ -22,6 +22,13 @@ contract VaultFactory is Ownable {
         myToken = TalaoToken(token);
     }
 
+    function getMyToken() 
+        public
+        returns (address)
+    {
+        return myToken;
+    }
+
     /**
      * Talent can call this method to create a new Vault contract
      *  with the maker being the owner of this new vault
