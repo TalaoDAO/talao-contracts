@@ -1,6 +1,158 @@
 pragma solidity ^0.4.21;
 
-import "./TestContract.sol";
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ */
+library SafeMath {
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) {
+            return 0;
+        }
+        uint256 c = a * b;
+        assert(c / a == b);
+        return c;
+    }
+
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        // assert(b > 0); // Solidity automatically throws when dividing by 0
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return c;
+    }
+
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
+
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
+}
+
+contract TalaoToken {
+
+    function AccessAllowance(address _owner, address _spender) 
+        public 
+        view 
+        returns (bool,uint) 
+    {
+        return (true,1);
+    }
+
+}
+
+contract Ownable {
+    address public owner;
+
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+    /**
+    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+    * account.
+    */
+    function Ownable() public {
+        owner = msg.sender;
+    }
+
+
+    /**
+    * @dev Throws if called by any account other than the owner.
+    */
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+
+    /**
+    * @dev Allows the current owner to transfer control of the contract to a newOwner.
+    * @param newOwner The address to transfer ownership to.
+    */
+    function transferOwnership(address newOwner) 
+        public 
+        onlyOwner 
+    {
+        require(newOwner != address(0));
+        //OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+}
+
+contract VaultFactory is Ownable {
+    uint public nbVault;
+    TalaoToken myToken;
+
+    //first address is Talent ethereum address 
+    //second address is Smart Contract vault address dedicated to this talent
+    mapping (address=>address) public FreelanceVault; 
+
+    enum VaultState { AccessDenied, AlreadyExist, Created }
+    event VaultCreation(address indexed talent, address vaultadddress, VaultState msg);
+
+    //address du smart contract token
+    function VaultFactory(address token) 
+        public 
+    {
+        myToken = TalaoToken(token);
+    }
+
+    function getMyToken() 
+        public
+        returns (address)
+    {
+        SafeMath.add(nbVault,1);
+        return myToken;
+    }
+
+    function getNbVault()
+        public
+        view
+        returns(uint)
+    {
+        return nbVault;
+    }
+
+    /**
+     * Talent can call this method to create a new Vault contract
+     *  with the maker being the owner of this new vault
+     */
+    function CreateVaultContract ()
+        public
+        returns(address)
+    {
+        //Verify using Talao token if sender is authorized to create a Vault
+        bool agreement = false;
+        uint unused = 0;
+        (agreement, unused) = myToken.AccessAllowance(msg.sender,msg.sender);
+
+        require (agreement == true);
+        require(FreelanceVault[msg.sender] != address(0));
+
+        Vault newVault = new Vault(myToken);
+        FreelanceVault[msg.sender] = address(newVault);
+        SafeMath.add(nbVault,1);
+        newVault.transferOwnership(msg.sender);
+        
+        emit VaultCreation(msg.sender, newVault, VaultState.Created);
+
+        return address(newVault);
+    }
+
+    /**
+     * Prevents accidental sending of ether to the factory
+     */
+    function () 
+        public 
+    {
+        revert();
+    }
+}
 
 contract Vault is Ownable {
     using SafeMath for uint;

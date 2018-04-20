@@ -26,7 +26,16 @@ contract VaultFactory is Ownable {
         public
         returns (address)
     {
+        SafeMath.add(nbVault,1);
         return myToken;
+    }
+
+    function getNbVault()
+        public
+        view
+        returns(uint)
+    {
+        return nbVault;
     }
 
     /**
