@@ -37,10 +37,10 @@ class Web3Wrapper extends Component {
   render() {
     return (
       <Web3Provider
-        web3UnavailableScreen = { Web3WrapperUnavailable }
-        accountUnavailableScreen = { Web3WrapperUnavailableAccount }
-        >
-        <AppConnected />
+        web3UnavailableScreen={Web3WrapperUnavailable}
+        accountUnavailableScreen={Web3WrapperUnavailableAccount}
+      >
+        <AppConnected/>
       </Web3Provider>
     );
   }
