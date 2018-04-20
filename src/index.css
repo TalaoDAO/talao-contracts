@@ -26,6 +26,10 @@
     margin-top: 1.5em;
     font-family: 'Akkmono', sans-serif;
   }
+
+  p, a {
+    font-family: 'Akkmono', sans-serif;
+  }
   
   /* Sizes */
   .big {

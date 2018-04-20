@@ -1,9 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './Components/App';
-import './fonts.css';
+import App from './App';
 import './index.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './fonts.css';
 
 ReactDOM.render(
     <App />, 
