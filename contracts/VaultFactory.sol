@@ -27,6 +27,7 @@ contract VaultFactory is Ownable {
         returns (address)
     {
         SafeMath.add(nbVault,1);
+        //require (nbVault >= 0);
         return myToken;
     }
 
@@ -52,7 +53,7 @@ contract VaultFactory is Ownable {
         (agreement, unused) = myToken.AccessAllowance(msg.sender,msg.sender);
 
         require (agreement == true);
-        require(FreelanceVault[msg.sender] != address(0));
+        require(FreelanceVault[msg.sender] == address(0));
 
         Vault newVault = new Vault(myToken);
         FreelanceVault[msg.sender] = address(newVault);

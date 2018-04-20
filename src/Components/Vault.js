@@ -33,22 +33,22 @@ class Vault extends React.Component {
             })
             .on('error',(error) => {alert(error)});
 
-        this.state.vaultFactory.methods.getMyToken()
-            .send({from:this.context.web3.selectedAccount,  gas: 4700000,gasPrice:100000000000 })
-            .on('transactionHash', (hash)=> {
-                console.log(hash);
-            })
-            .on('receipt', (receipt) => {
-                //alert(receipt);
-            })
-            .on('confirmation', (confirmation) => {
-                //alert(confirmation);
-            })
-            .on('error', (error) => {console.log(error)}); 
+        // this.state.vaultFactory.methods.getMyToken()
+        //     .send({from:this.context.web3.selectedAccount,  gas: 4700000,gasPrice:100000000000 })
+        //     .on('transactionHash', (hash)=> {
+        //         console.log(hash);
+        //     })
+        //     .on('receipt', (receipt) => {
+        //         //alert(receipt);
+        //     })
+        //     .on('confirmation', (confirmation) => {
+        //         //alert(confirmation);
+        //     })
+        //     .on('error', (error) => {console.log(error)}); 
 
-        this.state.vaultFactory.methods.getNbVault().call().then(nb => {
-            alert(nb);
-        });
+        // this.state.vaultFactory.methods.getNbVault().call().then(nb => {
+        //     alert(nb);
+        // });
     }
 
     render() {
