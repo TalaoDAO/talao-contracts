@@ -13,9 +13,15 @@ class Vault extends React.Component {
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
           );
 
+        const vault = new window.web3.eth.Contract (
+        JSON.parse(process.env.REACT_APP_VAULT_ABI),
+        process.env.REACT_APP_VAULT_ADDRESS
+        );
+
 
           this.state = {
-            vaultFactory: vaultFactory
+            vaultFactory: vaultFactory,
+            vault : vault
           }
 
           this.submit = this.submit.bind(this);

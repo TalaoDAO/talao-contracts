@@ -1,7 +1,7 @@
+
 pragma solidity ^0.4.21;
 
 import "./Vault.sol";
-//import "./MainContracts.sol";
 import "./TestContract.sol";
 
 contract VaultFactory is Ownable {
@@ -12,22 +12,14 @@ contract VaultFactory is Ownable {
     //second address is Smart Contract vault address dedicated to this talent
     mapping (address=>address) public FreelanceVault; 
 
-    // enum VaultState { AccessDenied, AlreadyExist, Created }
-
-    // event VaultCreation(address indexed talent, address vaultadddress, VaultState msg);
+    enum VaultState { AccessDenied, AlreadyExist, Created }
+    event VaultCreation(address indexed talent, address vaultadddress, VaultState msg);
 
     //address du smart contract token
     function VaultFactory(address token) 
-    public 
+        public 
     {
         myToken = TalaoToken(token);
-    }
-
-    function getMyToken()
-    public
-    returns(address)
-    {
-        return myToken;
     }
 
     /**
@@ -35,8 +27,8 @@ contract VaultFactory is Ownable {
      *  with the maker being the owner of this new vault
      */
     function CreateVaultContract ()
-    public
-    returns(address)
+        public
+        returns(address)
     {
         //Verify using Talao token if sender is authorized to create a Vault
         bool agreement = false;
@@ -48,8 +40,11 @@ contract VaultFactory is Ownable {
 
         Vault newVault = new Vault(myToken);
         FreelanceVault[msg.sender] = address(newVault);
-        SafeMath.add(nbVault,1); //nbVault++; //utiliser safe math
+        SafeMath.add(nbVault,1);
         newVault.transferOwnership(msg.sender);
+        
+        emit VaultCreation(msg.sender, newVault, VaultState.Created);
+
         return address(newVault);
     }
 
@@ -57,7 +52,7 @@ contract VaultFactory is Ownable {
      * Prevents accidental sending of ether to the factory
      */
     function () 
-    public 
+        public 
     {
         revert();
     }
