@@ -1,0 +1,26 @@
+/* Global */
+input[type="text"] {
+  text-align: left;
+}
+
+input[type=submit] {
+  font-size: 20px;
+  margin: 20px 0 0 0;
+}
+
+/* Pure form */
+.pure-form fieldset {
+  padding: unset;
+}
+
+.pure-control-group:last-child {
+  margin: 0;
+}
+
+/* Colors */
+.blue input[type="text"] {
+  color: #291b51;
+}
+.green input[type="text"] {
+  color: #0e6c3f;
+}

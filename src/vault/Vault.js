@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Button from '../ui/button/Button';
+import faBan from '@fortawesome/fontawesome-free-solid/faBan';
 
 class Vault extends React.Component {
 
@@ -7,35 +9,37 @@ class Vault extends React.Component {
     constructor(props) {
         super(props);
         //const contract
-        const vaultFactory = new window.web3.eth.Contract (
+        const vaultFactory = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
-          );
+        );
 
-          this.state = {
+        this.state = {
             vaultFactory: vaultFactory,
-          }
+        }
 
-          this.submit = this.submit.bind(this);
+        this.submit = this.submit.bind(this);
     }
 
     componentDidMount() {
-        
+
     }
-    
+
     submit() {
         this.state.vaultFactory.methods.CreateVaultContract().send(
-            {from:this.context.web3.selectedAccount, 
-                gas: 4700000, 
-                gasPrice:100000000000 })
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
             .on('transactionHash', hash => {
                 alert(hash);
             })
-            .on('error',(error) => {alert(error)});
+            .on('error', (error) => { alert(error) });
 
         this.state.vaultFactory.methods.getMyToken()
-            .send({from:this.context.web3.selectedAccount,  gas: 4700000,gasPrice:100000000000 })
-            .on('transactionHash', (hash)=> {
+            .send({ from: this.context.web3.selectedAccount, gas: 4700000, gasPrice: 100000000000 })
+            .on('transactionHash', (hash) => {
                 console.log(hash);
             })
             .on('receipt', (receipt) => {
@@ -44,7 +48,7 @@ class Vault extends React.Component {
             .on('confirmation', (confirmation) => {
                 //alert(confirmation);
             })
-            .on('error', (error) => {console.log(error)}); 
+            .on('error', (error) => { console.log(error) });
 
         this.state.vaultFactory.methods.getNbVault().call().then(nb => {
             alert(nb);
@@ -55,16 +59,20 @@ class Vault extends React.Component {
         return (
             <div>
                 <h1>My account</h1>
-                <button onClick={this.submit} > Create Your Vault </button>
-                <button> Add file to vault </button>
-                <p> {this.context.web3.selectedAccount}</p>
+                <p>Talent Etherum Address: {this.context.web3.selectedAccount}</p>
+                <div className="box blue">
+                    <p className="big">
+                        <Button value="Create Your Vault" icon={faBan} onClick={this.submit} />
+                        <Button value="Add file to vault" icon={faBan} onClick={this.submit} />
+                    </p>
+                </div>
             </div>
         )
     }
 }
 
 Vault.contextTypes = {
-    web3:PropTypes.object
+    web3: PropTypes.object
 }
 
 export default Vault;
