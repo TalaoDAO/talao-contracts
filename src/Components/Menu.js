@@ -7,11 +7,13 @@ class Menu extends React.Component {
         return (
             <div>
                 <img src={require("../talao-logo.svg")} alt="talao logo" />
-                <div>
-                    <Link to="/">My Account</Link>
-                </div>
-                <div>
-                    <Link to="/adddocument">Add document</Link>
+                <div className="ml-4 mt-3">
+                    <div>
+                        <Link to="/">My account</Link>
+                    </div>
+                    <div>
+                        <Link to="/adddocument">Add document</Link>
+                    </div>
                 </div>
             </div >
         );
