@@ -21,3 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 
 /build/contracts
+# Not free
+/src/assets/fonts/akkmono.*
+/src/assets/fonts/akkmonoe.*
+

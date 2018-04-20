@@ -54,6 +54,7 @@ class Vault extends React.Component {
     render() {
         return (
             <div>
+                <h1>My account</h1>
                 <button onClick={this.submit} > Create Your Vault </button>
                 <button> Add file to vault </button>
                 <p> {this.context.web3.selectedAccount}</p>
