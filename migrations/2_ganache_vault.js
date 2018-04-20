@@ -10,7 +10,7 @@ module.exports = function(deployer) {
   deployer.deploy(OwnableContract);
   deployer.deploy(TalaoTokenContract).then ( function() {
     deployer.deploy(VaultfactoryContract,TalaoTokenContract.address);
-    deployer.deploy(VaultContract, TalaoTokenContract.address);
+    //deployer.deploy(VaultContract, TalaoTokenContract.address);
     return;
   });
 };
