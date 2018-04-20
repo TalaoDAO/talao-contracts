@@ -7,17 +7,11 @@ class Vault extends React.Component {
     constructor(props) {
         super(props);
         //const contract
-
         const vaultFactory = new window.web3.eth.Contract (
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
           );
 
-        // const vault = new window.web3.eth.Contract (
-        // JSON.parse(process.env.REACT_APP_VAULT_ABI),
-        // process.env.REACT_APP_VAULT_ADDRESS
-        // );
-        
           this.state = {
             vaultFactory: vaultFactory,
           }
@@ -26,15 +20,6 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
-        // this.state.vaultFactory.methods.getMyToken().call().then(token =>{
-        //     alert(token);
-        // });
-
-        // this.state.vaultFactory.methods.CreateVaultContract().send({from:this.context.web3.selectedAccount}).then(addressVault => {
-        //     alert(addressVault);
-        // },e => {
-        //     alert(e);
-        // });
         
     }
     
