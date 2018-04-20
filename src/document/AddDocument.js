@@ -2,7 +2,7 @@ import React from 'react';
 
 class AddDocument extends React.Component {
     render() {
-        return <div>Add document</div>;
+        return <h1>Add document</h1>;
     }
 }
 
