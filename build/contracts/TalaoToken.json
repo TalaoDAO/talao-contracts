@@ -29,14 +29,14 @@
       "type": "function"
     }
   ],
-  "bytecode": "0x608060405234801561001057600080fd5b50610103806100206000396000f300608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063c7c3cfc6146044575b600080fd5b348015604f57600080fd5b5060a2600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505060c3565b60405180831515151581526020018281526020019250505060405180910390f35b6000806001808090509150915092509290505600a165627a7a72305820d904d88343a01dbc8581ff76b50bfc906b7a9fde92b7ef476930058d33759bd50029",
-  "deployedBytecode": "0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063c7c3cfc6146044575b600080fd5b348015604f57600080fd5b5060a2600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505060c3565b60405180831515151581526020018281526020019250505060405180910390f35b6000806001808090509150915092509290505600a165627a7a72305820d904d88343a01dbc8581ff76b50bfc906b7a9fde92b7ef476930058d33759bd50029",
-  "sourceMap": "943:195:1:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;943:195:1;;;;;;;",
-  "deployedSourceMap": "943:195:1:-;;;;;;;;;;;;;;;;;;;;;;;;972:161;;8:9:-1;5:2;;;30:1;27;20:12;5:2;972:161:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1082:4;1087;1118;1123:1;1110:15;;;;;;;972:161;;;;;:::o",
+  "bytecode": "0x6060604052341561000f57600080fd5b60f88061001d6000396000f300606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063c7c3cfc6146044575b600080fd5b3415604e57600080fd5b6097600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190803573ffffffffffffffffffffffffffffffffffffffff1690602001909190505060b8565b60405180831515151581526020018281526020019250505060405180910390f35b6000806001808090509150915092509290505600a165627a7a72305820ef568c18047f7c9916f2824b300fd95245bce2d403c8eca0437c520e79a5456f0029",
+  "deployedBytecode": "0x606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063c7c3cfc6146044575b600080fd5b3415604e57600080fd5b6097600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190803573ffffffffffffffffffffffffffffffffffffffff1690602001909190505060b8565b60405180831515151581526020018281526020019250505060405180910390f35b6000806001808090509150915092509290505600a165627a7a72305820ef568c18047f7c9916f2824b300fd95245bce2d403c8eca0437c520e79a5456f0029",
+  "sourceMap": "943:195:1:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "943:195:1:-;;;;;;;;;;;;;;;;;;;;;;;;972:161;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1082:4;1087;1118;1123:1;1110:15;;;;;;;972:161;;;;;:::o",
   "source": "pragma solidity ^0.4.21;\r\n\r\n/**\r\n * @title SafeMath\r\n * @dev Math operations with safety checks that throw on error\r\n */\r\nlibrary SafeMath {\r\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        if (a == 0) {\r\n            return 0;\r\n        }\r\n        uint256 c = a * b;\r\n        assert(c / a == b);\r\n        return c;\r\n    }\r\n\r\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        // assert(b > 0); // Solidity automatically throws when dividing by 0\r\n        uint256 c = a / b;\r\n        // assert(a == b * c + a % b); // There is no case in which this doesn't hold\r\n        return c;\r\n    }\r\n\r\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        assert(b <= a);\r\n        return a - b;\r\n    }\r\n\r\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        uint256 c = a + b;\r\n        assert(c >= a);\r\n        return c;\r\n    }\r\n}\r\n\r\ncontract TalaoToken {\r\n\r\n    function AccessAllowance(address _owner, address _spender) \r\n        public \r\n        view \r\n        returns (bool,uint) \r\n    {\r\n        return (true,1);\r\n    }\r\n\r\n}\r\n\r\ncontract Ownable {\r\n    address public owner;\r\n\r\n\r\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\r\n\r\n\r\n    /**\r\n    * @dev The Ownable constructor sets the original `owner` of the contract to the sender\r\n    * account.\r\n    */\r\n    function Ownable() public {\r\n        owner = msg.sender;\r\n    }\r\n\r\n\r\n    /**\r\n    * @dev Throws if called by any account other than the owner.\r\n    */\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner);\r\n        _;\r\n    }\r\n\r\n\r\n    /**\r\n    * @dev Allows the current owner to transfer control of the contract to a newOwner.\r\n    * @param newOwner The address to transfer ownership to.\r\n    */\r\n    function transferOwnership(address newOwner) \r\n        public \r\n        onlyOwner \r\n    {\r\n        require(newOwner != address(0));\r\n        //OwnershipTransferred(owner, newOwner);\r\n        owner = newOwner;\r\n    }\r\n\r\n}",
-  "sourcePath": "C:\\Sources\\GITTALAO\\proto-vault\\contracts\\TestContract.sol",
+  "sourcePath": "C:\\Users\\Sacha\\Desktop\\Talao\\Source\\proto-vault\\contracts\\TestContract.sol",
   "ast": {
-    "absolutePath": "/C/Sources/GITTALAO/proto-vault/contracts/TestContract.sol",
+    "absolutePath": "/C/Users/Sacha/Desktop/Talao/Source/proto-vault/contracts/TestContract.sol",
     "exportedSymbols": {
       "Ownable": [
         220
@@ -342,7 +342,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 773,
+                      "referencedDeclaration": 814,
                       "src": "309:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -777,7 +777,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 773,
+                      "referencedDeclaration": 814,
                       "src": "736:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -1110,7 +1110,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 773,
+                      "referencedDeclaration": 814,
                       "src": "895:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -1629,7 +1629,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 784,
+                        "referencedDeclaration": 824,
                         "src": "1461:3:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -1718,7 +1718,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 784,
+                            "referencedDeclaration": 824,
                             "src": "1612:3:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -1771,11 +1771,8 @@
                       "id": 190,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        787,
-                        788
-                      ],
-                      "referencedDeclaration": 787,
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 827,
                       "src": "1604:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1929,11 +1926,8 @@
                       "id": 206,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        787,
-                        788
-                      ],
-                      "referencedDeclaration": 787,
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 827,
                       "src": "1927:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -2013,7 +2007,7 @@
             "isDeclaredConst": false,
             "modifiers": [
               {
-                "arguments": null,
+                "arguments": [],
                 "id": 204,
                 "modifierName": {
                   "argumentTypes": null,
@@ -2088,7 +2082,7 @@
     "src": "0:2048:1"
   },
   "legacyAST": {
-    "absolutePath": "/C/Sources/GITTALAO/proto-vault/contracts/TestContract.sol",
+    "absolutePath": "/C/Users/Sacha/Desktop/Talao/Source/proto-vault/contracts/TestContract.sol",
     "exportedSymbols": {
       "Ownable": [
         220
@@ -2394,7 +2388,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 773,
+                      "referencedDeclaration": 814,
                       "src": "309:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -2829,7 +2823,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 773,
+                      "referencedDeclaration": 814,
                       "src": "736:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -3162,7 +3156,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 773,
+                      "referencedDeclaration": 814,
                       "src": "895:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -3681,7 +3675,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 784,
+                        "referencedDeclaration": 824,
                         "src": "1461:3:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -3770,7 +3764,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 784,
+                            "referencedDeclaration": 824,
                             "src": "1612:3:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -3823,11 +3817,8 @@
                       "id": 190,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        787,
-                        788
-                      ],
-                      "referencedDeclaration": 787,
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 827,
                       "src": "1604:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3981,11 +3972,8 @@
                       "id": 206,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        787,
-                        788
-                      ],
-                      "referencedDeclaration": 787,
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 827,
                       "src": "1927:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -4065,7 +4053,7 @@
             "isDeclaredConst": false,
             "modifiers": [
               {
-                "arguments": null,
+                "arguments": [],
                 "id": 204,
                 "modifierName": {
                   "argumentTypes": null,
@@ -4141,16 +4129,16 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.4.23+commit.124ca40d.Emscripten.clang"
+    "version": "0.4.21+commit.dfe3193c.Emscripten.clang"
   },
   "networks": {
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x1e5e5dbe018f970ee001c8134c8ba144ecd9a9e5",
-      "transactionHash": "0x02f31573843aea8c934ec6a810b105891d811295f493f053a6b749b4c9c0e81d"
+      "address": "0x15765fc007f51761ffb5df7f280d6693fb238c5b",
+      "transactionHash": "0x4c88230d17918382157bd01c6cbfad2d7f416ffefed81bb40ce1569f9fd0fc7b"
     }
   },
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-04-20T08:21:43.373Z"
+  "updatedAt": "2018-04-20T09:06:31.337Z"
 }
