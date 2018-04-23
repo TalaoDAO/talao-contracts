@@ -5,7 +5,6 @@ import faBan from '@fortawesome/fontawesome-free-solid/faBan';
 
 class Vault extends React.Component {
 
-    //connexion to 
     constructor(props) {
         super(props);
         //const contract
@@ -21,30 +20,37 @@ class Vault extends React.Component {
             documents: [],
         }
 
-        //this.setState({vaultFactoryContract:vaultFactoryCont});
-
         this.createFreelanceVault = this.createFreelanceVault.bind(this);
         this.addDocument = this.addDocument.bind(this);
     }
 
     componentDidMount() {
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
-            if(vaultAdress!=null) {
+            if(vaultAdress!=='0x0000000000000000000000000000000000000000') {
  
-                const vaultContract = new window.web3.eth.Contract(
-                    JSON.parse(process.env.REACT_APP_VAULT_ABI),
-                    this.state.vaultAddress
-                );
-
-                this.setState({
-                    vaultContract: vaultContract
-                });
-
+                this.createVaultCont(vaultAdress);
 
             } else {this.setState({
                 createVaultButton:false})
             }
         })  
+    }
+
+    createVaultCont(vaultAdress) {
+        const vaultContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_VAULT_ABI),
+            vaultAdress
+        );
+
+        this.setState({
+            vaultContract: vaultContract
+        });
+
+        //subscribe to event wich 
+        this.state.vaultContract.events.VaultLog((error, event) => {
+            alert(event);
+            this.state.documents.push(event);
+        });
     }
 
     createFreelanceVault() {
@@ -58,12 +64,21 @@ class Vault extends React.Component {
             alert(hash);
             this.setState({createVaultButton:false});
         })
+        .on('receipt', receipt => {
+            alert(receipt);
+        })
         .on('error', (error) => { alert(error) });
     }
     
     addDocument() {
+        //send document to ipfs
+
         //add value on this call
-        this.state.vaultContract.methods.addDocument().send(
+        var docId = window.web3.utils.fromAscii('doc1');
+        var description = window.web3.utils.fromAscii('ceci est ma dscription');
+        var keyword = window.web3.utils.fromAscii('Solidity');
+
+        this.state.vaultContract.methods.addDocument(docId,description,keyword).send(
         {
             from: this.context.web3.selectedAccount,
             gas: 4700000,
@@ -90,7 +105,19 @@ class Vault extends React.Component {
         .on('error', (error) => { alert(error) });
     }
 
-    
+    addKeywords() {
+        this.state.vaultContract.methods.addKeyword().send(
+        {
+            from: this.context.web3.selectedAccount,
+            gas: 4700000,
+            gasPrice: 100000000000
+        })
+        .on('transactionHash', hash => {
+            alert(hash);
+            this.setState({createVaultButton:false});
+        })
+        .on('error', (error) => { alert(error) });
+    }
 
     render() {
         return (
