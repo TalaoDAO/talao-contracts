@@ -5,13 +5,6 @@ import faBan from '@fortawesome/fontawesome-free-solid/faBan';
 
 class Vault extends React.Component {
 
-    state = {
-        vaultFactoryContract: null,
-        vaultContract : null,
-        createVaultButton: true,
-        documents: [],
-    }
-
     //connexion to 
     constructor(props) {
         super(props);
