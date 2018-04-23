@@ -184,7 +184,7 @@ class Vault extends React.Component {
         )
     }
 }
-
+ 
 Vault.contextTypes = {
     web3: PropTypes.object
 }
