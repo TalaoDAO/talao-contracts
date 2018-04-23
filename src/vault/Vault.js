@@ -22,8 +22,8 @@ class Vault extends React.Component {
 
         this.setState({vaultFactoryContract:vaultFactoryContract});
 
-        this.submit = this.submit.bind(this);
-        this.submit = this.submit.bind(this);
+        this.addDocument = this.addDocument.bind(this);
+        this.createFreelanceVault = this.createFreelanceVault.bind(this);
     }
 
     componentDidMount() {
@@ -59,7 +59,7 @@ class Vault extends React.Component {
     }
     
     addDocument() {
-
+            
     }
 
     
