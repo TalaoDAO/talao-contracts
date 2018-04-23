@@ -4,6 +4,7 @@
   background-color: #0A4178;
   border: 2px solid white;
   transition: all linear .1s;
+  padding: 10px;
 }
 
 .btn:hover {
