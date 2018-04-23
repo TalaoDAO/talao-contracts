@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../ui/button/Button';
 import faBan from '@fortawesome/fontawesome-free-solid/faBan';
+import './Vault.css';
 
 class Vault extends React.Component {
 
@@ -16,8 +17,8 @@ class Vault extends React.Component {
 
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
-            vaultContract : null,
-            createVaultButton: true,
+            vaultContract: null,
+            canCreateVault: false,
             documents: [],
         }
 
@@ -29,8 +30,8 @@ class Vault extends React.Component {
 
     componentDidMount() {
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
-            if(vaultAdress!=null) {
- 
+            if (vaultAdress != '0x0000000000000000000000000000000000000000') {
+
                 const vaultContract = new window.web3.eth.Contract(
                     JSON.parse(process.env.REACT_APP_VAULT_ABI),
                     this.state.vaultAddress
@@ -41,66 +42,73 @@ class Vault extends React.Component {
                 });
 
 
-            } else {this.setState({
-                createVaultButton:false})
+            } else {
+                this.setState({
+                    canCreateVault: true
+                })
             }
-        })  
+        })
     }
 
     createFreelanceVault() {
         this.state.vaultFactoryContract.methods.CreateVaultContract().send(
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        })
-        .on('transactionHash', hash => {
-            alert(hash);
-            this.setState({createVaultButton:false});
-        })
-        .on('error', (error) => { alert(error) });
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('transactionHash', hash => {
+                alert(hash);
+                this.setState({ canCreateVault: false });
+            })
+            .on('error', (error) => { alert(error) });
     }
-    
+
     addDocument() {
         //add value on this call
         this.state.vaultContract.methods.addDocument().send(
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        })
-        .on('transactionHash', hash => {
-            alert(hash);
-            this.setState({createVaultButton:false});
-        })
-        .on('error', (error) => { alert(error) });
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('transactionHash', hash => {
+                alert(hash);
+                this.setState({ canCreateVault: false });
+            })
+            .on('error', (error) => { alert(error) });
     }
 
     removeDocument() {
         this.state.vaultContract.methods.removeDocument().send(
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        })
-        .on('transactionHash', hash => {
-            alert(hash);
-            this.setState({createVaultButton:false});
-        })
-        .on('error', (error) => { alert(error) });
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('transactionHash', hash => {
+                alert(hash);
+                this.setState({ canCreateVault: false });
+            })
+            .on('error', (error) => { alert(error) });
     }
 
-    
+
 
     render() {
         return (
-            <div>
+            <div className="vault">
                 <h1>My account</h1>
                 <p>Talent Etherum Address: {this.context.web3.selectedAccount}</p>
-                <div className="box blue">
+                <p><img className="flash-code" /></p>
+                <div className="box blue m20">
                     <p className="big">
-                        <Button className={this.state.createVaultButton ? 'hidden' : ''} value="Create Your Vault" icon={faBan} onClick={this.createFreelanceVault} />
-                        <Button value="Add file to vault" icon={faBan} onClick={this.addDocument} />
+                        <span style={this.state.canCreateVault ? {} : { display: 'none' }}>
+                            <Button value="Create Your Vault" icon={faBan} onClick={this.createFreelanceVault} />
+                        </span>
+                        <span style={this.state.canCreateVault ? { display: 'none' } : {}}>
+                            <Button value="Add file to vault" icon={faBan} onClick={this.addDocument} />
+                        </span>
                     </p>
                 </div>
             </div>
