@@ -28,12 +28,13 @@ class Vault extends React.Component {
         this.addDocument = this.addDocument.bind(this);
         this.goToAddDocument = this.goToAddDocument.bind(this);
         this.goToVault = this.goToVault.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
-            if(vaultAdress!=='0x0000000000000000000000000000000000000000') {
- 
+            if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
+
                 this.createVaultCont(vaultAdress);
 
             } else {
@@ -63,40 +64,41 @@ class Vault extends React.Component {
 
     createFreelanceVault() {
         this.state.vaultFactoryContract.methods.CreateVaultContract().send(
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        })
-        .on('transactionHash', hash => {
-            alert(hash);
-            this.setState({createVaultButton:false});
-        })
-        .on('receipt', receipt => {
-            alert(receipt);
-        })
-        .on('error', (error) => { alert(error) });
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('transactionHash', hash => {
+                alert(hash);
+                this.setState({ createVaultButton: false });
+            })
+            .on('receipt', receipt => {
+                alert(receipt);
+            })
+            .on('error', (error) => { alert(error) });
     }
 
     addDocument() {
         //send document to ipfs
+        alert(this.props.keywords);
 
         //add value on this call
         var docId = window.web3.utils.fromAscii('doc1');
         var description = window.web3.utils.fromAscii('ceci est ma dscription');
         var keyword = window.web3.utils.fromAscii('Solidity');
 
-        this.state.vaultContract.methods.addDocument(docId,description,keyword).send(
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        })
-        .on('transactionHash', hash => {
-            alert(hash);
-            this.setState({createVaultButton:false});
-        })
-        .on('error', (error) => { alert(error) });
+        this.state.vaultContract.methods.addDocument(docId, description, keyword).send(
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('transactionHash', hash => {
+                alert(hash);
+                this.setState({ createVaultButton: false });
+            })
+            .on('error', (error) => { alert(error) });
     }
 
     removeDocument() {
@@ -115,16 +117,28 @@ class Vault extends React.Component {
 
     addKeywords() {
         this.state.vaultContract.methods.addKeyword().send(
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        })
-        .on('transactionHash', hash => {
-            alert(hash);
-            this.setState({createVaultButton:false});
-        })
-        .on('error', (error) => { alert(error) });
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('transactionHash', hash => {
+                alert(hash);
+                this.setState({ createVaultButton: false });
+            })
+            .on('error', (error) => { alert(error) });
+    }
+
+    goToAddDocument() {
+        this.setState({ view: 'add-document' });
+    }
+
+    goToVault() {
+        this.setState({ view: 'vault' });
+    }
+
+    handleChange(event) {
+        this.setState({ value: event.target.value });
     }
 
     render() {
@@ -156,35 +170,37 @@ class Vault extends React.Component {
                     <h1>Add reference</h1>
                     <p>Add a reference to your vault</p>
                     <div className="box yellow m20">
-                        <div>
-                            <label htmlFor="description">Description</label>
-                        </div>
-                        <div>
-                            <textarea id="description" />
-                        </div>
-                        <div>
-                            <label htmlFor="keywords">Keywords</label>
-                        </div>
-                        <div>
-                            <textarea id="keywords" />
-                        </div>
-                        <div>
-                            <label htmlFor="document">Upload your references certification</label>
-                        </div>
-                        <div>
-                            <input type="file" id="document" />
-                        </div>
-                        <div>
-                            <Button value="Cancel" icon={faCheck} onClick={this.goToVault} />
-                            <Button value="Validate" icon={faCheck} onClick={this.addDocument} />
-                        </div>
+                        <form onSubmit={this.props.onSubmit}>
+                            <div>
+                                <label htmlFor="description">Description</label>
+                            </div>
+                            <div>
+                                <textarea id="description" name="description" value={this.props.description} onChange={this.props.onChange} />
+                            </div>
+                            <div>
+                                <label htmlFor="keywords">Keywords</label>
+                            </div>
+                            <div>
+                                <textarea id="keywords" name="keywords" value={this.props.keywords} onChange={this.props.onChange} />
+                            </div>
+                            <div>
+                                <label htmlFor="uploadedDocument">Upload your references certification</label>
+                            </div>
+                            <div>
+                                <input type="file" id="uploadedDocument" name="uploadedDocument" value={this.props.uploadedDocument} />
+                            </div>
+                            <div>
+                                <Button value="Cancel" icon={faCheck} onClick={this.goToVault} />
+                                <Button value="Validate" icon={faCheck} onClick={this.addDocument} />
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         )
     }
 }
- 
+
 Vault.contextTypes = {
     web3: PropTypes.object
 }
