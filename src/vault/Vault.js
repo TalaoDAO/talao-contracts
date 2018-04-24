@@ -6,6 +6,7 @@ import faFolder from '@fortawesome/fontawesome-free-solid/faFolder';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
 import './Vault.css';
 import IpfsApi from 'ipfs-api';
+import buffer from 'buffer';
 
 class Vault extends React.Component {
 
@@ -29,7 +30,7 @@ class Vault extends React.Component {
             uploadedDocument: null,
         }
 
-        this.ipfsApi = IpfsApi('localhost', 5001);
+        //this.ipfsApi = IpfsApi('localhost', 5001, {protocol: 'http'});
 
         this.createFreelanceVault = this.createFreelanceVault.bind(this);
         this.addDocument = this.addDocument.bind(this);
@@ -126,18 +127,25 @@ class Vault extends React.Component {
         return new Promise((resolve, reject) => {
             reader.onload = () => {
                 try {
-                    Promise.resolve("coucou");
-                }
+                    //var arrayBuffer = this.ipfsApi.Buffer.from(reader.result);
+                    //alert(arrayBuffer);
+                    const ipfsApi = IpfsApi('localhost', 5001);
+                    const arrayBuffer = buffer.Buffer(reader.result);
+                    //alert(arrayBuffer);
+                    //this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
+                    ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
+                        if (err) {
+                            alert('inside' + err);
+                            reject(err);
+                        }
+                        resolve(result);
+                    });
+                } 
                 catch (e) {
                     reject(e)
+                    alert(e);
                 }
-                //var arrayBuffer = this.ipfsApi.Buffer.from(reader.result);
-                // this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
-                //     if (err) {
-                //         reject(err);
-                //     }
-                //     resolve(result);
-                // });
+                
             };
             reader.readAsText(document.getElementById("uploadedDocument").files[0]);
         });
