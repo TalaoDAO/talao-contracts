@@ -105,7 +105,7 @@ class Vault extends React.Component {
         this.uploadToIpfs(null).then(result => {
 
             //add value on this call
-            var docId = window.web3.utils.fromAscii(result);
+            var docId = window.web3.utils.fromAscii(result[0].path);
             var description = window.web3.utils.fromAscii(this.state.description);
             var keywords = window.web3.utils.fromAscii(this.state.keywords);
 
