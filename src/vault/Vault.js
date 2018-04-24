@@ -1,9 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../ui/button/Button';
+import Table from '../ui/table/Table';
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import faFolder from '@fortawesome/fontawesome-free-solid/faFolder';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
+import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
 import './Vault.css';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
@@ -23,7 +26,11 @@ class Vault extends React.Component {
             vaultFactoryContract: vaultFactoryCont,
             vaultContract: null,
             canCreateVault: false,
-            documents: [],
+            documents: [{
+                description: 'test',
+                keywords: 'key words',
+                address: '300a36aa-76d8-2435-efa6-f99d181792a3'
+            }],
             view: 'vault',
             description: '',
             keywords: '',
@@ -38,6 +45,8 @@ class Vault extends React.Component {
         this.goToVault = this.goToVault.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.removeDocument = this.removeDocument.bind(this);
     }
 
     componentDidMount() {
@@ -127,6 +136,7 @@ class Vault extends React.Component {
         return new Promise((resolve, reject) => {
             reader.onload = () => {
                 try {
+<<<<<<< HEAD
                     //var arrayBuffer = this.ipfsApi.Buffer.from(reader.result);
                     //alert(arrayBuffer);
                     const ipfsApi = IpfsApi('localhost', 5001);
@@ -141,6 +151,10 @@ class Vault extends React.Component {
                         resolve(result);
                     });
                 } 
+=======
+                    resolve(reader.result);
+                }
+>>>>>>> 4b3225de00c200127ae3e6ff19d7f5bf3723d6fb
                 catch (e) {
                     reject(e)
                     alert(e);
@@ -152,19 +166,19 @@ class Vault extends React.Component {
     }
 
     removeDocument() {
-        this.state.vaultContract.methods.removeDocument().send(
-            {
-                from: this.context.web3.selectedAccount,
-                gas: 4700000,
-                gasPrice: 100000000000
-            })
-            .on('transactionHash', hash => {
-                alert("Your document has been removed (TX: " + hash + ")");
-                this.setState({ canCreateVault: false });
-            })
-            .on('error', (error) => {
-                alert("An error has occured when removing your document (ERR: " + error + ")");
-            });
+        // this.state.vaultContract.methods.removeDocument().send(
+        //     {
+        //         from: this.context.web3.selectedAccount,
+        //         gas: 4700000,
+        //         gasPrice: 100000000000
+        //     })
+        //     .on('transactionHash', hash => {
+        //         alert("Your document has been removed (TX: " + hash + ")");
+        //         this.setState({ canCreateVault: false });
+        //     })
+        //     .on('error', (error) => {
+        //         alert("An error has occured when removing your document (ERR: " + error + ")");
+        //     });
     }
 
     addKeywords() {
@@ -209,6 +223,54 @@ class Vault extends React.Component {
         });
     }
 
+    handleSubmit(event) {
+        event.preventDefault();
+    }
+
+    renderDocuments(documents) {
+        if (documents != null && documents.length > 0)
+            return (
+                <div className="documents-table box" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
+                    <table>
+                        <caption>Current documents</caption>
+                        <thead>
+                            <tr>
+                                <th>description</th>
+                                <th>keywords</th>
+                                <th>address</th>
+                                <th>tag</th>
+                                <th>actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.renderDocumentRows(documents)}
+                        </tbody>
+                    </table>
+                </div>
+            );
+    }
+
+    renderDocumentRows(documents) {
+        return (
+            documents.filter(d => d != null).map(
+                (document, index) =>
+                    (
+                        <tr key={index}>
+                            <td>{document.description}</td>
+                            <td>{document.keywords}</td>
+                            <td>{document.address}</td>
+                            <td><img className="flash-code-small" /></td>
+                            <td>
+                                <a onClick={this.removeDocument()}>
+                                    <FontAwesomeIcon icon={faTrash} />
+                                </a>
+                            </td>
+                        </tr>
+                    )
+            )
+        );
+    }
+
     render() {
         return (
             <div>
@@ -227,9 +289,6 @@ class Vault extends React.Component {
                                 please upload your ID card, passport or driver license<br />
                                 <Button value="Add your ID document" icon={faPlus} onClick={this.goToAddDocument} />
                             </span>
-                            <span style={this.state.documents.length === 0 ? { display: 'none' } : {}}>
-                                documents!
-                                </span>
                         </p>
                     </div>
                 </div>
@@ -238,7 +297,7 @@ class Vault extends React.Component {
                     <h1>Add reference</h1>
                     <p>Add a reference to your vault</p>
                     <div className="box yellow m20">
-                        <form onSubmit={this.props.onSubmit}>
+                        <form onSubmit={this.handleSubmit}>
                             <div>
                                 <label htmlFor="description">Description</label>
                             </div>
@@ -256,7 +315,7 @@ class Vault extends React.Component {
                             </div>
                             <div>
                                 {/* onChange={this.handleFileChange} */}
-                                <input type="file" id="uploadedDocument" name="uploadedDocument"  />
+                                <input type="file" id="uploadedDocument" name="uploadedDocument" />
                             </div>
                             <div>
                                 <Button value="Cancel" icon={faCheck} onClick={this.goToVault} />
@@ -265,6 +324,9 @@ class Vault extends React.Component {
                         </form>
                     </div>
                 </div>
+
+                {this.renderDocuments(this.state.documents)}
+
             </div>
         )
     }
