@@ -279,7 +279,6 @@ class Vault extends React.Component {
                         </p>
                     </div>
                 </div>
-
                 <div className="add-document" style={this.state.view === 'add-document' ? {} : { display: 'none' }}>
                     <h1>Add reference</h1>
                     <p>Add a reference to your vault</p>
@@ -311,9 +310,7 @@ class Vault extends React.Component {
                         </form>
                     </div>
                 </div>
-
                 {this.renderDocuments(this.state.documents)}
-
             </div>
         )
     }
