@@ -6,6 +6,7 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import faFolder from '@fortawesome/fontawesome-free-solid/faFolder';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
+import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
 import './Vault.css';
 import IpfsApi from 'ipfs-api';
 
@@ -44,6 +45,7 @@ class Vault extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.removeDocument = this.removeDocument.bind(this);
     }
 
     componentDidMount() {
@@ -151,19 +153,19 @@ class Vault extends React.Component {
     }
 
     removeDocument() {
-        this.state.vaultContract.methods.removeDocument().send(
-            {
-                from: this.context.web3.selectedAccount,
-                gas: 4700000,
-                gasPrice: 100000000000
-            })
-            .on('transactionHash', hash => {
-                alert("Your document has been removed (TX: " + hash + ")");
-                this.setState({ canCreateVault: false });
-            })
-            .on('error', (error) => {
-                alert("An error has occured when removing your document (ERR: " + error + ")");
-            });
+        // this.state.vaultContract.methods.removeDocument().send(
+        //     {
+        //         from: this.context.web3.selectedAccount,
+        //         gas: 4700000,
+        //         gasPrice: 100000000000
+        //     })
+        //     .on('transactionHash', hash => {
+        //         alert("Your document has been removed (TX: " + hash + ")");
+        //         this.setState({ canCreateVault: false });
+        //     })
+        //     .on('error', (error) => {
+        //         alert("An error has occured when removing your document (ERR: " + error + ")");
+        //     });
     }
 
     addKeywords() {
@@ -246,7 +248,9 @@ class Vault extends React.Component {
                             <td>{document.address}</td>
                             <td><img className="flash-code-small" /></td>
                             <td>
-                                <FontAwesomeIcon icon={faPlus} />
+                                <a onClick={this.removeDocument()}>
+                                    <FontAwesomeIcon icon={faTrash} />
+                                </a>
                             </td>
                         </tr>
                     )
