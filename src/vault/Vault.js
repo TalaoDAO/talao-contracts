@@ -136,7 +136,6 @@ class Vault extends React.Component {
         return new Promise((resolve, reject) => {
             reader.onload = () => {
                 try {
-<<<<<<< HEAD
                     //var arrayBuffer = this.ipfsApi.Buffer.from(reader.result);
                     //alert(arrayBuffer);
                     const ipfsApi = IpfsApi('localhost', 5001);
@@ -151,10 +150,6 @@ class Vault extends React.Component {
                         resolve(result);
                     });
                 } 
-=======
-                    resolve(reader.result);
-                }
->>>>>>> 4b3225de00c200127ae3e6ff19d7f5bf3723d6fb
                 catch (e) {
                     reject(e)
                     alert(e);
