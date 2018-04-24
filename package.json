@@ -14,7 +14,8 @@
     "react-scripts": "1.1.1",
     "react-web3": "https://github.com/guix77/react-web3/tarball/cf1ccfd61cd37206e2bb17d056efc738907a5e4c",
     "reactstrap": "^5.0.0-beta.3",
-    "web3": "1.0.0-beta.31"
+    "web3": "1.0.0-beta.31",
+    "ipfs-api": "^20.0.1"
   },
   "scripts": {
     "start": "react-scripts start",

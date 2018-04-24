@@ -5,12 +5,14 @@ import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import faFolder from '@fortawesome/fontawesome-free-solid/faFolder';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
 import './Vault.css';
+import IpfsApi from 'ipfs-api';
 
 class Vault extends React.Component {
 
     constructor(props) {
         super(props);
-        //const contract
+
+        // const contract
         const vaultFactoryCont = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
@@ -22,13 +24,19 @@ class Vault extends React.Component {
             canCreateVault: false,
             documents: [],
             view: 'vault',
+            description: '',
+            keywords: '',
+            uploadedDocument: null,
         }
+
+        this.ipfsApi = IpfsApi('localhost', 5001);
 
         this.createFreelanceVault = this.createFreelanceVault.bind(this);
         this.addDocument = this.addDocument.bind(this);
         this.goToAddDocument = this.goToAddDocument.bind(this);
         this.goToVault = this.goToVault.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.handleFileChange = this.handleFileChange.bind(this);
     }
 
     componentDidMount() {
@@ -57,7 +65,6 @@ class Vault extends React.Component {
 
         //subscribe to event wich 
         this.state.vaultContract.events.VaultLog((error, event) => {
-            alert(event);
             this.state.documents.push(event);
         });
     }
@@ -69,36 +76,71 @@ class Vault extends React.Component {
                 gas: 4700000,
                 gasPrice: 100000000000
             })
-            .on('transactionHash', hash => {
-                alert(hash);
-                this.setState({ createVaultButton: false });
-            })
+            // .on('transactionHash', hash => {
+            //     alert("Your vault has been created (TX: " + hash + ")");
+            //     this.setState({ createVaultButton: false });
+            // })
             .on('receipt', receipt => {
-                alert(receipt);
+                alert("Your vault has been created (TX: " + receipt.transactionHash + ")");
+                // alert(receipt);
             })
-            .on('error', (error) => { alert(error) });
+            .on('error', (error) => {
+                alert("An error has occured when creating your vault (ERR: " + error + ")");
+            });
     }
 
     addDocument() {
+
         //send document to ipfs
-        alert(this.props.keywords);
+        this.uploadToIpfs(null).then(result => {
 
-        //add value on this call
-        var docId = window.web3.utils.fromAscii('doc1');
-        var description = window.web3.utils.fromAscii('ceci est ma dscription');
-        var keyword = window.web3.utils.fromAscii('Solidity');
+            //add value on this call
+            var docId = window.web3.utils.fromAscii(result);
+            var description = window.web3.utils.fromAscii(this.state.description);
+            var keywords = window.web3.utils.fromAscii(this.state.keywords);
 
-        this.state.vaultContract.methods.addDocument(docId, description, keyword).send(
-            {
-                from: this.context.web3.selectedAccount,
-                gas: 4700000,
-                gasPrice: 100000000000
-            })
-            .on('transactionHash', hash => {
-                alert(hash);
-                this.setState({ createVaultButton: false });
-            })
-            .on('error', (error) => { alert(error) });
+            this.state.vaultContract.methods.addDocument(docId, description, keywords).send(
+                {
+                    from: this.context.web3.selectedAccount,
+                    gas: 4700000,
+                    gasPrice: 100000000000
+                })
+                // .on('transactionHash', hash => {
+                //     alert("Your document has been downloaded (TX: " + hash + ")");
+                //     this.setState({ createVaultButton: false });
+                // })
+                .on('receipt', receipt => {
+                    alert("Your document has been downloaded (TX: " + receipt.transactionHash + ")");
+                    this.setState({ createVaultButton: false });
+                })
+                .on('error', (error) => {
+                    alert("An error has occured when storing your document (ERR: " + error + ")");
+                });
+        },
+            err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
+        );
+    }
+
+    uploadToIpfs(documentToUpload) {
+        const reader = new FileReader();
+        return new Promise((resolve, reject) => {
+            reader.onload = () => {
+                try {
+                    Promise.resolve("coucou");
+                }
+                catch (e) {
+                    reject(e)
+                }
+                //var arrayBuffer = this.ipfsApi.Buffer.from(reader.result);
+                // this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
+                //     if (err) {
+                //         reject(err);
+                //     }
+                //     resolve(result);
+                // });
+            };
+            reader.readAsText(document.getElementById("uploadedDocument").files[0]);
+        });
     }
 
     removeDocument() {
@@ -109,10 +151,12 @@ class Vault extends React.Component {
                 gasPrice: 100000000000
             })
             .on('transactionHash', hash => {
-                alert(hash);
+                alert("Your document has been removed (TX: " + hash + ")");
                 this.setState({ canCreateVault: false });
             })
-            .on('error', (error) => { alert(error) });
+            .on('error', (error) => {
+                alert("An error has occured when removing your document (ERR: " + error + ")");
+            });
     }
 
     addKeywords() {
@@ -123,10 +167,12 @@ class Vault extends React.Component {
                 gasPrice: 100000000000
             })
             .on('transactionHash', hash => {
-                alert(hash);
+                alert("Your keywords has been added (TX: " + hash + ")");
                 this.setState({ createVaultButton: false });
             })
-            .on('error', (error) => { alert(error) });
+            .on('error', (error) => {
+                alert("An error has occured when adding keywords (ERR: " + error + ")");
+            });
     }
 
     goToAddDocument() {
@@ -138,7 +184,21 @@ class Vault extends React.Component {
     }
 
     handleChange(event) {
-        this.setState({ value: event.target.value });
+        const target = event.target;
+        const value = target.value;
+        const name = target.name;
+        this.setState({
+            [name]: value
+        });
+    }
+
+    handleFileChange(event) {
+        const target = event.target;
+        const files = target.files;
+        const name = target.name;
+        this.setState({
+            [name]: files
+        });
     }
 
     render() {
@@ -175,19 +235,20 @@ class Vault extends React.Component {
                                 <label htmlFor="description">Description</label>
                             </div>
                             <div>
-                                <textarea id="description" name="description" value={this.props.description} onChange={this.props.onChange} />
+                                <textarea id="description" name="description" value={this.state.description} onChange={this.handleChange} />
                             </div>
                             <div>
                                 <label htmlFor="keywords">Keywords</label>
                             </div>
                             <div>
-                                <textarea id="keywords" name="keywords" value={this.props.keywords} onChange={this.props.onChange} />
+                                <textarea id="keywords" name="keywords" value={this.state.keywords} onChange={this.handleChange} />
                             </div>
                             <div>
                                 <label htmlFor="uploadedDocument">Upload your references certification</label>
                             </div>
                             <div>
-                                <input type="file" id="uploadedDocument" name="uploadedDocument" value={this.props.uploadedDocument} />
+                                {/* onChange={this.handleFileChange} */}
+                                <input type="file" id="uploadedDocument" name="uploadedDocument"  />
                             </div>
                             <div>
                                 <Button value="Cancel" icon={faCheck} onClick={this.goToVault} />
