@@ -60,8 +60,7 @@ class Vault extends React.Component {
                             keywords: '',
                             address: docId
                         });
-                        this.goToAddDocument();
-                        this.goToVault();
+                        this.forceUpdate();
                     }))
                 });
 
@@ -179,6 +178,7 @@ class Vault extends React.Component {
             });
         var index = this.state.documents.findIndex((d,i,o) => d && d.address === address);
         this.state.documents.splice(index, 1);
+        this.forceUpdate();
     }
 
     addKeywords(docId, keyword) {
