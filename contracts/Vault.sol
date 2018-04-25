@@ -30,6 +30,12 @@ contract Vault is Ownable {
         bytes32 documentId
     );
 
+    event VaultDocAdded (
+        address indexed user,
+        bytes32 documentId,
+        bytes32 description
+    );
+
     modifier allowance () { //require sur l'aggreement
         bool agreement = false;
         uint unused = 0;
@@ -68,7 +74,7 @@ contract Vault is Ownable {
         talentsDocuments[documentId].keywords.push(keyword);
 
         emit VaultLog(msg.sender, VaultLife.DocumentAdded, documentId);
-
+        emit VaultDocAdded(msg.sender,documentId,description);
         return true;
     }
 
