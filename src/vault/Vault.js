@@ -376,7 +376,6 @@ class Vault extends React.Component {
                 <div>
                     <h3>My vault</h3>
                     <div className="mb20">
-                        {this.renderQrCode(address, 100)}
                         <div className="etherum-address">Vault @:{this.state.vaultAddress}</div>
                     </div>
                 </div>
@@ -406,6 +405,7 @@ class Vault extends React.Component {
                 <div className="pb20" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
                     <h1>My account</h1>
                     <p className="etherum-address">Account @: {this.context.web3.selectedAccount}</p>
+                    {this.renderQrCode(this.context.web3.selectedAccount, 100)}
                     {this.renderVault(this.state.vaultAddress)}
                 </div>
                 {this.renderAddDocument(this.state.view)}
