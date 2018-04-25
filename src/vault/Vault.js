@@ -52,6 +52,10 @@ class Vault extends React.Component {
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAdress);
+
+                this.setState({
+                    vaultAddress: vaultAdress
+                });
                 
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
@@ -59,34 +63,36 @@ class Vault extends React.Component {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
                         var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-                        //get Keywords
-                        //this.trimToascii();
-                        this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
-                            this.keywords = '';
-                            var promises=[];
-                            for (let index = 0; index < number; index++) {
-                                
-                                promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId,index).call().then(result => {
-                                    this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
-                                }));
-                            }
 
-                            Promise.all(promises).then (() => {
-                                this.state.documents.push({
-                                    description: description,
-                                    keywords: this.keywords,
-                                    address: docId
+                        this.state.vaultContract.methods.getDocumentIsAlive (initialDocId).call().then(res => {
+                            if(res === true)
+                            {
+                                //we add only th document alive and not removed
+                                this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
+                                    this.keywords = '';
+                                    var promises=[];
+                                    for (let index = 0; index < number; index++) {
+                                        
+                                        promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId,index).call().then(result => {
+                                            this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
+                                        }));
+                                    }
+    
+                                    Promise.all(promises).then (() => {
+                                        this.state.documents.push({
+                                            description: description,
+                                            keywords: this.keywords,
+                                            address: docId
+                                        });
+                                        
+                                        this.keywords = '';
+    
+                                        this.forceUpdate();
+                                    });
                                 });
-                                
-                                this.keywords = '';
-
-                                this.forceUpdate();
-                            });
+                            }
                         });
-                        this.setState({
-                            vaultAddress: vaultAddress
-                        });
-                    }))
+                    }));
                 });
 
             } else {
@@ -110,14 +116,14 @@ class Vault extends React.Component {
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
         this.contractObjectOldWeb3.at(vaultAdress);
 
-        // this.event = this.contractObjectOldWeb3.VaultDocAdded({},{fromBlock: 0, toBlock: 'latest'});
-        // this.event.watch( (err,event) => {
-        //     if(err)
-        //         console.log(err);
-        //     else {
-        //         var val= event['args']['value'].toString();                                                        
-        //     }
-        // });
+        this.event = this.contractObjectOldWeb3.events.VaultDocAdded({},{fromBlock: 0, toBlock: 'latest'});
+        this.event.watch( (err,event) => {
+            if(err)
+                console.log(err);
+            else {
+                var val= event['args']['value'].toString();                                                        
+            }
+        });
     }
 
     createFreelanceVault() {
