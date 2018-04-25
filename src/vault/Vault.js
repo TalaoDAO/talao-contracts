@@ -49,7 +49,6 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
-<<<<<<< HEAD
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAddress => {
             if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAddress);
@@ -57,14 +56,6 @@ class Vault extends React.Component {
                     vaultAddress: vaultAddress
                 });
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
-=======
-        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
-            if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
-                this.createVaultCont(vaultAdress);
-                
-                //init document list
-                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
->>>>>>> 8dd0dc7f0332a0a3e565f3fc84c2382b126458da
                     events.forEach((event => {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
@@ -73,21 +64,21 @@ class Vault extends React.Component {
                         //this.trimToascii();
                         this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
                             this.keywords = '';
-                            var promises=[];
+                            var promises = [];
                             for (let index = 0; index < number; index++) {
-                                
-                                promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId,index).call().then(result => {
+
+                                promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId, index).call().then(result => {
                                     this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
                                 }));
                             }
 
-                            Promise.all(promises).then (() => {
+                            Promise.all(promises).then(() => {
                                 this.state.documents.push({
                                     description: description,
                                     keywords: this.keywords,
                                     address: docId
                                 });
-                                
+
                                 this.keywords = '';
 
                                 this.forceUpdate();
