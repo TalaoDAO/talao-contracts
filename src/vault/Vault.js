@@ -10,6 +10,7 @@ import './Vault.css';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
 import bs58 from 'bs58';
+import QrCode from 'qrcode.react';
 
 class Vault extends React.Component {
 
@@ -26,6 +27,7 @@ class Vault extends React.Component {
             vaultFactoryContract: vaultFactoryCont,
             vaultContract: null,
             vaultEvent: null,
+            vaultAddress: '',
             canCreateVault: false,
             documents: [],
             view: 'vault',
@@ -34,7 +36,7 @@ class Vault extends React.Component {
             uploadedDocument: null
         }
 
-        this.ipfsApi = IpfsApi('localhost', 5001, {protocol: 'http'});
+        this.ipfsApi = IpfsApi('localhost', 5001, { protocol: 'http' });
 
         this.createFreelanceVault = this.createFreelanceVault.bind(this);
         this.addDocument = this.addDocument.bind(this);
@@ -47,12 +49,19 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
+<<<<<<< HEAD
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAdress);
                 
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
+=======
+        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAddress => {
+            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                this.createVaultCont(vaultAddress);
+                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+>>>>>>> cd776a564e4881a04cdf9d5944ba2552c9308bb0
                     events.forEach((event => {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
@@ -81,12 +90,15 @@ class Vault extends React.Component {
                                 this.forceUpdate();
                             });
                         });
+                        this.setState({
+                            vaultAddress: vaultAddress
+                        });
                     }))
                 });
 
             } else {
                 this.setState({
-                    canCreateVault: true
+                    canCreateVault: true,
                 })
             }
         })
@@ -102,7 +114,7 @@ class Vault extends React.Component {
             vaultContract: vaultContract
         });
 
-        this.contractObjectOldWeb3 = window.web3old.eth.contract (JSON.parse(process.env.REACT_APP_VAULT_ABI));
+        this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
         this.contractObjectOldWeb3.at(vaultAdress);
 
         // this.event = this.contractObjectOldWeb3.VaultDocAdded({},{fromBlock: 0, toBlock: 'latest'});
@@ -147,6 +159,7 @@ class Vault extends React.Component {
                     }).on('error', error => {
                         alert("An error has occured when adding your document (ERR: " + error + ")");
                         this.goToVault();
+                        return;
                     });
                 this.state.documents.push({
                     description: this.state.description,
@@ -183,19 +196,21 @@ class Vault extends React.Component {
         });
     }
 
-    removeDocument(docId) {
+    removeDocument(address) {
         if (this.state.vaultContract == null) return;
+        var docId = this.getBytes32FromIpfsHash(address);
         this.state.vaultContract.methods.removeDocument(docId).send(
             {
                 from: this.context.web3.selectedAccount,
                 gas: 4700000,
                 gasPrice: 100000000000
-            }).on('transactionHash', hash => {
-                var index = this.state.documents.findIndex(d => d.address === docId);
-                this.state.documents.splice(index, index);
             }).on('error', error => {
                 alert("An error has occured when removing your document (ERR: " + error + ")");
+                return;
             });
+        var index = this.state.documents.findIndex((d, i, o) => d && d.address === address);
+        this.state.documents.splice(index, 1);
+        this.forceUpdate();
     }
 
     addKeywords(docId, keyword) {
@@ -296,7 +311,7 @@ class Vault extends React.Component {
                             <td>{document.description}</td>
                             <td>{document.keywords}</td>
                             <td>{document.address}</td>
-                            <td><img className="flash-code-small" /></td>
+                            <td>{this.renderQrCode(document.address, 20)}</td>
                             <td>
                                 <a onClick={() => this.removeDocument(document.address)}>
                                     <FontAwesomeIcon icon={faTrash} />
@@ -308,14 +323,22 @@ class Vault extends React.Component {
         );
     }
 
+    renderQrCode(address, size) {
+        if (address) {
+            return (<QrCode value={address} size={size} />);
+        }
+    }
+
     render() {
         return (
             <div>
                 <div className="vault" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
                     <h1>My account</h1>
                     <p>Talent Etherum Address: {this.context.web3.selectedAccount}</p>
-                    <p><img className="flash-code" /></p>
-                    <div className="box blue m20">
+                    <div className="mb20">
+                        {this.renderQrCode(this.state.vaultAddress, 100)}
+                    </div>
+                    <div className="box blue">
                         <p className="big">
                             <span style={this.state.canCreateVault ? {} : { display: 'none' }}>
                                 To start, you must create a vault<br />
@@ -332,7 +355,7 @@ class Vault extends React.Component {
                 <div className="add-document" style={this.state.view === 'add-document' ? {} : { display: 'none' }}>
                     <h1>Add reference</h1>
                     <p>Add a reference to your vault</p>
-                    <div className="box yellow m20">
+                    <div className="box yellow mb20">
                         <form onSubmit={this.handleSubmit}>
                             <div>
                                 <label htmlFor="description">Description</label>
