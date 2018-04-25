@@ -10,6 +10,7 @@ import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
 import './Vault.css';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
+import bs58 from 'bs58'
 
 class Vault extends React.Component {
 
@@ -73,9 +74,10 @@ class Vault extends React.Component {
             vaultContract: vaultContract
         });
 
-        //subscribe to event wich 
-        this.state.vaultContract.events.VaultLog((error, event) => {
+        //subscribe to event
+        this.state.vaultContract.events.VaultLog({}, (error, event) => {
             this.state.documents.push(event);
+            alert('document pushed : ' + event);
         });
     }
 
@@ -85,17 +87,6 @@ class Vault extends React.Component {
                 from: this.context.web3.selectedAccount,
                 gas: 4700000,
                 gasPrice: 100000000000
-            })
-            // .on('transactionHash', hash => {
-            //     alert("Your vault has been created (TX: " + hash + ")");
-            //     this.setState({ createVaultButton: false });
-            // })
-            .on('receipt', receipt => {
-                alert("Your vault has been created (TX: " + receipt.transactionHash + ")");
-                // alert(receipt);
-            })
-            .on('error', (error) => {
-                alert("An error has occured when creating your vault (ERR: " + error + ")");
             });
     }
 
@@ -104,8 +95,7 @@ class Vault extends React.Component {
         //send document to ipfs
         this.uploadToIpfs(null).then(result => {
 
-            //add value on this call
-            var docId = window.web3.utils.fromAscii(result[0].path);
+            var docId = this.getBytes32FromIpfsHash(result[0].path);
             var description = window.web3.utils.fromAscii(this.state.description);
             var keywords = window.web3.utils.fromAscii(this.state.keywords);
 
@@ -114,17 +104,6 @@ class Vault extends React.Component {
                     from: this.context.web3.selectedAccount,
                     gas: 4700000,
                     gasPrice: 100000000000
-                })
-                // .on('transactionHash', hash => {
-                //     alert("Your document has been downloaded (TX: " + hash + ")");
-                //     this.setState({ createVaultButton: false });
-                // })
-                .on('receipt', receipt => {
-                    alert("Your document has been downloaded (TX: " + receipt.transactionHash + ")");
-                    this.setState({ createVaultButton: false });
-                })
-                .on('error', (error) => {
-                    alert("An error has occured when storing your document (ERR: " + error + ")");
                 });
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
@@ -136,15 +115,10 @@ class Vault extends React.Component {
         return new Promise((resolve, reject) => {
             reader.onload = () => {
                 try {
-                    //var arrayBuffer = this.ipfsApi.Buffer.from(reader.result);
-                    //alert(arrayBuffer);
                     const ipfsApi = IpfsApi('localhost', 5001);
                     const arrayBuffer = buffer.Buffer(reader.result);
-                    //alert(arrayBuffer);
-                    //this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
                     ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
                         if (err) {
-                            alert('inside' + err);
                             reject(err);
                         }
                         resolve(result);
@@ -152,7 +126,6 @@ class Vault extends React.Component {
                 } 
                 catch (e) {
                     reject(e)
-                    alert(e);
                 }
                 
             };
@@ -161,23 +134,19 @@ class Vault extends React.Component {
     }
 
     removeDocument() {
-        // this.state.vaultContract.methods.removeDocument().send(
-        //     {
-        //         from: this.context.web3.selectedAccount,
-        //         gas: 4700000,
-        //         gasPrice: 100000000000
-        //     })
-        //     .on('transactionHash', hash => {
-        //         alert("Your document has been removed (TX: " + hash + ")");
-        //         this.setState({ canCreateVault: false });
-        //     })
-        //     .on('error', (error) => {
-        //         alert("An error has occured when removing your document (ERR: " + error + ")");
-        //     });
+        if(this.state.vaultContract != null) {
+            var docId;
+            this.state.vaultContract.methods.removeDocument(docId).send(
+                {
+                    from: this.context.web3.selectedAccount,
+                    gas: 4700000,
+                    gasPrice: 100000000000
+                });
+        }
     }
 
-    addKeywords() {
-        this.state.vaultContract.methods.addKeyword().send(
+    addKeywords(docId, keyword) {
+        this.state.vaultContract.methods.addKeyword(docId, keyword).send(
             {
                 from: this.context.web3.selectedAccount,
                 gas: 4700000,
@@ -191,6 +160,21 @@ class Vault extends React.Component {
                 alert("An error has occured when adding keywords (ERR: " + error + ")");
             });
     }
+
+    getBytes32FromIpfsHash(ipfsAddress) {
+        return "0x"+bs58.decode(ipfsAddress).slice(2).toString('hex')
+    }
+    
+    getIpfsHashFromBytes32(bytes32Hex) {
+        // Add our default ipfs values for first 2 bytes:
+        // function:0x12=sha2, size:0x20=256 bits
+        // and cut off leading "0x"
+        const hashHex = "1220" + bytes32Hex.slice(2)
+        const hashBytes = Buffer.from(hashHex, 'hex');
+        const hashStr = bs58.encode(hashBytes)
+        return hashStr
+    }
+      
 
     goToAddDocument() {
         this.setState({ view: 'add-document' });
