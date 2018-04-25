@@ -55,6 +55,11 @@ class Vault extends React.Component {
                     events.forEach((event => {
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
                         var description = window.web3.utils.hexToAscii(event['returnValues']['description']);
+                        this.state.documents.push({
+                            description: description,
+                            keywords: '',
+                            address: docId
+                        });
                     }))
                 });
 
@@ -76,7 +81,6 @@ class Vault extends React.Component {
             vaultContract: vaultContract
         });
 
-<<<<<<< HEAD
         this.contractObjectOldWeb3 = window.web3old.eth.contract (JSON.parse(process.env.REACT_APP_VAULT_ABI));
         this.contractObjectOldWeb3.at(vaultAdress);
 
@@ -88,12 +92,6 @@ class Vault extends React.Component {
         //         var val= event['args']['value'].toString();                                                        
         //     }
         // });
-=======
-        //subscribe to event
-        this.state.vaultContract.events.VaultLog({}, (error, event) => {
-            this.state.documents.push(event);
-        });
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
     }
 
     createFreelanceVault() {
@@ -106,10 +104,6 @@ class Vault extends React.Component {
     }
 
     addDocument() {
-<<<<<<< HEAD
-        //send document to ipfs
-        this.uploadToIpfs(null).then(result => {
-=======
 
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
@@ -118,29 +112,17 @@ class Vault extends React.Component {
         }
 
         this.uploadToIpfs(this.state.uploadedDocument[0]).then(result => {
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
 
             var docId = this.getBytes32FromIpfsHash(result[0].path);
             var description = window.web3.utils.fromAscii(this.state.description);
             var keywords = window.web3.utils.fromAscii(this.state.keywords);
-<<<<<<< HEAD
-            if(this.state.vaultContract != null)
-            {
-=======
 
             if (this.state.vaultContract != null) {
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
                 this.state.vaultContract.methods.addDocument(docId, description, keywords).send(
                     {
                         from: this.context.web3.selectedAccount,
                         gas: 4700000,
                         gasPrice: 100000000000
-<<<<<<< HEAD
-                    });
-            }
-            else {
-                console.log("erreur on add document");
-=======
                     }).on('error', error => {
                         alert("An error has occured when adding your document (ERR: " + error + ")");
                         this.goToVault();
@@ -151,7 +133,6 @@ class Vault extends React.Component {
                     address: result[0].path
                 });
                 this.goToVault();
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
             }
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
@@ -181,18 +162,6 @@ class Vault extends React.Component {
         });
     }
 
-<<<<<<< HEAD
-    removeDocument() {
-        if(this.state.vaultContract != null) {
-            var docId = window.web3.utils.fromAscii('234');
-            this.state.vaultContract.methods.removeDocument(docId).send(
-                {
-                    from: this.context.web3.selectedAccount,
-                    gas: 4700000,
-                    gasPrice: 100000000000
-                });
-        }
-=======
     removeDocument(docId) {
         if (this.state.vaultContract == null) return;
         this.state.vaultContract.methods.removeDocument(docId).send(
@@ -206,7 +175,6 @@ class Vault extends React.Component {
             }).on('error', error => {
                 alert("An error has occured when removing your document (ERR: " + error + ")");
             });
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
     }
 
     addKeywords(docId, keyword) {
@@ -238,10 +206,6 @@ class Vault extends React.Component {
         const hashStr = bs58.encode(hashBytes)
         return hashStr
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
 
     goToAddDocument() {
         document.getElementById("uploadedDocument").value = "";
@@ -313,11 +277,7 @@ class Vault extends React.Component {
                             <td>{document.address}</td>
                             <td><img className="flash-code-small" /></td>
                             <td>
-<<<<<<< HEAD
-                                <a onClick={this.removeDocument}>
-=======
                                 <a onClick={() => this.removeDocument(document.address)}>
->>>>>>> 010798ca522ab3ce21665b6591e8132742af31cb
                                     <FontAwesomeIcon icon={faTrash} />
                                 </a>
                             </td>
