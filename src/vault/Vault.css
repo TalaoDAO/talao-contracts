@@ -1,11 +1,3 @@
-.vault {
-    padding-bottom: 20px;
-}
-
-.add-document {
-    padding-bottom: 20px;
-}
-
 .documents-table table {
     margin: 0 auto;
 }
@@ -22,4 +14,11 @@ table thead tr th {
 
 table tbody tr td {
     padding-left: 0;
+    text-align: left;
+    padding-right: 5px;
+}
+
+.etherum-address {
+    font-size: 11px;
+    color: #bbb; 
 }
