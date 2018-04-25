@@ -49,6 +49,7 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
+<<<<<<< HEAD
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAdress);
@@ -59,10 +60,20 @@ class Vault extends React.Component {
                 
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
+=======
+        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAddress => {
+            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                this.createVaultCont(vaultAddress);
+                this.setState({
+                    vaultAddress: vaultAddress
+                });
+                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+>>>>>>> b581badbce75c82a8b105dc571e19ecdb6297bf1
                     events.forEach((event => {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
                         var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
+<<<<<<< HEAD
 
                         this.state.vaultContract.methods.getDocumentIsAlive (initialDocId).call().then(res => {
                             if(res === true)
@@ -93,6 +104,34 @@ class Vault extends React.Component {
                             }
                         });
                     }));
+=======
+                        //get Keywords
+                        //this.trimToascii();
+                        this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
+                            this.keywords = '';
+                            var promises = [];
+                            for (let index = 0; index < number; index++) {
+
+                                promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId, index).call().then(result => {
+                                    this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
+                                }));
+                            }
+
+                            Promise.all(promises).then(() => {
+                                this.state.documents.push({
+                                    description: description,
+                                    keywords: this.keywords,
+                                    address: docId
+                                });
+
+                                this.keywords = '';
+
+                                this.forceUpdate();
+                            });
+                        });
+                    }));
+                    this.forceUpdate();
+>>>>>>> b581badbce75c82a8b105dc571e19ecdb6297bf1
                 });
 
             } else {
@@ -243,7 +282,7 @@ class Vault extends React.Component {
     }
 
     goToAddDocument() {
-        document.getElementById("uploadedDocument").value = "";
+        //document.getElementById("uploadedDocument").value = "";
         this.setState({
             view: 'add-document',
             description: '',
@@ -278,27 +317,43 @@ class Vault extends React.Component {
         event.preventDefault();
     }
 
-    renderDocuments(documents) {
+    renderDocuments(documents, vaultAddress, view) {
+        if (view !== "vault" || vaultAddress == null || vaultAddress === "") return;
         if (documents != null && documents.length > 0)
             return (
-                <div className="documents-table box" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
-                    <table>
-                        <caption>Current documents</caption>
-                        <thead>
-                            <tr>
-                                <th>description</th>
-                                <th>keywords</th>
-                                <th>address</th>
-                                <th>tag</th>
-                                <th>actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {this.renderDocumentRows(documents)}
-                        </tbody>
-                    </table>
+                <div className="pb20">
+                    <div className="documents-table box yellow" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
+                        <h3>My documents</h3>
+                        <Button value="Add a reference" icon={faPlus} onClick={this.goToAddDocument} />
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>description</th>
+                                    <th>keywords</th>
+                                    <th>tag</th>
+                                    <th>actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {this.renderDocumentRows(documents)}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             );
+        else {
+            return (
+                <div className="pb20">
+                    <div className="box blue">
+                        <p className="big">
+                            To continue, we need to verify your identify: <br />
+                            please upload your ID card, passport or driver license<br />
+                            <Button value="Add your ID document" icon={faPlus} onClick={this.goToAddDocument} />
+                        </p>
+                    </div>
+                </div>
+            );
+        }
     }
 
     renderDocumentRows(documents) {
@@ -307,9 +362,8 @@ class Vault extends React.Component {
                 (document, index) =>
                     (
                         <tr key={index}>
-                            <td>{document.description}</td>
+                            <td>{document.description}<br /><span className="etherum-address">Doc @: {document.address}</span></td>
                             <td>{document.keywords}</td>
-                            <td>{document.address}</td>
                             <td>{this.renderQrCode(document.address, 20)}</td>
                             <td>
                                 <a onClick={() => this.removeDocument(document.address)}>
@@ -322,38 +376,14 @@ class Vault extends React.Component {
         );
     }
 
-    renderQrCode(address, size) {
-        if (address) {
-            return (<QrCode value={address} size={size} />);
-        }
-    }
+    renderAddDocument(view) {
+        if (view !== "add-document") return;
 
-    render() {
         return (
             <div>
-                <div className="vault" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
-                    <h1>My account</h1>
-                    <p>Talent Etherum Address: {this.context.web3.selectedAccount}</p>
-                    <div className="mb20">
-                        {this.renderQrCode(this.state.vaultAddress, 100)}
-                    </div>
-                    <div className="box blue">
-                        <p className="big">
-                            <span style={this.state.canCreateVault ? {} : { display: 'none' }}>
-                                To start, you must create a vault<br />
-                                <Button value="Create Your Vault" icon={faFolder} onClick={this.createFreelanceVault} />
-                            </span>
-                            <span style={this.state.canCreateVault ? { display: 'none' } : {}}>
-                                To continue, we need to verify your identify: <br />
-                                please upload your ID card, passport or driver license<br />
-                                <Button value="Add your ID document" icon={faPlus} onClick={this.goToAddDocument} />
-                            </span>
-                        </p>
-                    </div>
-                </div>
-                <div className="add-document" style={this.state.view === 'add-document' ? {} : { display: 'none' }}>
-                    <h1>Add reference</h1>
-                    <p>Add a reference to your vault</p>
+                <h1>Add reference</h1>
+                <p>Add a reference to your vault</p>
+                <div className="pb20">
                     <div className="box yellow mb20">
                         <form onSubmit={this.handleSubmit}>
                             <div>
@@ -381,7 +411,51 @@ class Vault extends React.Component {
                         </form>
                     </div>
                 </div>
-                {this.renderDocuments(this.state.documents)}
+            </div>
+        );
+
+    }
+
+    renderVault(address) {
+        if (address) {
+            return (
+                <div>
+                    <h3>My vault</h3>
+                    <div className="mb20">
+                        <div className="etherum-address">Vault @:{this.state.vaultAddress}</div>
+                    </div>
+                </div>
+            );
+        }
+        else {
+            return (
+                <div className="box blue">
+                    <p className="big">
+                        To start, you must create a vault<br />
+                        <Button value="Create Your Vault" icon={faFolder} onClick={this.createFreelanceVault} />
+                    </p>
+                </div>
+            );
+        }
+    }
+
+    renderQrCode(address, size) {
+        if (address) {
+            return (<QrCode value={address} size={size} />);
+        }
+    }
+
+    render() {
+        return (
+            <div>
+                <div className="pb20" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
+                    <h1>My account</h1>
+                    <p className="etherum-address">Account @: {this.context.web3.selectedAccount}</p>
+                    {this.renderQrCode(this.context.web3.selectedAccount, 100)}
+                    {this.renderVault(this.state.vaultAddress)}
+                </div>
+                {this.renderAddDocument(this.state.view)}
+                {this.renderDocuments(this.state.documents, this.state.vaultAddress, this.state.view)}
             </div>
         )
     }
