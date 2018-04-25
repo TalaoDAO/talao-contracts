@@ -49,19 +49,12 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
-<<<<<<< HEAD
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAdress);
                 
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
-=======
-        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAddress => {
-            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                this.createVaultCont(vaultAddress);
-                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
->>>>>>> cd776a564e4881a04cdf9d5944ba2552c9308bb0
                     events.forEach((event => {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
