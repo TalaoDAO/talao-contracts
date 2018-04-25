@@ -107,6 +107,7 @@ class Vault extends React.Component {
                     }).on('error', error => {
                         alert("An error has occured when adding your document (ERR: " + error + ")");
                         this.goToVault();
+                        return;
                     });
                 this.state.documents.push({
                     description: this.state.description,
@@ -143,19 +144,20 @@ class Vault extends React.Component {
         });
     }
 
-    removeDocument(docId) {
+    removeDocument(address) {
         if (this.state.vaultContract == null) return;
+        var docId = this.getBytes32FromIpfsHash(address);
         this.state.vaultContract.methods.removeDocument(docId).send(
             {
                 from: this.context.web3.selectedAccount,
                 gas: 4700000,
                 gasPrice: 100000000000
-            }).on('transactionHash', hash => {
-                var index = this.state.documents.findIndex(d => d.address === docId);
-                this.state.documents.splice(index, index);
             }).on('error', error => {
                 alert("An error has occured when removing your document (ERR: " + error + ")");
+                return;
             });
+        var index = this.state.documents.findIndex((d,i,o) => d && d.address === address);
+        this.state.documents.splice(index, index);
     }
 
     addKeywords(docId, keyword) {
