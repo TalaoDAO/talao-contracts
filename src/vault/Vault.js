@@ -49,7 +49,6 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
-<<<<<<< HEAD
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAdress);
@@ -60,20 +59,10 @@ class Vault extends React.Component {
                 
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
-=======
-        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAddress => {
-            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                this.createVaultCont(vaultAddress);
-                this.setState({
-                    vaultAddress: vaultAddress
-                });
-                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
->>>>>>> b581badbce75c82a8b105dc571e19ecdb6297bf1
                     events.forEach((event => {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
                         var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-<<<<<<< HEAD
 
                         this.state.vaultContract.methods.getDocumentIsAlive (initialDocId).call().then(res => {
                             if(res === true)
@@ -104,34 +93,6 @@ class Vault extends React.Component {
                             }
                         });
                     }));
-=======
-                        //get Keywords
-                        //this.trimToascii();
-                        this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
-                            this.keywords = '';
-                            var promises = [];
-                            for (let index = 0; index < number; index++) {
-
-                                promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId, index).call().then(result => {
-                                    this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
-                                }));
-                            }
-
-                            Promise.all(promises).then(() => {
-                                this.state.documents.push({
-                                    description: description,
-                                    keywords: this.keywords,
-                                    address: docId
-                                });
-
-                                this.keywords = '';
-
-                                this.forceUpdate();
-                            });
-                        });
-                    }));
-                    this.forceUpdate();
->>>>>>> b581badbce75c82a8b105dc571e19ecdb6297bf1
                 });
 
             } else {
