@@ -9,7 +9,7 @@ import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
 import './Vault.css';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
-import bs58 from 'bs58'
+import bs58 from 'bs58';
 
 class Vault extends React.Component {
 
@@ -25,6 +25,7 @@ class Vault extends React.Component {
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
             vaultContract: null,
+            vaultEvent: null,
             canCreateVault: false,
             documents: [],
             view: 'vault',
@@ -33,7 +34,7 @@ class Vault extends React.Component {
             uploadedDocument: null
         }
 
-        //this.ipfsApi = IpfsApi('localhost', 5001, {protocol: 'http'});
+        this.ipfsApi = IpfsApi('localhost', 5001, {protocol: 'http'});
 
         this.createFreelanceVault = this.createFreelanceVault.bind(this);
         this.addDocument = this.addDocument.bind(this);
@@ -48,8 +49,19 @@ class Vault extends React.Component {
     componentDidMount() {
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
-
                 this.createVaultCont(vaultAdress);
+                
+                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
+                    events.forEach((event => {
+                        var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
+                        var description = window.web3.utils.hexToAscii(event['returnValues']['description']);
+                        this.state.documents.push({
+                            description: description,
+                            keywords: '',
+                            address: docId
+                        });
+                    }))
+                });
 
             } else {
                 this.setState({
@@ -69,10 +81,17 @@ class Vault extends React.Component {
             vaultContract: vaultContract
         });
 
-        //subscribe to event
-        this.state.vaultContract.events.VaultLog({}, (error, event) => {
-            this.state.documents.push(event);
-        });
+        this.contractObjectOldWeb3 = window.web3old.eth.contract (JSON.parse(process.env.REACT_APP_VAULT_ABI));
+        this.contractObjectOldWeb3.at(vaultAdress);
+
+        // this.event = this.contractObjectOldWeb3.addDocument();
+        // this.event.watch( (err,event) => {
+        //     if(err)
+        //         console.log(err);
+        //     else {
+        //         var val= event['args']['value'].toString();                                                        
+        //     }
+        // });
     }
 
     createFreelanceVault() {
@@ -126,9 +145,9 @@ class Vault extends React.Component {
         return new Promise((resolve, reject) => {
             reader.onload = () => {
                 try {
-                    const ipfsApi = IpfsApi('localhost', 5001);
+                    //const ipfsApi = IpfsApi('localhost', 5001);
                     const arrayBuffer = buffer.Buffer(reader.result);
-                    ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
+                    this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
                         if (err) {
                             reject(err);
                         }
@@ -189,7 +208,6 @@ class Vault extends React.Component {
         const hashStr = bs58.encode(hashBytes)
         return hashStr
     }
-
 
     goToAddDocument() {
         document.getElementById("uploadedDocument").value = "";
