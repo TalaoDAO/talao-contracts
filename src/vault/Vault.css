@@ -10,17 +10,23 @@ textarea {
 table thead tr th {
     text-align: left;
     font-size: smaller;
+    padding-right: 20px;
 }
 
 table tbody tr td {
     padding-left: 0;
     text-align: left;
-    padding-right: 5px;
+    padding-right: 20px;
 }
 
 .etherum-address {
     font-size: 11px;
     color: #bbb; 
+}
+
+.etherum-address-white {
+    font-size: 11px;
+    color: #fff; 
 }
 
 .upload-button {
