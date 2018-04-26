@@ -176,6 +176,12 @@ class Vault extends React.Component {
         this.uploadToIpfs(this.state.uploadedDocument[0]).then(result => {
 
             var docId = this.getBytes32FromIpfsHash(result[0].path);
+
+            // If it's the first doc it's the identity doc
+            if (this.state.documents === null || this.state.documents.length === 0) {
+                this.setState({ description: 'Identity document', keywords: 'ID' });
+            }
+
             var description = window.web3.utils.fromAscii(this.state.description);
             var keywords = window.web3.utils.fromAscii(this.state.keywords);
 
@@ -352,7 +358,7 @@ class Vault extends React.Component {
                             <td>{document.keywords}</td>
                             <td>{this.renderQrCode(document.address, 20)}</td>
                             <td>
-                                <a onClick={() => this.removeDocument(document.address)}>
+                                <a onClick={() => this.removeDocument(document.address)} style={index === 0 ? { display: 'none' } : {}}>
                                     <FontAwesomeIcon icon={faTrash} />
                                 </a>
                             </td>
@@ -435,7 +441,11 @@ class Vault extends React.Component {
 
     renderQrCode(address, size) {
         if (address) {
-            return (<QrCode value={address} size={size} />);
+            return (
+                <div className="pb20">
+                    <QrCode value={address} size={size} />
+                </div>
+            );
         }
     }
 
@@ -444,7 +454,7 @@ class Vault extends React.Component {
             <div>
                 <div className="pb20" style={this.state.view === 'vault' ? {} : { display: 'none' }}>
                     <h1>My account</h1>
-                    <p className="etherum-address pb20">Account @: {this.context.web3.selectedAccount}</p>
+                    <p className="etherum-address">Account @: {this.context.web3.selectedAccount}</p>
                     {this.renderQrCode(this.context.web3.selectedAccount, 100)}
                     {this.renderVault(this.state.vaultAddress)}
                 </div>
