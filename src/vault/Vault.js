@@ -26,10 +26,6 @@ class Vault extends React.Component {
 
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
-<<<<<<< HEAD
-=======
-
->>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
             vaultContract: null,
             vaultEvent: null,
             vaultAddress: '',
@@ -102,7 +98,7 @@ class Vault extends React.Component {
                             if (res === true) {
                                 //we add only th document alive and not removed
                                 this.state.vaultContract.methods.getKeywordsNumber(docId).call().then(number => {
-                                   this.pushDocument(number,docId,description);
+                                    this.pushDocument(number, docId, description);
                                 });
                             }
                         });
@@ -118,19 +114,17 @@ class Vault extends React.Component {
     }
 
     componentWillUnmount() {
-        this.eventVaultCreated.stopWatching( () => {} );
-        this.eventDocAdded.stopWatching( () => {} );
-        this.eventVaultLog.stopWatching( () => {} );
+        this.eventVaultCreated.stopWatching(() => { });
+        this.eventDocAdded.stopWatching(() => { });
+        this.eventVaultLog.stopWatching(() => { });
     }
 
-    pushDocument(number, docId, description)
-    {
+    pushDocument(number, docId, description) {
         var keywords = '';
         var promises = [];
         for (let index = 0; index < number; index++) {
-
             promises.push(this.state.vaultContract.methods.getKeywordsByIndex(docId, index).call().then(result => {
-                keywords = (keywords=='' ? ''  : keywords+'') + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
+                keywords = (keywords === '' ? '' : keywords + '') + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
             }));
         }
 
@@ -140,7 +134,7 @@ class Vault extends React.Component {
                 keywords: keywords,
                 address: this.getIpfsHashFromBytes32(docId)
             });
-    
+
             this.forceUpdate();
         });
     }
@@ -170,7 +164,7 @@ class Vault extends React.Component {
                         this.pushDocument(number, docId, description);
                         this.goToVault();
                     });
-                    
+
                 }
             }
         });
@@ -181,7 +175,7 @@ class Vault extends React.Component {
                 console.log(err);
             else {
                 if (event['blockNumber'] > this.state.firstBlock) {
-                    if (event['args']['happened'] == 2) {
+                    if (event['args']['happened'] === 2) {
                         var index = this.state.documents.findIndex((d, i, o) => d && d.address === this.getIpfsHashFromBytes32(event['args']['documentId']));
                         this.state.documents.splice(index, 1);
                         this.forceUpdate();
@@ -445,7 +439,7 @@ class Vault extends React.Component {
                             </div>
                             <div className="pb20">
                                 <span onClick={this.openUpload} className="upload-button"><FontAwesomeIcon icon={faUpload} />&nbsp;<span ref={span => this.fileDownload = span}>Choose a file...</span></span>
-                                <input type="file" ref={input => this.uploadElement = input} id="uploadedDocument" name="uploadedDocument" onChange={this.handleFileChange} style={{width:0}}/>
+                                <input type="file" ref={input => this.uploadElement = input} id="uploadedDocument" name="uploadedDocument" onChange={this.handleFileChange} style={{ width: 0 }} />
                             </div>
                             <div>
                                 <Button value="Cancel" icon={faCheck} onClick={this.goToVault} />
@@ -474,11 +468,11 @@ class Vault extends React.Component {
         else {
             return (
                 <div className="box blue">
-                    <p className="big" style={this.state.waiting ? {display : 'none'}: {}}>
+                    <p className="big" style={this.state.waiting ? { display: 'none' } : {}}>
                         To start, you must create a vault<br />
                         <Button value="Create Your Vault" icon={faFolder} onClick={this.createFreelanceVault} />
                     </p>
-                    <p style={this.state.waiting ? {}: {display : 'none'}}>
+                    <p style={this.state.waiting ? {} : { display: 'none' }}>
                         Waiting for vault to be created...
                     </p>
                 </div>
