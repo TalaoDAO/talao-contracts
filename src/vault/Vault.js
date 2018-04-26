@@ -392,7 +392,7 @@ class Vault extends React.Component {
                 (document, index) =>
                     (
                         <tr key={index}>
-                            <td>{document.description}<br /><span className="etherum-address">Doc @: {document.address}</span></td>
+                            <td>{document.description}<br /><span className="etherum-address-white">Doc @: {document.address}</span></td>
                             <td>{document.keywords}</td>
                             <td>{this.renderQrCode(document.address, 20)}</td>
                             <td>
