@@ -73,7 +73,6 @@ contract Vault is Ownable {
         talentsDocuments[documentId].index = documentIndex.push(documentId)-1;
         talentsDocuments[documentId].keywords.push(keyword);
 
-        emit VaultLog(msg.sender, VaultLife.DocumentAdded, documentId);
         emit VaultDocAdded(msg.sender,documentId,description);
         return true;
     }
@@ -111,8 +110,21 @@ contract Vault is Ownable {
             delete talentsDocuments[documentId]; //set isValid to false
             assert(talentsDocuments[documentId].isAlive==false);
             emit VaultLog(msg.sender, VaultLife.DocumentRemoved, documentId);
-            
         }
+    }
+
+    /*
+    get indication to know quickly if document removed or not
+    accessibility : only for authorized user
+    */
+    function getDocumentIsAlive(bytes32 documentId) 
+        allowance
+        constant
+        public
+        returns(bool) 
+    {
+        require(documentId != 0);
+        return(talentsDocuments[documentId].isAlive);
     }
 
     /*

@@ -35,6 +35,7 @@ class Vault extends React.Component {
             description: '',
             keywords: '',
             uploadedDocument: null,
+            firstBlock : null
         }
 
         this.ipfsApi = IpfsApi('localhost', 5001, { protocol: 'http' });
@@ -50,43 +51,50 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
-        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAddress => {
-            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                this.createVaultCont(vaultAddress);
+        this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
+            if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
+                this.createVaultCont(vaultAdress);
+
                 this.setState({
-                    vaultAddress: vaultAddress
+                    vaultAddress: vaultAdress
                 });
-                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+                
+                //init document list
+                this.state.vaultContract.getPastEvents('VaultDocAdded', {}, {fromBlock: 0, toBlock: 'latest'}).then( events => {
                     events.forEach((event => {
                         var initialDocId = event['returnValues']['documentId'].toString();
                         var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
                         var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-                        //get Keywords
-                        //this.trimToascii();
-                        this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
-                            this.keywords = '';
-                            var promises = [];
-                            for (let index = 0; index < number; index++) {
 
-                                promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId, index).call().then(result => {
-                                    this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
-                                }));
-                            }
-
-                            Promise.all(promises).then(() => {
-                                this.state.documents.push({
-                                    description: description,
-                                    keywords: this.keywords,
-                                    address: docId
+                        this.state.vaultContract.methods.getDocumentIsAlive (initialDocId).call().then(res => {
+                            if(res === true)
+                            {
+                                //we add only th document alive and not removed
+                                this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
+                                    this.keywords = '';
+                                    var promises=[];
+                                    for (let index = 0; index < number; index++) {
+                                        
+                                        promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId,index).call().then(result => {
+                                            this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
+                                        }));
+                                    }
+    
+                                    Promise.all(promises).then (() => {
+                                        this.state.documents.push({
+                                            description: description,
+                                            keywords: this.keywords,
+                                            address: docId
+                                        });
+                                        
+                                        this.keywords = '';
+    
+                                        this.forceUpdate();
+                                    });
                                 });
-
-                                this.keywords = '';
-
-                                this.forceUpdate();
-                            });
+                            }
                         });
                     }));
-                    this.forceUpdate();
                 });
 
             } else {
@@ -107,17 +115,47 @@ class Vault extends React.Component {
             vaultContract: vaultContract
         });
 
-        this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
-        this.contractObjectOldWeb3.at(vaultAdress);
+        //get initbock to manage event
+        window.web3.eth.getBlockNumber().then(blockNumber => {
+            this.setState({
+              firstBlock: blockNumber
+            })
+          });
 
-        // this.event = this.contractObjectOldWeb3.VaultDocAdded({},{fromBlock: 0, toBlock: 'latest'});
-        // this.event.watch( (err,event) => {
-        //     if(err)
-        //         console.log(err);
-        //     else {
-        //         var val= event['args']['value'].toString();                                                        
-        //     }
-        // });
+        this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
+        var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(vaultAdress);
+
+        this.eventDocAdded = vaultWithOldWeb3.VaultDocAdded();
+        this.eventDocAdded.watch( (err,event) => {
+            if(err)
+                console.log(err);
+            else {
+                if(event['blockNumber']>this.state.firstBlock) {
+                    this.state.documents.push({
+                        description: window.web3.utils.hexToAscii(event['args']['documentId']).replace(/\u0000/g, ''),
+                        keywords: '',
+                        address: event['args']['documentId'].toString()
+                    });
+                    this.goToVault();  
+                }                                 
+            }
+        });
+
+        this.eventVaultLog = vaultWithOldWeb3.VaultLog();
+        this.eventVaultLog.watch( (err,event) => {
+            if(err)
+                console.log(err);
+            else {
+                if(event['blockNumber']>this.state.firstBlock) {
+                    alert('@doc : ' + event['args']['documentId'] + '\n' + 'vaultLife:' + event['args']['happened']);
+                    if(event['args']['happened'] == 2) {
+                        var index = this.state.documents.findIndex((d, i, o) => d && d.address === event['args']['documentId']);
+                        this.state.documents.splice(index, 1);
+                        this.forceUpdate();
+                    }
+                }                                 
+            }
+        });
     }
 
     createFreelanceVault() {
@@ -130,7 +168,6 @@ class Vault extends React.Component {
     }
 
     addDocument() {
-
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
             alert("No document uploaded. Please add a document.");
@@ -144,22 +181,16 @@ class Vault extends React.Component {
             var keywords = window.web3.utils.fromAscii(this.state.keywords);
 
             if (this.state.vaultContract != null) {
-                this.state.vaultContract.methods.addDocument(docId, description, keywords).send(
-                    {
-                        from: this.context.web3.selectedAccount,
-                        gas: 4700000,
-                        gasPrice: 100000000000
-                    }).on('error', error => {
-                        alert("An error has occured when adding your document (ERR: " + error + ")");
-                        this.goToVault();
-                        return;
-                    });
-                this.state.documents.push({
-                    description: this.state.description,
-                    keywords: this.state.keywords,
-                    address: result[0].path
+            this.state.vaultContract.methods.addDocument(docId, description, keywords).send(
+                {
+                    from: this.context.web3.selectedAccount,
+                    gas: 4700000,
+                    gasPrice: 100000000000
+                }).on('error', error => {
+                    alert("An error has occured when adding your document (ERR: " + error + ")");
+                    this.goToVault();
+                    return;
                 });
-                this.goToVault();
             }
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
@@ -201,9 +232,6 @@ class Vault extends React.Component {
                 alert("An error has occured when removing your document (ERR: " + error + ")");
                 return;
             });
-        var index = this.state.documents.findIndex((d, i, o) => d && d.address === address);
-        this.state.documents.splice(index, 1);
-        this.forceUpdate();
     }
 
     addKeywords(docId, keyword) {
