@@ -23,8 +23,11 @@ class Vault extends React.Component {
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
         );
 
+        const vaultOldFactoryContract = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
+
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
+            
             vaultContract: null,
             vaultEvent: null,
             vaultAddress: '',
@@ -50,6 +53,29 @@ class Vault extends React.Component {
     }
 
     componentDidMount() {
+
+                //get initbock to manage event
+        window.web3.eth.getBlockNumber().then(blockNumber => {
+            this.setState({
+                firstBlock: blockNumber
+            })
+        });
+        var vaultOldFactoryContract = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI));
+        var val = vaultOldFactoryContract.at(process.env.REACT_APP_VAULTFACTORY_ADDRESS);
+        //Get event when
+        this.eventVaultCreated = val.VaultCreation();
+        this.eventVaultCreated.watch( (err,event) => {
+            if(err)
+                console.log(err);
+            else {
+                if(event['blockNumber']>this.state.firstBlock) {
+                    this.setState({
+                        vaultAddress: event['args']['vaultadddress']
+                    });
+                }                      
+            }
+        });
+
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
                 this.createVaultCont(vaultAdress);
@@ -104,6 +130,11 @@ class Vault extends React.Component {
         })
     }
 
+    getKeyword()
+    {
+
+    }
+
     createVaultCont(vaultAdress) {
         const vaultContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULT_ABI),
@@ -113,13 +144,6 @@ class Vault extends React.Component {
         this.setState({
             vaultContract: vaultContract
         });
-
-        //get initbock to manage event
-        window.web3.eth.getBlockNumber().then(blockNumber => {
-            this.setState({
-              firstBlock: blockNumber
-            })
-          });
 
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
         var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(vaultAdress);
@@ -159,11 +183,13 @@ class Vault extends React.Component {
 
     createFreelanceVault() {
         this.state.vaultFactoryContract.methods.CreateVaultContract().send(
-            {
-                from: this.context.web3.selectedAccount,
-                gas: 4700000,
-                gasPrice: 100000000000
-            });
+        {
+            from: this.context.web3.selectedAccount,
+            gas: 4700000,
+            gasPrice: 100000000000
+        }).then(()=> {
+            this.forceUpdate();
+        });
     }
 
     addDocument() {
