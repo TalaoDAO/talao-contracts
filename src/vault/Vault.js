@@ -6,6 +6,7 @@ import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import faFolder from '@fortawesome/fontawesome-free-solid/faFolder';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
 import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
+import faUpload from '@fortawesome/fontawesome-free-solid/faUpload';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
 import bs58 from 'bs58';
@@ -25,6 +26,10 @@ class Vault extends React.Component {
 
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
+<<<<<<< HEAD
+=======
+
+>>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
             vaultContract: null,
             vaultEvent: null,
             vaultAddress: '',
@@ -48,6 +53,7 @@ class Vault extends React.Component {
         this.handleFileChange = this.handleFileChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.removeDocument = this.removeDocument.bind(this);
+        this.openUpload = this.openUpload.bind(this);
     }
 
     componentDidMount() {
@@ -64,15 +70,16 @@ class Vault extends React.Component {
         var val = vaultOldFactoryContract.at(process.env.REACT_APP_VAULTFACTORY_ADDRESS);
 
         this.eventVaultCreated = val.VaultCreation();
-        this.eventVaultCreated.watch( (err,event) => {
-            if(err)
+        this.eventVaultCreated.watch((err, event) => {
+            if (err)
                 console.log(err);
             else {
-                if(event['blockNumber']>this.state.firstBlock) {
+                if (event['blockNumber'] > this.state.firstBlock) {
                     this.setState({
-                        vaultAddress: event['args']['vaultadddress']
+                        vaultAddress: event['args']['vaultadddress'],
+                        waiting: false
                     });
-                }                      
+                }
             }
         });
 
@@ -110,6 +117,7 @@ class Vault extends React.Component {
         })
     }
 
+<<<<<<< HEAD
     componentWillUnmount() {
         this.eventVaultCreated.stopWatching( () => {} );
         this.eventDocAdded.stopWatching( () => {} );
@@ -136,6 +144,9 @@ class Vault extends React.Component {
     
             this.forceUpdate();
         });
+=======
+    getKeyword() {
+>>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
     }
 
     createVaultCont(vaultAdress) {
@@ -185,12 +196,26 @@ class Vault extends React.Component {
     }
 
     createFreelanceVault() {
+        this.setState({ waiting: true });
         this.state.vaultFactoryContract.methods.CreateVaultContract().send(
+<<<<<<< HEAD
         {
             from: this.context.web3.selectedAccount,
             gas: 4700000,
             gasPrice: 100000000000
         });
+=======
+            {
+                from: this.context.web3.selectedAccount,
+                gas: 4700000,
+                gasPrice: 100000000000
+            })
+            .on('error', error => {
+                alert("An error has occured when creating your vault (ERR: " + error + ")");
+                this.setState({ waiting: false });
+                return;
+            });
+>>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
     }
 
     addDocument() {
@@ -322,14 +347,21 @@ class Vault extends React.Component {
     handleFileChange(event) {
         const target = event.target;
         const files = target.files;
-        const name = target.name;
-        this.setState({
-            [name]: files
-        });
+        if (files.length > 0) {
+            this.fileDownload.innerHTML = files[0].name;
+            const name = target.name;
+            this.setState({
+                [name]: files
+            });
+        }
     }
 
     handleSubmit(event) {
         event.preventDefault();
+    }
+
+    openUpload(event) {
+        this.uploadElement.click();
     }
 
     renderDocuments(documents, vaultAddress, view) {
@@ -414,17 +446,18 @@ class Vault extends React.Component {
                                 <div>
                                     <textarea id="keywords" name="keywords" value={this.state.keywords} onChange={this.handleChange} />
                                 </div>
-                                <div>
+                                <div className="pb20">
                                     <label htmlFor="uploadedDocument">Upload your references certification</label>
                                 </div>
                             </div>
                             <div style={this.state.documents === null || this.state.documents.length === 0 ? {} : { display: 'none' }}>
-                                <div>
+                                <div className="pb20">
                                     <label htmlFor="uploadedDocument">upload your ID card, passport or driver license</label>
                                 </div>
                             </div>
-                            <div>
-                                <input type="file" id="uploadedDocument" name="uploadedDocument" onChange={this.handleFileChange} />
+                            <div className="pb20">
+                                <span onClick={this.openUpload} className="upload-button"><FontAwesomeIcon icon={faUpload} />&nbsp;<span ref={span => this.fileDownload = span}>Choose a file...</span></span>
+                                <input type="file" ref={input => this.uploadElement = input} id="uploadedDocument" name="uploadedDocument" onChange={this.handleFileChange} style={{width:0}}/>
                             </div>
                             <div>
                                 <Button value="Cancel" icon={faCheck} onClick={this.goToVault} />
@@ -453,9 +486,12 @@ class Vault extends React.Component {
         else {
             return (
                 <div className="box blue">
-                    <p className="big">
+                    <p className="big" style={this.state.waiting ? {display : 'none'}: {}}>
                         To start, you must create a vault<br />
                         <Button value="Create Your Vault" icon={faFolder} onClick={this.createFreelanceVault} />
+                    </p>
+                    <p style={this.state.waiting ? {}: {display : 'none'}}>
+                        Waiting for vault to be created...
                     </p>
                 </div>
             );

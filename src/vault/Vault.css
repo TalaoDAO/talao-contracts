@@ -22,3 +22,9 @@ table tbody tr td {
     font-size: 11px;
     color: #bbb; 
 }
+
+.upload-button {
+    background-color: black;
+    color: #fff;
+    padding: 7px;
+}
