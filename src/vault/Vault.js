@@ -26,10 +26,6 @@ class Vault extends React.Component {
 
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
-<<<<<<< HEAD
-=======
-
->>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
             vaultContract: null,
             vaultEvent: null,
             vaultAddress: '',
