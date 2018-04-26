@@ -23,11 +23,8 @@ class Vault extends React.Component {
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
         );
 
-        const vaultOldFactoryContract = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
-
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
-            
             vaultContract: null,
             vaultEvent: null,
             vaultAddress: '',
@@ -55,15 +52,17 @@ class Vault extends React.Component {
 
     componentDidMount() {
 
-                //get initbock to manage event
+        //get initbock to manage event
         window.web3.eth.getBlockNumber().then(blockNumber => {
             this.setState({
                 firstBlock: blockNumber
             })
         });
+
+        //create an event for Contract creation
         var vaultOldFactoryContract = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI));
         var val = vaultOldFactoryContract.at(process.env.REACT_APP_VAULTFACTORY_ADDRESS);
-        //Get event when
+
         this.eventVaultCreated = val.VaultCreation();
         this.eventVaultCreated.watch( (err,event) => {
             if(err)
@@ -88,34 +87,15 @@ class Vault extends React.Component {
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
                     events.forEach((event => {
-                        var initialDocId = event['returnValues']['documentId'].toString();
-                        var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
+                        var docId = event['returnValues']['documentId'].toString();
+                        //var docId = this.getIpfsHashFromBytes32(event['returnValues']['documentId']);
                         var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
 
-                        this.state.vaultContract.methods.getDocumentIsAlive(initialDocId).call().then(res => {
+                        this.state.vaultContract.methods.getDocumentIsAlive(docId).call().then(res => {
                             if (res === true) {
                                 //we add only th document alive and not removed
-                                this.state.vaultContract.methods.getKeywordsNumber(initialDocId).call().then(number => {
-                                    this.keywords = '';
-                                    var promises = [];
-                                    for (let index = 0; index < number; index++) {
-
-                                        promises.push(this.state.vaultContract.methods.getKeywordsByIndex(initialDocId, index).call().then(result => {
-                                            this.keywords = this.keywords + ',' + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
-                                        }));
-                                    }
-
-                                    Promise.all(promises).then(() => {
-                                        this.state.documents.push({
-                                            description: description,
-                                            keywords: this.keywords,
-                                            address: docId
-                                        });
-
-                                        this.keywords = '';
-
-                                        this.forceUpdate();
-                                    });
+                                this.state.vaultContract.methods.getKeywordsNumber(docId).call().then(number => {
+                                   this.pushDocument(number,docId,description);
                                 });
                             }
                         });
@@ -130,9 +110,32 @@ class Vault extends React.Component {
         })
     }
 
-    getKeyword()
-    {
+    componentWillUnmount() {
+        this.eventVaultCreated.stopWatching( () => {} );
+        this.eventDocAdded.stopWatching( () => {} );
+        this.eventVaultLog.stopWatching( () => {} );
+    }
 
+    pushDocument(number, docId, description)
+    {
+        var keywords = '';
+        var promises = [];
+        for (let index = 0; index < number; index++) {
+
+            promises.push(this.state.vaultContract.methods.getKeywordsByIndex(docId, index).call().then(result => {
+                keywords = (keywords=='' ? ''  : keywords+'') + window.web3.utils.hexToAscii(result).replace(/\u0000/g, '');
+            }));
+        }
+
+        Promise.all(promises).then(() => {
+            this.state.documents.push({
+                description: description,
+                keywords: keywords,
+                address: this.getIpfsHashFromBytes32(docId)
+            });
+    
+            this.forceUpdate();
+        });
     }
 
     createVaultCont(vaultAdress) {
@@ -154,12 +157,13 @@ class Vault extends React.Component {
                 console.log(err);
             else {
                 if (event['blockNumber'] > this.state.firstBlock) {
-                    this.state.documents.push({
-                        description: window.web3.utils.hexToAscii(event['args']['documentId']).replace(/\u0000/g, ''),
-                        keywords: '',
-                        address: event['args']['documentId'].toString()
+                    var docId = event['args']['documentId'];
+                    var description = window.web3.utils.hexToAscii(event['args']['description']).replace(/\u0000/g, '')
+                    this.state.vaultContract.methods.getKeywordsNumber(docId).call().then(number => {
+                        this.pushDocument(number, docId, description);
+                        this.goToVault();
                     });
-                    this.goToVault();
+                    
                 }
             }
         });
@@ -170,9 +174,8 @@ class Vault extends React.Component {
                 console.log(err);
             else {
                 if (event['blockNumber'] > this.state.firstBlock) {
-                    alert('@doc : ' + event['args']['documentId'] + '\nvaultLife:' + event['args']['happened']);
-                    if (event['args']['happened'] === 2) {
-                        var index = this.state.documents.findIndex((d, i, o) => d && d.address === event['args']['documentId']);
+                    if (event['args']['happened'] == 2) {
+                        var index = this.state.documents.findIndex((d, i, o) => d && d.address === this.getIpfsHashFromBytes32(event['args']['documentId']));
                         this.state.documents.splice(index, 1);
                         this.forceUpdate();
                     }
@@ -187,8 +190,6 @@ class Vault extends React.Component {
             from: this.context.web3.selectedAccount,
             gas: 4700000,
             gasPrice: 100000000000
-        }).then(()=> {
-            this.forceUpdate();
         });
     }
 
@@ -271,10 +272,6 @@ class Vault extends React.Component {
                 from: this.context.web3.selectedAccount,
                 gas: 4700000,
                 gasPrice: 100000000000
-            })
-            .on('transactionHash', hash => {
-                alert("Your keywords has been added (TX: " + hash + ")");
-                this.setState({ createVaultButton: false });
             })
             .on('error', (error) => {
                 alert("An error has occured when adding keywords (ERR: " + error + ")");
