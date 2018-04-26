@@ -73,7 +73,6 @@ contract Vault is Ownable {
         talentsDocuments[documentId].index = documentIndex.push(documentId)-1;
         talentsDocuments[documentId].keywords.push(keyword);
 
-        emit VaultLog(msg.sender, VaultLife.DocumentAdded, documentId);
         emit VaultDocAdded(msg.sender,documentId,description);
         return true;
     }
