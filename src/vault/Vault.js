@@ -145,16 +145,6 @@ class Vault extends React.Component {
             vaultContract: vaultContract
         });
 
-<<<<<<< HEAD
-=======
-        //get initbock to manage event
-        window.web3.eth.getBlockNumber().then(blockNumber => {
-            this.setState({
-                firstBlock: blockNumber
-            })
-        });
-
->>>>>>> 988b966cd288673133f1c36ed3784d62be84d876
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
         var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(vaultAdress);
 
