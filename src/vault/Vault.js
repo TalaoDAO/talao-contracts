@@ -117,7 +117,6 @@ class Vault extends React.Component {
         })
     }
 
-<<<<<<< HEAD
     componentWillUnmount() {
         this.eventVaultCreated.stopWatching( () => {} );
         this.eventDocAdded.stopWatching( () => {} );
@@ -144,9 +143,6 @@ class Vault extends React.Component {
     
             this.forceUpdate();
         });
-=======
-    getKeyword() {
->>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
     }
 
     createVaultCont(vaultAdress) {
@@ -198,13 +194,6 @@ class Vault extends React.Component {
     createFreelanceVault() {
         this.setState({ waiting: true });
         this.state.vaultFactoryContract.methods.CreateVaultContract().send(
-<<<<<<< HEAD
-        {
-            from: this.context.web3.selectedAccount,
-            gas: 4700000,
-            gasPrice: 100000000000
-        });
-=======
             {
                 from: this.context.web3.selectedAccount,
                 gas: 4700000,
@@ -215,7 +204,6 @@ class Vault extends React.Component {
                 this.setState({ waiting: false });
                 return;
             });
->>>>>>> e94361a532a37b0ba87f6a33e62a6dabffe20fb3
     }
 
     addDocument() {
