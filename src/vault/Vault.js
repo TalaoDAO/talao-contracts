@@ -6,11 +6,11 @@ import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import faFolder from '@fortawesome/fontawesome-free-solid/faFolder';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
 import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
-import './Vault.css';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
 import bs58 from 'bs58';
 import QrCode from 'qrcode.react';
+import './Vault.css';
 
 class Vault extends React.Component {
 
@@ -31,9 +31,10 @@ class Vault extends React.Component {
             canCreateVault: false,
             documents: [],
             view: 'vault',
+            waiting: false,
             description: '',
             keywords: '',
-            uploadedDocument: null
+            uploadedDocument: null,
         }
 
         this.ipfsApi = IpfsApi('localhost', 5001, { protocol: 'http' });
@@ -135,7 +136,7 @@ class Vault extends React.Component {
             alert("No document uploaded. Please add a document.");
             return;
         }
-
+        this.setState({waiting: true});
         this.uploadToIpfs(this.state.uploadedDocument[0]).then(result => {
 
             var docId = this.getBytes32FromIpfsHash(result[0].path);
@@ -241,12 +242,16 @@ class Vault extends React.Component {
             view: 'add-document',
             description: '',
             keywords: '',
-            uploadedDocument: null
+            uploadedDocument: null,
+            waiting: false
         });
     }
 
     goToVault() {
-        this.setState({ view: 'vault' });
+        this.setState({ 
+            view: 'vault',
+            waiting: false
+        });
     }
 
     handleChange(event) {
@@ -339,7 +344,7 @@ class Vault extends React.Component {
                 <p>Add a reference to your vault</p>
                 <div className="pb20">
                     <div className="box yellow mb20">
-                        <form onSubmit={this.handleSubmit}>
+                        <form onSubmit={this.handleSubmit} style={!this.state.waiting ? {} : {display: 'none'}}>
                             <div>
                                 <label htmlFor="description">Description</label>
                             </div>
@@ -363,6 +368,7 @@ class Vault extends React.Component {
                                 <Button value="Validate" icon={faCheck} onClick={this.addDocument} />
                             </div>
                         </form>
+                        <div style={this.state.waiting ? {} : {display: 'none'}}>Waiting for document to be registered...</div>
                     </div>
                 </div>
             </div>
