@@ -27,7 +27,6 @@ class Vault extends React.Component {
         this.state = {
             vaultFactoryContract: vaultFactoryCont,
             vaultContract: null,
-            vaultEvent: null,
             vaultAddress: '',
             canCreateVault: false,
             documents: [],
@@ -36,7 +35,8 @@ class Vault extends React.Component {
             description: '',
             keywords: '',
             uploadedDocument: null,
-            firstBlock: null
+            firstBlock: null,
+            currentAccount: null
         }
 
         this.ipfsApi = IpfsApi('localhost', 5001, { protocol: 'http' });
@@ -79,14 +79,28 @@ class Vault extends React.Component {
             }
         });
 
+        this.getVaultAndDocuments();
+
+    }
+
+    getVaultAndDocuments() {
+
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
-                this.createVaultCont(vaultAdress);
-
+                
                 this.setState({
-                    vaultAddress: vaultAdress
+                    vaultAddress: vaultAdress,
+                    documents: [],
+                    view: 'vault',
+                    canCreateVault: false,
+                    description: '',
+                    keywords: '',
+                    uploadedDocument: null,
+                    currentAccount: this.context.web3.selectedAccount
                 });
 
+                this.createVaultCont(vaultAdress);
+                
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
                     events.forEach((event => {
@@ -107,10 +121,26 @@ class Vault extends React.Component {
 
             } else {
                 this.setState({
+                    vaultAddress: null,
+                    documents: [],
+                    view: 'vault',
                     canCreateVault: true,
+                    waiting: false,
+                    description: '',
+                    keywords: '',
+                    uploadedDocument: null,
+                    vaultContract: null,
+                    currentAccount: this.context.web3.selectedAccount
                 })
             }
         })
+    }
+
+    componentDidUpdate() {
+        if (this.state.currentAccount !== null && this.state.currentAccount !== this.context.web3.selectedAccount)
+        {
+            this.getVaultAndDocuments();
+        }    
     }
 
     componentWillUnmount() {
