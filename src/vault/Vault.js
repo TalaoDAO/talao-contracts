@@ -86,6 +86,7 @@ class Vault extends React.Component {
     componentDidUpdate() {
         if (this.state.currentAccount !== null && this.state.currentAccount !== this.context.web3.selectedAccount) {
             this.getVaultAndDocuments();
+            console.log('j update');
         }
     }
 
@@ -190,7 +191,7 @@ class Vault extends React.Component {
                     var description = window.web3.utils.hexToAscii(event['args']['description']).replace(/\u0000/g, '')
                     this.state.vaultContract.methods.getKeywordsNumber(docId).call().then(number => {
                         this.pushDocument(number, docId, description);
-                        Consol.log('ajout ok de :'+ docId);
+                        console.log('ajout ok de :'+ docId);
                         this.goToVault();
                     });
 
@@ -205,10 +206,10 @@ class Vault extends React.Component {
             else {
                 if (event['blockNumber'] > this.state.firstBlock) {
                     if (event['args']['happened'] == 2) {
-                        Consol.log('event: ' + event['args']['happened']);
+                        console.log('event: ' + event['args']['happened']);
                         var index = this.state.documents.findIndex((d, i, o) => d && d.address === this.getIpfsHashFromBytes32(event['args']['documentId']));
                         this.state.documents.splice(index, 1);
-                        Consol.log('Spupression de doc ok');
+                        console.log('Spupression de doc ok');
                         this.forceUpdate();
                     }
                 }
@@ -257,12 +258,12 @@ class Vault extends React.Component {
                         gas: 4700000,
                         gasPrice: 100000000000
                     }).on('transactionHash', (hash) => {
-                        Console.log('ajout de document : Hash' + hash);
+                        console.log('ajout de document : Hash' + hash);
                     }).on('receipt', (receipt) => {
-                        Console.log('ajout de document : receipt' + receipt);
+                        console.log('ajout de document : receipt' + receipt);
                     }).on('confirmation', (confirmationNumber, receipt) => {
                         if(confirmationNumber == 1)
-                        Console.log('confirmation de ajout de doc ');
+                        console.log('confirmation de ajout de doc ');
                     }).on('error', error => {
                         alert("An error has occured when adding your document (ERR: " + error + ")");
                         this.goToVault();
@@ -288,7 +289,7 @@ class Vault extends React.Component {
                             reject(err);
                         }
                         resolve(result);
-                        Console.log('ajout dans ipfs OK');
+                        console.log('ajout dans ipfs OK');
                     });
                 }
                 catch (e) {
@@ -309,12 +310,12 @@ class Vault extends React.Component {
                 gas: 4700000,
                 gasPrice: 100000000000
             }).on('transactionHash', (hash) => {
-                Console.log('remove de document : Hash' + hash);
+                console.log('remove de document : Hash' + hash);
             }).on('receipt', (receipt) => {
-                Console.log('remove de document : receipt' + receipt);
+                console.log('remove de document : receipt' + receipt);
             }).on('confirmation', (confirmationNumber, receipt) => {
                 if(confirmationNumber == 1)
-                    Console.log('confirmation de remove de doc ');
+                console.log('confirmation de remove de doc ');
             }).on('error', error => {
                 alert("An error has occured when removing your document (ERR: " + error + ")");
                 return;
