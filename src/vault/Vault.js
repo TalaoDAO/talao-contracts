@@ -87,7 +87,7 @@ class Vault extends React.Component {
 
         this.state.vaultFactoryContract.methods.FreelanceVault(this.context.web3.selectedAccount).call().then(vaultAdress => {
             if (vaultAdress !== '0x0000000000000000000000000000000000000000') {
-                
+
                 this.setState({
                     vaultAddress: vaultAdress,
                     documents: [],
@@ -100,7 +100,7 @@ class Vault extends React.Component {
                 });
 
                 this.createVaultCont(vaultAdress);
-                
+
                 //init document list
                 this.state.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
                     events.forEach((event => {
@@ -137,10 +137,9 @@ class Vault extends React.Component {
     }
 
     componentDidUpdate() {
-        if (this.state.currentAccount !== null && this.state.currentAccount !== this.context.web3.selectedAccount)
-        {
+        if (this.state.currentAccount !== null && this.state.currentAccount !== this.context.web3.selectedAccount) {
             this.getVaultAndDocuments();
-        }    
+        }
     }
 
     componentWillUnmount() {
@@ -262,8 +261,10 @@ class Vault extends React.Component {
                     });
             }
         },
-            err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
-        );
+            err => {
+                alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
+                this.goToVault();
+            });
     }
 
     uploadToIpfs(documentToUpload) {
