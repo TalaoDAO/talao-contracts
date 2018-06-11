@@ -48,10 +48,11 @@ contract Vault is Ownable {
     add new certification document to Talent Vault
     accessibility : only for authorized user and owner of this contract
     */
-    function Vault(address token) 
+    function Vault(address token, bytes32 documentId, bytes32 description, bytes32 keyword) 
         public 
     {
         myToken = TalaoToken(token);
+        addDocument(documentId, description, keyword);
     }
 
     /*

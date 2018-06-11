@@ -22,15 +22,6 @@ contract VaultFactory is Ownable {
         myToken = TalaoToken(token);
     }
 
-    function getMyToken() 
-        public
-        returns (address)
-    {
-        SafeMath.add(nbVault,1);
-        //require (nbVault >= 0);
-        return myToken;
-    }
-
     function getNbVault()
         public
         view
@@ -43,7 +34,7 @@ contract VaultFactory is Ownable {
      * Talent can call this method to create a new Vault contract
      *  with the maker being the owner of this new vault
      */
-    function CreateVaultContract ()
+    function CreateVaultContract (bytes32 documentId, bytes32 description, bytes32 keyword, uint256 price)
         public
         returns(address)
     {
@@ -54,8 +45,9 @@ contract VaultFactory is Ownable {
 
         require (agreement == true);
         require(FreelanceVault[msg.sender] == address(0));
-
-        Vault newVault = new Vault(myToken);
+        require(documentId != 0);
+        //myToken.createVaultAccess(price);
+        Vault newVault = new Vault(myToken, documentId, description, keyword);
         FreelanceVault[msg.sender] = address(newVault);
         SafeMath.add(nbVault,1);
         newVault.transferOwnership(msg.sender);
