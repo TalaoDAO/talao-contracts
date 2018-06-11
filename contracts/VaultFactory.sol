@@ -46,7 +46,7 @@ contract VaultFactory is Ownable {
         require (agreement == true);
         require(FreelanceVault[msg.sender] == address(0));
         require(documentId != 0);
-        //myToken.createVaultAccess(price);
+        myToken.createVaultAccess(price);
         Vault newVault = new Vault(myToken, documentId, description, keyword);
         FreelanceVault[msg.sender] = address(newVault);
         SafeMath.add(nbVault,1);
