@@ -1,6 +1,6 @@
 pragma solidity ^0.4.21;
 
-import "./TestContract.sol";
+import "./Talao.sol";
 
 contract Vault is Ownable {
     using SafeMath for uint;
@@ -39,7 +39,7 @@ contract Vault is Ownable {
     modifier allowance () { //require sur l'aggreement
         bool agreement = false;
         uint unused = 0;
-        (agreement, unused) = myToken.AccessAllowance(msg.sender,msg.sender);
+        (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
         require(agreement == true);
         _;
     }

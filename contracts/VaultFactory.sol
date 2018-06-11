@@ -2,7 +2,7 @@
 pragma solidity ^0.4.21;
 
 import "./Vault.sol";
-import "./TestContract.sol";
+import "./Talao.sol";
 
 contract VaultFactory is Ownable {
     uint public nbVault;
@@ -41,7 +41,7 @@ contract VaultFactory is Ownable {
         //Verify using Talao token if sender is authorized to create a Vault
         bool agreement = false;
         uint unused = 0;
-        (agreement, unused) = myToken.AccessAllowance(msg.sender,msg.sender);
+        (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
 
         require (agreement == true);
         require(FreelanceVault[msg.sender] == address(0));
