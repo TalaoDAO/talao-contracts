@@ -1,8 +1,8 @@
-@font-face {
-    src: url(https://fonts.googleapis.com/css?family=Roboto:300,400,500);
-    font-family: 'Roboto';
+
+html, body, #root {
+    height: 100vh;
+    margin: 0;
+    font-family: 'Roboto'
 }
 
-html {
-    font-family: 'Roboto';
-}
+

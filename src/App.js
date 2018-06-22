@@ -1,25 +1,59 @@
 import React from 'react';
-import './App.scss';
-import Button from '@material/react-button/dist';
+import { withStyles } from '@material-ui/core/styles';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { constants } from './constants';
+import Profile from './components/profile/Profile';
+import Menu from './components/menu/Menu';
+import Competencies from './components/competencies/Competencies';
+import Grid from '@material-ui/core/Grid';
+import Hidden from '@material-ui/core/Hidden';
+
+const theme = createMuiTheme(constants.theme);
+
+const styles = theme => 
+  ({
+  root: {
+    height: '100vh',
+  },
+  content: {
+    padding: '20px',
+    background: theme.palette.background.default,
+    overflowY: 'scroll',
+  },
+  rightMenu: {
+    background: theme.palette.background.default,
+  },
+});
 
 class App extends React.Component {
 
-    render() {
-      return (
-        <div>
-          <header>
-            Header
-          </header>
-          <main>
-            <Button className='button-alternate'>
-              Hello World
-            </Button>
-          </main>
-          <footer>
-          </footer>
-        </div>
-      );
-    }
+  render() {
+    return (
+      <div>
+        <MuiThemeProvider theme={theme}>
+          <Grid container className={this.props.classes.root}>
+            <Hidden smDown>
+              <Grid item xs={2}>
+                <Menu />
+              </Grid>
+            </Hidden>
+            <Grid container item xs={12} md={10} className={this.props.classes.content}>
+              <Grid item xs={12} lg={10}>              
+                <Grid container spacing={24}>
+                  <Grid item xs={12}>
+                    <Profile />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Competencies />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </MuiThemeProvider>
+      </div>
+    );
+  }
 }
 
-export default App;
+export default withStyles(styles)(App);

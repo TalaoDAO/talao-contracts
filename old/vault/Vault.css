@@ -1,0 +1,38 @@
+.documents-table table {
+    margin: 0 auto;
+}
+textarea {
+    width: 300px;
+    height: 150px;
+    margin-bottom: 10px;
+}
+
+table thead tr th {
+    text-align: left;
+    font-size: smaller;
+    padding-right: 20px;
+}
+
+table tbody tr td {
+    padding-left: 0;
+    text-align: left;
+    padding-right: 20px;
+    vertical-align: top;
+}
+
+.etherum-address {
+    font-size: 11px;
+    color: #bbb; 
+}
+
+.etherum-address-white {
+    font-size: 11px;
+    color: #fff; 
+}
+
+.upload-button {
+    background-color: black;
+    color: #fff;
+    padding: 7px;
+    cursor: pointer;
+}

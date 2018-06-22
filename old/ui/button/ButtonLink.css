@@ -1,0 +1,8 @@
+a.btn {
+  font-weight: normal;
+  text-decoration: none;
+}
+
+.blue a.btn:hover {
+  color: #0A4178;
+}

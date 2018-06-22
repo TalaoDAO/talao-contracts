@@ -1,0 +1,56 @@
+.btn {
+  margin: 10px;
+  color: white;
+  background-color: #0A4178;
+  border: 2px solid white;
+  transition: all linear .1s;
+  padding: 10px;
+}
+
+.btn:hover {
+  color: #0A4178;
+  background-color: white;
+  background-image: unset;
+}
+
+.btn-inversed {
+  color: #abb2bf;
+  background-color: #282c34;
+  border: 2px solid #abb2bf;
+}
+
+.btn-inversed:hover {
+  color: #282c34;
+  background-color: #abb2bf;
+}
+
+.green .btn {
+  color: white;
+  background-color: #007d50;
+}
+
+.green .btn:hover {
+  color: #007d50;
+  background-color: white;
+}
+
+.yellow .btn {
+  color: black;
+  background-color: #ffdc05;
+  border: 2px solid black;
+}
+
+.yellow .btn:hover {
+  color: #ffdc05;
+  background-color: black;
+}
+
+.blue-dark .btn {
+  color: white;
+  background-color: #232D55;
+}
+
+.blue-dark .btn:hover {
+  color: #232D55;
+  background-color: white;
+}
