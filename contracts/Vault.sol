@@ -26,6 +26,9 @@ contract Vault is Ownable {
     //Certified
     mapping(bytes32 => certifiedDocument) public talentsDocuments;
 
+    //whitelisted address of partners to get a free access to vault
+    mapping(address=>mapping(address=>bool)) public ListedPartner;
+
     enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved, keywordAdded }
 
     event VaultLog (
@@ -218,6 +221,16 @@ contract Vault is Ownable {
         return scoreEducation + scoreWork + scoreSkills;
     }
 
+    /**
+     * Freelance can whitelist a partner. Partner will have a free access to his Vault
+    */ 
+    function listPartner(address _partner, bool IsListed)
+        onlyOwner
+        public
+    {
+        ListedPartner[msg.sender][_partner] = IsListed;
+    }
+    
     function () 
         public 
     {
