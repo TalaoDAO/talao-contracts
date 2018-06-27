@@ -1,13 +1,19 @@
 pragma solidity ^0.4.23;
 
 import "./Talao.sol";
+import "./Freelancer.sol";
 
 contract Vault is Ownable {
+
     using SafeMath for uint;
 
     uint NbOfValidDocument;
     TalaoToken myToken;
-    
+    Freelancer myFreelancer;
+
+    //Used to parse all documents using index as relationship between this array and TalentsDocuments mapping
+    bytes32[] documentIndex;
+
     struct certifiedDocument {
         bytes32 description; //description of document
         bytes32[] keywords; //list of keywords associated to the current certified document
@@ -18,16 +24,9 @@ contract Vault is Ownable {
         uint endDate;
         bool isBlockCert;
     }
-
-    //Used to parse all documents using index as relationship between this array and TalentsDocuments mapping
-    bytes32[] documentIndex;
-
-    //address is owner of document
-    //Certified
+    
+    //address is owner of certified document
     mapping(bytes32 => certifiedDocument) public talentsDocuments;
-
-    //whitelisted address of partners to get a free access to vault
-    mapping(address=>mapping(address=>bool)) public ListedPartner;
 
     enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved, keywordAdded }
 
@@ -55,14 +54,25 @@ contract Vault is Ownable {
         _;
     }
 
+    modifier partnerAllowance () { //require sur l'aggreement
+        if(msg.sender != owner)
+        {
+            bool agreement = false;
+            agreement = myFreelancer.isPartner(msg.sender);
+            require(agreement == true);
+        }
+        _;
+    }
+
     /*
     add new certification document to Talent Vault
     accessibility : only for authorized user and owner of this contract
     */
-    constructor(address token) 
+    constructor(address token, address freelancer) 
         public 
     {
         myToken = TalaoToken(token);
+        myFreelancer = Freelancer(freelancer);
     }
 
     /*
@@ -71,9 +81,9 @@ contract Vault is Ownable {
     */
     function addDocument(
         bytes32 documentId, bytes32 description, bytes32[] keywords, uint documentType, uint startDate, uint endDate, bool isBlockCert
-    ) 
-        onlyOwner 
-        allowance 
+    )
+        onlyOwner
+        allowance
         public 
         returns (bool)
     {
@@ -198,9 +208,9 @@ contract Vault is Ownable {
     /*
     Get FCR of the owner of the VaultDocAdded
     */
-    function getScoring() 
+    function getScoring()
         public
-        allowance
+        partnerAllowance
         view
         returns(uint)
     {
@@ -221,16 +231,30 @@ contract Vault is Ownable {
         return scoreEducation + scoreWork + scoreSkills;
     }
 
-    /**
-     * Freelance can whitelist a partner. Partner will have a free access to his Vault
-    */ 
-    function listPartner(address _partner, bool IsListed)
-        onlyOwner
+    function getScoringByKeyword(bytes32 keyword)
         public
+        partnerAllowance
+        view
+        returns(uint)
     {
-        ListedPartner[msg.sender][_partner] = IsListed;
+        uint Score = 0;
+        for(uint i = 0; i < documentIndex.length; i++) {
+            bytes32 index = documentIndex[i];
+            for(uint j = 0; j < talentsDocuments[index].keywords.length; j++)
+            {
+                if(talentsDocuments[index].keywords[j] == keyword)
+                {
+                    //Only one keyword by experience
+                    Score += 10;
+                    break;
+                }
+            }
+            if(Score == 100)
+                break;
+        }
+        return Score;
     }
-    
+
     function () 
         public 
     {
