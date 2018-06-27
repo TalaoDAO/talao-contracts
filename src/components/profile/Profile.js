@@ -13,6 +13,7 @@ import PhoneIcon from '@material-ui/icons/Phone';
 import BlurOnIcon from '@material-ui/icons/BlurOn';
 import FreelancerService from '../../services/FreelancerService';
 import classnames from 'classnames';
+import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 
 const styles = theme => ({
   container: {
@@ -95,7 +96,7 @@ class Profile extends React.Component {
               <div className={this.props.classes.confidenceIndexContainer}>
                 <div className={this.props.classes.confidenceIndex}>{this.state.freelancer.confidenceIndex}</div>
               </div>
-              <img src="freelancer-picture.jpg" className={this.props.classes.picture} alt="Freelancer" />
+              <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
             <div className={this.props.classes.profileContainer}>
               <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>

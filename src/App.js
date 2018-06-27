@@ -7,51 +7,57 @@ import Menu from './components/menu/Menu';
 import Competencies from './components/competencies/Competencies';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const theme = createMuiTheme(constants.theme);
 
-const styles = theme => 
+const styles = theme =>
   ({
-  root: {
-    height: '100vh',
-  },
-  content: {
-    padding: '20px',
-    background: theme.palette.background.default,
-    overflowY: 'scroll',
-  },
-  rightMenu: {
-    background: theme.palette.background.default,
-  },
-});
+    root: {
+      height: '100vh',
+    },
+    content: {
+      padding: '20px',
+      background: theme.palette.background.default,
+      overflowY: 'scroll',
+    },
+    rightMenu: {
+      background: theme.palette.background.default,
+    },
+  });
 
 class App extends React.Component {
 
   render() {
     return (
-      <div>
-        <MuiThemeProvider theme={theme}>
-          <Grid container className={this.props.classes.root}>
-            <Hidden smDown>
-              <Grid item xs={2}>
-                <Menu />
-              </Grid>
-            </Hidden>
-            <Grid container item xs={12} md={10} className={this.props.classes.content}>
-              <Grid item xs={12} lg={10}>              
-                <Grid container spacing={24}>
-                  <Grid item xs={12}>
-                    <Profile />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Competencies />
+      <Router>
+        <div>
+          <MuiThemeProvider theme={theme}>
+            <Grid container className={this.props.classes.root}>
+              <Hidden smDown>
+                <Grid item xs={2}>
+                  <Menu />
+                </Grid>
+              </Hidden>
+              <Grid container item xs={12} md={10} className={this.props.classes.content}>
+                <Grid item xs={12} lg={10}>
+                  <Grid container spacing={24}>
+                    <Grid item xs={12}>
+                      <Profile />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Switch>
+                        <Route exact path="/" component={Competencies} />
+                        <Route path="/competencies/:competencyName" component={Competencies} />
+                      </Switch>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Grid>
             </Grid>
-          </Grid>
-        </MuiThemeProvider>
-      </div>
+          </MuiThemeProvider>
+        </div>
+      </Router>
     );
   }
 }

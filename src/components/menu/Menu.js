@@ -1,6 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
+import logoTalao from '../../images/logo-talao.png';
 
 const styles = theme => ({
     root: {
@@ -27,7 +29,9 @@ class Menu extends React.Component {
         return (
             <div className={this.props.classes.root}>
                 <div>
-                    <img src="logo-talao.png" className={this.props.classes.logo} alt="Talao" />
+                    <Link to="/">
+                        <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
+                    </Link>
                 </div>
                 <div className={this.props.classes.menus}>
                     <Typography>

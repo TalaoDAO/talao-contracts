@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { constants } from '../../constants';
 import Card from "@material-ui/core/Card";
@@ -13,7 +14,7 @@ const styles = {
         height: '160px',
     },
     content: {
-        height: '100px',
+        minHeight: '100px',
     },
     competency: {
         textTransform: 'uppercase',
@@ -29,15 +30,29 @@ const styles = {
         borderRadius: '50%',
         textAlign: 'center',
         fontSize: '26px',
+        transition: 'all .5s ease',
     },
     textBadge: {
         lineHeight: '50px',
     },
     card: {
-       '&:hover': {
-           boxShadow: '0px 3px 15px 0px rgba(0, 0, 0, 0.2), 0px 6px 6px 0px rgba(0, 0, 0, 0.14), 0px 9px 3px -6px rgba(0, 0, 0, 0.12)',
-           cursor: 'pointer',
-       },
+        transition: 'all .2s ease',
+        '&:hover': {
+            boxShadow: '0px 3px 15px 0px rgba(0, 0, 0, 0.2), 0px 6px 6px 0px rgba(0, 0, 0, 0.14), 0px 9px 3px -6px rgba(0, 0, 0, 0.12)',
+            cursor: 'pointer',
+        },
+    },
+    link: {
+        textDecoration: 'none',
+        color: 'initial',
+    },
+    competentiesHidden: {
+        height: 0,
+        overflow: 'hidden',
+    },
+    competentiesShown: {
+        height: 'auto',
+        transition: 'all .5s ease',
     },
 };
 
@@ -51,19 +66,21 @@ class Competency extends React.Component {
         return "accent4";
     }
 
-    render() {
-        const backgroundColorString = this.getCompetencyColor();
-        const backgroundLightColorString = "light" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
-        return (
+render() {
+    const backgroundColorString = this.getCompetencyColor();
+    const backgroundLightColorString = "light" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
+    const layoutFocused = this.props.layout === 'focused';
+    return (
+        <Link to={'/competencies/' + this.props.competency.name} className={this.props.classes.link}>
             <Card className={this.props.classes.card}>
-                <CardContent className={this.props.classes.badge} style={{backgroundColor: constants.colors[backgroundLightColorString]}}>
+                <CardContent className={this.props.classes.badge} style={{ backgroundColor: constants.colors[backgroundLightColorString]}}>
                     <Typography variant="headline" className={this.props.classes.textBadge}>
                         {Math.round(this.props.confidenceIndex)}
                     </Typography>
                 </CardContent>
                 <CardMedia
                     className={this.props.classes.media}
-                    style={{backgroundColor: constants.colors[backgroundColorString]}}
+                    style={{ backgroundColor: constants.colors[backgroundColorString] }}
                     image="#"
                     title={this.props.competency.name}
                 />
@@ -72,15 +89,27 @@ class Competency extends React.Component {
                     <Typography gutterBottom variant="headline" component="h2" className={this.props.classes.competency}>
                         {this.props.competency.name}
                     </Typography>
+                    <div className={layoutFocused ? this.props.classes.competentiesShown : this.props.classes.competentiesHidden}>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                        <p>test</p>
+                    </div>
                 </CardContent>
-                <CardActions>
+                <CardActions style={{display: layoutFocused ? 'none' : 'initial'}}>
                     <Button size="small" color="primary">
                         Details
-              </Button>
+                    </Button>
                 </CardActions>
             </Card>
-        );
-    }
+        </Link>
+    );
+}
 }
 
 export default withStyles(styles)(Competency);

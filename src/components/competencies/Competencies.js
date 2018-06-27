@@ -1,17 +1,79 @@
 import React from 'react';
 import Competency from '../competency/Competency';
-import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import FreelancerService from '../../services/FreelancerService';
 
 const styles = {
-    card: {
-        maxWidth: 345
-      },
-      media: {
-        height: 0,
-        paddingTop: "56.25%" // 16:9
-      },
+    competenciesContainer: {
+        display: 'flex',
+        width: '100%',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+    },
+    competencyContainer: {
+        flexBasis: 'auto',
+        width: '350px',
+        marginRight: '20px',
+        marginBottom: '20px',
+    },
+    '@media screen and (max-width: 950px)': {
+        competencyContainer: {
+            flexBasis: '100%',
+            marginRight: '0',
+        },
+    },
+    competencyContainerFocused: {
+        animationName: 'focusCompetency',
+        animationDuration: '.2s',
+        animationDelay: '.1s',
+        animationFillMode: 'forwards',
+    },
+    competencyContainerHidden: {
+        animationName: 'hideCompetency',
+        animationDuration: '.2s',
+        animationFillMode: 'forwards',
+    },
+    '@keyframes hideCompetency': {
+        '0%': {
+            opacity: 1,
+            height: '340px',
+            width: '350px',
+        },
+        '50%': {
+            opacity: 0,
+            width: '350px',
+            height: '340px',
+            marginRight: '20px',
+            marginBottom: '20px',
+        },
+        '75%': {
+            opacity: 0,
+            width: '0',
+            height: '0',
+            marginRight: '0',
+            marginBottom: '0',
+        },
+        '100%': {
+            opacity: 0,
+            width: '0',
+            height: '0',
+            marginRight: '0',
+            marginBottom: '0',
+        },
+    },
+    '@keyframes focusCompetency': {
+        '0%': {
+            width: '350px',
+            marginRight: '20px',
+            marginBottom: '20px',
+        },
+        '100%': {
+            width: '100%',
+            marginRight: '0',
+            marginBottom: '0',
+        },
+    },
 };
 
 class Competencies extends React.Component {
@@ -24,32 +86,51 @@ class Competencies extends React.Component {
     }
 
     render() {
+        console.log('render competencies');
+        const oneCompetencyFocused = (this.props.match.params.competencyName);
         const competencies = this.state.competencies
 
-        // Compute confidence index of each competency
-        .map((competency) => ({
-            competency: competency,
-            confidenceIndex: competency.getConfidenceIndex(),
-        }))
+            // Compute confidence index of each competency
+            .map((competency) => ({
+                competency: competency,
+                confidenceIndex: competency.getConfidenceIndex(),
+            }))
 
-        // Sort descending by confidence index and let the education at the end
-        .sort((extendedCompetencyA, extendedCompetencyB) => {
-            if (extendedCompetencyA.competency.name === "Education") return true;
-            if (extendedCompetencyB.competency.name === "Education") return false;
-            return extendedCompetencyA.confidenceIndex < extendedCompetencyB.confidenceIndex;
-        })
+            // Sort descending by confidence index and let the education at the end
+            .sort((extendedCompetencyA, extendedCompetencyB) => {
+                if (extendedCompetencyA.competency.name === "Education") return true;
+                if (extendedCompetencyB.competency.name === "Education") return false;
+                return extendedCompetencyA.confidenceIndex < extendedCompetencyB.confidenceIndex;
+            })
 
-        // Generate components
-        .map((extendedCompetency, index) => 
-            <Grid item xs={12} sm={6} lg={4} key={index}>
-                <Competency competency={extendedCompetency.competency} confidenceIndex={extendedCompetency.confidenceIndex}></Competency>
-            </Grid>
-        );
+            // Generate components
+            .map((extendedCompetency, index) => {
+                const thisCompetencyFocused = extendedCompetency.competency.name === this.props.match.params.competencyName;
+                let appliedClasses = [this.props.classes.competencyContainer];
+                let layout = 'normal';
+                if (thisCompetencyFocused) {
+                    layout = 'focused';
+                    appliedClasses.push(this.props.classes.competencyContainerFocused);
+                }
+                else if (oneCompetencyFocused) {
+                    layout = 'hidden';
+                    appliedClasses.push(this.props.classes.competencyContainerHidden);
+                }
+                return (
+                    <div key={index} className={appliedClasses.join(' ')}>
+                        <Competency
+                            competency={extendedCompetency.competency}
+                            confidenceIndex={extendedCompetency.confidenceIndex}
+                            layout={layout}>
+                        </Competency>
+                    </div>
+                );
+            });
 
         return (
-            <Grid container spacing={24}>
+            <div className={this.props.classes.competenciesContainer}>
                 {competencies}
-            </Grid>
+            </div>
         );
     }
 }
