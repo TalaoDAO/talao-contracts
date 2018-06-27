@@ -1,24 +1,15 @@
 pragma solidity ^0.4.23;
 
 import "./Talao.sol";
-import "./Vault.sol";
 
 contract Freelancer is Ownable {
 
     TalaoToken myToken;
 
-    constructor(address token)
-        public 
-    {
-        myToken = TalaoToken(token);
-    }
-    
     // Nb of criterias rated by client
     uint8 public constant maxCriteria = 5;
     // Nb ratings taking into account for confidence index
     uint8 public constant maxRating = 4;
-    
-    enum FreelancerState { Inactive, Active, Suspended }
     
     struct InternalVaultData {
         // Inactive, Active or Suspended, init by default 0 -> do not replace by enum 
@@ -47,6 +38,17 @@ contract Freelancer is Ownable {
         uint8 nbLanguages;
     }
 
+    // mapping between[{]_parter freelancer Ethereum address and his data
+    mapping(address => InternalVaultData) private InternalData;
+
+    // mapping between Vault Ethereum address and Confidence Index
+    mapping(address => PublicVaultData) public PublicData;
+
+    //whitelisted address of partners to get a free access to vault
+    mapping(address => mapping(address=>bool)) public ListedPartner;
+
+    enum FreelancerState { Inactive, Active, Suspended }
+
     event FreelancerSubscribe (
         address indexed freelancer,
         bytes32 firstname,
@@ -60,16 +62,17 @@ contract Freelancer is Ownable {
         bool IsKYC,
         uint8 referral
     );
-     
-    // mapping between[{]_parter freelancer Ethereum address and his data
-    mapping (address => InternalVaultData) private InternalData;   
-    // mapping between Vault Ethereum address and Confidence Index
-    mapping (address => PublicVaultData) public PublicData;
-  
+
+    constructor(address token) 
+        public 
+    {
+        myToken = TalaoToken(token);
+    }
+
     /**
      * Freelance subscribes/updates his data
     */
-    function Subscribe(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _othersocialmedia)
+    function subscribe(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _othersocialmedia)
         onlyOwner
         public
     {
@@ -91,7 +94,7 @@ contract Freelancer is Ownable {
      * General Data Protection Regulation
      * Freelancer unsubscribes
      */
-    function Unsubscribe()
+    function unsubscribe()
         onlyOwner
         public
     {
@@ -99,6 +102,7 @@ contract Freelancer is Ownable {
         delete InternalData[msg.sender];
         delete PublicData[msg.sender];
     }
+    
     /**
      * Only Owner can set internal freelance data
      * Talao can suspend one freelance
@@ -119,7 +123,7 @@ contract Freelancer is Ownable {
         bool isVerified, bool isPhone, bool isEmail,
         uint8 nbEducations, uint8 nbExperiences, uint8 nbSkills, uint8 nbLanguages
     )
-        onlyOwner 
+        onlyOwner
         public
     {
         require(InternalData[msg.sender].userState == FreelancerState.Active);
@@ -144,5 +148,23 @@ contract Freelancer is Ownable {
         public
     {
         InternalData[msg.sender].userState = FreelancerState.Active;
+    }
+
+    /**
+     * Freelance can whitelist a partner. Partner will have a free access to his Vault
+    */ 
+    function listPartner(address _partner, bool IsListed)
+        onlyOwner
+        public
+    {
+        ListedPartner[msg.sender][_partner] = IsListed;
+    }
+
+    function isPartner(address _partner)
+        public
+        view
+        returns(bool)
+    {
+        return ListedPartner[owner][_partner];
     }
 }
