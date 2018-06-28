@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { constants } from '../../constants';
 import Typography from '@material-ui/core/Typography';
 import CompetencyTag from '../competencyTag/CompetencyTag';
+import DateService from '../../services/DateService';
 
 const styles = theme => ({
     experienceContainer: {
@@ -69,10 +70,21 @@ const styles = theme => ({
 
 class Experience extends React.Component {
 
+    monthDiff(d1, d2) {
+        var months;
+        months = (d2.getFullYear() - d1.getFullYear()) * 12;
+        months -= d1.getMonth() + 1;
+        months += d2.getMonth();
+        return months <= 0 ? 0 : months;
+    }
+
     render() {
         const competencyTags = this.props.value.competencies.map((competency, index) =>
             (<CompetencyTag value={competency} key={index} />)
         );
+        const dateDiff = DateService.dateDiffAsString(this.props.value.from, this.props.value.to);
+        const monthDiff = DateService.monthDiff(this.props.value.from, this.props.value.to);
+
         return (
             <div className={this.props.classes.experienceContainer}>
                 <div>
@@ -80,16 +92,17 @@ class Experience extends React.Component {
                         &nbsp;
                     </div>
                     <div className={this.props.classes.timeLine} >
-                        <div className={this.props.classes.line}></div>
+                        <div className={this.props.classes.line} style={{width: (monthDiff * 5) + 'px'}}></div>
                         <div className={this.props.classes.triangleContainer}>
                             <div className={this.props.classes.triangle}></div>
                         </div>
                         <div className={this.props.classes.timeContainer}>
-                            1 year
+                            {dateDiff}
                         </div>
                     </div>
                     <div className={this.props.classes.dateContainer}>
-                        05/2017 - 03/2018
+                        {DateService.getMonthYearDate(this.props.value.from)} -
+                        {DateService.getMonthYearDate(this.props.value.to)}
                     </div>
                 </div>
                 <div>

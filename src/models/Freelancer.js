@@ -16,8 +16,8 @@ class Freelancer {
             new Experience(
                 "Dolor sit amet", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue. Donec vestibulum lectus eu orci eleifend ultrices. Nunc ornare nec libero a ornare. Integer consectetur mi in est maximus tristique. Curabitur maximus ligula ipsum, mollis consequat erat aliquam vitae.",
-                new Date(), 
-                new Date(),
+                new Date(2018, 1, 1), 
+                new Date(2018, 6, 1),
                 [
                     new Competency("Project Management", 100)
                 ],
@@ -27,8 +27,8 @@ class Freelancer {
             new Experience(
                 "Consectetur adipiscing", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(), 
-                new Date(),
+                new Date(2016, 1, 1), 
+                new Date(2018, 1, 1),
                 [
                     new Competency("Project Management", 90), 
                     new Competency("Blockchain", 80),
@@ -40,8 +40,8 @@ class Freelancer {
             new Experience(
                 "Consectetur adipiscing", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(), 
-                new Date(),
+                new Date(2015, 10, 1), 
+                new Date(2016, 1, 1),
                 [
                     new Competency("Design", 95), 
                 ],
@@ -51,8 +51,8 @@ class Freelancer {
             new Experience(
                 "Consectetur adipiscing", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(), 
-                new Date(),
+                new Date(2015, 3, 1), 
+                new Date(2015, 10, 1),
                 [
                     new Competency("Javascript", 25), 
                 ],
@@ -62,8 +62,8 @@ class Freelancer {
             new Experience(
                 "Consectetur adipiscing", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(), 
-                new Date(),
+                new Date(2013, 1, 1), 
+                new Date(2015, 3, 1),
                 [
                     new Competency("Education", 35), 
                 ],
