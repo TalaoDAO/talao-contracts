@@ -26,8 +26,8 @@ class DateService {
     }
 
     static getMonthYearDate(d) {
-        let month = (d.getMonth() + 1).toString();
-        month = ('0' + month.substring(0, 2));
+        let month = '0' + (d.getMonth() + 1).toString();
+        month = month.substr(month.length - 2);
         return month + '/' + (d.getFullYear()).toString();
     }
 }
