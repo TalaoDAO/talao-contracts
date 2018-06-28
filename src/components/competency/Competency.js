@@ -2,12 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { constants } from '../../constants';
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import Experiences from '../experiences/Experiences';
+import CloseIcon from '@material-ui/icons/Close';
+import ColorService from '../../services/ColorService';
 
 const styles = {
     media: {
@@ -18,6 +21,17 @@ const styles = {
     },
     competency: {
         textTransform: 'uppercase',
+    },
+    close: {
+        display: 'block',
+        float: 'left',
+        marginTop: '10px',
+        marginLeft: 0,
+        color: '#fff',
+        transform: 'scale(1.4)',
+        '& a:hover, & a:visited': {
+            color: '#fff',
+        },
     },
     badge: {
         display: 'block',
@@ -30,13 +44,14 @@ const styles = {
         borderRadius: '50%',
         textAlign: 'center',
         fontSize: '26px',
-        transition: 'all .5s ease',
+        transition: 'all 1s ease',
     },
     textBadge: {
         lineHeight: '50px',
     },
     card: {
-        transition: 'all .2s ease',
+        transition: 'all .4s ease',
+        paddingBottom: '15px',
     },
     cardnormal: {
         '&:hover': {
@@ -46,7 +61,7 @@ const styles = {
     },
     cardfocused: {
         '&:hover': {
-            cursor: 'initial',
+            cursor: 'default',
         },
     },
     link: {
@@ -58,6 +73,7 @@ const styles = {
         overflow: 'hidden',
     },
     competentiesShown: {
+        marginTop: '50px',
         maxHeight: '0px',
         overflow: 'auto',
         animationName: 'openExperiences',
@@ -82,21 +98,20 @@ const styles = {
 
 class Competency extends React.Component {
 
-    getCompetencyColor() {
-        if (this.props.competency.name === "Education") return "grey";
-        if (this.props.confidenceIndex > 80) return "accent1";
-        if (this.props.confidenceIndex > 60) return "accent2";
-        if (this.props.confidenceIndex > 40) return "accent3";
-        return "accent4";
-    }
-
     render() {
-        const backgroundColorString = this.getCompetencyColor();
-        const backgroundLightColorString = "light" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
+        const backgroundColorString = ColorService.getCompetencyColorName(this.props.competency.name, this.props.competency.confidenceIndex);
+        const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
+        const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
         const layoutFocused = this.props.layout === 'focused';
         return (
-            <Link to={'/competencies/' + this.props.competency.name} className={this.props.classes.link}>
-                <Card className={this.props.classes.card + ' ' + this.props.classes['card' + this.props.layout]}>
+            <Card className={this.props.classes.card + ' ' + this.props.classes['card' + this.props.layout]}>
+                <CardContent className={this.props.classes.close} style={{ display: layoutFocused ? 'initial' : 'none' }}>
+                    <Link to='/'>
+                        <CloseIcon />
+                    </Link>
+                </CardContent>
+                <Link to={'/competencies/' + this.props.competency.name} className={this.props.classes.link}>
+
                     <CardContent className={this.props.classes.badge} style={{ backgroundColor: constants.colors[backgroundLightColorString] }}>
                         <Typography variant="headline" className={this.props.classes.textBadge}>
                             {Math.round(this.props.confidenceIndex)}
@@ -114,24 +129,21 @@ class Competency extends React.Component {
                             {this.props.competency.name}
                         </Typography>
                         <div className={layoutFocused ? this.props.classes.competentiesShown : this.props.classes.competentiesHidden}>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
-                            <p>test</p>
+                            <Experiences 
+                                value={this.props.competency.experiences} 
+                                color={backgroundColorString} 
+                                lightColor={backgroundLightColorString}
+                                textColor={textColorString} 
+                            />
                         </div>
                     </CardContent>
                     <CardActions style={{ display: layoutFocused ? 'none' : 'initial' }}>
                         <Button size="small" color="primary">
                             Details
-                    </Button>
+                        </Button>
                     </CardActions>
-                </Card>
-            </Link>
+                </Link>
+            </Card>
         );
     }
 }

@@ -1,7 +1,14 @@
 class Competency {
-    constructor(name, experiences) {
+
+    constructor(name, confidenceIndex, experiences) {
         this.name = name;
-        this.experiences = experiences;
+        this.confidenceIndex = confidenceIndex;
+        if (experiences) {
+            this.experiences = experiences;
+        }
+        else {
+            this.experiences = [];
+        }
     }
 
     getConfidenceIndex() {

@@ -86,7 +86,6 @@ class Competencies extends React.Component {
     }
 
     render() {
-        console.log('render competencies');
         const oneCompetencyFocused = (this.props.match.params.competencyName);
         const competencies = this.state.competencies
 

@@ -18,7 +18,9 @@ class Freelancer {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue. Donec vestibulum lectus eu orci eleifend ultrices. Nunc ornare nec libero a ornare. Integer consectetur mi in est maximus tristique. Curabitur maximus ligula ipsum, mollis consequat erat aliquam vitae.",
                 new Date(), 
                 new Date(),
-                ["Project Management"],
+                [
+                    new Competency("Project Management", 100)
+                ],
                 null,
                 100,
             ),
@@ -27,7 +29,11 @@ class Freelancer {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(), 
                 new Date(),
-                ["Project Management", "Blockchain", "Javascript"],
+                [
+                    new Competency("Project Management", 90), 
+                    new Competency("Blockchain", 80),
+                    new Competency("Javascript", 85)
+                ],
                 null,
                 83,
             ),
@@ -36,7 +42,9 @@ class Freelancer {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(), 
                 new Date(),
-                ["Design"],
+                [
+                    new Competency("Design", 95), 
+                ],
                 null,
                 62,
             ),
@@ -45,7 +53,9 @@ class Freelancer {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(), 
                 new Date(),
-                ["Javascript"],
+                [
+                    new Competency("Javascript", 25), 
+                ],
                 null,
                 13,
             ),
@@ -54,7 +64,9 @@ class Freelancer {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(), 
                 new Date(),
-                ["Education"],
+                [
+                    new Competency("Education", 35), 
+                ],
                 null,
                 63,
             ),
@@ -63,11 +75,11 @@ class Freelancer {
 
     getCompetencies() {
         let competencies = [];
-        this.experiences.forEach((experience, index) => {
-            experience.competencies.forEach((competencyName) => {
-                let indexCompetency = competencies.findIndex(c => c.name === competencyName);
+        this.experiences.forEach((experience) => {
+            experience.competencies.forEach((competency) => {
+                let indexCompetency = competencies.findIndex(c => c.name === competency.name);
                 if (indexCompetency === -1) {
-                    competencies.push(new Competency(competencyName, [experience]));
+                    competencies.push(new Competency(competency.name, competency.confidenceIndex, [experience]));
                 }
                 else {
                     competencies[indexCompetency].experiences.push(experience);

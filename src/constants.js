@@ -8,7 +8,7 @@ const greyColor = '#919191';
 const lightAccent1Color = '#fff19b';
 const lightAccent2Color = '#00c07b';
 const lightAccent3Color = '#8290cc';
-const lightAccent4Color = '#000000';
+const lightAccent4Color = '#f2f2f2';
 const lightGreyColor = '#f2f2f2';
 
 var constants = {
@@ -25,6 +25,11 @@ var constants = {
         lightAccent3: lightAccent3Color,
         lightAccent4: lightAccent4Color,
         lightGrey: lightGreyColor, 
+        textAccent1: '#000',
+        textAccent2: '#fff',
+        textAccent3: '#fff',
+        textAccent4: '#000',
+        textGrey: lightGreyColor, 
     },
     fontSize: {
         small: '80%',
