@@ -41,8 +41,10 @@ contract VaultFactory is Ownable {
         public
         returns(address)
     {
-        //TODO We have to delegate the call to pass the original msg.sender
-        //address(myToken).delegatecall(bytes4(keccak256("createVaultAccess(uint256)")), price);
+        // TODO We have to delegate the call to pass the original msg.sender
+        // 3 ways to do that: delegate call, tx.origin, pass the msg.sender in parameter
+        //myToken.createVaultAccess(msg.sender, 5);
+        //address(myToken).delegatecall(bytes4(keccak256("createVaultAccess(uint256)")), 5);
 
         //Verify using Talao token if sender is authorized to create a Vault
         bool agreement = false;
@@ -53,7 +55,7 @@ contract VaultFactory is Ownable {
         require(FreelanceVault[msg.sender] == address(0));
         Vault newVault = new Vault(myToken, myFreelancer);
 
-        //TODO, just like the createVaultAccess function, we should use delegatecall to keep the msg.sender in order to add document 
+        // TODO just like the createVaultAccess function, we should use delegatecall to keep the msg.sender in order to add document 
         //address(newVault).delegatecall(bytes4(keccak256("addDocument(bytes32, bytes32, bytes32[], uint, uint, uint, bool)")), documentId, description, keywords, documentType, startDate, endDate, isBlockCert);
         
         FreelanceVault[msg.sender] = address(newVault);
