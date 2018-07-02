@@ -5,6 +5,7 @@ import { constants } from './constants';
 import Profile from './components/profile/Profile';
 import Menu from './components/menu/Menu';
 import Competencies from './components/competencies/Competencies';
+import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
@@ -49,6 +50,7 @@ class App extends React.Component {
                       <Switch>
                         <Route exact path="/" component={Competencies} />
                         <Route path="/competencies/:competencyName" component={Competencies} />
+                        <Route path="/chronology/" component={Chronology} />
                       </Switch>
                     </Grid>
                   </Grid>

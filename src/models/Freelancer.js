@@ -38,7 +38,7 @@ class Freelancer {
                 83,
             ),
             new Experience(
-                "Consectetur adipiscing", 
+                "Consectetur adipiscing 2", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(2015, 10, 1), 
                 new Date(2016, 1, 1),
@@ -49,7 +49,7 @@ class Freelancer {
                 62,
             ),
             new Experience(
-                "Consectetur adipiscing", 
+                "Consectetur adipiscing 3", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(2015, 3, 1), 
                 new Date(2015, 10, 1),
@@ -60,7 +60,7 @@ class Freelancer {
                 13,
             ),
             new Experience(
-                "Consectetur adipiscing", 
+                "Consectetur adipiscing 4", 
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
                 new Date(2013, 1, 1), 
                 new Date(2015, 3, 1),

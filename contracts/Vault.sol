@@ -7,6 +7,8 @@ contract Vault is Ownable {
 
     using SafeMath for uint;
 
+    // TODO Get data ?
+
     uint NbOfValidDocument;
     TalaoToken myToken;
     Freelancer myFreelancer;
@@ -16,7 +18,7 @@ contract Vault is Ownable {
 
     struct certifiedDocument {
         bytes32 description; //description of document
-        bytes32[] keywords; //list of keywords associated to the current certified document
+        competency[] competencies; //list of keywords associated to the current certified document
         bool isAlive; //true if this stuct is set, fasle else
         uint index; //index used in relationship between tabindex and mapping unordered object
         uint documentType; //ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4
@@ -24,6 +26,15 @@ contract Vault is Ownable {
         uint endDate;
         bool isBlockCert;
     }
+
+    struct competency {
+        bytes32 name;
+        uint rating;
+    }
+
+    // TODO struct avec mots clés
+
+    // TODO Infura gateway blockchain
     
     //address is owner of certified document
     mapping(bytes32 => certifiedDocument) public talentsDocuments;
@@ -48,17 +59,11 @@ contract Vault is Ownable {
 
     modifier allowance () { //require sur l'aggreement
         bool agreement = false;
-        uint unused = 0;
-        (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
-        require(agreement == true);
-        _;
-    }
-
-    modifier partnerAllowance () { //require sur l'aggreement
-        if(msg.sender != owner)
+        agreement = myFreelancer.isPartner(msg.sender);
+        if(!agreement)
         {
-            bool agreement = false;
-            agreement = myFreelancer.isPartner(msg.sender);
+            uint unused = 0;
+            (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
             require(agreement == true);
         }
         _;
@@ -80,7 +85,7 @@ contract Vault is Ownable {
     accessibility : only for authorized user and owner of this contract
     */
     function addDocument(
-        bytes32 documentId, bytes32 description, bytes32[] keywords, uint documentType, uint startDate, uint endDate, bool isBlockCert
+        bytes32 documentId, bytes32 description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, bool isBlockCert
     )
         onlyOwner
         allowance
@@ -88,13 +93,19 @@ contract Vault is Ownable {
         returns (bool)
     {
         require(documentId != 0 && keywords.length != 0 && startDate != 0);
+        require(keywords.length == ratings.length);
         require(!talentsDocuments[documentId].isAlive);
         SafeMath.add(NbOfValidDocument,1);
+
+        for(uint i = 0; i < keywords.length; i++)
+        {
+            require(ratings[i] >= 0 && ratings[i] <= 5);
+            talentsDocuments[documentId].competencies.push(competency(keywords[i], ratings[i]));
+        }
 
         talentsDocuments[documentId].description = description;
         talentsDocuments[documentId].isAlive = true;
         talentsDocuments[documentId].index = documentIndex.push(documentId)-1;
-        talentsDocuments[documentId].keywords = keywords;
         talentsDocuments[documentId].documentType = documentType;
         talentsDocuments[documentId].startDate = startDate;
         talentsDocuments[documentId].endDate = endDate;
@@ -108,16 +119,16 @@ contract Vault is Ownable {
     Add keyword to a specified document using document Id
     accessibility : only for authorized user and owner of this contract
     */
-    function addKeyword(bytes32 documentId,bytes32 keyword)
+    function addKeyword(bytes32 documentId, bytes32 name, uint rating)
         onlyOwner
         allowance
         public
         returns (bool)
     {
-        require(documentId != 0 && keyword.length != 0);
+        require(documentId != 0 && name.length != 0);
+        require(rating >= 0 && rating <= 5);
         require(talentsDocuments[documentId].isAlive);
-
-        talentsDocuments[documentId].keywords.push(keyword);
+        talentsDocuments[documentId].competencies.push(competency(name, rating));
         emit VaultLog(msg.sender, VaultLife.keywordAdded, documentId);
         return true;
     }
@@ -163,10 +174,10 @@ contract Vault is Ownable {
         allowance
         view
         public
-        returns (bytes32 desc, bytes32[] keywords, uint docType, uint startDate, uint endDate, bool isBlockCert) 
+        returns (bytes32 desc, uint docType, uint startDate, uint endDate, bool isBlockCert) 
     {
         require(dId != 0 && talentsDocuments[dId].isAlive == true);
-        return (talentsDocuments[dId].description, talentsDocuments[dId].keywords, talentsDocuments[dId].documentType,
+        return (talentsDocuments[dId].description, talentsDocuments[dId].documentType,
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate, talentsDocuments[dId].isBlockCert);
     }
 
@@ -178,10 +189,10 @@ contract Vault is Ownable {
         allowance
         view
         public
-        returns (bytes32 docId, bytes32 desc, bytes32[] keywords, uint docType, uint startDate, uint endDate, bool isBlockCert)
+        returns (bytes32 docId, bytes32 desc, uint docType, uint startDate, uint endDate, bool isBlockCert)
     {
         bytes32 dId = documentIndex[index];
-        return (dId, talentsDocuments[dId].description, talentsDocuments[dId].keywords, talentsDocuments[dId].documentType,
+        return (dId, talentsDocuments[dId].description, talentsDocuments[dId].documentType,
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate, talentsDocuments[dId].isBlockCert);
     }
 
@@ -197,8 +208,8 @@ contract Vault is Ownable {
     {
         bytes32 dId = documentIndex[index];
         bytes32 valueFounded;
-        for (uint i = 0; i < talentsDocuments[dId].keywords.length; i++) {
-            valueFounded = talentsDocuments[dId].keywords[i];
+        for (uint i = 0; i < talentsDocuments[dId].competencies.length; i++) {
+            valueFounded = talentsDocuments[dId].competencies[i].name;
             if(keccak256(valueFounded) == keccak256(keyword)){
                 return (dId, talentsDocuments[dId].description);  
             }
@@ -210,7 +221,7 @@ contract Vault is Ownable {
     */
     function getScoring()
         public
-        partnerAllowance
+        allowance
         view
         returns(uint)
     {
@@ -219,7 +230,7 @@ contract Vault is Ownable {
         uint scoreSkills = 0;
         for(uint i = 0; i < documentIndex.length; i++) {
             bytes32 index = documentIndex[i];
-            scoreSkills += talentsDocuments[index].keywords.length;
+            scoreSkills += talentsDocuments[index].competencies.length;
             if(talentsDocuments[index].documentType == 2 && scoreEducation < 10) {
                 scoreEducation += 2;
             }
@@ -233,26 +244,26 @@ contract Vault is Ownable {
 
     function getScoringByKeyword(bytes32 keyword)
         public
-        partnerAllowance
+        allowance
         view
         returns(uint)
     {
         uint Score = 0;
+        uint count = 0;
         for(uint i = 0; i < documentIndex.length; i++) {
             bytes32 index = documentIndex[i];
-            for(uint j = 0; j < talentsDocuments[index].keywords.length; j++)
+            for(uint j = 0; j < talentsDocuments[index].competencies.length; j++)
             {
-                if(talentsDocuments[index].keywords[j] == keyword)
+                if(talentsDocuments[index].competencies[j].name == keyword)
                 {
                     //Only one keyword by experience
-                    Score += 10;
+                    Score += talentsDocuments[index].competencies[j].rating;
+                    count++;
                     break;
                 }
             }
-            if(Score == 100)
-                break;
         }
-        return Score;
+        return (Score * 20) / count;
     }
 
     function () 

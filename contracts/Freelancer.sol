@@ -4,45 +4,30 @@ import "./Talao.sol";
 
 contract Freelancer is Ownable {
 
-    TalaoToken myToken;
+    // TODO A modifier en mode token
 
-    // Nb of criterias rated by client
-    uint8 public constant maxCriteria = 5;
-    // Nb ratings taking into account for confidence index
-    uint8 public constant maxRating = 4;
+    TalaoToken myToken;
     
-    struct InternalVaultData {
-        // Inactive, Active or Suspended, init by default 0 -> do not replace by enum 
-        FreelancerState userState;
-        bool isUserKYC;
-        // this is the origin of the freelance for future use
-        uint8 referral;
-        uint256 subscriptionDate; 
-    }
-    
-    struct PublicVaultData {
+    struct Information {
         // public freelancer data
         bytes32 firstName;
         bytes32 lastName;
         bytes32 mobilePhone;
         bytes32 email;
-        bytes32 otherSocialMedia;
-        
-        //Confidence Index starts here
-        bool isVerified;
         bool isMobilephone;
         bool isEmail;
-        uint8 nbEducations;
-        uint8 nbExperiences;
-        uint8 nbSkills;
-        uint8 nbLanguages;
+
+        FreelancerState state;
+        bool isUserKYC;
+        // this is the origin of the freelance for future use
+        uint8 referral;
+        uint256 subscriptionDate;
+        //used to penalize (bad behavior, wrong info) or reward (fidelity, good activity) a user
+        uint256 karma;
     }
 
-    // mapping between[{]_parter freelancer Ethereum address and his data
-    mapping(address => InternalVaultData) private InternalData;
-
     // mapping between Vault Ethereum address and Confidence Index
-    mapping(address => PublicVaultData) public PublicData;
+    mapping(address => Information) public FreelancerInformation;
 
     //whitelisted address of partners to get a free access to vault
     mapping(address => mapping(address=>bool)) public ListedPartner;
@@ -60,33 +45,33 @@ contract Freelancer is Ownable {
     event FreelancerInternalData (
         address indexed freelancer,
         bool IsKYC,
-        uint8 referral
+        uint referral
     );
 
     constructor(address token) 
         public 
     {
         myToken = TalaoToken(token);
+        FreelancerInformation[msg.sender].karma = 1;
     }
 
     /**
      * Freelance subscribes/updates his data
     */
-    function subscribe(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _othersocialmedia)
+    function subscribe(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email)
         onlyOwner
         public
     {
-        require(InternalData[msg.sender].userState != FreelancerState.Suspended);
-        if (InternalData[msg.sender].userState == FreelancerState.Inactive)
+        require(FreelancerInformation[msg.sender].state != FreelancerState.Suspended);
+        if (FreelancerInformation[msg.sender].state == FreelancerState.Inactive)
         {
-            InternalData[msg.sender].subscriptionDate = now;
+            FreelancerInformation[msg.sender].subscriptionDate = now;
         }
-        InternalData[msg.sender].userState == FreelancerState.Active;
-        PublicData[msg.sender].firstName = _firstname;
-        PublicData[msg.sender].lastName = _lastname;
-        PublicData[msg.sender].mobilePhone = _phone;
-        PublicData[msg.sender].email = _email;
-        PublicData[msg.sender].otherSocialMedia = _othersocialmedia;
+        FreelancerInformation[msg.sender].state == FreelancerState.Active;
+        FreelancerInformation[msg.sender].firstName = _firstname;
+        FreelancerInformation[msg.sender].lastName = _lastname;
+        FreelancerInformation[msg.sender].mobilePhone = _phone;
+        FreelancerInformation[msg.sender].email = _email;
 
         emit FreelancerSubscribe(msg.sender, _firstname, _lastname, _phone, _email);
     }
@@ -98,9 +83,8 @@ contract Freelancer is Ownable {
         onlyOwner
         public
     {
-        require(InternalData[msg.sender].userState != FreelancerState.Inactive);
-        delete InternalData[msg.sender];
-        delete PublicData[msg.sender];
+        require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive);
+        delete FreelancerInformation[msg.sender];
     }
     
     /**
@@ -111,43 +95,34 @@ contract Freelancer is Ownable {
         onlyOwner
         public
     {
-        require (InternalData[msg.sender].userState != FreelancerState.Inactive);
-        InternalData[msg.sender].isUserKYC = _iskyc;
-        InternalData[msg.sender].referral = _referral;
+        require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive);
+        FreelancerInformation[msg.sender].isUserKYC = _iskyc;
+        FreelancerInformation[msg.sender].referral = _referral;
         emit FreelancerInternalData(msg.sender, _iskyc, _referral);
     }   
     /**
      * Set Confidence Index (public data) by owner in case of bad behavior) 
      */
-    function setConfidenceIndex(
-        bool isVerified, bool isPhone, bool isEmail,
-        uint8 nbEducations, uint8 nbExperiences, uint8 nbSkills, uint8 nbLanguages
-    )
+    function setKarma(uint256 karma)
         onlyOwner
         public
     {
-        require(InternalData[msg.sender].userState == FreelancerState.Active);
-        PublicData[msg.sender].isVerified = isVerified;
-        PublicData[msg.sender].isMobilephone = isPhone;
-        PublicData[msg.sender].isEmail = isEmail;
-        PublicData[msg.sender].nbEducations = nbEducations;
-        PublicData[msg.sender].nbExperiences = nbExperiences;
-        PublicData[msg.sender].nbSkills = nbSkills;
-        PublicData[msg.sender].nbLanguages = nbLanguages;
+        require(FreelancerInformation[msg.sender].state == FreelancerState.Active);
+        FreelancerInformation[msg.sender].karma = karma;
     }
 
     function setInactive()
         onlyOwner
         public
     {
-        InternalData[msg.sender].userState = FreelancerState.Inactive;
+        FreelancerInformation[msg.sender].state = FreelancerState.Inactive;
     }
 
     function setActive()
         onlyOwner
         public
     {
-        InternalData[msg.sender].userState = FreelancerState.Active;
+        FreelancerInformation[msg.sender].state = FreelancerState.Active;
     }
 
     /**
