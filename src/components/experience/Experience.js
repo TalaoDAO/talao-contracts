@@ -23,29 +23,17 @@ const styles = theme => ({
     },
     line: {
         display: 'inline-block',
-        borderTop: '4px solid ' + theme.palette.grey[300],
+        borderTop: '6px solid ' + theme.palette.grey[300],
+        borderRight: '6px solid transparent',
         width: '150px',
-        paddingBottom: '5px',
-    },
-    triangleContainer: {
-        display: 'inline-block',
-        position: 'relative',
-        top: '-4px',
-    },
-    triangle: {
-        display: 'inline-block',
-        width: 0,
-        height: 0,
-        borderTop: '3px solid transparent',
-        borderBottom: '3px solid transparent',
-        borderLeft: '3px solid ' + theme.palette.grey[300],
+        paddingBottom: '3px',
     },
     timeContainer: {
         display: 'inline-block',
         paddingLeft: '5px',
-        fontSize: '14px',
+        fontSize: '15px',
         color: theme.palette.grey[500],
-        paddingBottom: '5px',
+        verticalAlign: 'top',
     },
     dateContainer: {
         color: theme.palette.grey[500],
@@ -93,9 +81,6 @@ class Experience extends React.Component {
                     </div>
                     <div className={this.props.classes.timeLine} >
                         <div className={this.props.classes.line} style={{width: (monthDiff * 5) + 'px'}}></div>
-                        <div className={this.props.classes.triangleContainer}>
-                            <div className={this.props.classes.triangle}></div>
-                        </div>
                         <div className={this.props.classes.timeContainer}>
                             {dateDiff}
                         </div>

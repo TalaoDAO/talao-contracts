@@ -111,7 +111,6 @@ class Competency extends React.Component {
                     </Link>
                 </CardContent>
                 <Link to={'/competencies/' + this.props.competency.name} className={this.props.classes.link}>
-
                     <CardContent className={this.props.classes.badge} style={{ backgroundColor: constants.colors[backgroundLightColorString] }}>
                         <Typography variant="headline" className={this.props.classes.textBadge}>
                             {Math.round(this.props.confidenceIndex)}
