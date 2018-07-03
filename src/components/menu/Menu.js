@@ -54,7 +54,7 @@ class Menu extends React.Component {
                         <Link className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
                     </Typography>
                     <Typography to="/">
-                        <Link className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
+                        <Link className={this.props.classes.sidebarItem} to="/">Chronology</Link>
                     </Typography>
                     </div>
                 </div>

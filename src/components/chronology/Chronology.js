@@ -80,6 +80,22 @@ const styles = theme => ({
         margin: '20px',
         cursor: 'pointer',
     },
+    timeLine: {
+        display: 'inline-block',
+    },
+    timeContainer: {
+        display: 'inline-block',
+        paddingLeft: '5px',
+        fontSize: '15px',
+        verticalAlign: 'top',
+    },
+    line: {
+        display: 'inline-block',
+        borderTop: '6px solid ' + theme.palette.grey[300],
+        borderRight: '6px solid transparent',
+        width: '150px',
+        paddingBottom: '3px',
+    },
 });
 
 class Chronology extends React.Component {
@@ -129,138 +145,148 @@ class Chronology extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    <div onClick={this.newExp} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
-                        <span style={{ display: !this.state.newExperience ? 'inline-block' : 'none' }}>+</span>
-                    </div>
-                    <div className={this.props.classes.content} style={{ display: this.state.newExperience ? 'inline-block' : 'none' }}>
-                        <Grid container spacing={40}>
-                            <form className={this.props.classes.container} noValidate autoComplete="off">
-                                <Grid item>
-                                    <TextField
-                                        id="from"
-                                        label="From"
-                                        type="date"
-                                        className={this.props.classes.textField}
-                                        InputProps={{
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <Icon className={this.props.classes.icon} color="primary">
-                                                        calendar_today
+                    <div>
+                        <div>
+                            <div onClick={this.newExp} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
+                                <span style={{ display: !this.state.newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>+</span>
+                            </div>
+                            <div style={{ display: !this.state.newExperience ? 'inline-block' : 'none' }} className={this.props.classes.timeLine} >
+                                <div className={this.props.classes.line} style={{ width: (5 * 5) + 'px' }}></div>
+                                <div className={this.props.classes.timeContainer}>
+                                    Click here to add a new experience to your vault
+                                </div>
+                            </div>
+                        </div>
+                        <div className={this.props.classes.content} style={{ display: this.state.newExperience ? 'inline-block' : 'none' }}>
+                            <Grid container spacing={40}>
+                                <form className={this.props.classes.container} noValidate autoComplete="off">
+                                    <Grid item>
+                                        <TextField
+                                            id="from"
+                                            label="From"
+                                            type="date"
+                                            className={this.props.classes.textField}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <Icon className={this.props.classes.icon} color="primary">
+                                                            calendar_today
                                                     </Icon>
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}>
-                                    </TextField>
-                                </Grid>
-                                <Grid item xs={3}>
-                                    <TextField
-                                        id="to"
-                                        label="To"
-                                        type="date"
-                                        className={this.props.classes.textField}
-                                        InputProps={{
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <Icon className={this.props.classes.icon} color="primary">
-                                                        calendar_today
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            InputLabelProps={{
+                                                shrink: true,
+                                            }}>
+                                        </TextField>
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <TextField
+                                            id="to"
+                                            label="To"
+                                            type="date"
+                                            className={this.props.classes.textField}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <Icon className={this.props.classes.icon} color="primary">
+                                                            calendar_today
                                                     </Icon>
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}></Grid>
-                                <Grid item xs={6}>
-                                    <FormControl className={this.props.classes.textField}>
-                                        <InputLabel
-                                            FormLabelClasses={{
-                                                root: this.props.classes.cssLabel,
-                                                focused: this.props.classes.cssFocused,
-                                            }} htmlFor="custom-css-input">Title</InputLabel>
-                                        <Input classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <FormControl>
-                                        <FormControlLabel control={
-                                            <Radio
-                                                checked={this.state.type === 'job'}
-                                                onChange={this.handleChangeType}
-                                                value="job"
-                                                name="radio-button-demo"
-                                                aria-label="C"
-                                                classes={{
-                                                    root: this.props.classes.root,
-                                                    checked: this.props.classes.checked,
-                                                }}
-                                            />} label="Job" />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormControlLabel control={
-                                            <Radio
-                                                checked={this.state.type === 'education'}
-                                                onChange={this.handleChangeType}
-                                                value="education"
-                                                name="radio-button-demo"
-                                                aria-label="C"
-                                                classes={{
-                                                    root: this.props.classes.root,
-                                                    checked: this.props.classes.checked,
-                                                }}
-                                            />} label="Education" />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormControlLabel control={
-                                            <Radio
-                                                checked={this.state.type === 'certification'}
-                                                onChange={this.handleChangeType}
-                                                value="certification"
-                                                name="radio-button-demo"
-                                                aria-label="C"
-                                                classes={{
-                                                    root: this.props.classes.root,
-                                                    checked: this.props.classes.checked,
-                                                }}
-                                            />} label="Certification" />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={9}>
-                                    <FormControl className={this.props.classes.textField}>
-                                        <InputLabel
-                                            FormLabelClasses={{
-                                                root: this.props.classes.cssLabel,
-                                                focused: this.props.classes.cssFocused,
-                                            }} htmlFor="custom-css-input">Description</InputLabel>
-                                        <Input multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={3}></Grid>
-                                <Grid item xs={3}>
-                                    <Button className={this.props.classes.certificatButton}>
-                                        <LineStyle className={this.props.classes.rightIcon} />
-                                        Add certificat
+                                                    </InputAdornment>
+                                                ),
+                                            }}
+                                            InputLabelProps={{
+                                                shrink: true,
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}></Grid>
+                                    <Grid item xs={6}>
+                                        <FormControl className={this.props.classes.textField}>
+                                            <InputLabel
+                                                FormLabelClasses={{
+                                                    root: this.props.classes.cssLabel,
+                                                    focused: this.props.classes.cssFocused,
+                                                }} htmlFor="custom-css-input">Title</InputLabel>
+                                            <Input classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <FormControl>
+                                            <FormControlLabel control={
+                                                <Radio
+                                                    checked={this.state.type === 'job'}
+                                                    onChange={this.handleChangeType}
+                                                    value="job"
+                                                    name="radio-button-demo"
+                                                    aria-label="C"
+                                                    classes={{
+                                                        root: this.props.classes.root,
+                                                        checked: this.props.classes.checked,
+                                                    }}
+                                                />} label="Job" />
+                                        </FormControl>
+                                        <FormControl>
+                                            <FormControlLabel control={
+                                                <Radio
+                                                    checked={this.state.type === 'education'}
+                                                    onChange={this.handleChangeType}
+                                                    value="education"
+                                                    name="radio-button-demo"
+                                                    aria-label="C"
+                                                    classes={{
+                                                        root: this.props.classes.root,
+                                                        checked: this.props.classes.checked,
+                                                    }}
+                                                />} label="Education" />
+                                        </FormControl>
+                                        <FormControl>
+                                            <FormControlLabel control={
+                                                <Radio
+                                                    checked={this.state.type === 'certification'}
+                                                    onChange={this.handleChangeType}
+                                                    value="certification"
+                                                    name="radio-button-demo"
+                                                    aria-label="C"
+                                                    classes={{
+                                                        root: this.props.classes.root,
+                                                        checked: this.props.classes.checked,
+                                                    }}
+                                                />} label="Certification" />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={9}>
+                                        <FormControl className={this.props.classes.textField}>
+                                            <InputLabel
+                                                FormLabelClasses={{
+                                                    root: this.props.classes.cssLabel,
+                                                    focused: this.props.classes.cssFocused,
+                                                }} htmlFor="custom-css-input">Description</InputLabel>
+                                            <Input multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={3}></Grid>
+                                    <Grid item xs={3}>
+                                        <Button className={this.props.classes.certificatButton}>
+                                            <LineStyle className={this.props.classes.rightIcon} />
+                                            Add certificat
                                     </Button>
-                                </Grid>
-                                <Grid item xs={10}></Grid>
-                                <Grid item xs={3}>
-                                    <Typography className={this.props.classes.textField} variant="headline" component="p">
-                                        Tags
+                                    </Grid>
+                                    <Grid item xs={10}></Grid>
+                                    <Grid item xs={3}>
+                                        <Typography className={this.props.classes.textField} variant="headline" component="p">
+                                            Tags
                                     </Typography>
-                                </Grid>
-                                <Grid item xs={8}></Grid>
-                                <Grid item xs={2}>
-                                    <Button className={this.props.classes.certificatButton} type="submit" label="login">
-                                        Submit
+                                    </Grid>
+                                    <Grid item xs={8}></Grid>
+                                    <Grid item xs={2}>
+                                        <Button className={this.props.classes.certificatButton} type="submit" label="login">
+                                            Submit
                                     </Button>
-                                </Grid>
-                            </form>
-                        </Grid>
+                                    </Grid>
+                                </form>
+                            </Grid>
+                        </div>
                     </div>
                     {experiences}
                 </CardContent>
