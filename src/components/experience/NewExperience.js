@@ -74,8 +74,10 @@ const styles = theme => ({
         margin: '20px 0',
     },
     chip: {
-        margin: '20px',
+        margin: '20px 10px',
         cursor: 'pointer',
+        color: '#fff',
+        backgroundColor: blue[500],
     },
     timeLine: {
         display: 'inline-block',
@@ -165,6 +167,7 @@ class NewExperience extends React.Component {
                                     id="from"
                                     label="From"
                                     type="date"
+                                    required
                                     className={this.props.classes.textField}
                                     InputProps={{
                                         startAdornment: (
@@ -185,6 +188,7 @@ class NewExperience extends React.Component {
                                     id="to"
                                     label="To"
                                     type="date"
+                                    required
                                     className={this.props.classes.textField}
                                     InputProps={{
                                         startAdornment: (
@@ -204,6 +208,7 @@ class NewExperience extends React.Component {
                             <Grid item xs={6}>
                                 <FormControl className={this.props.classes.textField}>
                                     <InputLabel
+                                        required
                                         FormLabelClasses={{
                                             root: this.props.classes.cssLabel,
                                             focused: this.props.classes.cssFocused,
