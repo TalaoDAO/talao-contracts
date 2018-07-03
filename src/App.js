@@ -2,13 +2,8 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { constants } from './constants';
-import Profile from './components/profile/Profile';
-import Menu from './components/menu/Menu';
-import Competencies from './components/competencies/Competencies';
-import Chronology from './components/chronology/Chronology';
-import Grid from '@material-ui/core/Grid';
-import Hidden from '@material-ui/core/Hidden';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Web3Wrapper from './web3wrapper/Web3Wrapper';
+import AppConnected from './AppConnected';
 
 const theme = createMuiTheme(constants.theme);
 
@@ -31,37 +26,13 @@ class App extends React.Component {
 
   render() {
     return (
-      <Router>
-        <div>
-          <MuiThemeProvider theme={theme}>
-            <Grid container className={this.props.classes.root}>
-              <Hidden smDown>
-                <Grid item xs={2}>
-                  <Menu />
-                </Grid>
-              </Hidden>
-              <Grid container item xs={12} md={10} className={this.props.classes.content}>
-                <Grid item xs={12} lg={10}>
-                  <Grid container spacing={24}>
-                    <Grid item xs={12}>
-                      <Profile />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Switch>
-                        <Route exact path="/" component={Competencies} />
-                        <Route path="/competencies/:competencyName" component={Competencies} />
-                        <Route path="/chronology/" component={Chronology} />
-                      </Switch>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </MuiThemeProvider>
-        </div>
-      </Router>
+      <div>
+        <Web3Wrapper>
+          <AppConnected />
+        </Web3Wrapper>
+      </div>
     );
   }
 }
 
-export default withStyles(styles)(App);
+export default App;
