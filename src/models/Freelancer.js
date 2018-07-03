@@ -88,6 +88,20 @@ class Freelancer {
         });
         return competencies;
     }
+    
+    addExperience(exp) {
+        this.experiences.push(exp);
+    }
+
+    updateProfil(firstName, lastName, title, description, email, phone) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.title = title;
+        this.description = description;
+        this.email = email;
+        this.phone = phone;
+    }
+
 }
 
 export default Freelancer;

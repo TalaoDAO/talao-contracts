@@ -1,7 +1,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core';
 import { constants } from '../../constants';
-import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography } from '@material-ui/core';
+import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography, Chip, Paper } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import LineStyle from '@material-ui/icons/LineStyle';
 import Icon from '@material-ui/core/Icon';
@@ -103,8 +103,10 @@ class NewExperience extends React.Component {
         this.state = {
             newExperience: false,
             type: 'job',
+            competencies: [],
         };
         this.newExp = this.newExp.bind(this);
+        this.reader = new FileReader();
     }
 
     newExp() {
@@ -116,6 +118,27 @@ class NewExperience extends React.Component {
     handleChangeType = event => {
         this.setState({ type: event.target.value });
     };
+
+    triggerInputFile = () => this.fileInput.click();
+
+    detectCompetenciesFromCertification(file) {
+        let content;
+        this.reader.onload = function (event) {
+            content = event.target.result;
+            var jsonContent = JSON.parse(content);
+            Object.keys(jsonContent).forEach(key => {
+                if (key.startsWith("jobSkill")) {
+                    if (jsonContent[key] !== "") {
+                        let count = key.substring(8);
+                        this.setState(prevState => ({
+                            competencies: [...prevState.competencies, { key: key, label: jsonContent[key], rating: jsonContent["jobRating" + count] }]
+                        }))
+                    }
+                }
+            });
+        }.bind(this);
+        this.reader.readAsText(file);
+    }
 
     render() {
         return (
@@ -241,22 +264,34 @@ class NewExperience extends React.Component {
                             </Grid>
                             <Grid item xs={3}></Grid>
                             <Grid item xs={3}>
-                                <Button className={this.props.classes.certificatButton}>
+                                <Button onClick={this.triggerInputFile} className={this.props.classes.certificatButton}>
                                     <LineStyle className={this.props.classes.rightIcon} />
                                     Add certificat
-                                    </Button>
+                                </Button>
+                                <input onChange={(e) => this.detectCompetenciesFromCertification(e.target.files[0])} style={{ display: 'none' }} ref={fileInput => this.fileInput = fileInput} type="file" accept="application/json" />
                             </Grid>
                             <Grid item xs={10}></Grid>
-                            <Grid item xs={3}>
+                            <Grid item xs={8}>
                                 <Typography className={this.props.classes.textField} variant="headline" component="p">
-                                    Tags
-                                    </Typography>
+                                    Competencies
+                                </Typography>
+                                <Paper className={this.props.classes.root}>
+                                    {this.state.competencies.map(data => {
+                                        return (
+                                            <Chip
+                                                key={data.key}
+                                                label={data.label}
+                                                className={this.props.classes.chip}
+                                            />
+                                        );
+                                    })}
+                                </Paper>
                             </Grid>
-                            <Grid item xs={8}></Grid>
+                            <Grid item xs={4}></Grid>
                             <Grid item xs={2}>
                                 <Button className={this.props.classes.certificatButton} type="submit" label="login">
                                     Submit
-                                    </Button>
+                                </Button>
                             </Grid>
                         </form>
                     </Grid>
