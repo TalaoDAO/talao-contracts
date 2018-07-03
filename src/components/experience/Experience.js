@@ -4,6 +4,8 @@ import { constants } from '../../constants';
 import Typography from '@material-ui/core/Typography';
 import CompetencyTag from '../competencyTag/CompetencyTag';
 import DateService from '../../services/DateService';
+import LineStyle from '@material-ui/icons/LineStyle';
+import Button from 'material-ui/Button';
 
 const styles = theme => ({
     experienceContainer: {
@@ -54,6 +56,14 @@ const styles = theme => ({
     description: {
         marginTop: '15px',
     },
+    certificatButton: {
+        margin: '20px 0px',
+        backgroundColor: '#3b3838',
+        color: '#ffffff',
+        '&:hover': {
+            backgroundColor: '#3b3838'
+        }
+    },
 });
 
 class Experience extends React.Component {
@@ -64,6 +74,11 @@ class Experience extends React.Component {
         months -= d1.getMonth() + 1;
         months += d2.getMonth();
         return months <= 0 ? 0 : months;
+    }
+
+    showCertification(certificat) {
+        //TODO show certificat on button click
+        console.log(certificat);
     }
 
     render() {
@@ -80,7 +95,7 @@ class Experience extends React.Component {
                         &nbsp;
                     </div>
                     <div className={this.props.classes.timeLine} >
-                        <div className={this.props.classes.line} style={{width: (monthDiff * 5) + 'px'}}></div>
+                        <div className={this.props.classes.line} style={{ width: (monthDiff * 5) + 'px' }}></div>
                         <div className={this.props.classes.timeContainer}>
                             {dateDiff}
                         </div>
@@ -99,6 +114,10 @@ class Experience extends React.Component {
                         <Typography variant="body1" gutterBottom className={this.props.classes.description}>
                             {this.props.value.description}
                         </Typography>
+                        <Button onClick={() => this.showCertification(this.props.value.certificat)} className={this.props.classes.certificatButton}>
+                            <LineStyle />
+                            View certificat
+                        </Button>
                     </div>
                 </div>
             </div>

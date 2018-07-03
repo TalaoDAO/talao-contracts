@@ -129,13 +129,16 @@ class NewExperience extends React.Component {
             Object.keys(jsonContent).forEach(key => {
                 if (key.startsWith("jobSkill")) {
                     if (jsonContent[key] !== "") {
-                        let count = key.substring(8);
+                        let number = key.substring(8);
+                        let competency = jsonContent[key];
+                        let rating = jsonContent["jobRating" + number];
                         this.setState(prevState => ({
-                            competencies: [...prevState.competencies, { key: key, label: jsonContent[key], rating: jsonContent["jobRating" + count] }]
+                            competencies: [...prevState.competencies, { key: key, label: competency + " — " + rating, competency: competency, rating: rating }]
                         }))
                     }
                 }
             });
+            console.log(this.state.competencies);
         }.bind(this);
         this.reader.readAsText(file);
     }
@@ -265,7 +268,7 @@ class NewExperience extends React.Component {
                             <Grid item xs={3}></Grid>
                             <Grid item xs={3}>
                                 <Button onClick={this.triggerInputFile} className={this.props.classes.certificatButton}>
-                                    <LineStyle className={this.props.classes.rightIcon} />
+                                    <LineStyle />
                                     Add certificat
                                 </Button>
                                 <input onChange={(e) => this.detectCompetenciesFromCertification(e.target.files[0])} style={{ display: 'none' }} ref={fileInput => this.fileInput = fileInput} type="file" accept="application/json" />
