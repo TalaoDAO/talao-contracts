@@ -4,18 +4,19 @@ import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
 import ColorService from '../../services/ColorService';
 import { constants } from '../../constants';
-import { Grid, withStyles, CardContent, Radio, Chip, FormControl, Input, InputLabel, FormControlLabel } from '@material-ui/core';
+import { Grid, withStyles, CardContent, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import LineStyle from '@material-ui/icons/LineStyle';
+import Icon from '@material-ui/core/Icon';
 import blue from '@material-ui/core/colors/blue';
 
 const styles = theme => ({
     root: {
         color: blue[600],
         '&$checked': {
-          color: blue[500],
+            color: blue[500],
         },
-      },
+    },
     checked: {},
     cssLabel: {
         '&$cssFocused': {
@@ -41,6 +42,7 @@ const styles = theme => ({
         verticalAlign: 'top',
         marginTop: '15px',
         marginLeft: '30px',
+        marginBottom: '20px',
         paddingLeft: '50px',
         borderLeft: '1px solid ' + theme.palette.grey[300],
     },
@@ -55,6 +57,7 @@ const styles = theme => ({
         lineHeight: '20px',
         textAlign: 'center',
         padding: '20px',
+        marginBottom: '20px',
         borderRadius: '50%',
         cursor: 'pointer',
     },
@@ -85,7 +88,7 @@ class Chronology extends React.Component {
         super();
         this.state = {
             experiences: FreelancerService.getFreelancer().experiences,
-            newExperience: true,
+            newExperience: false,
             type: 'job',
         };
         this.newExp = this.newExp.bind(this);
@@ -126,32 +129,51 @@ class Chronology extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    {experiences}
                     <div onClick={this.newExp} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
                         <span style={{ display: !this.state.newExperience ? 'inline-block' : 'none' }}>+</span>
                     </div>
                     <div className={this.props.classes.content} style={{ display: this.state.newExperience ? 'inline-block' : 'none' }}>
-                        <Grid container>
+                        <Grid container spacing={40}>
                             <form className={this.props.classes.container} noValidate autoComplete="off">
-                                <Grid item xs={3}>
-                                    <FormControl className={this.props.classes.textField}>
-                                        <InputLabel
-                                            FormLabelClasses={{
-                                                root: this.props.classes.cssLabel,
-                                                focused: this.props.classes.cssFocused,
-                                            }} htmlFor="custom-css-input">From</InputLabel>
-                                        <Input type="date" defaultValue="2017-05-24" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                    </FormControl>
+                                <Grid item>
+                                    <TextField
+                                        id="from"
+                                        label="From"
+                                        type="date"
+                                        className={this.props.classes.textField}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Icon className={this.props.classes.icon} color="primary">
+                                                        calendar_today
+                                                    </Icon>
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}>
+                                    </TextField>
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <FormControl className={this.props.classes.textField}>
-                                        <InputLabel
-                                            FormLabelClasses={{
-                                                root: this.props.classes.cssLabel,
-                                                focused: this.props.classes.cssFocused,
-                                            }} htmlFor="custom-css-input">To</InputLabel>
-                                        <Input type="date" defaultValue="2017-05-24" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                    </FormControl>
+                                    <TextField
+                                        id="to"
+                                        label="To"
+                                        type="date"
+                                        className={this.props.classes.textField}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Icon className={this.props.classes.icon} color="primary">
+                                                        calendar_today
+                                                    </Icon>
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
                                 </Grid>
                                 <Grid item xs={6}></Grid>
                                 <Grid item xs={6}>
@@ -165,48 +187,48 @@ class Chronology extends React.Component {
                                     </FormControl>
                                 </Grid>
                                 <Grid item xs={6}>
-                                <FormControl>
-                                    <FormControlLabel control={
-                                    <Radio
-                                        checked={this.state.type === 'job'}
-                                        onChange={this.handleChangeType}
-                                        value="job"
-                                        name="radio-button-demo"
-                                        aria-label="C"
-                                        classes={{
-                                            root: this.props.classes.root,
-                                            checked: this.props.classes.checked,
-                                        }}
-                                    /> } label="Job" />
-                                </FormControl>
-                                <FormControl>
-                                    <FormControlLabel control={
-                                    <Radio
-                                        checked={this.state.type === 'education'}
-                                        onChange={this.handleChangeType}
-                                        value="education"
-                                        name="radio-button-demo"
-                                        aria-label="C"
-                                        classes={{
-                                            root: this.props.classes.root,
-                                            checked: this.props.classes.checked,
-                                        }}
-                                    /> } label="Education" />
-                                </FormControl>
-                                <FormControl>
-                                    <FormControlLabel control={
-                                    <Radio
-                                        checked={this.state.type === 'certification'}
-                                        onChange={this.handleChangeType}
-                                        value="certification"
-                                        name="radio-button-demo"
-                                        aria-label="C"
-                                        classes={{
-                                            root: this.props.classes.root,
-                                            checked: this.props.classes.checked,
-                                        }}
-                                    /> } label="Certification" />
-                                </FormControl>
+                                    <FormControl>
+                                        <FormControlLabel control={
+                                            <Radio
+                                                checked={this.state.type === 'job'}
+                                                onChange={this.handleChangeType}
+                                                value="job"
+                                                name="radio-button-demo"
+                                                aria-label="C"
+                                                classes={{
+                                                    root: this.props.classes.root,
+                                                    checked: this.props.classes.checked,
+                                                }}
+                                            />} label="Job" />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormControlLabel control={
+                                            <Radio
+                                                checked={this.state.type === 'education'}
+                                                onChange={this.handleChangeType}
+                                                value="education"
+                                                name="radio-button-demo"
+                                                aria-label="C"
+                                                classes={{
+                                                    root: this.props.classes.root,
+                                                    checked: this.props.classes.checked,
+                                                }}
+                                            />} label="Education" />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormControlLabel control={
+                                            <Radio
+                                                checked={this.state.type === 'certification'}
+                                                onChange={this.handleChangeType}
+                                                value="certification"
+                                                name="radio-button-demo"
+                                                aria-label="C"
+                                                classes={{
+                                                    root: this.props.classes.root,
+                                                    checked: this.props.classes.checked,
+                                                }}
+                                            />} label="Certification" />
+                                    </FormControl>
                                 </Grid>
                                 <Grid item xs={9}>
                                     <FormControl className={this.props.classes.textField}>
@@ -227,8 +249,9 @@ class Chronology extends React.Component {
                                 </Grid>
                                 <Grid item xs={10}></Grid>
                                 <Grid item xs={3}>
-                                    <p>Tags</p>
-                                    <Chip label="+" className={this.props.classes.chip} />
+                                    <Typography className={this.props.classes.textField} variant="headline" component="p">
+                                        Tags
+                                    </Typography>
                                 </Grid>
                                 <Grid item xs={8}></Grid>
                                 <Grid item xs={2}>
@@ -239,6 +262,7 @@ class Chronology extends React.Component {
                             </form>
                         </Grid>
                     </div>
+                    {experiences}
                 </CardContent>
             </Card>
         );
