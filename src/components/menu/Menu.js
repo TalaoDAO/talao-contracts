@@ -15,12 +15,18 @@ const styles = theme => ({
     },
     sidebar: {
         float: 'right',
-        marginRight: '20px',
+        marginRight: '40px',
+        height: '50vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     sidebarItem: {
         textDecoration: 'none',
         color: theme.palette.text.primary,
-        lineHeight: '30px',
+        lineHeight: '50px',
+        fontSize: '16px',
+        float: 'right',
     },
     menus: {
         position: 'absolute',
@@ -43,12 +49,14 @@ class Menu extends React.Component {
                     </Link>
                 </div>
                 <div className={this.props.classes.sidebar}>
+                    <div>
                     <Typography to="/">
-                        <a className={this.props.classes.sidebarItem} href="/">Competencies</a>
+                        <Link className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
                     </Typography>
                     <Typography to="/">
-                        <a className={this.props.classes.sidebarItem} href="/chronology">Chronology</a>
+                        <Link className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
                     </Typography>
+                    </div>
                 </div>
                 <div className={this.props.classes.menus}>
                     <Typography>
