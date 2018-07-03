@@ -40,8 +40,9 @@ class Web3Wrapper extends Component {
       <Web3Provider
         web3UnavailableScreen={Web3WrapperUnavailable}
         accountUnavailableScreen={Web3WrapperUnavailableAccount}
+        passive={false}
       >
-      <AppConnected/>
+        <AppConnected/>
       </Web3Provider>
     );
   }

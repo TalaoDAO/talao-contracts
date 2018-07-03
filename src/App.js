@@ -27,9 +27,9 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <Web3Wrapper>
-          <AppConnected />
-        </Web3Wrapper>
+        <Web3Wrapper />
+          {/* <AppConnected />
+        </Web3Wrapper> */}
       </div>
     );
   }
