@@ -21,7 +21,7 @@ class Freelancer {
                 [
                     new Competency("Project Management", 100)
                 ],
-                null,
+                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 100,
             ),
             new Experience(
@@ -34,7 +34,7 @@ class Freelancer {
                     new Competency("Blockchain", 80),
                     new Competency("Javascript", 85)
                 ],
-                null,
+                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 83,
             ),
             new Experience(
@@ -45,7 +45,7 @@ class Freelancer {
                 [
                     new Competency("Design", 95), 
                 ],
-                null,
+                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 62,
             ),
             new Experience(
@@ -56,7 +56,7 @@ class Freelancer {
                 [
                     new Competency("Javascript", 25), 
                 ],
-                null,
+                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 13,
             ),
             new Experience(
@@ -67,7 +67,7 @@ class Freelancer {
                 [
                     new Competency("Education", 35), 
                 ],
-                null,
+                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 63,
             ),
         ]

@@ -6,6 +6,7 @@ import CompetencyTag from '../competencyTag/CompetencyTag';
 import DateService from '../../services/DateService';
 import LineStyle from '@material-ui/icons/LineStyle';
 import Button from 'material-ui/Button';
+import { Blockcerts } from 'react-blockcerts';
 
 const styles = theme => ({
     experienceContainer: {
@@ -68,6 +69,14 @@ const styles = theme => ({
 
 class Experience extends React.Component {
 
+    constructor() {
+        super();
+        this.state = {
+            showCert: false,
+        };
+        this.showCertification = this.showCertification.bind(this);
+    }
+
     monthDiff(d1, d2) {
         var months;
         months = (d2.getFullYear() - d1.getFullYear()) * 12;
@@ -76,9 +85,11 @@ class Experience extends React.Component {
         return months <= 0 ? 0 : months;
     }
 
-    showCertification(certificat) {
+    showCertification() {
         //TODO show certificat on button click
-        console.log(certificat);
+        this.setState({
+            showCert: !this.state.showCert
+        });
     }
 
     render() {
@@ -114,10 +125,14 @@ class Experience extends React.Component {
                         <Typography variant="body1" gutterBottom className={this.props.classes.description}>
                             {this.props.value.description}
                         </Typography>
-                        <Button onClick={() => this.showCertification(this.props.value.certificat)} className={this.props.classes.certificatButton}>
+                        <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
                             <LineStyle />
-                            View certificat
+                            <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
+                            <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
                         </Button>
+                        <div style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>
+                            <Blockcerts url={this.props.value.certificat} />
+                        </div>
                     </div>
                 </div>
             </div>
