@@ -125,12 +125,12 @@ class Competencies extends React.Component {
                     </div>
                 );
             });
-
         return (
             <div className={this.props.classes.competenciesContainer}>
                 {competencies}
             </div>
         );
+        
     }
 }
 

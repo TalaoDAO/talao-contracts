@@ -130,7 +130,7 @@ class Experience extends React.Component {
                             <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
                             <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
                         </Button>
-                        <div style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>
+                        <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
                             <Blockcerts url={this.props.value.certificat} />
                         </div>
                     </div>

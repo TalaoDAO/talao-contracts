@@ -52,6 +52,7 @@ contract MiniVault{
         uint documentType; //ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4
         uint startDate;
         uint endDate;
+        uint duration;
         bool isBlockCert;
     }
 
@@ -82,10 +83,11 @@ contract MiniVault{
         uint documentType,
         uint startDate,
         uint endDate,
+        uint duration,
         bool isBlockCert
     );
 
-    event FreelancerSubscribe (
+    event FreelancerUpdateData (
         address indexed freelancer,
         bytes32 firstname,
         bytes32 lastname,
@@ -105,9 +107,8 @@ contract MiniVault{
     accessibility : only for authorized user and owner of this contract
     */
     function addDocument(
-        bytes32 documentId, bytes32 description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, bool isBlockCert
+        bytes32 documentId, bytes32 description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, uint duration, bool isBlockCert
     )
-        onlyOwner
         public
         returns (bool)
     {
@@ -128,9 +129,10 @@ contract MiniVault{
         talentsDocuments[documentId].documentType = documentType;
         talentsDocuments[documentId].startDate = startDate;
         talentsDocuments[documentId].endDate = endDate;
+        talentsDocuments[documentId].duration = duration;
         talentsDocuments[documentId].isBlockCert = isBlockCert;
         
-        emit VaultDocAdded(msg.sender,documentId,description,documentType,startDate,endDate,isBlockCert);
+        emit VaultDocAdded(msg.sender,documentId,description,documentType,startDate,endDate,duration,isBlockCert);
         return true;
     }
 
@@ -196,8 +198,9 @@ contract MiniVault{
         FreelancerInformation[msg.sender].lastName = _lastname;
         FreelancerInformation[msg.sender].mobilePhone = _phone;
         FreelancerInformation[msg.sender].email = _email;
+        FreelancerInformation[msg.sender].description = _description;
 
-        emit FreelancerSubscribe(msg.sender, _firstname, _lastname, _phone, _email, _description);
+        emit FreelancerUpdateData(msg.sender, _firstname, _lastname, _phone, _email, _description);
     }
 
     function () 

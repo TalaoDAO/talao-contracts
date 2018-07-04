@@ -1,45 +1,45 @@
 import Freelancer from "../models/Freelancer";
-
-const miniVaultContract = new window.web3.eth.Contract(
-    JSON.parse(process.env.REACT_APP_MINIVAULT_ABI),
-    process.env.REACT_APP_MINIVAULT_ADDRESS
-);
+import Experience from "../models/Experience";
+import Competency from "../models/Competency";
 
 class FreelancerService {
 
-    static Init() {
+    static getFreelancer() {
+        
+        var promises = [];
 
+        const miniVaultContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_MINIVAULT_ABI), 
+            process.env.REACT_APP_MINIVAULT_ADDRESS
+        );
         //get blocknumber
         window.web3.eth.getBlockNumber().then(blockNumber => {
             this.firstBlock = blockNumber;
         });
-
-        miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+        this.freelancer = new Freelancer();
+        promises.push(
+            miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
             events.forEach((event => {
                 var docId = event['returnValues']['documentId'].toString();
                 var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-
-                this.state.vaultContract.methods.getDocumentIsAlive(docId).call({from: this.context.web3.selectedAccount})
-                .then(documentIsAlive => {
-                  if (documentIsAlive) {
-                    this.state.vaultContract.methods.getKeywordsNumber(docId).call({from: this.context.web3.selectedAccount})
-                    .then(number => {
-                        this.pushDocument(number, docId, description);
-                    });
-                  }
-                });
+                var newExp = new Experience(
+                    docId, 
+                    description,
+                    new Date(2018, 1, 1), 
+                    new Date(2018, 6, 1),
+                    [
+                        new Competency("Project Management", 100)
+                    ],
+                    "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
+                    100,
+                )
+                this.freelancer.addExperience(newExp);
             }));
+        }));
+
+        return Promise.all(promises).then(() => {
+            this.freelancer;
         });
-
-        //watch events
-    }
-
-    static getFreelancer() {
-        var freelancer = new Freelancer();
-
-        //init Vault data
-
-        return freelancer;
     }
 }
 
