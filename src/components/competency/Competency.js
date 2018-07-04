@@ -106,7 +106,7 @@ class Competency extends React.Component {
         return (
             <Card className={this.props.classes.card + ' ' + this.props.classes['card' + this.props.layout]}>
                 <CardContent className={this.props.classes.close} style={{ display: layoutFocused ? 'initial' : 'none' }}>
-                    <Link to='/'>
+                    <Link to='/competencies'>
                         <CloseIcon />
                     </Link>
                 </CardContent>

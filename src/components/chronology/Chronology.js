@@ -18,12 +18,12 @@ class Chronology extends React.Component {
     constructor() {
         super();
         this.state = {
-            experiences: FreelancerService.getFreelancer().experiences,
+            freelancer: FreelancerService.getFreelancer(),
         };
     }
 
     render() {
-        const experiences = this.state.experiences
+        const experiences = this.state.freelancer.experiences
             // Sort descending by date
             .sort((extendedExperienceA, extendedExperienceB) => {
                 return extendedExperienceA.from < extendedExperienceB.from;
