@@ -16,8 +16,10 @@ contract MiniVault{
         bytes32 lastName;
         bytes32 mobilePhone;
         bytes32 email;
+        bytes32 description; 
         bool isMobilephone;
         bool isEmail;
+
 
         FreelancerState state;
         bool isUserKYC;
@@ -88,7 +90,8 @@ contract MiniVault{
         bytes32 firstname,
         bytes32 lastname,
         bytes32 phone,
-        bytes32 email
+        bytes32 email,
+        bytes32 description
     );
 
     constructor()
@@ -128,23 +131,6 @@ contract MiniVault{
         talentsDocuments[documentId].isBlockCert = isBlockCert;
         
         emit VaultDocAdded(msg.sender,documentId,description,documentType,startDate,endDate,isBlockCert);
-        return true;
-    }
-
-    /*
-    Add keyword to a specified document using document Id
-    accessibility : only for authorized user and owner of this contract
-    */
-    function addKeyword(bytes32 documentId, bytes32 name, uint rating)
-        onlyOwner
-        public
-        returns (bool)
-    {
-        require(documentId != 0 && name.length != 0);
-        require(rating >= 0 && rating <= 5);
-        require(talentsDocuments[documentId].isAlive);
-        talentsDocuments[documentId].competencies.push(competency(name, rating));
-        emit VaultLog(msg.sender, VaultLife.keywordAdded, documentId);
         return true;
     }
 
@@ -196,57 +182,7 @@ contract MiniVault{
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate, talentsDocuments[dId].isBlockCert);
     }
 
-    /*
-    Get FCR of the owner of the VaultDocAdded
-    */
-    function getScoring()
-        onlyOwner
-        public
-        view
-        returns(uint)
-    {
-        uint scoreEducation = 0;
-        uint scoreWork = 0;
-        uint scoreSkills = 0;
-        for(uint i = 0; i < documentIndex.length; i++) {
-            bytes32 index = documentIndex[i];
-            scoreSkills += talentsDocuments[index].competencies.length;
-            if(talentsDocuments[index].documentType == 2 && scoreEducation < 10) {
-                scoreEducation += 2;
-            }
-            else if(talentsDocuments[index].documentType == 4 && scoreWork < 20) {
-                scoreWork += 2;
-            }
-        }
-        if(scoreSkills > 40) scoreSkills = 40;
-        return scoreEducation + scoreWork + scoreSkills;
-    }
-
-    function getScoringByKeyword(bytes32 keyword)
-        onlyOwner
-        public
-        view
-        returns(uint)
-    {
-        uint Score = 0;
-        uint count = 0;
-        for(uint i = 0; i < documentIndex.length; i++) {
-            bytes32 index = documentIndex[i];
-            for(uint j = 0; j < talentsDocuments[index].competencies.length; j++)
-            {
-                if(talentsDocuments[index].competencies[j].name == keyword)
-                {
-                    //Only one keyword by experience
-                    Score += talentsDocuments[index].competencies[j].rating;
-                    count++;
-                    break;
-                }
-            }
-        }
-        return (Score * 20) / count;
-    }
-
-    function subscribe(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email)
+    function InitFreelanceData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _description)
         onlyOwner
         public
     {
@@ -261,7 +197,7 @@ contract MiniVault{
         FreelancerInformation[msg.sender].mobilePhone = _phone;
         FreelancerInformation[msg.sender].email = _email;
 
-        emit FreelancerSubscribe(msg.sender, _firstname, _lastname, _phone, _email);
+        emit FreelancerSubscribe(msg.sender, _firstname, _lastname, _phone, _email, _description);
     }
 
     function () 
