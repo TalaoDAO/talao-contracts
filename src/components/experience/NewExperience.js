@@ -1,7 +1,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core';
 import { constants } from '../../constants';
-import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography, Chip, Paper } from '@material-ui/core';
+import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography, Chip } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import LineStyle from '@material-ui/icons/LineStyle';
 import Icon from '@material-ui/core/Icon';
@@ -283,17 +283,15 @@ class NewExperience extends React.Component {
                                 <Typography className={this.props.classes.textField} variant="headline" component="p">
                                     Competencies
                                 </Typography>
-                                <Paper className={this.props.classes.root}>
-                                    {this.state.competencies.map(data => {
-                                        return (
-                                            <Chip
-                                                key={data.key}
-                                                label={data.label}
-                                                className={this.props.classes.chip}
-                                            />
-                                        );
-                                    })}
-                                </Paper>
+                                {this.state.competencies.map(data => {
+                                    return (
+                                        <Chip
+                                            key={data.key}
+                                            label={data.label}
+                                            className={this.props.classes.chip}
+                                        />
+                                    );
+                                })}
                             </Grid>
                             <Grid item xs={4}></Grid>
                             <Grid item xs={2}>
