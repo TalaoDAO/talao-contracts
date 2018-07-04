@@ -1,11 +1,13 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core';
 import { constants } from '../../constants';
-import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography, Chip } from '@material-ui/core';
+import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import LineStyle from '@material-ui/icons/LineStyle';
 import Icon from '@material-ui/core/Icon';
 import blue from '@material-ui/core/colors/blue';
+import CompetencyTag from '../competencyTag/CompetencyTag';
+import Competency from '../../models/Competency';
 
 const styles = theme => ({
     root: {
@@ -63,8 +65,7 @@ const styles = theme => ({
         flexWrap: 'wrap',
     },
     textField: {
-        marginLeft: '20px',
-        marginRight: '20px',
+        margin: '10px 20px',
         width: '-webkit-fill-available',
     },
     formControl: {
@@ -132,10 +133,11 @@ class NewExperience extends React.Component {
                 if (key.startsWith("jobSkill")) {
                     if (jsonContent[key] !== "") {
                         let number = key.substring(8);
-                        let competency = jsonContent[key];
+                        let competencyName = jsonContent[key];
                         let rating = jsonContent["jobRating" + number];
+                        let competency = new Competency(competencyName, rating * 20);
                         this.setState(prevState => ({
-                            competencies: [...prevState.competencies, { key: key, label: competency + " — " + rating, competency: competency, rating: rating }]
+                            competencies: [...prevState.competencies, competency]
                         }))
                     }
                 }
@@ -146,6 +148,9 @@ class NewExperience extends React.Component {
     }
 
     render() {
+        const competencyTags = this.state.competencies.map((competency, index) =>
+            (<CompetencyTag value={competency} key={index} />)
+        );
         return (
             <div>
                 <div>
@@ -283,15 +288,9 @@ class NewExperience extends React.Component {
                                 <Typography className={this.props.classes.textField} variant="headline" component="p">
                                     Competencies
                                 </Typography>
-                                {this.state.competencies.map(data => {
-                                    return (
-                                        <Chip
-                                            key={data.key}
-                                            label={data.label}
-                                            className={this.props.classes.chip}
-                                        />
-                                    );
-                                })}
+                                <div className={this.props.classes.textField}>
+                                    {competencyTags}
+                                </div>
                             </Grid>
                             <Grid item xs={4}></Grid>
                             <Grid item xs={2}>

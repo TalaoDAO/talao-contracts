@@ -1,5 +1,6 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
 import ColorService from '../../services/ColorService';
 
 const styles = theme => ({
@@ -8,7 +9,8 @@ const styles = theme => ({
         marginRight: '10px',
         borderRadius: '30px',
         padding: '4px 15px 4px 4px',
-        verticalAlign: 'center', 
+        verticalAlign: 'center',
+        cursor: 'pointer',
     },
     confidenceIndex: {
         display: 'inline-block',
@@ -25,7 +27,11 @@ const styles = theme => ({
         textTransform: 'uppercase',
         fontWeight: 100,
         verticalAlign: 'middle',
-    }
+    },
+    link: {
+        textDecoration: 'none',
+        color: 'initial',
+    },
 });
 
 class CompetencyTag extends React.Component {
@@ -35,14 +41,16 @@ class CompetencyTag extends React.Component {
         const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
         const textColorString = ColorService.getTextColorName(backgroundColorString);
         return (
-            <div className={this.props.classes.container} style={{backgroundColor: ColorService.getColorFromName(backgroundColorString)}}>
-                <div className={this.props.classes.confidenceIndex} style={{backgroundColor: ColorService.getColorFromName(backgroundLightColorString)}}>
-                    {this.props.value.confidenceIndex}
+            <Link to={'/competencies/' + this.props.value.name} className={this.props.classes.link}>
+                <div className={this.props.classes.container} style={{ backgroundColor: ColorService.getColorFromName(backgroundColorString) }}>
+                    <div className={this.props.classes.confidenceIndex} style={{ backgroundColor: ColorService.getColorFromName(backgroundLightColorString) }}>
+                        {this.props.value.confidenceIndex}
+                    </div>
+                    <div className={this.props.classes.name} style={{ color: ColorService.getColorFromName(textColorString) }}>
+                        {this.props.value.name}
+                    </div>
                 </div>
-                <div className={this.props.classes.name} style={{color: ColorService.getColorFromName(textColorString)}}>
-                    {this.props.value.name}
-                </div>
-            </div>
+            </Link>
         );
     }
 }
