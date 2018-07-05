@@ -28,8 +28,7 @@ class Chronology extends React.Component {
     }
 
     componentWillUnmount() {
-        this.free.removeListener('ExperienceChanged');
-
+        //this.free.removeListener('ExperienceChanged');
     }
 
     handleEvents = () => {

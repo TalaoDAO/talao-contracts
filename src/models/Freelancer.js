@@ -128,37 +128,29 @@ class Freelancer extends EventEmitter {
                     alert("An error has occured when adding your document (ERR: " + error + ")");
                     return;
                 });
-
-            // this.miniVaultContract.methods.addDocument("0x00aaff","0x00aaff","0x00aaff",["0x00aaff", "0x00aaff", "0x00aaff"],ratings,4,2,3,1)
-            // .send({
-            //     from: this.selectedAccount
-            // }).on('error', error => {
-            //     alert("An error has occured when adding your document (ERR: " + error + ")");
-            //     return;
-            // });
         }
     }
 
     GetDocument() {
         this.miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
-
             events.forEach((event => {
-                var docId = event['returnValues']['documentId'].toString();
+                let title = window.web3.utils.hexToAscii(event['returnValues']['title']).replace(/\u0000/g, '');
                 var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-                var competency = [];
-                var ratings = [];
-                var keywords = [];
-                ratings = event['returnValues']['ratings'];
-                keywords = event['returnValues']['keywords'];
+                let startDate = parseInt(event['returnValues']['startDate'], 10);
+                let endDate = parseInt(event['returnValues']['endDate'], 10);
+                let ratings = event['returnValues']['ratings'];
+                let keywords = event['returnValues']['keywords'];
+                let competencies = [];
+                for (let index = 0; index < ratings.length; index++) {
+                    competencies.push(new Competency(window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''), ratings[index]));
+                }
 
                 var newExp = new Experience(
-                    docId,
+                    title,
                     description,
-                    new Date(2018, 1, 1),
-                    new Date(2018, 6, 1),
-                    [
-                        new Competency("Project Management", 100)
-                    ],
+                    new Date(startDate),
+                    new Date(endDate),
+                    competencies,
                     "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                     100,
                 )

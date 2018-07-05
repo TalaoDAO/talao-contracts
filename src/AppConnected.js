@@ -9,7 +9,6 @@ import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import FreelancerService from './services/FreelancerService';
 
 const theme = createMuiTheme(constants.theme);
 
@@ -29,10 +28,6 @@ const styles = theme =>
   });
 
 class AppConnected extends React.Component {
-
-  constructor(props){
-    super(props);
-  }
 
   render() {
     return (

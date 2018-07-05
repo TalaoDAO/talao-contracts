@@ -109,11 +109,11 @@ class NewExperience extends React.Component {
         super();
         this.state = {
             newExperience: false,
-            from: '',
-            to: '',
-            title: '',
+            from: '2018-03-12',
+            to: '2018-07-20',
+            title: 'Stage Angular 5 et Blockchain',
             type: '4',
-            description: '',
+            description: 'Stage chez Slow Sense',
             competencies: [],
             certificat: '',
             confidenceIndex: 80,

@@ -80,10 +80,26 @@ class Competencies extends React.Component {
 
     constructor() {
         super();
+        this.free = FreelancerService.getFreelancer();
         this.state = {
-            competencies: FreelancerService.getFreelancer().getCompetencies(),
+            competencies: this.free.getCompetencies(),
         };
     }
+
+    componentDidMount() {
+        this.free.addListener('ExperienceChanged', this.handleEvents, this);
+    }
+
+    componentWillUnmount() {
+        //this.free.removeListener('ExperienceChanged');
+    }
+
+    handleEvents = () => {
+        this.setState({
+            competencies: this.free.getCompetencies()
+        });
+        this.forceUpdate();
+    };
 
     render() {
         const oneCompetencyFocused = (this.props.match.params.competencyName);
