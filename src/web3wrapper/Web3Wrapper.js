@@ -7,13 +7,8 @@ import { Web3Provider } from 'react-web3';
 // If the browser has injected Web3.JS
 if (window.web3) {
   // Then backup the good old injected Web3, sometimes it's usefull:
-<<<<<<< HEAD
-  if(window.web3.currentProvider.isMetamask) {
-    
-=======
   if(window.web3.currentProvider.isMetaMask) {
     window.selectedAccount = window.web3.eth.defaultAccount;
->>>>>>> 2fca1118982da11ebf24a282fb42b1b49813a4cd
   }
   
   window.web3old = window.web3;
