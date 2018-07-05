@@ -19,10 +19,13 @@ class Freelancer extends EventEmitter {
             this.firstBlock = blockNumber;
         });
 
+<<<<<<< HEAD
         window.web3.eth.getAccounts((err, res) => {
             this.selectedAccount = res[0];
         });
 
+=======
+>>>>>>> 2fca1118982da11ebf24a282fb42b1b49813a4cd
         this.firstName = "Paul";
         this.lastName = "Durand";
         this.confidenceIndex = 82;
@@ -124,6 +127,7 @@ class Freelancer extends EventEmitter {
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
         var duration = (endDate - startDate);
+<<<<<<< HEAD
         alert(this.selectedAccount);
         if (this.miniVaultContract != null) {
             this.miniVaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, duration).send(
@@ -141,6 +145,29 @@ class Freelancer extends EventEmitter {
             //     alert("An error has occured when adding your document (ERR: " + error + ")");
             //     return;
             // });
+=======
+        if (this.miniVaultContract != null) {
+            // this.miniVaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, duration).send(
+            //     {
+            //         from: window.web3.selectedAccount
+            //     }).on('error', error => {
+            //         alert("An error has occured when adding your document (ERR: " + error + ")");
+            //         return;
+            //     });
+
+                this.miniVaultContract.methods.getCertifiedDocumentsByIndex(0).call().then(result => {
+                    alert("done");
+                }); 
+
+                // this.miniVaultContract.methods.addDocument(docId, title, description, ["0x4e6f64652e6a73","0x52656163742e6a73","0x457468657265756d","0x426c6f636b4365727473","0x426c6f636b636861696e"]
+                // , [80,100,80,100,80], 4, 15000000, 15000668987, 120).send(
+                // {
+                //     from: window.selectedAccount
+                // }).on('error', error => {
+                //     alert("An error has occured when adding your document (ERR: " + error + ")");
+                //     return;
+                // });
+>>>>>>> 2fca1118982da11ebf24a282fb42b1b49813a4cd
         }
     }
 
