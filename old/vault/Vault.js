@@ -55,6 +55,7 @@ class Vault extends React.Component {
           5001,
           { protocol: 'http' }
         );
+        
         this.handleCreateVaultAccessInputChange = this.handleCreateVaultAccessInputChange.bind(this);
         this.handleCreateVaultAccessSubmit = this.handleCreateVaultAccessSubmit.bind(this);
         this.createFreelanceVault = this.createFreelanceVault.bind(this);

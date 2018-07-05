@@ -1,8 +1,48 @@
 import Experience from './Experience';
 import Competency from './Competency';
+import { EventEmitter } from 'events' 
 
-class Freelancer {
+
+class Freelancer extends EventEmitter {
+
+    GetDocument() {
+
+        const miniVaultContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_MINIVAULT_ABI), 
+            process.env.REACT_APP_MINIVAULT_ADDRESS
+        );
+
+        //get blocknumber
+        window.web3.eth.getBlockNumber().then(blockNumber => {
+            this.firstBlock = blockNumber;
+        });
+
+        miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+
+            events.forEach((event => {
+                var docId = event['returnValues']['documentId'].toString();
+                var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
+                
+                var newExp = new Experience(
+                    docId, 
+                    description,
+                    new Date(2018, 1, 1), 
+                    new Date(2018, 6, 1),
+                    [
+                        new Competency("Project Management", 100)
+                    ],
+                    "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
+                    100,
+                )
+                this.addExperience(newExp);
+                this.emit('ExperienceChanged', this);
+            }));
+        });
+    }
+
     constructor() {
+        super();
+
         this.firstName = "Paul";
         this.lastName = "Durand";
         this.confidenceIndex = 82;
@@ -71,6 +111,16 @@ class Freelancer {
                 63,
             ),
         ]
+        
+        this.GetDocument();
+    }
+
+    firstName() {
+        return this.firstName;
+    }
+
+    experiences() {
+        return this.experiences;
     }
 
     getCompetencies() {
