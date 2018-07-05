@@ -8,7 +8,7 @@ import NewExperience from '../experience/NewExperience';
 
 const styles = {
     card: {
-        transition: 'all .4s ease',
+        transition: 'all .6s ease',
         paddingBottom: '15px',
     },
 }
@@ -17,18 +17,45 @@ class Chronology extends React.Component {
 
     constructor() {
         super();
-        this.free = FreelancerService.getFreelancer();
+        //this.free = FreelancerService.getFreelancer();
         this.state = {
-            experiences: this.free.experiences,
+            freelancer : window.freeLancer,
+            experiences: null
         };
     }
 
     componentDidMount() {
-        this.free.addListener('ExperienceChanged', this.handleEvents, this);
+        //this.free.addListener('ExperienceChanged', this.handleEvents, this);
+        //this.setState({freelancer : window.freeLancer});
+        
+        const exPeriences = this.state.freelancer.experiences//this.state.experiences
+        // Sort descending by date
+        .sort((extendedExperienceA, extendedExperienceB) => {
+            return extendedExperienceA.from < extendedExperienceB.from;
+        })
+
+        // Generate components
+        .map((extendedExperience) => {
+            const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
+            const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
+            const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
+            return (
+                <Experience
+                    value={extendedExperience}
+                    key={extendedExperience.title}
+                    color={backgroundColorString}
+                    lightColor={backgroundLightColorString}
+                    textColor={textColorString}
+                />
+            );
+        });
+
+        this.setState({experiences: exPeriences});
     }
 
     componentWillUnmount() {
-        this.free.removeListener('ExperienceChanged');
+        //this.free.removeListener('ExperienceChanged');
+
     }
 
     handleEvents = (event) => {
@@ -38,33 +65,11 @@ class Chronology extends React.Component {
 
 
     render() {
-        const experiences = this.state.freelancer.experiences
-            // Sort descending by date
-            .sort((extendedExperienceA, extendedExperienceB) => {
-                return extendedExperienceA.from < extendedExperienceB.from;
-            })
-
-            // Generate components
-            .map((extendedExperience) => {
-                const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
-                const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
-                const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
-                return (
-                    <Experience
-                        value={extendedExperience}
-                        key={extendedExperience.title}
-                        color={backgroundColorString}
-                        lightColor={backgroundLightColorString}
-                        textColor={textColorString}
-                    />
-                );
-            });
-
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
                     <NewExperience />
-                    {experiences}
+                    {this.state.experiences}
                 </CardContent>
             </Card>
         );

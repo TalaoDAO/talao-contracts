@@ -35,8 +35,10 @@ class Freelancer extends EventEmitter {
                     100,
                 )
                 this.addExperience(newExp);
-                this.emit('ExperienceChanged', this);
+                alert(docId);
             }));
+
+            this.emit('ExperienceChanged', this);
         });
     }
 
@@ -111,8 +113,34 @@ class Freelancer extends EventEmitter {
                 63,
             ),
         ]
+
+
+        QmRnomvox8vNL32medAmjyURxHqj9enP8hySh1i5QWTLtJ
         
         this.GetDocument();
+    }
+
+    eventAddDocumentSubscription() {
+        this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_MINIVAULT_ABI));
+        var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(process.env.REACT_APP_MINIVAULT_ADDRESS);
+
+        this.eventDocAdded = vaultWithOldWeb3.VaultDocAdded();
+        this.eventDocAdded.watch((err, event) => {
+            if (err)
+                console.log(err);
+            else {
+                if (event['blockNumber'] > this.state.firstBlock) {
+                    var docId = event['args']['documentId'];
+                    var description = window.web3.utils.hexToAscii(event['args']['description']).replace(/\u0000/g, '')
+                    this.state.vaultContract.methods.getKeywordsNumber(docId).call({from: this.context.web3.selectedAccount})
+                    .then(number => {
+                        this.pushDocument(number, docId, description);
+                        this.goToVault();
+                    });
+
+                }
+            }
+        });
     }
 
     firstName() {
