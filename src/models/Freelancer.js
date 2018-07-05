@@ -129,14 +129,18 @@ class Freelancer extends EventEmitter {
             //         return;
             //     });
 
-                this.miniVaultContract.methods.addDocument(docId, title, description, ["0x4e6f64652e6a73","0x52656163742e6a73","0x457468657265756d","0x426c6f636b4365727473","0x426c6f636b636861696e"]
-                , [80,100,80,100,80], 4, 15000000, 15000668987, 120).send(
-                {
-                    from: window.selectedAccount
-                }).on('error', error => {
-                    alert("An error has occured when adding your document (ERR: " + error + ")");
-                    return;
-                });
+                this.miniVaultContract.methods.getCertifiedDocumentsByIndex(0).call().then(result => {
+                    alert("done");
+                }); 
+
+                // this.miniVaultContract.methods.addDocument(docId, title, description, ["0x4e6f64652e6a73","0x52656163742e6a73","0x457468657265756d","0x426c6f636b4365727473","0x426c6f636b636861696e"]
+                // , [80,100,80,100,80], 4, 15000000, 15000668987, 120).send(
+                // {
+                //     from: window.selectedAccount
+                // }).on('error', error => {
+                //     alert("An error has occured when adding your document (ERR: " + error + ")");
+                //     return;
+                // });
         }
     }
 
