@@ -9,8 +9,11 @@ import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+<<<<<<< HEAD
 import FreelancerService from './services/FreelancerService';
 import Freelancer from './models/Freelancer';
+=======
+>>>>>>> 876613d4346e5813fa2ecfe3dee13c93ca649ac6
 
 const theme = createMuiTheme(constants.theme);
 
@@ -31,12 +34,15 @@ const styles = theme =>
 
 class AppConnected extends React.Component {
 
+<<<<<<< HEAD
   constructor(props){
     super(props);
 
     window.freeLancer = FreelancerService.getFreelancer()
   }
 
+=======
+>>>>>>> 876613d4346e5813fa2ecfe3dee13c93ca649ac6
   render() {
     return (
       <Router>

@@ -8,6 +8,10 @@ import Icon from '@material-ui/core/Icon';
 import blue from '@material-ui/core/colors/blue';
 import CompetencyTag from '../competencyTag/CompetencyTag';
 import Competency from '../../models/Competency';
+import Experience from '../../models/Experience';
+import FreelancerService from '../../services/FreelancerService';
+import IpfsApi from 'ipfs-api';
+import buffer from 'buffer';
 
 const styles = theme => ({
     root: {
@@ -105,11 +109,24 @@ class NewExperience extends React.Component {
         super();
         this.state = {
             newExperience: false,
-            type: 'job',
+            from: '',
+            to: '',
+            title: '',
+            type: '4',
+            description: '',
             competencies: [],
+            certificat: '',
+            confidenceIndex: 80,
+            uploadedDocument: '',
         };
         this.newExp = this.newExp.bind(this);
+        this.submit = this.submit.bind(this);
         this.reader = new FileReader();
+        this.ipfsApi = IpfsApi(
+            process.env.REACT_APP_IPFS_API,
+            5001,
+            { protocol: 'http' }
+        );
     }
 
     newExp() {
@@ -118,17 +135,16 @@ class NewExperience extends React.Component {
         });
     }
 
-    handleChangeType = event => {
-        this.setState({ type: event.target.value });
-    };
-
     triggerInputFile = () => this.fileInput.click();
 
     detectCompetenciesFromCertification(file) {
+        this.setState({ certificat: file.name });
         let content;
         this.reader.onload = function (event) {
             content = event.target.result;
             var jsonContent = JSON.parse(content);
+            this.setState({ uploadedDocument: content });
+
             Object.keys(jsonContent).forEach(key => {
                 if (key.startsWith("jobSkill")) {
                     if (jsonContent[key] !== "") {
@@ -142,9 +158,72 @@ class NewExperience extends React.Component {
                     }
                 }
             });
-            console.log(this.state.competencies);
         }.bind(this);
         this.reader.readAsText(file);
+    }
+
+    handleFromChange = event => {
+        this.setState({ from: event.target.value });
+    }
+    handleToChange = event => {
+        this.setState({ to: event.target.value });
+    }
+    handleTitleChange = event => {
+        this.setState({ title: event.target.value });
+    }
+    handleTypeChange = event => {
+        console.log(event);
+        this.setState({ type: event.target.value });
+    };
+    handleDescriptionChange = event => {
+        this.setState({ description: event.target.value });
+    };
+
+    submit() {
+        let newExperienceToAdd = new Experience(
+            this.state.title,
+            this.state.description,
+            new Date(this.state.from),
+            new Date(this.state.to),
+            this.state.competencies,
+            this.state.certificat,
+            this.state.confidenceIndex
+        );
+        //appel blockchain
+        this.addDocument(newExperienceToAdd);
+        FreelancerService.getFreelancer().addExperience(newExperienceToAdd);
+    }
+
+    addDocument(experience) {
+        alert("1");
+        // send document to ipfs
+        if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
+            alert("No document uploaded. Please add a document.");
+            return;
+        }
+        this.uploadToIpfs(this.state.uploadedDocument).then(result => {
+            alert("2");
+            FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
+        },
+            err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
+        );
+    }
+
+    uploadToIpfs(documentToUpload) {
+        return new Promise((resolve, reject) => {
+            try {
+                const arrayBuffer = buffer.Buffer(documentToUpload);
+                this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(result);
+                });
+            }
+            catch (e) {
+                reject(e)
+            }
+        });
     }
 
     render() {
@@ -172,6 +251,8 @@ class NewExperience extends React.Component {
                                     id="from"
                                     label="From"
                                     type="date"
+                                    value={this.state.from}
+                                    onChange={this.handleFromChange}
                                     required
                                     className={this.props.classes.textField}
                                     InputProps={{
@@ -193,6 +274,8 @@ class NewExperience extends React.Component {
                                     id="to"
                                     label="To"
                                     type="date"
+                                    value={this.state.to}
+                                    onChange={this.handleToChange}
                                     required
                                     className={this.props.classes.textField}
                                     InputProps={{
@@ -218,16 +301,16 @@ class NewExperience extends React.Component {
                                             root: this.props.classes.cssLabel,
                                             focused: this.props.classes.cssFocused,
                                         }} htmlFor="custom-css-input">Title</InputLabel>
-                                    <Input classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                                    <Input value={this.state.title} onChange={this.handleTitleChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
                             <Grid item xs={6}>
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
-                                            checked={this.state.type === 'job'}
-                                            onChange={this.handleChangeType}
-                                            value="job"
+                                            checked={this.state.type === '4'}
+                                            onChange={this.handleTypeChange}
+                                            value="4"
                                             name="radio-button-demo"
                                             aria-label="C"
                                             classes={{
@@ -239,9 +322,9 @@ class NewExperience extends React.Component {
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
-                                            checked={this.state.type === 'education'}
-                                            onChange={this.handleChangeType}
-                                            value="education"
+                                            checked={this.state.type === '2'}
+                                            onChange={this.handleTypeChange}
+                                            value="2"
                                             name="radio-button-demo"
                                             aria-label="C"
                                             classes={{
@@ -253,9 +336,9 @@ class NewExperience extends React.Component {
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
-                                            checked={this.state.type === 'certification'}
-                                            onChange={this.handleChangeType}
-                                            value="certification"
+                                            checked={this.state.type === '3'}
+                                            onChange={this.handleTypeChange}
+                                            value="3"
                                             name="radio-button-demo"
                                             aria-label="C"
                                             classes={{
@@ -272,7 +355,7 @@ class NewExperience extends React.Component {
                                             root: this.props.classes.cssLabel,
                                             focused: this.props.classes.cssFocused,
                                         }} htmlFor="custom-css-input">Description</InputLabel>
-                                    <Input multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                                    <Input value={this.state.description} onChange={this.handleDescriptionChange} multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
                             <Grid item xs={3}></Grid>
@@ -294,7 +377,7 @@ class NewExperience extends React.Component {
                             </Grid>
                             <Grid item xs={4}></Grid>
                             <Grid item xs={2}>
-                                <Button className={this.props.classes.certificatButton} type="submit" label="login">
+                                <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
                                     Submit
                                 </Button>
                             </Grid>

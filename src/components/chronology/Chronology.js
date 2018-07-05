@@ -58,13 +58,37 @@ class Chronology extends React.Component {
 
     }
 
-    handleEvents = (event) => {
-        //this.setState({ experiences: this.free.experiences });
+    handleEvents = () => {
         this.forceUpdate();
     };
 
 
     render() {
+<<<<<<< HEAD
+=======
+        const experiences = this.state.experiences
+            // Sort descending by date
+            .sort((extendedExperienceA, extendedExperienceB) => {
+                return extendedExperienceA.from < extendedExperienceB.from;
+            })
+
+            // Generate components
+            .map((extendedExperience) => {
+                const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
+                const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
+                const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
+                return (
+                    <Experience
+                        value={extendedExperience}
+                        key={extendedExperience.title}
+                        color={backgroundColorString}
+                        lightColor={backgroundLightColorString}
+                        textColor={textColorString}
+                    />
+                );
+            });
+
+>>>>>>> 876613d4346e5813fa2ecfe3dee13c93ca649ac6
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
