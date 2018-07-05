@@ -8,6 +8,8 @@ import Icon from '@material-ui/core/Icon';
 import blue from '@material-ui/core/colors/blue';
 import CompetencyTag from '../competencyTag/CompetencyTag';
 import Competency from '../../models/Competency';
+import Experience from '../../models/Experience';
+import FreelancerService from '../../services/FreelancerService';
 
 const styles = theme => ({
     root: {
@@ -105,10 +107,17 @@ class NewExperience extends React.Component {
         super();
         this.state = {
             newExperience: false,
+            from: '',
+            to: '',
+            title: '',
             type: 'job',
+            description: '',
             competencies: [],
+            certificat: '',
+            confidenceIndex: 80,
         };
         this.newExp = this.newExp.bind(this);
+        this.submit = this.submit.bind(this);
         this.reader = new FileReader();
     }
 
@@ -118,13 +127,10 @@ class NewExperience extends React.Component {
         });
     }
 
-    handleChangeType = event => {
-        this.setState({ type: event.target.value });
-    };
-
     triggerInputFile = () => this.fileInput.click();
 
     detectCompetenciesFromCertification(file) {
+        this.setState({ certificat: file.name });
         let content;
         this.reader.onload = function (event) {
             content = event.target.result;
@@ -142,9 +148,37 @@ class NewExperience extends React.Component {
                     }
                 }
             });
-            console.log(this.state.competencies);
         }.bind(this);
         this.reader.readAsText(file);
+    }
+
+    handleFromChange = event => {
+        this.setState({ from: event.target.value });
+    }
+    handleToChange = event => {
+        this.setState({ to: event.target.value });
+    }
+    handleTitleChange = event => {
+        this.setState({ title: event.target.value });
+    }
+    handleTypeChange = event => {
+        this.setState({ type: event.target.value });
+    };
+    handleDescriptionChange = event => {
+        this.setState({ description: event.target.value });
+    };
+
+    submit() {
+        let newExperienceToAdd = new Experience(
+            this.state.title,
+            this.state.description,
+            this.state.from,
+            this.state.to,
+            this.state.competencies,
+            this.state.certificat,
+            this.state.confidenceIndex
+        );
+        FreelancerService.getFreelancer().addExperience(newExperienceToAdd);
     }
 
     render() {
@@ -172,6 +206,8 @@ class NewExperience extends React.Component {
                                     id="from"
                                     label="From"
                                     type="date"
+                                    value={this.state.from}
+                                    onChange={this.handleFromChange}
                                     required
                                     className={this.props.classes.textField}
                                     InputProps={{
@@ -193,6 +229,8 @@ class NewExperience extends React.Component {
                                     id="to"
                                     label="To"
                                     type="date"
+                                    value={this.state.to}
+                                    onChange={this.handleToChange}
                                     required
                                     className={this.props.classes.textField}
                                     InputProps={{
@@ -218,7 +256,7 @@ class NewExperience extends React.Component {
                                             root: this.props.classes.cssLabel,
                                             focused: this.props.classes.cssFocused,
                                         }} htmlFor="custom-css-input">Title</InputLabel>
-                                    <Input classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                                    <Input value={this.state.title} onChange={this.handleTitleChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
                             <Grid item xs={6}>
@@ -240,7 +278,7 @@ class NewExperience extends React.Component {
                                     <FormControlLabel control={
                                         <Radio
                                             checked={this.state.type === 'education'}
-                                            onChange={this.handleChangeType}
+                                            onChange={this.handleTypeChange}
                                             value="education"
                                             name="radio-button-demo"
                                             aria-label="C"
@@ -254,7 +292,7 @@ class NewExperience extends React.Component {
                                     <FormControlLabel control={
                                         <Radio
                                             checked={this.state.type === 'certification'}
-                                            onChange={this.handleChangeType}
+                                            onChange={this.handleTypeChange}
                                             value="certification"
                                             name="radio-button-demo"
                                             aria-label="C"
@@ -272,7 +310,7 @@ class NewExperience extends React.Component {
                                             root: this.props.classes.cssLabel,
                                             focused: this.props.classes.cssFocused,
                                         }} htmlFor="custom-css-input">Description</InputLabel>
-                                    <Input multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                                    <Input value={this.state.description} onChange={this.handleDescriptionChange} multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
                             <Grid item xs={3}></Grid>
@@ -294,7 +332,7 @@ class NewExperience extends React.Component {
                             </Grid>
                             <Grid item xs={4}></Grid>
                             <Grid item xs={2}>
-                                <Button className={this.props.classes.certificatButton} type="submit" label="login">
+                                <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
                                     Submit
                                 </Button>
                             </Grid>

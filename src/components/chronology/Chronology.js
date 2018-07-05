@@ -22,6 +22,14 @@ class Chronology extends React.Component {
         };
     }
 
+    componentDidMount() {
+        FreelancerService.Init().then(() => {
+          this.setState({
+            freelancer: FreelancerService.getFreelancer()
+          });
+        });
+      }  
+
     render() {
         const experiences = this.state.freelancer.experiences
             // Sort descending by date

@@ -90,7 +90,10 @@ class Freelancer {
     }
     
     addExperience(exp) {
+        alert('It works!');
+        console.log(this.experiences);
         this.experiences.push(exp);
+        console.log(this.experiences);
     }
 
     updateProfil(firstName, lastName, title, description, email, phone) {
