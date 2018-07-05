@@ -1,12 +1,26 @@
 import Experience from './Experience';
 import Competency from './Competency';
-import { EventEmitter } from 'events' 
+import { EventEmitter } from 'events';
+import bs58 from 'bs58';
 
 
 class Freelancer extends EventEmitter {
     
     constructor() {
         super();
+
+        this.miniVaultContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_MINIVAULT_ABI), 
+            process.env.REACT_APP_MINIVAULT_ADDRESS
+        );
+
+        //get blocknumber
+        window.web3.eth.getBlockNumber().then(blockNumber => {
+            this.firstBlock = blockNumber;
+        });
+
+        this.selectedAccount2 = window.web3.eth.accounts[0];
+        this.selectedAccount = window.web3old.eth.accounts[0];
 
         this.firstName = "Paul";
         this.lastName = "Durand";
@@ -80,6 +94,20 @@ class Freelancer extends EventEmitter {
         this.GetDocument();
     }
 
+    getBytes32FromIpfsHash(ipfsAddress) {
+        return "0x" + bs58.decode(ipfsAddress).slice(2).toString('hex')
+    }
+
+    getIpfsHashFromBytes32(bytes32Hex) {
+        // Add our default ipfs values for first 2 bytes:
+        // function:0x12=sha2, size:0x20=256 bits
+        // and cut off leading "0x"
+        const hashHex = "1220" + bytes32Hex.slice(2)
+        const hashBytes = Buffer.from(hashHex, 'hex');
+        const hashStr = bs58.encode(hashBytes)
+        return hashStr
+    }
+
     AddDocument(hashIpfs, experience) {
         alert("3");
         var docId = this.getBytes32FromIpfsHash(hashIpfs);
@@ -91,15 +119,25 @@ class Freelancer extends EventEmitter {
             keywords.push(window.web3.utils.fromAscii(element.name));
             ratings.push(element.confidenceIndex);
         });
+
         var documentType = parseInt(experience.type, 10);
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
         var duration = (endDate - startDate);
         alert("4");
-        if (this.state.vaultContract != null) {
-            this.state.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, duration).send(
+        if (this.miniVaultContract != null) {
+            // this.miniVaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, duration).send(
+            //     {
+            //         from: window.web3.selectedAccount
+            //     }).on('error', error => {
+            //         alert("An error has occured when adding your document (ERR: " + error + ")");
+            //         return;
+            //     });
+
+                this.miniVaultContract.methods.addDocument(docId, title, description, ["0x4e6f64652e6a73","0x52656163742e6a73","0x457468657265756d","0x426c6f636b4365727473","0x426c6f636b636861696e"]
+                , [80,100,80,100,80], 4, 15000000, 15000668987, 120).send(
                 {
-                    from: this.context.web3.selectedAccount
+                    from: this.selectedAccount
                 }).on('error', error => {
                     alert("An error has occured when adding your document (ERR: " + error + ")");
                     return;
@@ -108,18 +146,7 @@ class Freelancer extends EventEmitter {
     }
 
     GetDocument() {
-
-        const miniVaultContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_MINIVAULT_ABI), 
-            process.env.REACT_APP_MINIVAULT_ADDRESS
-        );
-
-        //get blocknumber
-        window.web3.eth.getBlockNumber().then(blockNumber => {
-            this.firstBlock = blockNumber;
-        });
-
-        miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+        this.miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
 
             events.forEach((event => {
                 var docId = event['returnValues']['documentId'].toString();

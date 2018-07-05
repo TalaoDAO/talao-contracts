@@ -7,9 +7,14 @@ import { Web3Provider } from 'react-web3';
 // If the browser has injected Web3.JS
 if (window.web3) {
   // Then backup the good old injected Web3, sometimes it's usefull:
+  if(window.web3.isMetamask) {
+    alert(window.web3.eth.accounts[0]);
+  }
   window.web3old = window.web3;
   // And replace the old injected version by the local Web3.JS version 1.0.0-beta.N
   window.web3 = new Web3(window.web3.currentProvider);
+
+
 }
 
 class Web3WrapperUnavailable extends Component {
@@ -40,7 +45,6 @@ class Web3Wrapper extends Component {
       <Web3Provider
         web3UnavailableScreen={Web3WrapperUnavailable}
         accountUnavailableScreen={Web3WrapperUnavailableAccount}
-        passive={false}
       >
         <AppConnected/>
       </Web3Provider>

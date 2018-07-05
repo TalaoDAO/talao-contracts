@@ -39,7 +39,7 @@ class Chronology extends React.Component {
 
     render() {
 
-        const exPeriences = this.state.experiences//this.state.experiences
+        const experiences = this.state.experiences//this.state.experiences
         // Sort descending by date
         .sort((extendedExperienceA, extendedExperienceB) => {
             return extendedExperienceA.from < extendedExperienceB.from;
@@ -65,7 +65,7 @@ class Chronology extends React.Component {
             <Card className={this.props.classes.card}>
                 <CardContent>
                     <NewExperience />
-                    {this.state.experiences}
+                    {experiences}
                 </CardContent>
             </Card>
         );

@@ -10,7 +10,6 @@ import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import FreelancerService from './services/FreelancerService';
-import Freelancer from './models/Freelancer';
 
 const theme = createMuiTheme(constants.theme);
 
@@ -33,8 +32,6 @@ class AppConnected extends React.Component {
 
   constructor(props){
     super(props);
-
-    window.freeLancer = FreelancerService.getFreelancer()
   }
 
   render() {

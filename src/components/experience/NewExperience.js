@@ -187,7 +187,8 @@ class NewExperience extends React.Component {
             new Date(this.state.to),
             this.state.competencies,
             this.state.certificat,
-            this.state.confidenceIndex
+            this.state.confidenceIndex,
+            this.state.type
         );
         //appel blockchain
         this.addDocument(newExperienceToAdd);
@@ -196,6 +197,9 @@ class NewExperience extends React.Component {
 
     addDocument(experience) {
         alert("1");
+        var account = this.context.web3.selectedAccount;
+        alert(account);
+        
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
             alert("No document uploaded. Please add a document.");
