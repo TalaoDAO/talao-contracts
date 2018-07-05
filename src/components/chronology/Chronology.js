@@ -19,11 +19,7 @@ class Chronology extends React.Component {
         super();
         this.free = FreelancerService.getFreelancer();
         this.state = {
-<<<<<<< HEAD
             experiences: this.free.experiences,
-=======
-            freelancer: FreelancerService.getFreelancer(),
->>>>>>> 008a050655dca74fd03a0e981e6ef5f1c8d66216
         };
     }
 
