@@ -17,18 +17,29 @@ class Chronology extends React.Component {
 
     constructor() {
         super();
-        //this.free = FreelancerService.getFreelancer();
+        this.free = FreelancerService.getFreelancer();
         this.state = {
-            freelancer : window.freeLancer,
-            experiences: null
+            experiences: this.free.experiences
         };
     }
 
     componentDidMount() {
-        //this.free.addListener('ExperienceChanged', this.handleEvents, this);
-        //this.setState({freelancer : window.freeLancer});
-        
-        const exPeriences = this.state.freelancer.experiences//this.state.experiences
+        this.free.addListener('ExperienceChanged', this.handleEvents, this);
+    }
+
+    componentWillUnmount() {
+        this.free.removeListener('ExperienceChanged');
+
+    }
+
+    handleEvents = () => {
+        this.forceUpdate();
+    };
+
+
+    render() {
+
+        const exPeriences = this.state.experiences//this.state.experiences
         // Sort descending by date
         .sort((extendedExperienceA, extendedExperienceB) => {
             return extendedExperienceA.from < extendedExperienceB.from;
@@ -50,20 +61,6 @@ class Chronology extends React.Component {
             );
         });
 
-        this.setState({experiences: exPeriences});
-    }
-
-    componentWillUnmount() {
-        //this.free.removeListener('ExperienceChanged');
-
-    }
-
-    handleEvents = () => {
-        this.forceUpdate();
-    };
-
-
-    render() {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
