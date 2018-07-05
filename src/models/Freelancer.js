@@ -145,6 +145,11 @@ class Freelancer extends EventEmitter {
             events.forEach((event => {
                 var docId = event['returnValues']['documentId'].toString();
                 var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
+                var competency = [];
+                var ratings = [];
+                var keywords = [];
+                ratings = event['returnValues']['ratings'];
+                keywords = event['returnValues']['keywords'];
 
                 var newExp = new Experience(
                     docId,
@@ -181,7 +186,6 @@ class Freelancer extends EventEmitter {
                             this.pushDocument(number, docId, description);
                             this.goToVault();
                         });
-
                 }
             }
         });

@@ -36,7 +36,6 @@ class Chronology extends React.Component {
         this.forceUpdate();
     };
 
-
     render() {
 
         const experiences = this.state.experiences//this.state.experiences

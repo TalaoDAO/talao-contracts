@@ -47,7 +47,8 @@ contract MiniVault{
     struct certifiedDocument {
         bytes32 title;
         bytes32 description; //description of document
-        competency[] competencies; //list of keywords associated to the current certified document
+        bytes32[] keywords; //list of keywords associated to the current certified document
+        uint[] ratings;
         bool isAlive; //true if this stuct is set, fasle else
         uint index; //index used in relationship between tabindex and mapping unordered object
         uint documentType; //ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4
@@ -84,7 +85,8 @@ contract MiniVault{
         uint documentType,
         uint startDate,
         uint endDate,
-        uint duration
+        uint[] ratings,
+        bytes32[] keywords
     );
 
     event FreelancerUpdateData (
@@ -117,11 +119,14 @@ contract MiniVault{
         require(!talentsDocuments[documentId].isAlive);
         NbOfValidDocument++;
 
-        for(uint i = 0; i < keywords.length; i++)
-        {
-            require(ratings[i] >= 0 && ratings[i] <= 5);
-            talentsDocuments[documentId].competencies.push(competency(keywords[i], ratings[i]));
-        }
+        talentsDocuments[documentId].keywords = keywords;
+        talentsDocuments[documentId].ratings = ratings;
+
+        // for(uint i = 0; i < keywords.length; i++)
+        // {
+        //     require(ratings[i] >= 0 && ratings[i] <= 5);
+        //     talentsDocuments[documentId].competencies.push(competency(keywords[i], ratings[i]));
+        // }
 
         talentsDocuments[documentId].title = title;
         talentsDocuments[documentId].description = description;
@@ -132,7 +137,7 @@ contract MiniVault{
         talentsDocuments[documentId].endDate = endDate;
         talentsDocuments[documentId].duration = duration;
         
-        emit VaultDocAdded(msg.sender,documentId,title,description,documentType,startDate,endDate,duration);
+        emit VaultDocAdded(msg.sender,documentId,title,description,documentType,startDate,endDate,ratings,keywords);
         return true;
     }
 
