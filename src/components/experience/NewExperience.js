@@ -196,7 +196,11 @@ class NewExperience extends React.Component {
     }
 
     addDocument(experience) {
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 2fca1118982da11ebf24a282fb42b1b49813a4cd
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
             alert("No document uploaded. Please add a document.");
