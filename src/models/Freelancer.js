@@ -19,9 +19,6 @@ class Freelancer extends EventEmitter {
             this.firstBlock = blockNumber;
         });
 
-        this.selectedAccount2 = window.web3.eth.accounts[0];
-        this.selectedAccount = window.web3old.eth.accounts[0];
-
         this.firstName = "Paul";
         this.lastName = "Durand";
         this.confidenceIndex = 82;
@@ -109,7 +106,6 @@ class Freelancer extends EventEmitter {
     }
 
     AddDocument(hashIpfs, experience) {
-        alert("3");
         var docId = this.getBytes32FromIpfsHash(hashIpfs);
 
         var title = window.web3.utils.fromAscii(experience.title);
@@ -124,7 +120,6 @@ class Freelancer extends EventEmitter {
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
         var duration = (endDate - startDate);
-        alert("4");
         if (this.miniVaultContract != null) {
             // this.miniVaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, duration).send(
             //     {
@@ -137,7 +132,7 @@ class Freelancer extends EventEmitter {
                 this.miniVaultContract.methods.addDocument(docId, title, description, ["0x4e6f64652e6a73","0x52656163742e6a73","0x457468657265756d","0x426c6f636b4365727473","0x426c6f636b636861696e"]
                 , [80,100,80,100,80], 4, 15000000, 15000668987, 120).send(
                 {
-                    from: this.selectedAccount
+                    from: window.selectedAccount
                 }).on('error', error => {
                     alert("An error has occured when adding your document (ERR: " + error + ")");
                     return;
