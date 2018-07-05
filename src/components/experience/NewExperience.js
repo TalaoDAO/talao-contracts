@@ -10,6 +10,8 @@ import CompetencyTag from '../competencyTag/CompetencyTag';
 import Competency from '../../models/Competency';
 import Experience from '../../models/Experience';
 import FreelancerService from '../../services/FreelancerService';
+import IpfsApi from 'ipfs-api';
+import buffer from 'buffer';
 
 const styles = theme => ({
     root: {
@@ -110,15 +112,21 @@ class NewExperience extends React.Component {
             from: '',
             to: '',
             title: '',
-            type: 'job',
+            type: '4',
             description: '',
             competencies: [],
             certificat: '',
             confidenceIndex: 80,
+            uploadedDocument: '',
         };
         this.newExp = this.newExp.bind(this);
         this.submit = this.submit.bind(this);
         this.reader = new FileReader();
+        this.ipfsApi = IpfsApi(
+            process.env.REACT_APP_IPFS_API,
+            5001,
+            { protocol: 'http' }
+        );
     }
 
     newExp() {
@@ -135,6 +143,8 @@ class NewExperience extends React.Component {
         this.reader.onload = function (event) {
             content = event.target.result;
             var jsonContent = JSON.parse(content);
+            this.setState({ uploadedDocument: content });
+
             Object.keys(jsonContent).forEach(key => {
                 if (key.startsWith("jobSkill")) {
                     if (jsonContent[key] !== "") {
@@ -162,6 +172,7 @@ class NewExperience extends React.Component {
         this.setState({ title: event.target.value });
     }
     handleTypeChange = event => {
+        console.log(event);
         this.setState({ type: event.target.value });
     };
     handleDescriptionChange = event => {
@@ -172,13 +183,47 @@ class NewExperience extends React.Component {
         let newExperienceToAdd = new Experience(
             this.state.title,
             this.state.description,
-            this.state.from,
-            this.state.to,
+            new Date(this.state.from),
+            new Date(this.state.to),
             this.state.competencies,
             this.state.certificat,
             this.state.confidenceIndex
         );
+        //appel blockchain
+        this.addDocument(newExperienceToAdd);
         FreelancerService.getFreelancer().addExperience(newExperienceToAdd);
+    }
+
+    addDocument(experience) {
+        alert("1");
+        // send document to ipfs
+        if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
+            alert("No document uploaded. Please add a document.");
+            return;
+        }
+        this.uploadToIpfs(this.state.uploadedDocument).then(result => {
+            alert("2");
+            FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
+        },
+            err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
+        );
+    }
+
+    uploadToIpfs(documentToUpload) {
+        return new Promise((resolve, reject) => {
+            try {
+                const arrayBuffer = buffer.Buffer(documentToUpload);
+                this.ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(result);
+                });
+            }
+            catch (e) {
+                reject(e)
+            }
+        });
     }
 
     render() {
@@ -263,9 +308,9 @@ class NewExperience extends React.Component {
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
-                                            checked={this.state.type === 'job'}
-                                            onChange={this.handleChangeType}
-                                            value="job"
+                                            checked={this.state.type === '4'}
+                                            onChange={this.handleTypeChange}
+                                            value="4"
                                             name="radio-button-demo"
                                             aria-label="C"
                                             classes={{
@@ -277,9 +322,9 @@ class NewExperience extends React.Component {
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
-                                            checked={this.state.type === 'education'}
+                                            checked={this.state.type === '2'}
                                             onChange={this.handleTypeChange}
-                                            value="education"
+                                            value="2"
                                             name="radio-button-demo"
                                             aria-label="C"
                                             classes={{
@@ -291,9 +336,9 @@ class NewExperience extends React.Component {
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
-                                            checked={this.state.type === 'certification'}
+                                            checked={this.state.type === '3'}
                                             onChange={this.handleTypeChange}
-                                            value="certification"
+                                            value="3"
                                             name="radio-button-demo"
                                             aria-label="C"
                                             classes={{

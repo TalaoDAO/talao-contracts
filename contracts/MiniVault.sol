@@ -45,6 +45,7 @@ contract MiniVault{
     bytes32[] documentIndex;
 
     struct certifiedDocument {
+        bytes32 title;
         bytes32 description; //description of document
         competency[] competencies; //list of keywords associated to the current certified document
         bool isAlive; //true if this stuct is set, fasle else
@@ -53,7 +54,6 @@ contract MiniVault{
         uint startDate;
         uint endDate;
         uint duration;
-        bool isBlockCert;
     }
 
     struct competency {
@@ -79,12 +79,12 @@ contract MiniVault{
     event VaultDocAdded (
         address indexed user,
         bytes32 documentId,
+        bytes32 title,
         bytes32 description,
         uint documentType,
         uint startDate,
         uint endDate,
-        uint duration,
-        bool isBlockCert
+        uint duration
     );
 
     event FreelancerUpdateData (
@@ -107,7 +107,7 @@ contract MiniVault{
     accessibility : only for authorized user and owner of this contract
     */
     function addDocument(
-        bytes32 documentId, bytes32 description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, uint duration, bool isBlockCert
+        bytes32 documentId, bytes32 title, bytes32 description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, uint duration
     )
         public
         returns (bool)
@@ -123,6 +123,7 @@ contract MiniVault{
             talentsDocuments[documentId].competencies.push(competency(keywords[i], ratings[i]));
         }
 
+        talentsDocuments[documentId].title = title;
         talentsDocuments[documentId].description = description;
         talentsDocuments[documentId].isAlive = true;
         talentsDocuments[documentId].index = documentIndex.push(documentId)-1;
@@ -130,9 +131,8 @@ contract MiniVault{
         talentsDocuments[documentId].startDate = startDate;
         talentsDocuments[documentId].endDate = endDate;
         talentsDocuments[documentId].duration = duration;
-        talentsDocuments[documentId].isBlockCert = isBlockCert;
         
-        emit VaultDocAdded(msg.sender,documentId,description,documentType,startDate,endDate,duration,isBlockCert);
+        emit VaultDocAdded(msg.sender,documentId,title,description,documentType,startDate,endDate,duration);
         return true;
     }
 
@@ -162,11 +162,11 @@ contract MiniVault{
         onlyOwner
         view
         public
-        returns (bytes32 desc, uint docType, uint startDate, uint endDate, bool isBlockCert) 
+        returns (bytes32 desc, uint docType, uint startDate, uint endDate) 
     {
         require(dId != 0 && talentsDocuments[dId].isAlive == true);
         return (talentsDocuments[dId].description, talentsDocuments[dId].documentType,
-        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate, talentsDocuments[dId].isBlockCert);
+        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
     }
 
     /*
@@ -177,11 +177,11 @@ contract MiniVault{
         onlyOwner
         view
         public
-        returns (bytes32 docId, bytes32 desc, uint docType, uint startDate, uint endDate, bool isBlockCert)
+        returns (bytes32 docId, bytes32 desc, uint docType, uint startDate, uint endDate)
     {
         bytes32 dId = documentIndex[index];
         return (dId, talentsDocuments[dId].description, talentsDocuments[dId].documentType,
-        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate, talentsDocuments[dId].isBlockCert);
+        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
     }
 
     function InitFreelanceData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _description)

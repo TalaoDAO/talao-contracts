@@ -31,14 +31,13 @@ class Chronology extends React.Component {
         this.free.removeListener('ExperienceChanged');
     }
 
-    handleEvents = (event) => {
-        //this.setState({ experiences: this.free.experiences });
+    handleEvents = () => {
         this.forceUpdate();
     };
 
 
     render() {
-        const experiences = this.state.freelancer.experiences
+        const experiences = this.state.experiences
             // Sort descending by date
             .sort((extendedExperienceA, extendedExperienceB) => {
                 return extendedExperienceA.from < extendedExperienceB.from;

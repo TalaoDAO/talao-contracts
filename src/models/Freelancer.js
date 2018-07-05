@@ -1,14 +1,41 @@
 import Experience from './Experience';
 import Competency from './Competency';
-import { EventEmitter } from 'events' 
+import { EventEmitter } from 'events'
 
 
 class Freelancer extends EventEmitter {
 
+    AddDocument(hashIpfs, experience) {
+        alert("3");
+        var docId = this.getBytes32FromIpfsHash(hashIpfs);
+
+        var title = window.web3.utils.fromAscii(experience.title);
+        var description = window.web3.utils.fromAscii(experience.description);
+        var keywords = [], ratings = [];
+        experience.competencies.forEach(element => {
+            keywords.push(window.web3.utils.fromAscii(element.name));
+            ratings.push(element.confidenceIndex);
+        });
+        var documentType = parseInt(experience.type, 10);
+        var startDate = experience.from.getTime();
+        var endDate = experience.to.getTime();
+        var duration = (endDate - startDate);
+        alert("4");
+        if (this.state.vaultContract != null) {
+            this.state.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, duration).send(
+                {
+                    from: this.context.web3.selectedAccount
+                }).on('error', error => {
+                    alert("An error has occured when adding your document (ERR: " + error + ")");
+                    return;
+                });
+        }
+    }
+
     GetDocument() {
 
         const miniVaultContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_MINIVAULT_ABI), 
+            JSON.parse(process.env.REACT_APP_MINIVAULT_ABI),
             process.env.REACT_APP_MINIVAULT_ADDRESS
         );
 
@@ -22,11 +49,11 @@ class Freelancer extends EventEmitter {
             events.forEach((event => {
                 var docId = event['returnValues']['documentId'].toString();
                 var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-                
+
                 var newExp = new Experience(
-                    docId, 
+                    docId,
                     description,
-                    new Date(2018, 1, 1), 
+                    new Date(2018, 1, 1),
                     new Date(2018, 6, 1),
                     [
                         new Competency("Project Management", 100)
@@ -54,9 +81,9 @@ class Freelancer extends EventEmitter {
         this.ethereumAddress = "0xEf9E029Ca326b4201927AD2672545cbE19DA10f1";
         this.experiences = [
             new Experience(
-                "Dolor sit amet", 
+                "Dolor sit amet",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue. Donec vestibulum lectus eu orci eleifend ultrices. Nunc ornare nec libero a ornare. Integer consectetur mi in est maximus tristique. Curabitur maximus ligula ipsum, mollis consequat erat aliquam vitae.",
-                new Date(2018, 1, 1), 
+                new Date(2018, 1, 1),
                 new Date(2018, 6, 1),
                 [
                     new Competency("Project Management", 100)
@@ -65,12 +92,12 @@ class Freelancer extends EventEmitter {
                 100,
             ),
             new Experience(
-                "Consectetur adipiscing", 
+                "Consectetur adipiscing",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2016, 1, 1), 
+                new Date(2016, 1, 1),
                 new Date(2018, 1, 1),
                 [
-                    new Competency("Project Management", 90), 
+                    new Competency("Project Management", 90),
                     new Competency("Blockchain", 80),
                     new Competency("Javascript", 85)
                 ],
@@ -78,40 +105,40 @@ class Freelancer extends EventEmitter {
                 83,
             ),
             new Experience(
-                "Consectetur adipiscing 2", 
+                "Consectetur adipiscing 2",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2015, 10, 1), 
+                new Date(2015, 10, 1),
                 new Date(2016, 1, 1),
                 [
-                    new Competency("Design", 95), 
+                    new Competency("Design", 95),
                 ],
                 "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 62,
             ),
             new Experience(
-                "Consectetur adipiscing 3", 
+                "Consectetur adipiscing 3",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2015, 3, 1), 
+                new Date(2015, 3, 1),
                 new Date(2015, 10, 1),
                 [
-                    new Competency("Javascript", 25), 
+                    new Competency("Javascript", 25),
                 ],
                 "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 13,
             ),
             new Experience(
-                "Consectetur adipiscing 4", 
+                "Consectetur adipiscing 4",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2013, 1, 1), 
+                new Date(2013, 1, 1),
                 new Date(2015, 3, 1),
                 [
-                    new Competency("Education", 35), 
+                    new Competency("Education", 35),
                 ],
                 "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
                 63,
             ),
         ]
-        
+
         this.GetDocument();
     }
 
@@ -138,12 +165,10 @@ class Freelancer extends EventEmitter {
         });
         return competencies;
     }
-    
+
     addExperience(exp) {
-        alert('It works!');
-        console.log(this.experiences);
         this.experiences.push(exp);
-        console.log(this.experiences);
+        this.emit('ExperienceChanged', this);
     }
 
     updateProfil(firstName, lastName, title, description, email, phone) {
