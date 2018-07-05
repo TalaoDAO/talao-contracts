@@ -7,8 +7,8 @@ import { Web3Provider } from 'react-web3';
 // If the browser has injected Web3.JS
 if (window.web3) {
   // Then backup the good old injected Web3, sometimes it's usefull:
-  if(window.web3.isMetamask) {
-    alert(window.web3.eth.accounts[0]);
+  if(window.web3.currentProvider.isMetamask) {
+    
   }
   window.web3old = window.web3;
   // And replace the old injected version by the local Web3.JS version 1.0.0-beta.N

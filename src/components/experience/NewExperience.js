@@ -196,9 +196,6 @@ class NewExperience extends React.Component {
     }
 
     addDocument(experience) {
-        alert("1");
-        var account = this.context.web3.selectedAccount;
-        alert(account);
         
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
@@ -206,7 +203,6 @@ class NewExperience extends React.Component {
             return;
         }
         this.uploadToIpfs(this.state.uploadedDocument).then(result => {
-            alert("2");
             FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
