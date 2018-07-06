@@ -9,6 +9,8 @@ class Freelancer extends EventEmitter {
     constructor() {
         super();
 
+        this.isWaiting = true;
+
         this.miniVaultContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_MINIVAULT_ABI),
             process.env.REACT_APP_MINIVAULT_ADDRESS
@@ -22,7 +24,7 @@ class Freelancer extends EventEmitter {
         this.experiences = [];
 
         this.eventAddDocumentSubscription();
-        this.GetFreeLanceData();
+        this.GetFreelanceData();
         this.GetAllDocuments();
     }
 
@@ -62,13 +64,11 @@ class Freelancer extends EventEmitter {
                 }).on('error', error => {
                     alert("An error has occured when adding your document (ERR: " + error + ")");
                     return;
-                }).then(() => {
-                    this.emit('ExperienceAdded', this);
                 });
         }
     }
 
-    GetFreeLanceData() {
+    GetFreelanceData() {
         this.miniVaultContract.getPastEvents('FreelancerUpdateData', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
             events.forEach((event => {
                 this.firstName = window.web3.utils.hexToAscii(event['returnValues']['firstname']).replace(/\u0000/g, '');
@@ -90,6 +90,7 @@ class Freelancer extends EventEmitter {
             events.forEach((event => {
                 this.GetDocumentByEvent(event['returnValues']);
             }));
+            this.isWaiting = false;
             this.emit('ExperienceChanged', this);
         });
     }
@@ -123,6 +124,7 @@ class Freelancer extends EventEmitter {
             100
         )
         this.addExperience(newExp);
+        this.isWaiting = false;
         this.emit('ExperienceChanged', this);
     }
 

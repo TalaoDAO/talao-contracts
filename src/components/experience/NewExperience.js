@@ -113,11 +113,11 @@ class NewExperience extends React.Component {
         super();
         this.state = {
             newExperience: false,
-            from: '2018-03-12',
-            to: '2018-07-20',
-            title: 'Stage Angular 5 et Blockchain',
+            from: '',
+            to: '',
+            title: '',
             type: '4',
-            description: 'Stage chez Slow Sense',
+            description: '',
             competencies: [],
             certificat: '',
             confidenceIndex: 80,
@@ -134,20 +134,6 @@ class NewExperience extends React.Component {
         );
     }
 
-    componentDidMount() {
-        this.free.addListener('ExperienceAdded', this.handleEvents, this);
-    }
-
-    componentWillUnmount() {
-        this.isCancelled = true;
-    }
-
-    handleEvents = () => {
-        !this.isCancelled && this.setState({
-            newExperience: false,
-        });
-    };
-
     newExp() {
         this.setState({
             newExperience: !this.state.newExperience
@@ -157,6 +143,11 @@ class NewExperience extends React.Component {
     triggerInputFile = () => this.fileInput.click();
 
     detectCompetenciesFromCertification(file) {
+        if (this.state.certificat !== '') {
+            this.setState({
+                competencies: [],
+            })
+        }
         this.setState({ certificat: file.name });
         let content;
         this.reader.onload = function (event) {
@@ -209,9 +200,7 @@ class NewExperience extends React.Component {
             this.state.confidenceIndex,
             this.state.type
         );
-        //appel blockchain
         this.addDocument(newExperienceToAdd);
-        //FreelancerService.getFreelancer().addExperience(newExperienceToAdd);
     }
 
     addDocument(experience) {
@@ -221,6 +210,7 @@ class NewExperience extends React.Component {
             return;
         }
         this.uploadToIpfs(this.state.uploadedDocument).then(result => {
+            this.resetState();
             FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
@@ -241,6 +231,21 @@ class NewExperience extends React.Component {
             catch (e) {
                 reject(e)
             }
+        });
+    }
+
+    resetState() {
+        this.setState({
+            newExperience: false,
+            from: '',
+            to: '',
+            title: '',
+            type: '4',
+            description: '',
+            competencies: [],
+            certificat: '',
+            confidenceIndex: 80,
+            uploadedDocument: '',
         });
     }
 

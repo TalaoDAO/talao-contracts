@@ -5,6 +5,8 @@ import Card from '@material-ui/core/Card';
 import ColorService from '../../services/ColorService';
 import { withStyles, CardContent } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
+const Loading = require('react-loading-animation');
+
 
 const styles = {
     card: {
@@ -19,7 +21,8 @@ class Chronology extends React.Component {
         super();
         this.free = FreelancerService.getFreelancer();
         this.state = {
-            experiences: this.free.experiences
+            experiences: this.free.experiences,
+            waiting: this.free.isWaiting,
         };
     }
 
@@ -34,13 +37,15 @@ class Chronology extends React.Component {
 
     handleEvents = () => {
         !this.isCancelled && this.setState({
-            experiences: this.free.experiences
+            experiences: this.free.experiences,
+            waiting: this.free.isWaiting,
         });
         this.forceUpdate();
     };
 
     render() {
         if (this.state.experiences == null) return (<NewExperience />);
+        if (this.state.waiting) return (<Loading />);
         const experiences = this.state.experiences//this.state.experiences
             // Sort descending by date
             .sort((extendedExperienceA, extendedExperienceB) => {
