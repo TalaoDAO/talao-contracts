@@ -88,6 +88,8 @@ class Freelancer extends EventEmitter {
             ),
         ]
 
+        this.eventAddDocumentSubscription();
+        this.GetFreeLanceData();
         this.GetDocument();
     }
 
@@ -131,9 +133,28 @@ class Freelancer extends EventEmitter {
         }
     }
 
+    GetFreeLanceData() {
+        this.miniVaultContract.getPastEvents('FreelancerUpdateData', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+            events.forEach(( event => {
+                this.firstName = window.web3.utils.hexToAscii(event['returnValues']['firstname']).replace(/\u0000/g, '');
+                this.lastName = window.web3.utils.hexToAscii(event['returnValues']['lastname']).replace(/\u0000/g, '');
+                this.confidenceIndex = 82;
+                this.title = "Blockchain specialist";
+                this.description = event['returnValues']['description'];
+                this.pictureUrl = "freelancer-picture.jpg";
+                this.email = window.web3.utils.hexToAscii(event['returnValues']['email']).replace(/\u0000/g, '');
+                this.phone = window.web3.utils.hexToAscii(event['returnValues']['phone']).replace(/\u0000/g, '');
+                this.ethereumAddress = window.selectedAccount;
+            }));
+        });
+
+        this.emit('FreeDataChanged', this);
+    }
+
     GetDocument() {
         this.miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
             events.forEach((event => {
+                var docId = event['returnValues']['documentId'].toString();
                 let title = window.web3.utils.hexToAscii(event['returnValues']['title']).replace(/\u0000/g, '');
                 var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
                 let startDate = parseInt(event['returnValues']['startDate'], 10);
@@ -144,15 +165,15 @@ class Freelancer extends EventEmitter {
                 for (let index = 0; index < ratings.length; index++) {
                     competencies.push(new Competency(window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''), ratings[index]));
                 }
-
+                let url = "https://gateway.ipfs.io/ipfs/"+this.getIpfsHashFromBytes32(docId);
                 var newExp = new Experience(
                     title,
                     description,
                     new Date(startDate),
                     new Date(endDate),
                     competencies,
-                    "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
-                    100,
+                    url,
+                    100
                 )
                 this.addExperience(newExp);
             }));
@@ -170,14 +191,8 @@ class Freelancer extends EventEmitter {
             if (err)
                 console.log(err);
             else {
-                if (event['blockNumber'] > this.state.firstBlock) {
-                    var docId = event['args']['documentId'];
-                    var description = window.web3.utils.hexToAscii(event['args']['description']).replace(/\u0000/g, '')
-                    this.state.vaultContract.methods.getKeywordsNumber(docId).call({ from: this.context.web3.selectedAccount })
-                        .then(number => {
-                            this.pushDocument(number, docId, description);
-                            this.goToVault();
-                        });
+                if (event['blockNumber'] > this.firstBlock) {
+                    this.emit('ExperienceChanged', this);
                 }
             }
         });

@@ -79,11 +79,25 @@ class Profile extends React.Component {
 
   constructor() {
     super();
+    this.free = FreelancerService.getFreelancer(),
     this.state = {
-      freelancer: FreelancerService.getFreelancer(),
-      expanded: false,
+      freelancer: this.free,
+      expanded: false
     }
   }
+
+  componentDidMount() {
+    this.free.addListener('FreeDataChanged', this.handleEvents, this);
+  }
+
+  componentWillUnmount() {
+
+  }
+
+  handleEvents = () => {
+    this.setState({freelancer : this.free});
+    this.forceUpdate();
+  };
 
   handleExpandClick = () => this.setState({ expanded: !this.state.expanded });
 

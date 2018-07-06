@@ -9,6 +9,7 @@ import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import FreelancerService from './services/FreelancerService';
 
 const theme = createMuiTheme(constants.theme);
 
@@ -28,6 +29,27 @@ const styles = theme =>
   });
 
 class AppConnected extends React.Component {
+
+  constructor() {
+    super();
+    this.free = FreelancerService.getFreelancer();
+    this.state = {
+        experiences: this.free.experiences
+    };
+  }
+
+  componentDidMount() {
+    this.free.addListener('ExperienceChanged', this.handleEvents, this);
+    this.free.addListener('FreeDataChanged', this.handleEvents, this);
+  }
+
+  componentWillUnmount() {
+      //this.free.removeListener('ExperienceChanged');
+  }
+
+  handleEvents = () => {
+      this.forceUpdate();
+  };
 
   render() {
     return (

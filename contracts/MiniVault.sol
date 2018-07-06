@@ -16,28 +16,13 @@ contract MiniVault{
         bytes32 lastName;
         bytes32 mobilePhone;
         bytes32 email;
-        bytes32 description; 
+        string description; 
         bool isMobilephone;
         bool isEmail;
-
-
-        FreelancerState state;
-        bool isUserKYC;
-        // this is the origin of the freelance for future use
-        uint8 referral;
-        uint256 subscriptionDate;
-        //used to penalize (bad behavior, wrong info) or reward (fidelity, good activity) a user
-        uint256 karma;
     }
 
     // mapping between Vault Ethereum address and Confidence Index
     mapping(address => Information) public FreelancerInformation;
-
-    //whitelisted address of partners to get a free access to vault
-    mapping(address => mapping(address=>bool)) public ListedPartner;
-
-    enum FreelancerState { Inactive, Active, Suspended }
-    // TODO Get data ?
 
     uint NbOfValidDocument;
 
@@ -56,15 +41,6 @@ contract MiniVault{
         uint endDate;
         uint duration;
     }
-
-    struct competency {
-        bytes32 name;
-        uint rating;
-    }
-
-    // TODO struct avec mots clés
-
-    // TODO Infura gateway blockchain
     
     //address is owner of certified document
     mapping(bytes32 => certifiedDocument) public talentsDocuments;
@@ -95,7 +71,7 @@ contract MiniVault{
         bytes32 lastname,
         bytes32 phone,
         bytes32 email,
-        bytes32 description
+        string description
     );
 
     constructor()
@@ -122,11 +98,6 @@ contract MiniVault{
         talentsDocuments[documentId].keywords = keywords;
         talentsDocuments[documentId].ratings = ratings;
 
-        // for(uint i = 0; i < keywords.length; i++)
-        // {
-        //     require(ratings[i] >= 0 && ratings[i] <= 5);
-        //     talentsDocuments[documentId].competencies.push(competency(keywords[i], ratings[i]));
-        // }
 
         talentsDocuments[documentId].title = title;
         talentsDocuments[documentId].description = description;
@@ -158,47 +129,10 @@ contract MiniVault{
         }
     }
 
-    /*
-    this method allows the client to retrieve a specific certified document data
-    using document Id provided by ethereum when a document is uploaded
-    accessibility : only for authorized user
-    */
-    function getCertifiedDocumentById (bytes32 dId)
-        onlyOwner
-        view
-        public
-        returns (bytes32 desc, uint docType, uint startDate, uint endDate) 
-    {
-        require(dId != 0 && talentsDocuments[dId].isAlive == true);
-        return (talentsDocuments[dId].description, talentsDocuments[dId].documentType,
-        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
-    }
-
-    /*
-    This method allows the client to retrieve the list of documents (documents by documents) by browsing it with his index
-    accessibility : only for authorized user
-    */
-    function getCertifiedDocumentsByIndex (uint index)
-        onlyOwner
-        view
-        public
-        returns (bytes32 docId, bytes32 desc, uint docType, uint startDate, uint endDate)
-    {
-        bytes32 dId = documentIndex[index];
-        return (dId, talentsDocuments[dId].description, talentsDocuments[dId].documentType,
-        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
-    }
-
-    function InitFreelanceData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _description)
+    function InitFreelanceData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, string _description)
         onlyOwner
         public
     {
-        require(FreelancerInformation[msg.sender].state != FreelancerState.Suspended);
-        if (FreelancerInformation[msg.sender].state == FreelancerState.Inactive)
-        {
-            FreelancerInformation[msg.sender].subscriptionDate = now;
-        }
-        FreelancerInformation[msg.sender].state == FreelancerState.Active;
         FreelancerInformation[msg.sender].firstName = _firstname;
         FreelancerInformation[msg.sender].lastName = _lastname;
         FreelancerInformation[msg.sender].mobilePhone = _phone;
