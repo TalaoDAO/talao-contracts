@@ -44,7 +44,8 @@ class AppConnected extends React.Component {
   }
 
   componentWillUnmount() {
-      //this.free.removeListener('ExperienceChanged');
+      this.free.removeListener('ExperienceChanged');
+      this.free.removeListener('FreeDataChanged');
   }
 
   handleEvents = () => {

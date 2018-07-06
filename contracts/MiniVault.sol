@@ -16,6 +16,7 @@ contract MiniVault{
         bytes32 lastName;
         bytes32 mobilePhone;
         bytes32 email;
+        bytes32 title;
         string description; 
         bool isMobilephone;
         bool isEmail;
@@ -71,6 +72,7 @@ contract MiniVault{
         bytes32 lastname,
         bytes32 phone,
         bytes32 email,
+        bytes32 title,
         string description
     );
 
@@ -129,7 +131,7 @@ contract MiniVault{
         }
     }
 
-    function InitFreelanceData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, string _description)
+    function InitFreelanceData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
         onlyOwner
         public
     {
@@ -137,9 +139,10 @@ contract MiniVault{
         FreelancerInformation[msg.sender].lastName = _lastname;
         FreelancerInformation[msg.sender].mobilePhone = _phone;
         FreelancerInformation[msg.sender].email = _email;
+        FreelancerInformation[msg.sender].title = _title;
         FreelancerInformation[msg.sender].description = _description;
 
-        emit FreelancerUpdateData(msg.sender, _firstname, _lastname, _phone, _email, _description);
+        emit FreelancerUpdateData(msg.sender, _firstname, _lastname, _phone, _email, _title, _description);
     }
 
     function () 

@@ -91,11 +91,11 @@ class Competencies extends React.Component {
     }
 
     componentWillUnmount() {
-        //this.free.removeListener('ExperienceChanged');
+        this.isCancelled = true;
     }
 
     handleEvents = () => {
-        this.setState({
+        !this.isCancelled && this.setState({
             competencies: this.free.getCompetencies()
         });
         this.forceUpdate();

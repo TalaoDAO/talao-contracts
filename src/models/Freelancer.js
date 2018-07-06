@@ -19,78 +19,11 @@ class Freelancer extends EventEmitter {
             this.firstBlock = blockNumber;
         });
 
-        this.firstName = "Paul";
-        this.lastName = "Durand";
-        this.confidenceIndex = 82;
-        this.title = "Blockchain specialist";
-        this.description = "You have a project that implies the use of the blockchain? I can surely guide you to the road of success.";
-        this.pictureUrl = "freelancer-picture.jpg";
-        this.email = "paul.durand@gmail.com";
-        this.phone = "(650) 555-1234";
-        this.ethereumAddress = "0xEf9E029Ca326b4201927AD2672545cbE19DA10f1";
-        this.experiences = [
-            new Experience(
-                "Dolor sit amet",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue. Donec vestibulum lectus eu orci eleifend ultrices. Nunc ornare nec libero a ornare. Integer consectetur mi in est maximus tristique. Curabitur maximus ligula ipsum, mollis consequat erat aliquam vitae.",
-                new Date(2018, 1, 1),
-                new Date(2018, 6, 1),
-                [
-                    new Competency("Project Management", 100)
-                ],
-                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
-                100,
-            ),
-            new Experience(
-                "Consectetur adipiscing",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2016, 1, 1),
-                new Date(2018, 1, 1),
-                [
-                    new Competency("Project Management", 90),
-                    new Competency("Blockchain", 80),
-                    new Competency("Javascript", 85)
-                ],
-                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
-                83,
-            ),
-            new Experience(
-                "Consectetur adipiscing 2",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2015, 10, 1),
-                new Date(2016, 1, 1),
-                [
-                    new Competency("Design", 95),
-                ],
-                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
-                62,
-            ),
-            new Experience(
-                "Consectetur adipiscing 3",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2015, 3, 1),
-                new Date(2015, 10, 1),
-                [
-                    new Competency("Javascript", 25),
-                ],
-                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
-                13,
-            ),
-            new Experience(
-                "Consectetur adipiscing 4",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec ex sodales, finibus quam nec, convallis augue.",
-                new Date(2013, 1, 1),
-                new Date(2015, 3, 1),
-                [
-                    new Competency("Education", 35),
-                ],
-                "https://raw.githubusercontent.com/blockchain-certificates/cert-verifier-js/master/tests/data/sample-cert-mainnet-valid-2.0.json",
-                63,
-            ),
-        ]
+        this.experiences = [];
 
         this.eventAddDocumentSubscription();
         this.GetFreeLanceData();
-        this.GetDocument();
+        this.GetAllDocuments();
     }
 
     getBytes32FromIpfsHash(ipfsAddress) {
@@ -129,17 +62,19 @@ class Freelancer extends EventEmitter {
                 }).on('error', error => {
                     alert("An error has occured when adding your document (ERR: " + error + ")");
                     return;
+                }).then(() => {
+                    this.emit('ExperienceAdded', this);
                 });
         }
     }
 
     GetFreeLanceData() {
         this.miniVaultContract.getPastEvents('FreelancerUpdateData', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
-            events.forEach(( event => {
+            events.forEach((event => {
                 this.firstName = window.web3.utils.hexToAscii(event['returnValues']['firstname']).replace(/\u0000/g, '');
                 this.lastName = window.web3.utils.hexToAscii(event['returnValues']['lastname']).replace(/\u0000/g, '');
                 this.confidenceIndex = 82;
-                this.title = "Blockchain specialist";
+                this.title = window.web3.utils.hexToAscii(event['returnValues']['title']).replace(/\u0000/g, '');
                 this.description = event['returnValues']['description'];
                 this.pictureUrl = "freelancer-picture.jpg";
                 this.email = window.web3.utils.hexToAscii(event['returnValues']['email']).replace(/\u0000/g, '');
@@ -147,39 +82,48 @@ class Freelancer extends EventEmitter {
                 this.ethereumAddress = window.selectedAccount;
             }));
         });
-
         this.emit('FreeDataChanged', this);
     }
 
-    GetDocument() {
+    GetAllDocuments() {
         this.miniVaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
             events.forEach((event => {
-                var docId = event['returnValues']['documentId'].toString();
-                let title = window.web3.utils.hexToAscii(event['returnValues']['title']).replace(/\u0000/g, '');
-                var description = window.web3.utils.hexToAscii(event['returnValues']['description']).replace(/\u0000/g, '');
-                let startDate = parseInt(event['returnValues']['startDate'], 10);
-                let endDate = parseInt(event['returnValues']['endDate'], 10);
-                let ratings = event['returnValues']['ratings'];
-                let keywords = event['returnValues']['keywords'];
-                let competencies = [];
-                for (let index = 0; index < ratings.length; index++) {
-                    competencies.push(new Competency(window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''), ratings[index]));
-                }
-                let url = "https://gateway.ipfs.io/ipfs/"+this.getIpfsHashFromBytes32(docId);
-                var newExp = new Experience(
-                    title,
-                    description,
-                    new Date(startDate),
-                    new Date(endDate),
-                    competencies,
-                    url,
-                    100
-                )
-                this.addExperience(newExp);
+                this.GetDocumentByEvent(event['returnValues']);
             }));
-
             this.emit('ExperienceChanged', this);
         });
+    }
+
+    GetDocumentByEvent(event) {
+        var docId = event['documentId'].toString();
+        let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
+        var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
+        let startDate = parseInt(event['startDate'], 10);
+        let endDate = parseInt(event['endDate'], 10);
+        let ratings = event['ratings'];
+        let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
+        let keywords = event['keywords'];
+        let competencies = [];
+        for (let index = 0; index < ratings.length; index++) {
+            competencies.push(
+                new Competency(
+                    window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''),
+                    (isNumber) ? ratings[index] : ratings[index].c[0]
+                )
+            );
+        }
+        let url = "https://gateway.ipfs.io/ipfs/" + this.getIpfsHashFromBytes32(docId);
+        var newExp = new Experience(
+            title,
+            description,
+            new Date(startDate),
+            new Date(endDate),
+            competencies,
+            url,
+            100
+        )
+        this.addExperience(newExp);
+        this.emit('ExperienceChanged', this);
     }
 
     eventAddDocumentSubscription() {
@@ -192,7 +136,7 @@ class Freelancer extends EventEmitter {
                 console.log(err);
             else {
                 if (event['blockNumber'] > this.firstBlock) {
-                    this.emit('ExperienceChanged', this);
+                    this.GetDocumentByEvent(event['args']);
                 }
             }
         });

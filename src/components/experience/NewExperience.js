@@ -41,12 +41,16 @@ const styles = theme => ({
         }
     },
     content: {
+        borderColor: theme.palette.grey[300],
+        borderWidth: '10px',
+        borderStyle: 'solid',
+        borderRadius: '50px',
         display: 'inline-block',
         verticalAlign: 'top',
-        marginTop: '15px',
+        marginTop: '0px',
         marginLeft: '30px',
         marginBottom: '20px',
-        paddingLeft: '50px',
+        padding: '20px 0px 20px 25px',
         borderLeft: '1px solid ' + theme.palette.grey[300],
     },
     card: {
@@ -119,6 +123,7 @@ class NewExperience extends React.Component {
             confidenceIndex: 80,
             uploadedDocument: '',
         };
+        this.free = FreelancerService.getFreelancer();
         this.newExp = this.newExp.bind(this);
         this.submit = this.submit.bind(this);
         this.reader = new FileReader();
@@ -128,6 +133,20 @@ class NewExperience extends React.Component {
             { protocol: 'http' }
         );
     }
+
+    componentDidMount() {
+        this.free.addListener('ExperienceAdded', this.handleEvents, this);
+    }
+
+    componentWillUnmount() {
+        this.isCancelled = true;
+    }
+
+    handleEvents = () => {
+        !this.isCancelled && this.setState({
+            newExperience: false,
+        });
+    };
 
     newExp() {
         this.setState({
@@ -192,7 +211,7 @@ class NewExperience extends React.Component {
         );
         //appel blockchain
         this.addDocument(newExperienceToAdd);
-        FreelancerService.getFreelancer().addExperience(newExperienceToAdd);
+        //FreelancerService.getFreelancer().addExperience(newExperienceToAdd);
     }
 
     addDocument(experience) {

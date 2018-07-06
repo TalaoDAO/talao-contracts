@@ -79,7 +79,7 @@ class Profile extends React.Component {
 
   constructor() {
     super();
-    this.free = FreelancerService.getFreelancer(),
+    this.free = FreelancerService.getFreelancer();
     this.state = {
       freelancer: this.free,
       expanded: false

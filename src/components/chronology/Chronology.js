@@ -29,36 +29,39 @@ class Chronology extends React.Component {
     }
 
     componentWillUnmount() {
-        //this.free.removeListener('ExperienceChanged');
+        this.isCancelled = true;
     }
 
     handleEvents = () => {
+        !this.isCancelled && this.setState({
+            experiences: this.free.experiences
+        });
         this.forceUpdate();
     };
 
     render() {
-
+        if (this.state.experiences == null) return (<NewExperience />);
         const experiences = this.state.experiences//this.state.experiences
-        // Sort descending by date
-        .sort((extendedExperienceA, extendedExperienceB) => {
-            return extendedExperienceA.from < extendedExperienceB.from;
-        })
+            // Sort descending by date
+            .sort((extendedExperienceA, extendedExperienceB) => {
+                return extendedExperienceA.from < extendedExperienceB.from;
+            })
 
-        // Generate components
-        .map((extendedExperience) => {
-            const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
-            const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
-            const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
-            return (
-                <Experience
-                    value={extendedExperience}
-                    key={extendedExperience.title}
-                    color={backgroundColorString}
-                    lightColor={backgroundLightColorString}
-                    textColor={textColorString}
-                />
-            );
-        });
+            // Generate components
+            .map((extendedExperience) => {
+                const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
+                const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
+                const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
+                return (
+                    <Experience
+                        value={extendedExperience}
+                        key={extendedExperience.title}
+                        color={backgroundColorString}
+                        lightColor={backgroundLightColorString}
+                        textColor={textColorString}
+                    />
+                );
+            });
 
         return (
             <Card className={this.props.classes.card}>
