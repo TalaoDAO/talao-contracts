@@ -4,6 +4,8 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { constants } from './constants';
 import Profile from './components/profile/Profile';
 import Menu from './components/menu/Menu';
+import VaultCreation from './components/vaultCreation/VaultCreation';
+import Homepage from './components/homepage/Homepage';
 import Competencies from './components/competencies/Competencies';
 import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
@@ -44,8 +46,8 @@ class AppConnected extends React.Component {
   }
 
   componentWillUnmount() {
-      this.free.removeListener('ExperienceChanged');
-      this.free.removeListener('FreeDataChanged');
+      //this.free.removeListener('ExperienceChanged');
+      //this.free.removeListener('FreeDataChanged');
   }
 
   handleEvents = () => {
@@ -72,6 +74,9 @@ class AppConnected extends React.Component {
                       <Grid item xs={12}>
                         <Switch>
                           <Route exact path="/" component={Chronology} />
+                          <Route exact path="/chronology" component={Chronology} />
+                          <Route exact path="/register" component={VaultCreation} />
+                          <Route exact path="/homepage" component={Homepage} />
                           <Route exact path="/competencies" component={Competencies} />
                           <Route path="/competencies/:competencyName" component={Competencies} />
                         </Switch>

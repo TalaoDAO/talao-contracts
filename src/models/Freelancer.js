@@ -164,7 +164,9 @@ class Freelancer extends EventEmitter {
         this.experiences.push(exp);
     }
 
-    updateProfil(firstName, lastName, title, description, email, phone) {
+    updateProfil(accessPrice, firstName, lastName, title, description, email, phone) {
+        //TODO push data to smart contracts
+        this.accessPrice = accessPrice;
         this.firstName = firstName;
         this.lastName = lastName;
         this.title = title;

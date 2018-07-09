@@ -79,15 +79,6 @@ const styles = theme => ({
     formControl: {
         margin: '60px',
     },
-    group: {
-        margin: '20px 0',
-    },
-    chip: {
-        margin: '20px 10px',
-        cursor: 'pointer',
-        color: '#fff',
-        backgroundColor: blue[500],
-    },
     timeLine: {
         display: 'inline-block',
         cursor: 'pointer',

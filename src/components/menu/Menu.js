@@ -56,6 +56,12 @@ class Menu extends React.Component {
                     <Typography to="/">
                         <Link className={this.props.classes.sidebarItem} to="/">Chronology</Link>
                     </Typography>
+                    <Typography to="/">
+                        <Link className={this.props.classes.sidebarItem} to="/register">Create Vault</Link>
+                    </Typography>
+                    <Typography to="/">
+                        <Link className={this.props.classes.sidebarItem} to="/homepage">Homepage</Link>
+                    </Typography>
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>
