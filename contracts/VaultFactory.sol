@@ -12,7 +12,7 @@ contract VaultFactory is Ownable {
 
     //first address is Talent ethereum address 
     //second address is Smart Contract vault address dedicated to this talent
-    mapping (address=>address) public FreelanceVault; 
+    mapping (address=>address) public FreelanceVault;
 
     enum VaultState { AccessDenied, AlreadyExist, Created }
     event VaultCreation(address indexed talent, address vaultaddress, VaultState msg);

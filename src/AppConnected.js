@@ -32,8 +32,8 @@ const styles = theme =>
 
 class AppConnected extends React.Component {
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.free = FreelancerService.getFreelancer();
     this.state = {
         experiences: this.free.experiences

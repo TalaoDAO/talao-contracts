@@ -99,6 +99,7 @@ class VaultCreation extends React.Component {
         this.free = FreelancerService.getFreelancer();
 
         this.state = {
+            waiting: false,
             step: 0,
             accessPrice: '',
             firstName: '',
@@ -108,8 +109,11 @@ class VaultCreation extends React.Component {
             mail: '',
             phone: '',
         };
-
         this.nextStep = this.nextStep.bind(this);
+        this.vaultFactoryContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
+            process.env.REACT_APP_VAULTFACTORY_ADDRESS
+        );
     }
 
     componentDidMount() {
@@ -169,14 +173,28 @@ class VaultCreation extends React.Component {
 
     isAccessPriceCorrect() {
         return (
-            this.state.accessPrice >= 0 
-            && this.state.accessPrice <= 10 
-            && this.state.accessPrice % 1 === 0 
+            this.state.accessPrice >= 0
+            && this.state.accessPrice <= 10
+            && this.state.accessPrice % 1 === 0
             && this.state.accessPrice !== ''
         );
     }
 
     submit() {
+        //TODO create Vault
+        this.setState({ waiting: true });
+        this.vaultFactoryContract.methods.CreateVaultContract().send(
+        {
+            from: window.selectedAccount
+        })
+        .on('error', error => {
+            alert("An error has occured when creating your vault (ERR: " + error + ")");
+            this.setState({ waiting: false });
+            return;
+        }).then(result => {
+            this.setState({ waiting: false });
+            console.log(result);
+        });
     }
 
 
@@ -191,7 +209,7 @@ class VaultCreation extends React.Component {
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
                             <div onClick={() => this.goToStep(0)} className={this.props.classes.timeContainer}>
-                                Set access price
+                                Set access price <span style={{ display: this.state.step > 0 ? 'inline' : 'none' }} > ({this.state.accessPrice} Talao Token) </span>
                             </div>
                         </div>
                     </div>

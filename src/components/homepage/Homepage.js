@@ -106,12 +106,32 @@ class Homepage extends React.Component {
         super();
         this.state = {
             freelancerAddress: '',
+            errorText: '',
         }
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.vaultFactoryContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
+            process.env.REACT_APP_VAULTFACTORY_ADDRESS
+        );
     }
 
-    handleSubmit(event) {
-        
+    handleSubmit = event => {
+        this.vaultFactoryContract.methods.FreelanceVault(this.state.freelancerAddress).call().then(vaultAddress => {
+            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                this.props.history.push({
+                    pathname: '/chronology',
+                    search: this.state.freelancerAddress,
+                    state: { address: this.state.freelancerAddress }
+                });
+            }
+            else {
+                this.setState({ errorText: 'This address is not associated to a freelancer account or doesn\'t exist', });
+            }
+        });
+    }
+
+    isError() {
+        return (this.state.errorText.length !== 0);
     }
 
     handleAddressChanged = event => {
@@ -128,6 +148,8 @@ class Homepage extends React.Component {
                         </div>
                         <form onSubmit={this.handleSubmit}>
                             <TextField
+                                error={this.isError()}
+                                helperText={this.state.errorText}
                                 value={this.state.freelancerAddress}
                                 onChange={this.handleAddressChanged}
                                 className={this.props.classes.textField}
@@ -136,8 +158,8 @@ class Homepage extends React.Component {
                                 }}
                             />
                             <div className={this.props.classes.center}>
-                                <Button type="submit" className={this.props.classes.certificatButton} label="login">
-                                    <Link style={{ textDecoration: 'none', color: '#fff' }} to={"/chronology?address=" + this.state.freelancerAddress}>Find my freelancer</Link>
+                                <Button onClick={this.handleSubmit} className={this.props.classes.certificatButton} label="login">
+                                    Find my freelancer
                                 </Button>
                             </div>
                         </form>

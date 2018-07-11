@@ -17,9 +17,15 @@ const styles = {
 
 class Chronology extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
+        if (this.props.location.state != null) {
+            this.isClient = true;
+            this.freelancerAddress = this.props.location.state.address;
+        }
         this.free = FreelancerService.getFreelancer();
+        this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.selectedAccount);
+
         this.state = {
             experiences: this.free.experiences,
             waiting: this.free.isWaiting,

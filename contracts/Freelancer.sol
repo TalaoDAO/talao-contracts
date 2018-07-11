@@ -14,8 +14,8 @@ contract Freelancer is Ownable {
         bytes32 lastName;
         bytes32 mobilePhone;
         bytes32 email;
-        bool isMobilephone;
-        bool isEmail;
+        bytes32 title;
+        string description;
 
         FreelancerState state;
         bool isUserKYC;
@@ -34,12 +34,14 @@ contract Freelancer is Ownable {
 
     enum FreelancerState { Inactive, Active, Suspended }
 
-    event FreelancerSubscribe (
+    event FreelancerUpdateData (
         address indexed freelancer,
         bytes32 firstname,
         bytes32 lastname,
         bytes32 phone,
-        bytes32 email
+        bytes32 email,
+        bytes32 title,
+        string description
     );
 
     event FreelancerInternalData (
@@ -49,17 +51,15 @@ contract Freelancer is Ownable {
     );
 
     constructor(address token) 
-        public 
+        public
     {
         myToken = TalaoToken(token);
-        FreelancerInformation[msg.sender].karma = 1;
     }
 
     /**
      * Freelance subscribes/updates his data
     */
-    function subscribe(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email)
-        onlyOwner
+    function UpdateFreelancerData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
         public
     {
         require(FreelancerInformation[msg.sender].state != FreelancerState.Suspended);
@@ -67,20 +67,20 @@ contract Freelancer is Ownable {
         {
             FreelancerInformation[msg.sender].subscriptionDate = now;
         }
-        FreelancerInformation[msg.sender].state == FreelancerState.Active;
         FreelancerInformation[msg.sender].firstName = _firstname;
         FreelancerInformation[msg.sender].lastName = _lastname;
         FreelancerInformation[msg.sender].mobilePhone = _phone;
         FreelancerInformation[msg.sender].email = _email;
+        FreelancerInformation[msg.sender].title = _title;
+        FreelancerInformation[msg.sender].description = _description;
 
-        emit FreelancerSubscribe(msg.sender, _firstname, _lastname, _phone, _email);
+        emit FreelancerUpdateData(msg.sender, _firstname, _lastname, _phone, _email, _title, _description);
     }
     /**
      * General Data Protection Regulation
      * Freelancer unsubscribes
      */
     function unsubscribe()
-        onlyOwner
         public
     {
         require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive);
@@ -92,7 +92,6 @@ contract Freelancer is Ownable {
      * Talao can suspend one freelance
     */
     function setInternalData(bool _iskyc, uint8 _referral) 
-        onlyOwner
         public
     {
         require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive);
@@ -103,43 +102,42 @@ contract Freelancer is Ownable {
     /**
      * Set Confidence Index (public data) by owner in case of bad behavior) 
      */
-    function setKarma(uint256 karma)
+    function setKarma(address _freelancer, uint256 karma)
         onlyOwner
         public
     {
-        require(FreelancerInformation[msg.sender].state == FreelancerState.Active);
-        FreelancerInformation[msg.sender].karma = karma;
+        require(FreelancerInformation[_freelancer].state == FreelancerState.Active);
+        FreelancerInformation[_freelancer].karma = karma;
     }
 
-    function setInactive()
+    function setInactive(address _freelancer)
         onlyOwner
         public
     {
-        FreelancerInformation[msg.sender].state = FreelancerState.Inactive;
+        FreelancerInformation[_freelancer].state = FreelancerState.Inactive;
     }
 
-    function setActive()
+    function setActive(address _freelancer)
         onlyOwner
         public
     {
-        FreelancerInformation[msg.sender].state = FreelancerState.Active;
+        FreelancerInformation[_freelancer].state = FreelancerState.Active;
     }
 
     /**
      * Freelance can whitelist a partner. Partner will have a free access to his Vault
     */ 
     function listPartner(address _partner, bool IsListed)
-        onlyOwner
         public
     {
         ListedPartner[msg.sender][_partner] = IsListed;
     }
 
-    function isPartner(address _partner)
+    function isPartner(address _freelancer, address _partner)
         public
         view
         returns(bool)
     {
-        return ListedPartner[owner][_partner];
+        return ListedPartner[_freelancer][_partner];
     }
 }

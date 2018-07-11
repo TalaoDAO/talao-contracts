@@ -75,11 +75,11 @@ contract('VaultFactory', async (accounts) => {
         VaultAddress = VaultReceipt.logs[0].address;
     });
     it("Should add information about Freelancer to Vault", async () => {
-        let FreelancerInfo = await FreelancerInstance.subscribe("0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", { from: FreelancerAddress });
+        let FreelancerInfo = await FreelancerInstance.UpdateFreelancerData("0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "Description", { from: FreelancerAddress });
         assert(FreelancerInfo, "should not be null");
     });
     it("Should refuse the partner", async () => {
-        let isPartner = await FreelancerInstance.isPartner(PartnerAddress);
+        let isPartner = await FreelancerInstance.isPartner(FreelancerAddress, PartnerAddress);
         assert.equal(isPartner, false, "should be false");
     });
     it("Should allow a partner to visit his Vault", async () => {
@@ -87,38 +87,34 @@ contract('VaultFactory', async (accounts) => {
         assert(Partner, "should not be null");
     });
     it("Should allow the partner", async () => {
-        let isPartner2 = await FreelancerInstance.isPartner(PartnerAddress);
+        let isPartner2 = await FreelancerInstance.isPartner(FreelancerAddress, PartnerAddress);
         assert.equal(isPartner2, true, "should be true");
     });
     it("Should add document to Vault", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        let VaultDoc = await VaultInstance.addDocument("0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, true, { from: FreelancerAddress });
-        await VaultInstance.addDocument("0x00aaee", "0x00aaff", ["0x00", "0xaa", "0xff"], [4, 5, 4], 2, 56, 57, true, { from: FreelancerAddress });
-        await VaultInstance.addDocument("0x00aadd", "0x00aaff", ["0x00", "0xbb"], [1, 0], 2, 56, 57, true, { from: FreelancerAddress });
+        let VaultDoc = await VaultInstance.addDocument("0x00aaff", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, { from: FreelancerAddress });
+        //await VaultInstance.addDocument("0x00aaee", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [4, 5, 4], 2, 56, 57, { from: FreelancerAddress });
+        //await VaultInstance.addDocument("0x00aadd", "0x00aaff", "0x00aaff", ["0x00", "0xbb"], [1, 0], 2, 56, 57, { from: FreelancerAddress });
         assert(VaultDoc, "should not be null");
     });
     it("Should not add document to Vault because keywords and ratings do not match", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        await tryCatch(VaultInstance.addDocument("0x00aaaa", "0x00aaff", ["0x00", "0xaa"], [4], 2, 56, 57, true, { from: FreelancerAddress }), errTypes.revert);
-    });
-    it("Should not add document to Vault because ratings are not between 0 and 5", async () => {
-        if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        await tryCatch(VaultInstance.addDocument("0x00aabb", "0x00aaff", ["0x00", "0x00"], [1, 6], 2, 56, 57, true, { from: FreelancerAddress }), errTypes.revert);
+        await tryCatch(VaultInstance.addDocument("0x00aaaa", "0x00aaff", "0x00aaff", ["0x00", "0xaa"], [4], 2, 56, 57, { from: FreelancerAddress }), errTypes.revert);
     });
     it("Should get the scoring of the Vault", async () => {
         let Score = await VaultInstance.getScoring({ from: FreelancerAddress });
-        assert.equal(Score.c, 14, "numbers should be equals");
+        assert.equal(Score.c, 5, "numbers should be equals");
     });
     it("Should get the scoring of the Vault as a partner", async () => {
         let Score2 = await VaultInstance.getScoring({ from: PartnerAddress });
-        assert.equal(Score2.c, 14, "numbers should be equals");
+        assert.equal(Score2.c, 5, "numbers should be equals");
     });
     it("Should not get the scoring of the Vault with an unauthorized address", async () => {
         await tryCatch(VaultInstance.getScoring(), errTypes.revert);
     });
     it("Should get the scoring for a specific keyword", async () => {
         let ScoreWithKeyword = await VaultInstance.getScoringByKeyword("0x00", { from: FreelancerAddress });
-        assert.equal(ScoreWithKeyword.c, 66, "numbers should be equals");
+        assert.equal(ScoreWithKeyword.c, 100, "numbers should be equals");
     });
     it("Should get the document", async () => {
         expect(() => {
