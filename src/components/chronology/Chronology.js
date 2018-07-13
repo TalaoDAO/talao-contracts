@@ -7,7 +7,6 @@ import { withStyles, CardContent } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
 const Loading = require('react-loading-animation');
 
-
 const styles = {
     card: {
         transition: 'all .6s ease',
@@ -22,7 +21,11 @@ class Chronology extends React.Component {
         if (this.props.location.state != null) {
             this.isClient = true;
             this.freelancerAddress = this.props.location.state.address;
+        } else if (this.props.location.search != null) {
+            var adress = this.props.location.search
+            this.freelancerAddress = adress.substring(1,adress.length);
         }
+
         this.free = FreelancerService.getFreelancer();
         this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.selectedAccount);
 

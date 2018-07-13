@@ -47,12 +47,10 @@ contract VaultFactory is Ownable {
         //address(myToken).delegatecall(bytes4(keccak256("createVaultAccess(uint256)")), 5);
 
         //Verify using Talao token if sender is authorized to create a Vault
-        bool agreement = false;
-        uint unused = 0;
-        (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
+        // bool agreement = false;
+        // uint unused = 0;
 
-        require (agreement == true);
-        require(FreelanceVault[msg.sender] == address(0));
+        require(FreelanceVault[msg.sender] == address(0),"Freelance has an existing vault");
         Vault newVault = new Vault(myToken, myFreelancer);
 
         // TODO just like the createVaultAccess function, we should use delegatecall to keep the msg.sender in order to add document 

@@ -73,7 +73,8 @@ class AppConnected extends React.Component {
                       </Grid>
                       <Grid item xs={12}>
                         <Switch>
-                          <Route exact path="/" component={Chronology} />
+                          {/* <Route exact path="/" component={Chronology} /> */}
+                          <Route exact path="/" component={Homepage} />
                           <Route exact path="/chronology" component={Chronology} />
                           <Route exact path="/register" component={VaultCreation} />
                           <Route exact path="/homepage" component={Homepage} />

@@ -10,6 +10,7 @@ if (window.web3) {
   // Then backup the good old injected Web3, sometimes it's usefull:
   if (window.web3.currentProvider.isMetaMask) {
     window.selectedAccount = window.web3.eth.defaultAccount;
+    //alert(this.context.web3.selectedAccount);
   }
 
   window.web3old = window.web3;
@@ -18,6 +19,7 @@ if (window.web3) {
 }
 
 class Web3WrapperUnavailable extends Component {
+  
   render() {
     return (
       <div className="Web3Wrapper">

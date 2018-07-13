@@ -41,10 +41,10 @@ const styles = theme => ({
         }
     },
     content: {
-        borderColor: theme.palette.grey[300],
-        borderWidth: '10px',
-        borderStyle: 'solid',
-        borderRadius: '50px',
+        // borderColor: theme.palette.grey[300],
+        // borderWidth: '10px',
+        // borderStyle: 'solid',
+        // borderRadius: '50px',
         display: 'inline-block',
         verticalAlign: 'top',
         marginTop: '0px',
@@ -202,7 +202,8 @@ class NewExperience extends React.Component {
         }
         this.uploadToIpfs(this.state.uploadedDocument).then(result => {
             this.resetState();
-            FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
+            //FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
+            this.free.addDocument(result[0].path, experience);
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
         );

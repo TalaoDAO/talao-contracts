@@ -110,6 +110,8 @@ class VaultCreation extends React.Component {
             phone: '',
         };
         this.nextStep = this.nextStep.bind(this);
+        this.submit = this.submit.bind(this);
+
         this.vaultFactoryContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
@@ -117,8 +119,8 @@ class VaultCreation extends React.Component {
     }
 
     componentDidMount() {
-        this.free.addListener('ExperienceChanged', this.handleEvents, this);
-        this.free.addListener('FreeDataChanged', this.handleEvents, this);
+        // this.free.addListener('ExperienceChanged', this.handleEvents, this);
+        // this.free.addListener('FreeDataChanged', this.handleEvents, this);
     }
 
     componentWillUnmount() {

@@ -17,7 +17,7 @@ class Freelancer extends EventEmitter {
 
         this.freelancerContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
-            process.env.REACT_APP_FREELANCER_ADRESS
+            process.env.REACT_APP_FREELANCER_ADDRESS
         );
         
         //get blocknumber
@@ -98,14 +98,14 @@ class Freelancer extends EventEmitter {
                 this.phone = window.web3.utils.hexToAscii(event['returnValues']['phone']).replace(/\u0000/g, '');
                 this.ethereumAddress = window.selectedAccount;
             }));
+            this.emit('FreeDataChanged', this);
         });
-        this.emit('FreeDataChanged', this);
     }
 
     getAllDocuments() {
         this.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
             events.forEach((event => {
-                this.GetDocumentByEvent(event['returnValues']);
+                this.getDocumentByEvent(event['returnValues']);
             }));
             this.isWaiting = false;
             this.emit('ExperienceChanged', this);
@@ -155,7 +155,7 @@ class Freelancer extends EventEmitter {
                 console.log(err);
             else {
                 if (event['blockNumber'] > this.firstBlock) {
-                    this.GetDocumentByEvent(event['args']);
+                    this.getDocumentByEvent(event['args']);
                 }
             }
         });

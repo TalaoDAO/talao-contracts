@@ -8,7 +8,6 @@ contract Vault is Ownable {
     using SafeMath for uint;
 
     // TODO Get data ?
-
     uint NbOfValidDocument;
     TalaoToken myToken;
     Freelancer myFreelancer;
@@ -18,7 +17,7 @@ contract Vault is Ownable {
 
     struct certifiedDocument {
         bytes32 title;
-        bytes32 description; //description of document
+        string description; //description of document
         bytes32[] keywords; //list of keywords associated to the current certified document
         uint[] ratings;
         bool isAlive; //true if this stuct is set, fasle else
@@ -44,7 +43,7 @@ contract Vault is Ownable {
     event VaultDocAdded (
         bytes32 documentId,
         bytes32 title,
-        bytes32 description,
+        string description,
         uint documentType,
         uint startDate,
         uint endDate,
@@ -80,7 +79,7 @@ contract Vault is Ownable {
     accessibility : only for authorized user and owner of this contract
     */
     function addDocument(
-        bytes32 documentId, bytes32 title, bytes32 description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate
+        bytes32 documentId, bytes32 title, string description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate
     )
         onlyOwner
         allowance
@@ -108,25 +107,6 @@ contract Vault is Ownable {
     }
 
     /*
-    Add keyword to a specified document using document Id
-    accessibility : only for authorized user and owner of this contract
-    */
-    function addKeyword(bytes32 documentId, bytes32 name, uint rating)
-        onlyOwner
-        allowance
-        public
-        returns (bool)
-    {
-        require(documentId != 0 && name.length != 0);
-        require(rating >= 0 && rating <= 5);
-        require(talentsDocuments[documentId].isAlive);
-        talentsDocuments[documentId].keywords.push(name);
-        talentsDocuments[documentId].ratings.push(rating);
-        emit VaultLog(msg.sender, VaultLife.keywordAdded, documentId);
-        return true;
-    }
-
-    /*
     Remove existing document using document id
     accessibility : only for authorized user and owner of this contract
     */
@@ -136,12 +116,12 @@ contract Vault is Ownable {
         public
     {
         require(documentId != 0);
-        if(talentsDocuments[documentId].description.length != 0) {
-            NbOfValidDocument--;
-            delete talentsDocuments[documentId]; //set isValid to false
-            assert(talentsDocuments[documentId].isAlive==false);
-            emit VaultLog(msg.sender, VaultLife.DocumentRemoved, documentId);
-        }
+        //if(talentsDocuments[documentId].description != 0) {
+        NbOfValidDocument--;
+        delete talentsDocuments[documentId]; //set isValid to false
+        assert(talentsDocuments[documentId].isAlive==false);
+        emit VaultLog(msg.sender, VaultLife.DocumentRemoved, documentId);
+        //}
     }
 
     /*
@@ -167,7 +147,7 @@ contract Vault is Ownable {
         allowance
         view
         public
-        returns (bytes32 desc, uint docType, uint startDate, uint endDate) 
+        returns (string desc, uint docType, uint startDate, uint endDate) 
     {
         require(dId != 0 && talentsDocuments[dId].isAlive == true);
         return (talentsDocuments[dId].description, talentsDocuments[dId].documentType,
@@ -182,31 +162,11 @@ contract Vault is Ownable {
         allowance
         view
         public
-        returns (bytes32 docId, bytes32 desc, uint docType, uint startDate, uint endDate)
+        returns (bytes32 docId, string desc, uint docType, uint startDate, uint endDate)
     {
         bytes32 dId = documentIndex[index];
         return (dId, talentsDocuments[dId].description, talentsDocuments[dId].documentType,
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
-    }
-
-    /*
-    get list of interestng document based on search keyword
-    accessibility : only for authorized user
-    */
-    function getMatchCertifiedDocument (uint index, bytes32 keyword)
-        allowance
-        view
-        public
-        returns(bytes32 docId, bytes32 desc)
-    {
-        bytes32 dId = documentIndex[index];
-        bytes32 valueFounded;
-        for (uint i = 0; i < talentsDocuments[dId].keywords.length; i++) {
-            valueFounded = talentsDocuments[dId].keywords[i];
-            if(keccak256(valueFounded) == keccak256(keyword)){
-                return (dId, talentsDocuments[dId].description);  
-            }
-        }
     }
 
     /*
