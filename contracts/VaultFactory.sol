@@ -56,7 +56,7 @@ contract VaultFactory is Ownable {
         //create vaultAccess
         //myToken.createVaultAccess(_price);
         //create Freelancer data
-        myFreelancer.UpdateFreelancerData(_firstname,_lastname,_phone,_email,_title,_description);
+        myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description);
         //create vault
         Vault newVault = new Vault(myToken, myFreelancer);
         
