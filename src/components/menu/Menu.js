@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 import logoTalao from '../../images/logo-talao.png';
+import FreelancerService from '../../services/FreelancerService';
 
 const styles = theme => ({
     root: {
@@ -40,6 +41,23 @@ const styles = theme => ({
 });
 
 class Menu extends React.Component {
+    constructor(props) {
+        super(props);
+        this.free = FreelancerService.getFreelancer();
+    }
+
+    componentDidMount() {
+        this.free.addListener('FreeDataChanged', this.handleEvents, this);
+    }
+
+    componentWillUnmount() {
+        this.free.removeListener('FreeDataChanged', this.handleEvents, this);
+    }
+
+    handleEvents = () => {
+        this.free = FreelancerService.getFreelancer();
+        this.forceUpdate();
+    };
     render() {
         return (
             <div className={this.props.classes.root}>
@@ -56,11 +74,8 @@ class Menu extends React.Component {
                     <Typography to="/">
                         <Link className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
                     </Typography>
-                    {/* <Typography to="/">
-                        <Link className={this.props.classes.sidebarItem} to="/register">Create Vault</Link>
-                    </Typography> */}
                     <Typography to="/">
-                        <Link className={this.props.classes.sidebarItem} to="/homepage">Homepage</Link>
+                        <Link style={{display: this.free.isFreelancer() ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/">Homepage</Link>
                     </Typography>
                     </div>
                 </div>

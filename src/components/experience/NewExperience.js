@@ -134,6 +134,7 @@ class NewExperience extends React.Component {
     triggerInputFile = () => this.fileInput.click();
 
     detectCompetenciesFromCertification(file) {
+        if(typeof file === 'undefined') return;
         if (this.state.certificat !== '') {
             this.setState({
                 competencies: [],
@@ -261,7 +262,7 @@ class NewExperience extends React.Component {
                 <div className={this.props.classes.content} style={{ display: this.state.newExperience ? 'inline-block' : 'none' }}>
                     <Grid container spacing={40}>
                         <form className={this.props.classes.container} noValidate autoComplete="off">
-                            <Grid item>
+                            <Grid item lg={3} xs={6}>
                                 <TextField
                                     id="from"
                                     label="From"
@@ -284,7 +285,7 @@ class NewExperience extends React.Component {
                                     }}>
                                 </TextField>
                             </Grid>
-                            <Grid item xs={3}>
+                            <Grid item lg={3} xs={6}>
                                 <TextField
                                     id="to"
                                     label="To"
@@ -307,8 +308,8 @@ class NewExperience extends React.Component {
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={6}></Grid>
-                            <Grid item xs={6}>
+                            <Grid item lg={6} xs={0}></Grid>
+                            <Grid item lg={6} xs={12}>
                                 <FormControl className={this.props.classes.textField}>
                                     <InputLabel
                                         required
@@ -319,7 +320,7 @@ class NewExperience extends React.Component {
                                     <Input value={this.state.title} onChange={this.handleTitleChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid item lg={6} xs={12} className={this.props.classes.textField}>
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
@@ -363,7 +364,7 @@ class NewExperience extends React.Component {
                                         />} label="Certification" />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={9}>
+                            <Grid item lg={9} xs={12}>
                                 <FormControl className={this.props.classes.textField}>
                                     <InputLabel
                                         FormLabelClasses={{
@@ -373,16 +374,16 @@ class NewExperience extends React.Component {
                                     <Input value={this.state.description} onChange={this.handleDescriptionChange} multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={3}></Grid>
-                            <Grid item xs={3}>
+                            <Grid item lg={3} xs={0}></Grid>
+                            <Grid item lg={3} xs={12}>
                                 <Button onClick={this.triggerInputFile} className={this.props.classes.certificatButton}>
                                     <LineStyle />
                                     Add certificat
                                 </Button>
                                 <input onChange={(e) => this.detectCompetenciesFromCertification(e.target.files[0])} style={{ display: 'none' }} ref={fileInput => this.fileInput = fileInput} type="file" accept="application/json" />
                             </Grid>
-                            <Grid item xs={10}></Grid>
-                            <Grid item xs={8}>
+                            <Grid item lg={10} xs={0}></Grid>
+                            <Grid item lg={8} xs={12}>
                                 <Typography className={this.props.classes.textField} variant="headline" component="p">
                                     Competencies
                                 </Typography>
@@ -390,8 +391,8 @@ class NewExperience extends React.Component {
                                     {competencyTags}
                                 </div>
                             </Grid>
-                            <Grid item xs={4}></Grid>
-                            <Grid item xs={2}>
+                            <Grid item lg={4} xs={0}></Grid>
+                            <Grid item lg={2} xs={12}>
                                 <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
                                     Submit
                                 </Button>

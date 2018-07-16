@@ -19,17 +19,6 @@ class Chronology extends React.Component {
     constructor(props) {
         super(props);
         this.free = FreelancerService.getFreelancer();
-        if (this.props.location.state != null) {
-            this.isClient = true;
-            this.freelancerAddress = this.props.location.state.address;
-        } else if (this.props.location.search !== null && this.props.location.search !== "") {
-            var address = this.props.location.search
-            this.freelancerAddress = address.substring(1, address.length);
-        }
-
-        //A client is searching a freelancer, so we display his Vault
-        if(this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
-            this.free.setAddress(this.freelancerAddress, false);
 
         this.state = {
             experiences: this.free.experiences,
@@ -37,13 +26,25 @@ class Chronology extends React.Component {
         };
     }
 
+    componentWillMount() {
+        if (this.props.location.state != null) {
+            this.freelancerAddress = this.props.location.state.address;
+        } else if (this.props.location.search !== null && this.props.location.search !== "") {
+            var address = this.props.location.search
+            this.freelancerAddress = address.substring(1, address.length);
+        }
+
+        //A client is searching a freelancer, so we display his Vault
+        if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
+            this.free.initFreelancer(this.freelancerAddress);
+    }
+
     componentDidMount() {
-        if(this.free._events.ExperienceChanged && this.free._events.FreeDataChanged) return;
         this.free.addListener('ExperienceChanged', this.handleEvents, this);
-        this.free.addListener('FreeDataChanged', this.handleEvents, this);
     }
 
     componentWillUnmount() {
+        this.free.removeListener('ExperienceChanged', this.handleEvents, this);
         this.isCancelled = true;
     }
 
@@ -52,7 +53,7 @@ class Chronology extends React.Component {
             experiences: this.free.experiences,
             waiting: this.free.isWaiting,
         });
-        if(!this.isCancelled) this.forceUpdate();
+        if (!this.isCancelled) this.forceUpdate();
     };
 
     render() {
@@ -83,7 +84,7 @@ class Chronology extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    {this.free.isSelf ? <NewExperience /> : null }
+                    {this.free.isFreelancer() ? <NewExperience /> : null}
                     {experiences}
                 </CardContent>
             </Card>

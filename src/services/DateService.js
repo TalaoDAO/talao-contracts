@@ -21,7 +21,7 @@ class DateService {
     static monthDiff(d1, d2) {
         let months = (d2.getFullYear() - d1.getFullYear()) * 12;
         months -= d1.getMonth() + 1;
-        months += d2.getMonth();
+        months += d2.getMonth() + 1;
         return months;
     }
 

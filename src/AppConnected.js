@@ -36,23 +36,24 @@ class AppConnected extends React.Component {
     super(props);
     this.free = FreelancerService.getFreelancer();
     this.state = {
-        experiences: this.free.experiences
+      experiences: this.free.experiences
     };
+    this.free.initFreelancer(window.account);
   }
 
   componentDidMount() {
-    if(this.free._events.ExperienceChanged && this.free._events.FreeDataChanged) return;
     this.free.addListener('ExperienceChanged', this.handleEvents, this);
     this.free.addListener('FreeDataChanged', this.handleEvents, this);
   }
 
   componentWillUnmount() {
-      //this.free.removeListener('ExperienceChanged');
-      //this.free.removeListener('FreeDataChanged');
+    this.free.removeListener('ExperienceChanged', this.handleEvents, this);
+    this.free.removeListener('FreeDataChanged', this.handleEvents, this);
   }
 
   handleEvents = () => {
-      this.forceUpdate();
+    this.free = FreelancerService.getFreelancer();
+    this.forceUpdate();
   };
 
   render() {
@@ -64,7 +65,7 @@ class AppConnected extends React.Component {
               <Grid container className={this.props.classes.root}>
                 <Hidden smDown>
                   <Grid item xs={2}>
-                    {!currentPath.includes('homepage') ? <Menu /> : null }
+                    <Menu />
                   </Grid>
                 </Hidden>
                 <Grid container item xs={12} md={10} className={this.props.classes.content}>
@@ -75,7 +76,6 @@ class AppConnected extends React.Component {
                       </Grid>
                       <Grid item xs={12}>
                         <Switch>
-                          {/* <Route exact path="/" component={Chronology} /> */}
                           <Route exact path="/" component={Homepage} />
                           <Route exact path="/chronology" component={Chronology} />
                           <Route exact path="/register" component={VaultCreation} />

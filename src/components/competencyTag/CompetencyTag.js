@@ -5,7 +5,7 @@ import ColorService from '../../services/ColorService';
 const styles = theme => ({
     container: {
         display: 'inline-block',
-        marginRight: '10px',
+        margin: '10px',
         borderRadius: '30px',
         padding: '4px 15px 4px 4px',
         verticalAlign: 'center',

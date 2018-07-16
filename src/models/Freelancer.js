@@ -9,6 +9,7 @@ class Freelancer extends EventEmitter {
     constructor() {
         super();
         this.experiences = [];
+        this.isVaultCreated = false;
 
         this.vaultFactoryContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
@@ -19,25 +20,35 @@ class Freelancer extends EventEmitter {
             JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
             process.env.REACT_APP_FREELANCER_ADDRESS
         );
-        
+
         //get blocknumber
         window.web3.eth.getBlockNumber().then(blockNumber => {
             this.firstBlock = blockNumber;
         });
     }
 
-    setAddress(address, isSelf) {
-        this.freelancerAddress = address;
-        this.isSelf = this.freelancerAddress.toLowerCase() === window.account.toLowerCase() ? true : isSelf;
-        this.vaultFactoryContract.methods.FreelanceVault(this.freelancerAddress).call().then(address => {
-            if (address !== '0x0000000000000000000000000000000000000000') {
-                this.vaultAddress = address;
+    initFreelancer(address) {
+        this.vaultFactoryContract.methods.FreelanceVault(address).call().then(vaultAddress => {
+            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                this.freelancerAddress = address;
+                this.isVaultCreated = true;
+                this.vaultAddress = vaultAddress;
                 this.updateSmartContracts();
                 this.eventAddDocumentSubscription();
                 this.getFreelanceData();
                 this.getAllDocuments();
+                this.emit('FreeDataChanged', this);
+            }
+            else {
+                //User doesn't have a Vault, so we redirect him to the homepage
+                this.isVaultCreated = false;
             }
         });
+    }
+
+    isFreelancer() {
+        if(this.freelancerAddress === null || typeof this.freelancerAddress === 'undefined') return false;
+        return this.freelancerAddress.toLowerCase() === window.account.toLowerCase();
     }
 
     updateSmartContracts() {
@@ -91,7 +102,7 @@ class Freelancer extends EventEmitter {
         this.freelancerContract.getPastEvents('FreelancerUpdateData', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
             events.forEach((event => {
                 //TODO change smart contract, msg.sender is VaultFactory instead of Freelancer address
-                if(event['returnValues']['freelancer'] === window.account) {
+                if (event['returnValues']['freelancer'] === window.account) {
                     this.firstName = window.web3.utils.hexToAscii(event['returnValues']['firstname']).replace(/\u0000/g, '');
                     this.lastName = window.web3.utils.hexToAscii(event['returnValues']['lastname']).replace(/\u0000/g, '');
                     this.confidenceIndex = 82;
@@ -120,7 +131,7 @@ class Freelancer extends EventEmitter {
     getDocumentByEvent(event) {
         var docId = event['documentId'].toString();
         let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
-        if(this.experiences.some(e => e.title === title)) return;
+        if (this.experiences.some(e => e.title === title)) return;
         var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
         let startDate = parseInt(event['startDate'], 10);
         let endDate = parseInt(event['endDate'], 10);
@@ -148,7 +159,6 @@ class Freelancer extends EventEmitter {
         )
         this.addExperience(newExp);
         this.isWaiting = false;
-        this.emit('ExperienceChanged', this);
     }
 
     eventAddDocumentSubscription() {
@@ -163,6 +173,7 @@ class Freelancer extends EventEmitter {
             else {
                 if (event['blockNumber'] > this.firstBlock) {
                     this.getDocumentByEvent(event['args']);
+                    this.emit('ExperienceChanged', this);
                 }
             }
         });
@@ -177,7 +188,7 @@ class Freelancer extends EventEmitter {
                     competencies.push(new Competency(competency.name, competency.confidenceIndex, [experience]));
                 }
                 else {
-                    competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex); 
+                    competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex);
                     competencies[indexCompetency].experiences.push(experience);
                 }
             });

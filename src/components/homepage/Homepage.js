@@ -3,6 +3,7 @@ import Card from '@material-ui/core/Card';
 import { withStyles, CardContent } from '@material-ui/core';
 import { TextField } from '@material-ui/core';
 import Button from 'material-ui/Button';
+import Grid from '@material-ui/core/Grid';
 import { Link } from 'react-router-dom';
 
 const styles = theme => ({
@@ -25,21 +26,9 @@ const styles = theme => ({
     },
     card: {
         flexBasis: 'auto',
-        width: '48%',
-        height: '350px',
+        height: '400px',
         marginRight: '20px',
         marginBottom: '20px',
-    },
-    indicator: {
-        display: 'inline-block',
-        width: '20px',
-        height: '20px',
-        lineHeight: '20px',
-        textAlign: 'center',
-        padding: '20px',
-        marginBottom: '20px',
-        borderRadius: '50%',
-        cursor: 'pointer',
     },
     container: {
         display: 'flex',
@@ -52,47 +41,10 @@ const styles = theme => ({
         margin: '10px 20px',
         width: '-webkit-fill-available',
     },
-    formControl: {
-        margin: '60px',
-    },
-    group: {
-        margin: '20px 0',
-    },
-    timeLine: {
-        display: 'inline-block',
-        cursor: 'pointer',
-    },
-    timeContainer: {
-        display: 'inline-block',
-        paddingLeft: '5px',
-        fontSize: '25px',
-        verticalAlign: 'top',
-        lineHeight: '20px',
-    },
-    line: {
-        display: 'inline-block',
-        borderTop: '6px solid ' + theme.palette.grey[300],
-        borderRight: '6px solid transparent',
-        width: '150px',
-        paddingBottom: '3px',
-    },
-    picture: {
-        borderRadius: '50%',
-        width: '100px',
-        height: '100px',
-        marginLeft: '30%',
-    },
     title: {
         color: theme.palette.text.primary,
         lineHeight: '50px',
         fontSize: '30px',
-        display: 'inlin-block',
-    },
-    sidebarItem: {
-        textDecoration: 'none',
-        color: theme.palette.text.primary,
-        lineHeight: '50px',
-        fontSize: '16px',
         display: 'inlin-block',
     },
     center: {
@@ -101,7 +53,6 @@ const styles = theme => ({
 });
 
 class Homepage extends React.Component {
-
     constructor() {
         super();
         this.state = {
@@ -115,7 +66,25 @@ class Homepage extends React.Component {
         );
     }
 
+    componentWillMount() {
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('homepage')) {
+            this.props.history.push('/homepage');
+        }
+        else {
+            this.vaultFactoryContract.methods.FreelanceVault(window.account).call().then(vaultAddress => {
+                if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                    this.props.history.push('/chronology');
+                }
+            });
+        }
+    }
+
     handleSubmit = event => {
+        if(!window.web3.utils.isAddress(this.state.freelancerAddress)) {
+            this.setState({ errorText: 'This is not a valid ethereum address', });
+            return;
+        }
         this.vaultFactoryContract.methods.FreelanceVault(this.state.freelancerAddress).call().then(vaultAddress => {
             if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
                 this.props.history.push({
@@ -140,7 +109,8 @@ class Homepage extends React.Component {
 
     render() {
         return (
-            <div className={this.props.classes.container}>
+            <Grid container className={this.props.classes.container}>
+            <Grid item xs={12} lg={6}>
                 <Card className={this.props.classes.card}>
                     <CardContent>
                         <div className={this.props.classes.center}>
@@ -158,13 +128,15 @@ class Homepage extends React.Component {
                                 }}
                             />
                             <div className={this.props.classes.center}>
-                                <Button onClick={this.handleSubmit} className={this.props.classes.certificatButton} label="login">
+                                <Button onClick={() => this.handleSubmit()} className={this.props.classes.certificatButton} label="login">
                                     Find my freelancer
                                 </Button>
                             </div>
                         </form>
                     </CardContent>
                 </Card>
+                </Grid>
+                <Grid item xs={12} lg={6}>
                 <Card className={this.props.classes.card}>
                     <CardContent>
                         <div className={this.props.classes.center}>
@@ -177,7 +149,8 @@ class Homepage extends React.Component {
                         </div>
                     </CardContent>
                 </Card>
-            </div>
+                </Grid>
+            </Grid>
         );
     }
 }

@@ -112,7 +112,7 @@ class Experience extends React.Component {
                         </div>
                     </div>
                     <div className={this.props.classes.dateContainer}>
-                        {DateService.getMonthYearDate(this.props.value.from)} -
+                        {DateService.getMonthYearDate(this.props.value.from)} -{' '}
                         {DateService.getMonthYearDate(this.props.value.to)}
                     </div>
                 </div>

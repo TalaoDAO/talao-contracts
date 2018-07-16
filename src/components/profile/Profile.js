@@ -71,7 +71,7 @@ const styles = theme => ({
     marginLeft: '130px',
     marginBottom: '10px',
     display: 'flex',
-    alignItems: 'center',    
+    alignItems: 'center',
   },
 });
 
@@ -87,16 +87,15 @@ class Profile extends React.Component {
   }
 
   componentDidMount() {
-    if(this.free._events.FreeDataChanged) return;
     this.free.addListener('FreeDataChanged', this.handleEvents, this);
   }
 
   componentWillUnmount() {
-
+    this.free.removeListener('FreeDataChanged', this.handleEvents, this);
   }
 
   handleEvents = () => {
-    this.setState({freelancer : this.free});
+    this.setState({ freelancer: this.free });
     this.forceUpdate();
   };
 

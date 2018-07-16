@@ -242,7 +242,7 @@ class VaultCreation extends React.Component {
             this.setState({ waiting: false });
             return;
         }).then(result => {
-            this.free.setAddress(window.account, true);
+            this.free.initFreelancer(window.account);
             this.setState({ waiting: false });
             this.props.history.push('/chronology');
         });

@@ -78,22 +78,34 @@ const styles = {
 
 class Competencies extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.free = FreelancerService.getFreelancer();
+        if (this.props.location.state != null) {
+            this.freelancerAddress = this.props.location.state.address;
+        } else if (this.props.location.search !== null && this.props.location.search !== "") {
+            var address = this.props.location.search
+            this.freelancerAddress = address.substring(1, address.length);
+        }
+
+        //A client is searching a freelancer, so we display his Vault
+        if(this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
+            this.free.initFreelancer(this.freelancerAddress);
+
         this.state = {
             competencies: this.free.getCompetencies(),
         };
     }
 
     componentDidMount() {
-        if(this.free._events.ExperienceChanged) return;
         this.free.addListener('ExperienceChanged', this.handleEvents, this);
     }
 
     componentWillUnmount() {
+        this.free.removeListener('ExperienceChanged', this.handleEvents, this);
         this.isCancelled = true;
     }
+    
 
     handleEvents = () => {
         !this.isCancelled && this.setState({
