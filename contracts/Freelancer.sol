@@ -59,7 +59,7 @@ contract Freelancer is Ownable {
     /**
      * Freelance subscribes/updates his data
     */
-    function UpdateFreelancerData(bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
+    function UpdateFreelancerData(address freelanceAddress, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
         public
     {
         require(FreelancerInformation[msg.sender].state != FreelancerState.Suspended);
