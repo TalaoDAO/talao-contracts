@@ -37,24 +37,28 @@ contract VaultFactory is Ownable {
      * Talent can call this method to create a new Vault contract
      *  with the maker being the owner of this new vault
      */
-    function CreateVaultContract ()
+    function CreateVaultContract (uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
         public
         returns(address)
     {
         // TODO We have to delegate the call to pass the original msg.sender
         // 3 ways to do that: delegate call, tx.origin, pass the msg.sender in parameter
         //myToken.createVaultAccess(msg.sender, 5);
+        
         //address(myToken).delegatecall(bytes4(keccak256("createVaultAccess(uint256)")), 5);
 
         //Verify using Talao token if sender is authorized to create a Vault
         // bool agreement = false;
         // uint unused = 0;
 
-        require(FreelanceVault[msg.sender] == address(0),"Freelance has an existing vault");
+        //require(FreelanceVault[msg.sender] == address(0),"Freelance has an existing vault");
+        
+        //create vaultAccess
+        //myToken.createVaultAccess(_price);
+        //create Freelancer data
+        myFreelancer.UpdateFreelancerData(_firstname,_lastname,_phone,_email,_title,_description);
+        //create vault
         Vault newVault = new Vault(myToken, myFreelancer);
-
-        // TODO just like the createVaultAccess function, we should use delegatecall to keep the msg.sender in order to add document 
-        //address(newVault).delegatecall(bytes4(keccak256("addDocument(bytes32, bytes32, bytes32[], uint, uint, uint, bool)")), documentId, description, keywords, documentType, startDate, endDate, isBlockCert);
         
         FreelanceVault[msg.sender] = address(newVault);
         SafeMath.add(nbVault,1);

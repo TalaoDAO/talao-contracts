@@ -108,9 +108,23 @@ class VaultCreation extends React.Component {
             description: '',
             mail: '',
             phone: '',
+            tokenSymbol:'',
+            vaultDeposit:0,
+            helper:''
         };
+
         this.nextStep = this.nextStep.bind(this);
         this.submit = this.submit.bind(this);
+
+        this.tokenContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
+            process.env.REACT_APP_TALAOTOKEN_ADDRESS
+        );
+
+        this.freelancerContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
+            process.env.REACT_APP_FREELANCER_ADDRESS
+        );
 
         this.vaultFactoryContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
@@ -121,6 +135,29 @@ class VaultCreation extends React.Component {
     componentDidMount() {
         // this.free.addListener('ExperienceChanged', this.handleEvents, this);
         // this.free.addListener('FreeDataChanged', this.handleEvents, this);
+
+        // Get token symbol.
+        this.tokenContract.methods.symbol().call( (err, symbol) => {
+        if (err) console.error (err);
+        else {
+          this.setState({
+            tokenSymbol: symbol
+          });
+        }
+      });
+
+      // Get vault deposit.
+      this.tokenContract.methods.vaultDeposit().call( (err, vaultDepositWei) => {
+        if (err) console.error (err);
+        else {
+            let vaultDeposit = window.web3.utils.fromWei(vaultDepositWei);
+            this.setState({
+                vaultDeposit: vaultDeposit
+            });
+
+            this.setState({helper : "your price should be between 0 (free) and "  + this.state.vaultDeposit.toString() });
+        }
+      });
     }
 
     componentWillUnmount() {
@@ -171,6 +208,11 @@ class VaultCreation extends React.Component {
         this.setState({
             step: this.state.step + 1,
         });
+
+        let tokens_wei = window.web3.utils.toWei(this.state.accessPrice);
+        this.tokenContract.methods.createVaultAccess(tokens_wei).send(
+            {from: this.context.web3.selectedAccount}
+        ).on('error', console.error);
     }
 
     isAccessPriceCorrect() {
@@ -185,7 +227,15 @@ class VaultCreation extends React.Component {
     submit() {
         //TODO create Vault
         this.setState({ waiting: true });
-        this.vaultFactoryContract.methods.CreateVaultContract().send(
+        //uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description
+        let price = this.state.accessPrice;
+        let firstName = window.web3.utils.fromAscii(this.state.firstName);
+        let lastname = window.web3.utils.fromAscii(this.state.lastName);
+        let phone = window.web3.utils.fromAscii(this.state.phone);
+        let email = window.web3.utils.fromAscii(this.state.mail);
+        let title = window.web3.utils.fromAscii(this.state.title);
+        let desc = this.state.description
+        this.vaultFactoryContract.methods.CreateVaultContract(price,firstName,lastname,phone,email, title,desc).send(
         {
             from: window.selectedAccount
         })
@@ -224,7 +274,7 @@ class VaultCreation extends React.Component {
                                     type="number"
                                     value={this.state.accessPrice}
                                     error={!this.isAccessPriceCorrect()}
-                                    helperText="Number should be between 0 and 10"
+                                    helperText={this.state.helper}
                                     onChange={this.handleAccessPriceChange.bind(this)}
                                     className={this.props.classes.textField}
                                     label="Access Price (in Talao Token)"

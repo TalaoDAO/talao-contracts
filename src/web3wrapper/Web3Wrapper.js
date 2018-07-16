@@ -12,6 +12,9 @@ if (window.web3) {
     window.selectedAccount = window.web3.eth.defaultAccount;
     //alert(this.context.web3.selectedAccount);
   }
+ 
+  window.web3.eth.getAccounts(function(err, accounts) { window.account = accounts[0]; });
+  //window.account = web3.eth.getAccounts(console.log)
 
   window.web3old = window.web3;
   // And replace the old injected version by the local Web3.JS version 1.0.0-beta.N

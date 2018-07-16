@@ -74,10 +74,11 @@ class Freelancer extends EventEmitter {
         var documentType = parseInt(experience.type, 10);
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
+
         if (this.vaultContract != null) {
             this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate).send(
                 {
-                    from: window.selectedAccount
+                    from: window.account
                 }).on('error', error => {
                     alert("An error has occured when adding your document (ERR: " + error + ")");
                     return;
@@ -96,7 +97,7 @@ class Freelancer extends EventEmitter {
                 this.pictureUrl = "freelancer-picture.jpg";
                 this.email = window.web3.utils.hexToAscii(event['returnValues']['email']).replace(/\u0000/g, '');
                 this.phone = window.web3.utils.hexToAscii(event['returnValues']['phone']).replace(/\u0000/g, '');
-                this.ethereumAddress = window.selectedAccount;
+                this.ethereumAddress = window.account;
             }));
             this.emit('FreeDataChanged', this);
         });
