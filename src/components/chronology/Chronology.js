@@ -18,16 +18,18 @@ class Chronology extends React.Component {
 
     constructor(props) {
         super(props);
+        this.free = FreelancerService.getFreelancer();
         if (this.props.location.state != null) {
             this.isClient = true;
             this.freelancerAddress = this.props.location.state.address;
         } else if (this.props.location.search !== null && this.props.location.search !== "") {
-            var adress = this.props.location.search
-            this.freelancerAddress = adress.substring(1,adress.length);
+            var address = this.props.location.search
+            this.freelancerAddress = address.substring(1, address.length);
         }
 
-        this.free = FreelancerService.getFreelancer();
-        this.free.setAddress((this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined') ? this.freelancerAddress : window.account);
+        //A client is searching a freelancer, so we display his Vault
+        if(this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
+            this.free.setAddress(this.freelancerAddress, false);
 
         this.state = {
             experiences: this.free.experiences,
@@ -81,7 +83,7 @@ class Chronology extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    <NewExperience />
+                    {this.free.isSelf ? <NewExperience /> : null }
                     {experiences}
                 </CardContent>
             </Card>

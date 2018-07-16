@@ -56,6 +56,7 @@ class AppConnected extends React.Component {
   };
 
   render() {
+    const currentPath = window.location.pathname;
     return (
       <Router>
           <div>
@@ -63,14 +64,14 @@ class AppConnected extends React.Component {
               <Grid container className={this.props.classes.root}>
                 <Hidden smDown>
                   <Grid item xs={2}>
-                    <Menu />
+                    {!currentPath.includes('homepage') ? <Menu /> : null }
                   </Grid>
                 </Hidden>
                 <Grid container item xs={12} md={10} className={this.props.classes.content}>
                   <Grid item xs={12} lg={10}>
                     <Grid container spacing={24}>
                       <Grid item xs={12}>
-                        <Profile />
+                        {!currentPath.includes('homepage') ? <Profile /> : null }
                       </Grid>
                       <Grid item xs={12}>
                         <Switch>

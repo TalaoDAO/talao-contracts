@@ -7,6 +7,7 @@ import Button from 'material-ui/Button';
 import { constants } from '../../constants';
 import Collapse from '@material-ui/core/Collapse';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
+const Loading = require('react-loading-animation');
 
 const theme = createMuiTheme({
     palette: {
@@ -241,14 +242,15 @@ class VaultCreation extends React.Component {
             this.setState({ waiting: false });
             return;
         }).then(result => {
-            this.free.setAddress(window.account);
+            this.free.setAddress(window.account, true);
             this.setState({ waiting: false });
-            console.log(result);
+            this.props.history.push('/chronology');
         });
     }
 
 
     render() {
+        if (this.state.waiting) return (<Loading />);
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
@@ -267,7 +269,7 @@ class VaultCreation extends React.Component {
                         <div style={{ display: this.state.step === 0 ? 'inline-block' : 'none' }} className={this.props.classes.content}>
                             <MuiThemeProvider theme={theme}>
                                 <TextField
-                                    autoFocus="true"
+                                    autoFocus={true}
                                     required
                                     type="number"
                                     value={this.state.accessPrice}
