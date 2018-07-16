@@ -301,10 +301,10 @@ class VaultCreation extends React.Component {
                         <div style={{ display: this.state.step === 1 ? 'inline-block' : 'none' }} className={this.props.classes.content}>
                             <Grid container spacing={40}>
                                 <form className={this.props.classes.container} noValidate autoComplete="off">
-                                    <Grid item xs={2}>
+                                    <Grid item lg={2}>
                                         <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
                                     </Grid>
-                                    <Grid item xs={3}>
+                                    <Grid item lg={3}>
                                         <FormControl className={this.props.classes.textField}>
                                             <InputLabel
                                                 required
@@ -315,7 +315,7 @@ class VaultCreation extends React.Component {
                                             <Input value={this.state.firstName} onChange={this.handleFirstNameChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={3}>
+                                    <Grid item lg={3}>
                                         <FormControl className={this.props.classes.textField}>
                                             <InputLabel
                                                 required
@@ -326,9 +326,9 @@ class VaultCreation extends React.Component {
                                             <Input value={this.state.lastName} onChange={this.handleLastNameChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={4}></Grid>
-                                    <Grid item xs={2}></Grid>
-                                    <Grid item xs={3}>
+                                    <Grid item lg={4}></Grid>
+                                    <Grid item lg={2}></Grid>
+                                    <Grid item lg={3}>
                                         <FormControl className={this.props.classes.textField}>
                                             <InputLabel
                                                 required
@@ -339,9 +339,9 @@ class VaultCreation extends React.Component {
                                             <Input value={this.state.title} onChange={this.handleTitleChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={7}></Grid>
-                                    <Grid item xs={2}></Grid>
-                                    <Grid item xs={8}>
+                                    <Grid item lg={7}></Grid>
+                                    <Grid item lg={2}></Grid>
+                                    <Grid item lg={8}>
                                         <FormControl className={this.props.classes.textField}>
                                             <InputLabel
                                                 FormLabelClasses={{
@@ -351,9 +351,9 @@ class VaultCreation extends React.Component {
                                             <Input value={this.state.description} onChange={this.handleDescriptionChange} multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={2}></Grid>
-                                    <Grid item xs={2}></Grid>
-                                    <Grid item xs={3}>
+                                    <Grid item lg={2}></Grid>
+                                    <Grid item lg={2}></Grid>
+                                    <Grid item lg={3}>
                                         <FormControl className={this.props.classes.textField}>
                                             <InputLabel
                                                 required
@@ -364,9 +364,9 @@ class VaultCreation extends React.Component {
                                             <Input value={this.state.mail} onChange={this.handleMailChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={7}></Grid>
-                                    <Grid item xs={2}></Grid>
-                                    <Grid item xs={3}>
+                                    <Grid item lg={7}></Grid>
+                                    <Grid item lg={2}></Grid>
+                                    <Grid item lg={3}>
                                         <FormControl className={this.props.classes.textField}>
                                             <InputLabel
                                                 required
@@ -377,8 +377,8 @@ class VaultCreation extends React.Component {
                                             <Input value={this.state.phone} onChange={this.handlePhoneChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={7}></Grid>
-                                    <Grid item xs={2}>
+                                    <Grid item lg={7}></Grid>
+                                    <Grid item lg={2}>
                                         <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
                                             Create
                                         </Button>

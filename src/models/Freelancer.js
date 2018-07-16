@@ -47,7 +47,7 @@ class Freelancer extends EventEmitter {
     }
 
     isFreelancer() {
-        if(this.freelancerAddress === null || typeof this.freelancerAddress === 'undefined') return false;
+        if (this.freelancerAddress === null || typeof this.freelancerAddress === 'undefined') return false;
         return this.freelancerAddress.toLowerCase() === window.account.toLowerCase();
     }
 
@@ -99,21 +99,15 @@ class Freelancer extends EventEmitter {
     }
 
     getFreelanceData() {
-        this.freelancerContract.getPastEvents('FreelancerUpdateData', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
-            events.forEach((event => {
-                //TODO change smart contract, msg.sender is VaultFactory instead of Freelancer address
-                if (event['returnValues']['freelancer'] === window.account) {
-                    this.firstName = window.web3.utils.hexToAscii(event['returnValues']['firstname']).replace(/\u0000/g, '');
-                    this.lastName = window.web3.utils.hexToAscii(event['returnValues']['lastname']).replace(/\u0000/g, '');
-                    this.confidenceIndex = 82;
-                    this.title = window.web3.utils.hexToAscii(event['returnValues']['title']).replace(/\u0000/g, '');
-                    this.description = event['returnValues']['description'];
-                    this.pictureUrl = "freelancer-picture.jpg";
-                    this.email = window.web3.utils.hexToAscii(event['returnValues']['email']).replace(/\u0000/g, '');
-                    this.phone = window.web3.utils.hexToAscii(event['returnValues']['phone']).replace(/\u0000/g, '');
-                    this.ethereumAddress = window.account;
-                }
-            }));
+        this.freelancerContract.methods.FreelancerInformation(this.freelancerAddress).call().then(element => {
+            this.firstName = window.web3.utils.hexToAscii(element.firstName).replace(/\u0000/g, '');
+            this.lastName = window.web3.utils.hexToAscii(element.lastName).replace(/\u0000/g, '');
+            this.confidenceIndex = 82;
+            this.title = window.web3.utils.hexToAscii(element.title).replace(/\u0000/g, '');
+            this.description = element.description;
+            this.pictureUrl = "freelancer-picture.jpg";
+            this.email = window.web3.utils.hexToAscii(element.email).replace(/\u0000/g, '');
+            this.phone = window.web3.utils.hexToAscii(element.mobilePhone).replace(/\u0000/g, '');
             this.emit('FreeDataChanged', this);
         });
     }
@@ -162,7 +156,6 @@ class Freelancer extends EventEmitter {
     }
 
     eventAddDocumentSubscription() {
-        //if(typeof this.eventDocAdded !== 'undefined') return;
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
         var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(this.vaultAddress);
 

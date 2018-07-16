@@ -251,6 +251,7 @@ class NewExperience extends React.Component {
                 <div>
                     <div onClick={this.newExp} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
                         <span style={{ display: !this.state.newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>+</span>
+                        <span style={{ display: this.state.newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>-</span>
                     </div>
                     <div onClick={this.newExp} style={{ display: !this.state.newExperience ? 'inline-block' : 'none' }} className={this.props.classes.timeLine} >
                         <div className={this.props.classes.line} style={{ width: (5 * 5) + 'px' }}></div>
@@ -262,7 +263,7 @@ class NewExperience extends React.Component {
                 <div className={this.props.classes.content} style={{ display: this.state.newExperience ? 'inline-block' : 'none' }}>
                     <Grid container spacing={40}>
                         <form className={this.props.classes.container} noValidate autoComplete="off">
-                            <Grid item lg={3} xs={6}>
+                            <Grid item lg={3} xs={12}>
                                 <TextField
                                     id="from"
                                     label="From"
@@ -285,7 +286,7 @@ class NewExperience extends React.Component {
                                     }}>
                                 </TextField>
                             </Grid>
-                            <Grid item lg={3} xs={6}>
+                            <Grid item lg={3} xs={12}>
                                 <TextField
                                     id="to"
                                     label="To"

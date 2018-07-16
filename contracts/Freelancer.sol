@@ -59,22 +59,22 @@ contract Freelancer is Ownable {
     /**
      * Freelance subscribes/updates his data
     */
-    function UpdateFreelancerData(address _freeaddress, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
+    function UpdateFreelancerData(address _faddress,bytes32 _firstname,bytes32 _lastname,bytes32 _phone,bytes32 _email,bytes32 _title,string _desc)
         public
     {
-        require(FreelancerInformation[_freeaddress].state != FreelancerState.Suspended);
-        if (FreelancerInformation[_freeaddress].state == FreelancerState.Inactive)
+        require(FreelancerInformation[_faddress].state != FreelancerState.Suspended);
+        if (FreelancerInformation[_faddress].state == FreelancerState.Inactive)
         {
-            FreelancerInformation[_freeaddress].subscriptionDate = now;
+            FreelancerInformation[_faddress].subscriptionDate = now;
         }
-        FreelancerInformation[_freeaddress].firstName = _firstname;
-        FreelancerInformation[_freeaddress].lastName = _lastname;
-        FreelancerInformation[_freeaddress].mobilePhone = _phone;
-        FreelancerInformation[_freeaddress].email = _email;
-        FreelancerInformation[_freeaddress].title = _title;
-        FreelancerInformation[_freeaddress].description = _description;
+        FreelancerInformation[_faddress].firstName = _firstname;
+        FreelancerInformation[_faddress].lastName = _lastname;
+        FreelancerInformation[_faddress].mobilePhone = _phone;
+        FreelancerInformation[_faddress].email = _email;
+        FreelancerInformation[_faddress].title = _title;
+        FreelancerInformation[_faddress].description = _desc;
 
-        emit FreelancerUpdateData(_freeaddress, _firstname, _lastname, _phone, _email, _title, _description);
+        emit FreelancerUpdateData(_faddress, _firstname, _lastname, _phone, _email, _title, _desc);
     }
     /**
      * General Data Protection Regulation
