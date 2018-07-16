@@ -116,6 +116,7 @@ class Freelancer extends EventEmitter {
     getDocumentByEvent(event) {
         var docId = event['documentId'].toString();
         let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
+        if(this.experiences.some(e => e.title === title)) return;
         var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
         let startDate = parseInt(event['startDate'], 10);
         let endDate = parseInt(event['endDate'], 10);
@@ -147,6 +148,7 @@ class Freelancer extends EventEmitter {
     }
 
     eventAddDocumentSubscription() {
+        if(typeof this.eventDocAdded === 'undefined') return;
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
         var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(this.vaultAddress);
 
@@ -171,6 +173,7 @@ class Freelancer extends EventEmitter {
                     competencies.push(new Competency(competency.name, competency.confidenceIndex, [experience]));
                 }
                 else {
+                    competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex); 
                     competencies[indexCompetency].experiences.push(experience);
                 }
             });

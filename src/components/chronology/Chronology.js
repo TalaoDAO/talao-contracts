@@ -21,13 +21,13 @@ class Chronology extends React.Component {
         if (this.props.location.state != null) {
             this.isClient = true;
             this.freelancerAddress = this.props.location.state.address;
-        } else if (this.props.location.search != null) {
+        } else if (this.props.location.search !== null && this.props.location.search !== "") {
             var adress = this.props.location.search
             this.freelancerAddress = adress.substring(1,adress.length);
         }
 
         this.free = FreelancerService.getFreelancer();
-        this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.selectedAccount);
+        this.free.setAddress((this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined') ? this.freelancerAddress : window.account);
 
         this.state = {
             experiences: this.free.experiences,
@@ -36,6 +36,7 @@ class Chronology extends React.Component {
     }
 
     componentDidMount() {
+        if(this.free._events.ExperienceChanged && this.free._events.FreeDataChanged) return;
         this.free.addListener('ExperienceChanged', this.handleEvents, this);
         this.free.addListener('FreeDataChanged', this.handleEvents, this);
     }
@@ -49,7 +50,7 @@ class Chronology extends React.Component {
             experiences: this.free.experiences,
             waiting: this.free.isWaiting,
         });
-        this.forceUpdate();
+        if(!this.isCancelled) this.forceUpdate();
     };
 
     render() {

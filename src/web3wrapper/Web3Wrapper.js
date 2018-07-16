@@ -8,10 +8,6 @@ import logoTalao from '../images/logo-talao.png';
 // If the browser has injected Web3.JS
 if (window.web3) {
   // Then backup the good old injected Web3, sometimes it's usefull:
-  if (window.web3.currentProvider.isMetaMask) {
-    window.selectedAccount = window.web3.eth.defaultAccount;
-    //alert(this.context.web3.selectedAccount);
-  }
  
   window.web3.eth.getAccounts(function(err, accounts) { window.account = accounts[0]; });
   //window.account = web3.eth.getAccounts(console.log)
@@ -47,7 +43,7 @@ class Web3WrapperUnavailableAccount extends Component {
 
 class Web3Wrapper extends Component {
   render() {
-    if(window.selectedAccount != null) return (<AppConnected />);
+    if(window.account != null) return (<AppConnected />);
     return (
       <Web3Provider
         web3UnavailableScreen={Web3WrapperUnavailable}
