@@ -211,7 +211,7 @@ class VaultCreation extends React.Component {
 
         let tokens_wei = window.web3.utils.toWei(this.state.accessPrice);
         this.tokenContract.methods.createVaultAccess(tokens_wei).send(
-            {from: this.context.web3.selectedAccount}
+            {from: window.account}
         ).on('error', console.error);
     }
 
@@ -237,7 +237,7 @@ class VaultCreation extends React.Component {
         let desc = this.state.description
         this.vaultFactoryContract.methods.CreateVaultContract(price,firstName,lastname,phone,email, title,desc).send(
         {
-            from: window.selectedAccount
+            from: window.account
         })
         .on('error', error => {
             alert("An error has occured when creating your vault (ERR: " + error + ")");

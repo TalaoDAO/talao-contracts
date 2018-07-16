@@ -27,7 +27,7 @@ class Chronology extends React.Component {
         }
 
         this.free = FreelancerService.getFreelancer();
-        this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.selectedAccount);
+        this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.account);
 
         this.state = {
             experiences: this.free.experiences,
