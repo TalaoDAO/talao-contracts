@@ -27,14 +27,9 @@ class Chronology extends React.Component {
             this.freelancerAddress = address.substring(1, address.length);
         }
 
-<<<<<<< HEAD
-        this.free = FreelancerService.getFreelancer();
-        this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.account);
-=======
         //A client is searching a freelancer, so we display his Vault
         if(this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
             this.free.setAddress(this.freelancerAddress, false);
->>>>>>> ad4e97f0814846c3e339883d31d47e7a907f75f3
 
         this.state = {
             experiences: this.free.experiences,
