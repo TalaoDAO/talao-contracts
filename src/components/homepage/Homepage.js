@@ -66,22 +66,8 @@ class Homepage extends React.Component {
         );
     }
 
-    componentWillMount() {
-        const currentPath = window.location.pathname;
-        if (!currentPath.includes('homepage')) {
-            this.props.history.push('/homepage');
-        }
-        else {
-            this.vaultFactoryContract.methods.FreelanceVault(window.account).call().then(vaultAddress => {
-                if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                    this.props.history.push('/chronology');
-                }
-            });
-        }
-    }
-
     handleSubmit = event => {
-        if(!window.web3.utils.isAddress(this.state.freelancerAddress)) {
+        if (!window.web3.utils.isAddress(this.state.freelancerAddress)) {
             this.setState({ errorText: 'This is not a valid ethereum address', });
             return;
         }
@@ -110,45 +96,45 @@ class Homepage extends React.Component {
     render() {
         return (
             <Grid container className={this.props.classes.container}>
-            <Grid item xs={12} lg={6}>
-                <Card className={this.props.classes.card}>
-                    <CardContent>
-                        <div className={this.props.classes.center}>
-                            <p className={this.props.classes.title}>Looking for a freelancer?<br />Type his address here:</p>
-                        </div>
-                        <form onSubmit={this.handleSubmit}>
-                            <TextField
-                                error={this.isError()}
-                                helperText={this.state.errorText}
-                                value={this.state.freelancerAddress}
-                                onChange={this.handleAddressChanged}
-                                className={this.props.classes.textField}
-                                inputProps={{
-                                    style: { textAlign: "center" }
-                                }}
-                            />
+                <Grid item xs={12} lg={6}>
+                    <Card className={this.props.classes.card}>
+                        <CardContent>
                             <div className={this.props.classes.center}>
-                                <Button onClick={() => this.handleSubmit()} className={this.props.classes.certificatButton} label="login">
-                                    Find my freelancer
-                                </Button>
+                                <p className={this.props.classes.title}>Looking for a freelancer?<br />Type his address here:</p>
                             </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                            <form onSubmit={this.handleSubmit}>
+                                <TextField
+                                    error={this.isError()}
+                                    helperText={this.state.errorText}
+                                    value={this.state.freelancerAddress}
+                                    onChange={this.handleAddressChanged}
+                                    className={this.props.classes.textField}
+                                    inputProps={{
+                                        style: { textAlign: "center" }
+                                    }}
+                                />
+                                <div className={this.props.classes.center}>
+                                    <Button onClick={() => this.handleSubmit()} className={this.props.classes.certificatButton} label="login">
+                                        Find my freelancer
+                                </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
                 </Grid>
                 <Grid item xs={12} lg={6}>
-                <Card className={this.props.classes.card}>
-                    <CardContent>
-                        <div className={this.props.classes.center}>
-                            <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p>
-                        </div>
-                        <div className={this.props.classes.center}>
-                            <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
-                                <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">Create my vault</Link>
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                    <Card className={this.props.classes.card}>
+                        <CardContent>
+                            <div className={this.props.classes.center}>
+                                <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p>
+                            </div>
+                            <div className={this.props.classes.center}>
+                                <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
+                                    <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">Create my vault</Link>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </Grid>
             </Grid>
         );

@@ -12,6 +12,7 @@ import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import FreelancerService from './services/FreelancerService';
+const Loading = require('react-loading-animation');
 
 const theme = createMuiTheme(constants.theme);
 
@@ -57,7 +58,7 @@ class AppConnected extends React.Component {
   };
 
   render() {
-    const currentPath = window.location.pathname;
+    if(this.free.isWaiting) return (<Loading/>);
     return (
       <Router>
           <div>
@@ -72,11 +73,11 @@ class AppConnected extends React.Component {
                   <Grid item xs={12} lg={10}>
                     <Grid container spacing={24}>
                       <Grid item xs={12}>
-                        {!currentPath.includes('homepage') ? <Profile /> : null }
+                        {this.free.isVaultCreated ? <Profile /> : null }
                       </Grid>
                       <Grid item xs={12}>
                         <Switch>
-                          <Route exact path="/" component={Homepage} />
+                          <Route exact path="/" component={this.free.isVaultCreated ? Chronology : Homepage} />
                           <Route exact path="/chronology" component={Chronology} />
                           <Route exact path="/register" component={VaultCreation} />
                           <Route exact path="/homepage" component={Homepage} />
