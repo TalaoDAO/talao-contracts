@@ -4,16 +4,16 @@ import AppConnected from '../AppConnected';
 import Web3 from 'web3';
 import { Web3Provider } from 'react-web3';
 import logoTalao from '../images/logo-talao.png';
+import FreelancerService from '../services/FreelancerService';
 
 // If the browser has injected Web3.JS
 if (window.web3) {
   // Then backup the good old injected Web3, sometimes it's usefull:
-  if (window.web3.currentProvider.isMetaMask) {
-    window.selectedAccount = window.web3.eth.defaultAccount;
-    //alert(this.context.web3.selectedAccount);
-  }
  
-  window.web3.eth.getAccounts(function(err, accounts) { window.account = accounts[0]; });
+  window.web3.eth.getAccounts(function(err, accounts) { 
+    window.account = accounts[0];
+    FreelancerService.getFreelancer().setAddress(window.account, true);
+  });
   //window.account = web3.eth.getAccounts(console.log)
 
   window.web3old = window.web3;
@@ -47,7 +47,7 @@ class Web3WrapperUnavailableAccount extends Component {
 
 class Web3Wrapper extends Component {
   render() {
-    if(window.selectedAccount != null) return (<AppConnected />);
+    if(window.account != null) return (<AppConnected />);
     return (
       <Web3Provider
         web3UnavailableScreen={Web3WrapperUnavailable}

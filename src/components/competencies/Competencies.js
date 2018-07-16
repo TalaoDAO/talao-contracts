@@ -87,6 +87,7 @@ class Competencies extends React.Component {
     }
 
     componentDidMount() {
+        if(this.free._events.ExperienceChanged) return;
         this.free.addListener('ExperienceChanged', this.handleEvents, this);
     }
 
@@ -98,7 +99,7 @@ class Competencies extends React.Component {
         !this.isCancelled && this.setState({
             competencies: this.free.getCompetencies()
         });
-        this.forceUpdate();
+        if(!this.isCancelled) this.forceUpdate();
     };
 
     render() {

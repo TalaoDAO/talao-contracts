@@ -87,6 +87,7 @@ class Profile extends React.Component {
   }
 
   componentDidMount() {
+    if(this.free._events.FreeDataChanged) return;
     this.free.addListener('FreeDataChanged', this.handleEvents, this);
   }
 

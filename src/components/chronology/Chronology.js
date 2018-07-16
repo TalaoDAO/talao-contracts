@@ -18,16 +18,23 @@ class Chronology extends React.Component {
 
     constructor(props) {
         super(props);
+        this.free = FreelancerService.getFreelancer();
         if (this.props.location.state != null) {
             this.isClient = true;
             this.freelancerAddress = this.props.location.state.address;
-        } else if (this.props.location.search != null) {
-            var adress = this.props.location.search
-            this.freelancerAddress = adress.substring(1,adress.length);
+        } else if (this.props.location.search !== null && this.props.location.search !== "") {
+            var address = this.props.location.search
+            this.freelancerAddress = address.substring(1, address.length);
         }
 
+<<<<<<< HEAD
         this.free = FreelancerService.getFreelancer();
         this.free.setAddress(this.freelancerAddress !== null ? this.freelancerAddress : window.account);
+=======
+        //A client is searching a freelancer, so we display his Vault
+        if(this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
+            this.free.setAddress(this.freelancerAddress, false);
+>>>>>>> ad4e97f0814846c3e339883d31d47e7a907f75f3
 
         this.state = {
             experiences: this.free.experiences,
@@ -36,6 +43,7 @@ class Chronology extends React.Component {
     }
 
     componentDidMount() {
+        if(this.free._events.ExperienceChanged && this.free._events.FreeDataChanged) return;
         this.free.addListener('ExperienceChanged', this.handleEvents, this);
         this.free.addListener('FreeDataChanged', this.handleEvents, this);
     }
@@ -49,7 +57,7 @@ class Chronology extends React.Component {
             experiences: this.free.experiences,
             waiting: this.free.isWaiting,
         });
-        this.forceUpdate();
+        if(!this.isCancelled) this.forceUpdate();
     };
 
     render() {
@@ -80,7 +88,7 @@ class Chronology extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    <NewExperience />
+                    {this.free.isSelf ? <NewExperience /> : null }
                     {experiences}
                 </CardContent>
             </Card>

@@ -11,13 +11,14 @@ class Competency {
         }
     }
 
-    getConfidenceIndex() {
+    updateConfidenceIndex(confidenceIndex) {
+        this.confidenceIndex = Math.round((parseInt(this.confidenceIndex, 10) + parseInt(confidenceIndex, 10)) / 2);
+    }
 
+    getConfidenceIndex() {
         // TODO: compute the confidence index with real business rules
         if (this.experiences.length === 0) return 0;
-        if (this.experiences.length === 1) return this.experiences[0].confidenceIndex;
-        let sumOfConfidenceIndexes = this.experiences.reduce((experienceA, experienceB) => experienceA.confidenceIndex + experienceB.confidenceIndex);
-        return Math.round(sumOfConfidenceIndexes / this.experiences.length);
+        return this.confidenceIndex;
     }
 }
 
