@@ -126,38 +126,47 @@ class Freelancer extends EventEmitter {
         });
     }
 
-    getDocumentByEvent(event) {
-        var docId = event['documentId'].toString();
-        let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
-        if (this.experiences.some(e => e.title === title)) return;
-        var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
-        let startDate = parseInt(event['startDate'], 10);
-        let endDate = parseInt(event['endDate'], 10);
-        let ratings = event['ratings'];
-        let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
-        let keywords = event['keywords'];
-        let competencies = [];
-        for (let index = 0; index < ratings.length; index++) {
-            competencies.push(
-                new Competency(
-                    window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''),
-                    (isNumber) ? ratings[index] : ratings[index].c[0]
-                )
-            );
-        }
-        let url = "https://gateway.ipfs.io/ipfs/" + this.getIpfsHashFromBytes32(docId);
-        var newExp = new Experience(
-            title,
-            description,
-            new Date(startDate),
-            new Date(endDate),
-            competencies,
-            url,
-            100
-        )
-        this.addExperience(newExp);
-        this.isWaiting = false;
+    getDocumentIsAlive(docId) {
+        return this.vaultContract.methods.getDocumentIsAlive(docId).call({from: window.account});
     }
+
+    getDocumentByEvent(event) {
+
+        var docId = event['documentId'].toString();
+        this.getDocumentIsAlive(docId).then((isAlive) => {
+            if(isAlive) {
+                let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
+                if (this.experiences.some(e => e.title === title)) return;
+                var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
+                let startDate = parseInt(event['startDate'], 10);
+                let endDate = parseInt(event['endDate'], 10);
+                let ratings = event['ratings'];
+                let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
+                let keywords = event['keywords'];
+                let competencies = [];
+                for (let index = 0; index < ratings.length; index++) {
+                    competencies.push(
+                        new Competency(
+                            window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''),
+                            (isNumber) ? ratings[index] : ratings[index].c[0]
+                        )
+                    );
+                }
+                let url = "https://gateway.ipfs.io/ipfs/" + this.getIpfsHashFromBytes32(docId);
+                var newExp = new Experience(
+                    title,
+                    description,
+                    new Date(startDate),
+                    new Date(endDate),
+                    competencies,
+                    url,
+                    100
+                )
+                this.addExperience(newExp);
+            }
+            this.isWaiting = false;
+        });
+}
 
     eventAddDocumentSubscription() {
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
