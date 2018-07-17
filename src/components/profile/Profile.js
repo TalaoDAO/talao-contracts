@@ -57,6 +57,9 @@ const styles = theme => ({
     textTransform: 'uppercase',
     fontSize: constants.fontSize.extraLarge,
   },
+  title: {
+    fontSize: constants.fontSize.large,
+  },
   expand: {
     transform: 'rotate(0deg)',
     transition: theme.transitions.create('transform', {
@@ -116,7 +119,7 @@ class Profile extends React.Component {
               <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>
                 {this.state.freelancer.firstName} {this.state.freelancer.lastName}
               </Typography>
-              <Typography variant="subheading">
+              <Typography variant="subheading" component="h2" className={this.props.classes.title}>
                 {this.state.freelancer.title}
               </Typography>
               <Typography>

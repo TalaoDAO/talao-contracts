@@ -111,7 +111,7 @@ class Freelancer extends EventEmitter {
             this.pictureUrl = "freelancer-picture.jpg";
             this.email = window.web3.utils.hexToAscii(element.email).replace(/\u0000/g, '');
             this.phone = window.web3.utils.hexToAscii(element.mobilePhone).replace(/\u0000/g, '');
-            this.ethereumAddress = window.account;
+            this.ethereumAddress = this.freelancerAddress;
             this.emit('FreeDataChanged', this);
         });
     }

@@ -75,7 +75,7 @@ class Menu extends React.Component {
                         <Link className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
                     </Typography>
                     <Typography to="/">
-                        <Link style={{display: this.free.isFreelancer() ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/">Homepage</Link>
+                        <Link style={{display: this.free.isFreelancer() ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/homepage">Homepage</Link>
                     </Typography>
                     </div>
                 </div>
