@@ -6,6 +6,7 @@ import Menu from './components/menu/Menu';
 import VaultCreation from './components/vaultCreation/VaultCreation';
 import Homepage from './components/homepage/Homepage';
 import Competencies from './components/competencies/Competencies';
+import UnlockFreelancer from './components/unlockFreelancer/UnlockFreelancer';
 import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
@@ -78,6 +79,7 @@ class AppConnected extends React.Component {
                           <Route exact path="/register" component={VaultCreation} />
                           <Route exact path="/homepage" component={Homepage} />
                           <Route exact path="/competencies" component={Competencies} />
+                          <Route exact path="/unlockfreelancer" component={UnlockFreelancer} />
                           <Route path="/competencies/:competencyName" component={Competencies} />
                         </Switch>
                       </Grid>

@@ -64,6 +64,14 @@ class Homepage extends React.Component {
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
             process.env.REACT_APP_VAULTFACTORY_ADDRESS
         );
+        this.talaoContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
+            process.env.REACT_APP_TALAOTOKEN_ADDRESS
+        );
+        this.freelancerContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
+            process.env.REACT_APP_FREELANCER_ADDRESS
+        );
     }
 
     handleSubmit = event => {
@@ -73,10 +81,15 @@ class Homepage extends React.Component {
         }
         this.vaultFactoryContract.methods.FreelanceVault(this.state.freelancerAddress).call().then(vaultAddress => {
             if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                this.props.history.push({
-                    pathname: '/chronology',
-                    search: this.state.freelancerAddress,
-                    state: { address: this.state.freelancerAddress }
+                this.freelancerContract.methods.isPartner(this.state.freelancerAddress, window.account).call().then(isPartner => {
+                    this.talaoContract.methods.hasVaultAccess(this.state.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
+                        this.path = (hasAccessToFreelanceVault || isPartner) ? '/chronology' : 'unlockfreelancer';
+                        this.props.history.push({
+                            pathname: this.path,
+                            search: this.state.freelancerAddress,
+                            state: { address: this.state.freelancerAddress }
+                        });
+                    }); 
                 });
             }
             else {
