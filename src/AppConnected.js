@@ -36,10 +36,10 @@ class AppConnected extends React.Component {
   constructor(props) {
     super(props);
     this.free = FreelancerService.getFreelancer();
-    this.state = {
-      experiences: this.free.experiences
-    };
     this.free.initFreelancer(window.account);
+    this.state = {
+      isWaiting: true
+    }
   }
 
   componentDidMount() {
@@ -54,11 +54,12 @@ class AppConnected extends React.Component {
 
   handleEvents = () => {
     this.free = FreelancerService.getFreelancer();
+    this.setState({ isWaiting: false })
     this.forceUpdate();
   };
 
   render() {
-    if(this.free.isWaiting) return (<Loading/>);
+    if(this.state.isWaiting) return (<Loading/>);
     return (
       <Router>
           <div>

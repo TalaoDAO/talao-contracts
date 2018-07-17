@@ -23,7 +23,7 @@ class Chronology extends React.Component {
 
         this.state = {
             experiences: this.free.experiences,
-            waiting: this.free.isWaiting,
+            isWaiting: true,
         };
     }
 
@@ -38,6 +38,8 @@ class Chronology extends React.Component {
         //A client is searching a freelancer, so we display his Vault
         if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
             this.free.initFreelancer(this.freelancerAddress);
+        else
+            this.setState({ isWaiting: false })
     }
 
     componentDidMount() {
@@ -53,14 +55,14 @@ class Chronology extends React.Component {
         this.free = FreelancerService.getFreelancer();
         !this.isCancelled && this.setState({
             experiences: this.free.experiences,
-            waiting: this.free.isWaiting,
+            isWaiting: false,
         });
         if (!this.isCancelled) this.forceUpdate();
     };
 
     render() {
         if (this.state.experiences == null) return (<NewExperience />);
-        if (this.state.waiting) return (<Loading />);
+        if (this.state.isWaiting) return (<Loading />);
         const experiences = this.state.experiences//this.state.experiences
             // Sort descending by date
             .sort((extendedExperienceA, extendedExperienceB) => {

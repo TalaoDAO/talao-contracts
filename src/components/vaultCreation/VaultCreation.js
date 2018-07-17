@@ -94,7 +94,7 @@ class VaultCreation extends React.Component {
         this.free = FreelancerService.getFreelancer();
 
         this.state = {
-            waiting: false,
+            isWaiting: false,
             isAccessPriceSet: false,
             step: 0,
             accessPrice: '',
@@ -251,7 +251,7 @@ class VaultCreation extends React.Component {
 
     submit() {
         if(!this.canSubmit()) return;
-        this.setState({ waiting: true });
+        this.setState({ isWaiting: true });
         //uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description
         let price = this.state.accessPrice;
         let firstName = window.web3.utils.fromAscii(this.state.firstName);
@@ -266,18 +266,18 @@ class VaultCreation extends React.Component {
             })
             .on('error', error => {
                 alert("An error has occured when creating your vault (ERR: " + error + ")");
-                this.setState({ waiting: false });
+                this.setState({ isWaiting: false });
                 return;
             }).then(result => {
                 this.free.initFreelancer(window.account);
-                this.setState({ waiting: false });
+                this.setState({ isWaiting: false });
                 this.props.history.push('/chronology');
             });
     }
 
 
     render() {
-        if (this.state.waiting) return (<Loading />);
+        if (this.state.isWaiting) return (<Loading />);
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>

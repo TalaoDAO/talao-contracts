@@ -10,7 +10,6 @@ class Freelancer extends EventEmitter {
         super();
         this.experiences = [];
         this.isVaultCreated = false;
-        this.isWaiting = false;
 
         this.vaultFactoryContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
@@ -29,7 +28,6 @@ class Freelancer extends EventEmitter {
     }
 
     initFreelancer(address) {
-        this.isWaiting = true;
         this.vaultFactoryContract.methods.FreelanceVault(address).call().then(vaultAddress => {
             if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
                 this.experiences = [];
@@ -45,7 +43,6 @@ class Freelancer extends EventEmitter {
                 //User doesn't have a Vault, so we redirect him to the homepage
                 this.isVaultCreated = false;
             }
-            this.isWaiting = false;
             this.emit('ExperienceChanged', this);
             this.emit('FreeDataChanged', this);
         });
@@ -164,7 +161,6 @@ class Freelancer extends EventEmitter {
                 this.addExperience(newExp);
                 this.emit('ExperienceChanged', this);
             }
-            this.isWaiting = false;
         });
     }
 
@@ -179,7 +175,6 @@ class Freelancer extends EventEmitter {
             else {
                 if (event['blockNumber'] > this.firstBlock) {
                     this.getDocumentByEvent(event['args']);
-                    this.isWaiting = false;
                     this.emit('ExperienceChanged', this);
                 }
             }
