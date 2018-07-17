@@ -10,7 +10,7 @@ class Freelancer extends EventEmitter {
         super();
         this.experiences = [];
         this.isVaultCreated = false;
-        this.isWaiting = true;
+        this.isWaiting = false;
 
         this.vaultFactoryContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
@@ -46,6 +46,7 @@ class Freelancer extends EventEmitter {
                 this.isVaultCreated = false;
             }
             this.isWaiting = false;
+            this.emit('ExperienceChanged', this);
             this.emit('FreeDataChanged', this);
         });
     }

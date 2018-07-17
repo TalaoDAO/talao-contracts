@@ -40,6 +40,14 @@ const styles = theme => ({
             backgroundColor: '#3b3838'
         }
     },
+    certificatButtonDisabled: {
+        margin: '20px',
+        color: 'rgba(0, 0, 0, 0.26)',
+        backgroundColor: '#f2f2f2',
+        cursor: 'default',
+        pointerEvents: 'none',
+        border: '1px solid rgba(0, 0, 0, 0.23)',
+    },
     content: {
         // borderColor: theme.palette.grey[300],
         // borderWidth: '10px',
@@ -75,6 +83,7 @@ const styles = theme => ({
     textField: {
         margin: '10px 20px',
         width: '-webkit-fill-available',
+        color: theme.palette.primary,
     },
     formControl: {
         margin: '60px',
@@ -113,6 +122,8 @@ class NewExperience extends React.Component {
             certificat: '',
             confidenceIndex: 80,
             uploadedDocument: '',
+
+            helperTextTooLong: 'Maximum length: 30 characters',
         };
         this.free = FreelancerService.getFreelancer();
         this.newExp = this.newExp.bind(this);
@@ -134,7 +145,7 @@ class NewExperience extends React.Component {
     triggerInputFile = () => this.fileInput.click();
 
     detectCompetenciesFromCertification(file) {
-        if(typeof file === 'undefined') return;
+        if (typeof file === 'undefined') return;
         if (this.state.certificat !== '') {
             this.setState({
                 competencies: [],
@@ -181,7 +192,22 @@ class NewExperience extends React.Component {
         this.setState({ description: event.target.value });
     };
 
+    isTextLimitRespected(text) {
+        return text.length < 30;
+    }
+
+    canSubmit() {
+        return (
+            this.isTextLimitRespected(this.state.title) &&
+            this.state.title.length > 0 &&
+            this.state.from.length > 0 &&
+            this.state.to.length > 0 &&
+            this.state.competencies.length > 0
+        );
+    }
+
     submit() {
+        if(!this.canSubmit()) return;
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
             alert("No document uploaded. Please add a document.");
@@ -311,15 +337,17 @@ class NewExperience extends React.Component {
                             </Grid>
                             <Grid item lg={6} xs={0}></Grid>
                             <Grid item lg={6} xs={12}>
-                                <FormControl className={this.props.classes.textField}>
-                                    <InputLabel
+                                    <TextField
                                         required
-                                        FormLabelClasses={{
-                                            root: this.props.classes.cssLabel,
-                                            focused: this.props.classes.cssFocused,
-                                        }} htmlFor="custom-css-input">Title</InputLabel>
-                                    <Input value={this.state.title} onChange={this.handleTitleChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                </FormControl>
+                                        type="text"
+                                        value={this.state.title}
+                                        error={!this.isTextLimitRespected(this.state.title)}
+                                        helperText={this.isTextLimitRespected(this.state.title) ? '' : this.state.helperTextTooLong}
+                                        onChange={this.handleTitleChange}
+                                        className={this.props.classes.textField}
+                                        label="Title"
+                                        id="title"
+                                    />
                             </Grid>
                             <Grid item lg={6} xs={12} className={this.props.classes.textField}>
                                 <FormControl>
@@ -394,7 +422,7 @@ class NewExperience extends React.Component {
                             </Grid>
                             <Grid item lg={4} xs={0}></Grid>
                             <Grid item lg={2} xs={12}>
-                                <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
+                                <Button onClick={this.submit} className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                     Submit
                                 </Button>
                             </Grid>

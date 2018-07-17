@@ -1,19 +1,13 @@
 import React from 'react';
 import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
-import { withStyles, CardContent, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
+import { withStyles, CardContent } from '@material-ui/core';
 import { TextField, Grid } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import { constants } from '../../constants';
 import Collapse from '@material-ui/core/Collapse';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 const Loading = require('react-loading-animation');
-
-const theme = createMuiTheme({
-    palette: {
-        primary: constants.theme.palette.accent3,
-    },
-});
 
 const styles = theme => ({
     certificatButton: {
@@ -112,7 +106,7 @@ class VaultCreation extends React.Component {
             phone: '',
             tokenSymbol: '',
             vaultDeposit: 0,
-            
+
             helperAccessPriceNotValid: '',
             helperTextTooLong: 'Maximum length: 30 characters',
             helperIncorrectMail: 'This is not a valid email address',
@@ -140,26 +134,26 @@ class VaultCreation extends React.Component {
 
     componentDidMount() {
         // Get token symbol.
-        this.tokenContract.methods.symbol().call( (err, symbol) => {
-        if (err) console.error (err);
-        else {
-          this.setState({
-            tokenSymbol: symbol
-          });
-        }
-      });
+        this.tokenContract.methods.symbol().call((err, symbol) => {
+            if (err) console.error(err);
+            else {
+                this.setState({
+                    tokenSymbol: symbol
+                });
+            }
+        });
 
-      // Get vault deposit.
-      this.tokenContract.methods.vaultDeposit().call( (err, vaultDepositWei) => {
-        if (err) console.error (err);
-        else {
-            let vaultDeposit = window.web3.utils.fromWei(vaultDepositWei);
-            this.setState({
-                vaultDeposit: vaultDeposit
-            });
-            this.setState({helperAccessPriceNotValid : "your price should be between 0 (free) and "  + this.state.vaultDeposit.toString() });
-        }
-      });
+        // Get vault deposit.
+        this.tokenContract.methods.vaultDeposit().call((err, vaultDepositWei) => {
+            if (err) console.error(err);
+            else {
+                let vaultDeposit = window.web3.utils.fromWei(vaultDepositWei);
+                this.setState({
+                    vaultDeposit: vaultDeposit
+                });
+                this.setState({ helperAccessPriceNotValid: "your price should be between 0 (free) and " + this.state.vaultDeposit.toString() });
+            }
+        });
     }
 
     componentWillUnmount() {
@@ -210,9 +204,9 @@ class VaultCreation extends React.Component {
 
         let tokens_wei = window.web3.utils.toWei(this.state.accessPrice);
         this.tokenContract.methods.createVaultAccess(tokens_wei).send(
-            {from: window.account}
-        ).on('error', console.error).then( () => {
-            this.setState({ isAccessPriceSet : true })
+            { from: window.account }
+        ).on('error', console.error).then(() => {
+            this.setState({ isAccessPriceSet: true })
             this.setState({
                 step: this.state.step + 1,
             });
@@ -242,7 +236,21 @@ class VaultCreation extends React.Component {
         return phoneNumber.match(phoneRegex);
     }
 
+    canSubmit() {
+        return (
+            this.isValidPhoneNumber(this.state.phone) &&
+            this.isValidMail(this.state.mail) &&
+            this.isTextLimitRespected(this.state.firstName) &&
+            this.isTextLimitRespected(this.state.lastName) &&
+            this.isTextLimitRespected(this.state.title) &&
+            this.state.firstName.length > 0 &&
+            this.state.lastName.length > 0 &&
+            this.state.title.length > 0
+        );
+    }
+
     submit() {
+        if(!this.canSubmit()) return;
         this.setState({ waiting: true });
         //uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description
         let price = this.state.accessPrice;
@@ -252,19 +260,19 @@ class VaultCreation extends React.Component {
         let email = window.web3.utils.fromAscii(this.state.mail);
         let title = window.web3.utils.fromAscii(this.state.title);
         let desc = this.state.description
-        this.vaultFactoryContract.methods.CreateVaultContract(price,firstName,lastname,phone,email, title,desc).send(
-        {
-            from: window.account
-        })
-        .on('error', error => {
-            alert("An error has occured when creating your vault (ERR: " + error + ")");
-            this.setState({ waiting: false });
-            return;
-        }).then(result => {
-            this.free.initFreelancer(window.account);
-            this.setState({ waiting: false });
-            this.props.history.push('/chronology');
-        });
+        this.vaultFactoryContract.methods.CreateVaultContract(price, firstName, lastname, phone, email, title, desc).send(
+            {
+                from: window.account
+            })
+            .on('error', error => {
+                alert("An error has occured when creating your vault (ERR: " + error + ")");
+                this.setState({ waiting: false });
+                return;
+            }).then(result => {
+                this.free.initFreelancer(window.account);
+                this.setState({ waiting: false });
+                this.props.history.push('/chronology');
+            });
     }
 
 
@@ -286,20 +294,18 @@ class VaultCreation extends React.Component {
                     </div>
                     <Collapse in={this.state.step === 0} timeout="auto">
                         <div style={{ display: this.state.step === 0 ? 'inline-block' : 'none' }} className={this.props.classes.content}>
-                            <MuiThemeProvider theme={theme}>
-                                <TextField
-                                    autoFocus={true}
-                                    required
-                                    type="number"
-                                    value={this.state.accessPrice}
-                                    error={!this.isAccessPriceCorrect()}
-                                    helperText={this.state.helperAccessPriceNotValid}
-                                    onChange={this.handleAccessPriceChange.bind(this)}
-                                    className={this.props.classes.textField}
-                                    label="Access Price (in Talao Token)"
-                                    id="accessPrice"
-                                />
-                            </MuiThemeProvider>
+                            <TextField
+                                autoFocus={true}
+                                required
+                                type="number"
+                                value={this.state.accessPrice}
+                                error={!this.isAccessPriceCorrect()}
+                                helperText={this.state.helperAccessPriceNotValid}
+                                onChange={this.handleAccessPriceChange.bind(this)}
+                                className={this.props.classes.textField}
+                                label="Access Price (in Talao Token)"
+                                id="accessPrice"
+                            />
                             <Button onClick={this.nextStep} className={this.isAccessPriceCorrect() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                 Next
                             </Button>
@@ -324,7 +330,6 @@ class VaultCreation extends React.Component {
                                         <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
                                     </Grid>
                                     <Grid item lg={3}>
-                                    <MuiThemeProvider theme={theme}>
                                         <TextField
                                             required
                                             type="text"
@@ -336,93 +341,82 @@ class VaultCreation extends React.Component {
                                             label="First name"
                                             id="firstName"
                                         />
-                                    </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={3}>
-                                        <MuiThemeProvider theme={theme}>
-                                            <TextField
-                                                required
-                                                type="text"
-                                                value={this.state.lastName}
-                                                error={!this.isTextLimitRespected(this.state.lastName)}
-                                                helperText={this.isTextLimitRespected(this.state.lastName) ? '' : this.state.helperTextTooLong}
-                                                onChange={this.handleLastNameChange}
-                                                className={this.props.classes.textField}
-                                                label="Last name"
-                                                id="lastName"
-                                            />
-                                        </MuiThemeProvider>
+                                        <TextField
+                                            required
+                                            type="text"
+                                            value={this.state.lastName}
+                                            error={!this.isTextLimitRespected(this.state.lastName)}
+                                            helperText={this.isTextLimitRespected(this.state.lastName) ? '' : this.state.helperTextTooLong}
+                                            onChange={this.handleLastNameChange}
+                                            className={this.props.classes.textField}
+                                            label="Last name"
+                                            id="lastName"
+                                        />
                                     </Grid>
                                     <Grid item lg={4}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={3}>
-                                        <MuiThemeProvider theme={theme}>
-                                            <TextField
-                                                required
-                                                type="text"
-                                                value={this.state.title}
-                                                error={!this.isTextLimitRespected(this.state.title)}
-                                                helperText={this.isTextLimitRespected(this.state.title) ? '' : this.state.helperTextTooLong}
-                                                onChange={this.handleTitleChange}
-                                                className={this.props.classes.textField}
-                                                label="Title"
-                                                id="title"
-                                            />
-                                        </MuiThemeProvider>
+                                        <TextField
+                                            required
+                                            type="text"
+                                            value={this.state.title}
+                                            error={!this.isTextLimitRespected(this.state.title)}
+                                            helperText={this.isTextLimitRespected(this.state.title) ? '' : this.state.helperTextTooLong}
+                                            onChange={this.handleTitleChange}
+                                            className={this.props.classes.textField}
+                                            label="Title"
+                                            id="title"
+                                        />
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={8}>
-                                        <MuiThemeProvider theme={theme}>
-                                            <TextField
-                                                type="text"
-                                                multiline
-                                                rows="4"
-                                                value={this.state.description}
-                                                onChange={this.handleDescriptionChange}
-                                                className={this.props.classes.textField}
-                                                label="Description"
-                                                id="description"
-                                            />
-                                        </MuiThemeProvider>
+                                        <TextField
+                                            type="text"
+                                            multiline
+                                            rows="4"
+                                            value={this.state.description}
+                                            onChange={this.handleDescriptionChange}
+                                            className={this.props.classes.textField}
+                                            label="Description"
+                                            id="description"
+                                        />
                                     </Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={3}>
-                                        <MuiThemeProvider theme={theme}>
-                                            <TextField
-                                                required
-                                                type="email"
-                                                value={this.state.mail}
-                                                error={!this.isValidMail(this.state.mail)}
-                                                helperText={this.isValidMail(this.state.mail) ? '' : this.state.helperIncorrectMail}
-                                                onChange={this.handleMailChange}
-                                                className={this.props.classes.textField}
-                                                label="Email"
-                                                id="email"
-                                            />
-                                        </MuiThemeProvider>
+                                        <TextField
+                                            required
+                                            type="email"
+                                            value={this.state.mail}
+                                            error={!this.isValidMail(this.state.mail)}
+                                            helperText={this.isValidMail(this.state.mail) ? '' : this.state.helperIncorrectMail}
+                                            onChange={this.handleMailChange}
+                                            className={this.props.classes.textField}
+                                            label="Email"
+                                            id="email"
+                                        />
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={3}>
-                                        <MuiThemeProvider theme={theme}>
-                                            <TextField
-                                                required
-                                                type="tel"
-                                                value={this.state.phone}
-                                                error={!this.isValidPhoneNumber(this.state.phone)}
-                                                helperText={this.isValidPhoneNumber(this.state.phone) ? '' : this.state.helperIncorrectPhoneNumber}
-                                                onChange={this.handlePhoneChange}
-                                                className={this.props.classes.textField}
-                                                label="Phone number"
-                                                id="phoneNumber"
-                                            />
-                                        </MuiThemeProvider>
+                                        <TextField
+                                            required
+                                            type="tel"
+                                            value={this.state.phone}
+                                            error={!this.isValidPhoneNumber(this.state.phone)}
+                                            helperText={this.isValidPhoneNumber(this.state.phone) ? '' : this.state.helperIncorrectPhoneNumber}
+                                            onChange={this.handlePhoneChange}
+                                            className={this.props.classes.textField}
+                                            label="Phone number"
+                                            id="phoneNumber"
+                                        />
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}>
-                                        <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
+                                        <Button onClick={this.submit} className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                             Create
                                         </Button>
                                     </Grid>
