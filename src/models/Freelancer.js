@@ -32,6 +32,7 @@ class Freelancer extends EventEmitter {
         this.isWaiting = true;
         this.vaultFactoryContract.methods.FreelanceVault(address).call().then(vaultAddress => {
             if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                this.experiences = [];
                 this.freelancerAddress = address;
                 this.isVaultCreated = true;
                 this.vaultAddress = vaultAddress;
@@ -75,8 +76,8 @@ class Freelancer extends EventEmitter {
         return hashStr
     }
 
-    addDocument(hashIpfs, experience) {
-        var docId = this.getBytes32FromIpfsHash(hashIpfs);
+    addDocument(experience) {
+        var docId = this.getBytes32FromIpfsHash(experience.docId);
         var title = window.web3.utils.fromAscii(experience.title);
         var description = window.web3.utils.fromAscii(experience.description);
         var keywords = [], ratings = [];
@@ -150,6 +151,7 @@ class Freelancer extends EventEmitter {
                 }
                 let url = "https://gateway.ipfs.io/ipfs/" + this.getIpfsHashFromBytes32(docId);
                 var newExp = new Experience(
+                    docId,
                     title,
                     description,
                     new Date(startDate),
@@ -201,7 +203,13 @@ class Freelancer extends EventEmitter {
     }
 
     removeDoc(experience) {
-
+        var index = this.experiences.indexOf(experience);
+        if (index !== -1) {
+            this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account }).then(() => {
+                this.experiences.splice(index, 1);
+                this.emit('ExperienceChanged', this);
+            });
+        }
     }
 
     addExperience(exp) {

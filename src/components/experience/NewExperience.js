@@ -183,6 +183,7 @@ class NewExperience extends React.Component {
 
     submit() {
         let newExperienceToAdd = new Experience(
+            '0x0',
             this.state.title,
             this.state.description,
             new Date(this.state.from),
@@ -203,8 +204,8 @@ class NewExperience extends React.Component {
         }
         this.uploadToIpfs(this.state.uploadedDocument).then(result => {
             this.resetState();
-            //FreelancerService.getFreelancer().AddDocument(result[0].path, experience);
-            this.free.addDocument(result[0].path, experience);
+            experience.docId = result[0].path;
+            this.free.addDocument(experience);
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
         );

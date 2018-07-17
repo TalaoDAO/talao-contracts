@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import CompetencyTag from '../competencyTag/CompetencyTag';
 import DateService from '../../services/DateService';
 import LineStyle from '@material-ui/icons/LineStyle';
-import Delete from '@material-ui/icons/Delete';
+import Close from '@material-ui/icons/Close';
 import Button from 'material-ui/Button';
 import { Blockcerts } from 'react-blockcerts';
 import FreelancerService from '../../services/FreelancerService';
@@ -107,8 +107,8 @@ class Experience extends React.Component {
 
     removeDocument = () => {
         confirmAlert({
-            title: 'Remove ' + this.props.value.title + ' document?',
-            message: 'Are you sure you want to remove this document?',
+            title: 'Remove ' + this.props.value.title + ' certificate?',
+            message: 'Are you sure you want to remove this certificate?',
             buttons: [
                 {
                     label: 'Yes',
@@ -160,8 +160,8 @@ class Experience extends React.Component {
                             <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
                         </Button>
                         <Button onClick={this.removeDocument} className={this.props.classes.removeButton}>
-                            <Delete />
-                            <span style={{ display: this.free.isFreelancer() ? 'inline-block' : 'none' }}>Remove document</span>
+                            <Close />
+                            <span style={{ display: this.free.isFreelancer() ? 'inline-block' : 'none' }}>Remove</span>
                         </Button>
                         <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
                             <Blockcerts url={this.props.value.certificat} />

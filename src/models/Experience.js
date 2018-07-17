@@ -1,5 +1,6 @@
 class Experience {
-    constructor(title, description, from, to, competencies, certificat, confidenceIndex,type) {
+    constructor(docId, title, description, from, to, competencies, certificat, confidenceIndex,type) {
+        this.docId = docId;
         this.title = title;
         this.description = description;
         this.from = from;
