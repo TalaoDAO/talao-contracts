@@ -77,7 +77,6 @@ class Freelancer extends EventEmitter {
 
     addDocument(hashIpfs, experience) {
         var docId = this.getBytes32FromIpfsHash(hashIpfs);
-
         var title = window.web3.utils.fromAscii(experience.title);
         var description = window.web3.utils.fromAscii(experience.description);
         var keywords = [], ratings = [];
@@ -121,20 +120,17 @@ class Freelancer extends EventEmitter {
             events.forEach((event => {
                 this.getDocumentByEvent(event['returnValues']);
             }));
-            this.isWaiting = false;
-            this.emit('ExperienceChanged', this);
         });
     }
 
     getDocumentIsAlive(docId) {
-        return this.vaultContract.methods.getDocumentIsAlive(docId).call({from: window.account});
+        return this.vaultContract.methods.getDocumentIsAlive(docId).call({ from: window.account });
     }
 
     getDocumentByEvent(event) {
-
         var docId = event['documentId'].toString();
         this.getDocumentIsAlive(docId).then((isAlive) => {
-            if(isAlive) {
+            if (isAlive) {
                 let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
                 if (this.experiences.some(e => e.title === title)) return;
                 var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
@@ -163,10 +159,11 @@ class Freelancer extends EventEmitter {
                     100
                 )
                 this.addExperience(newExp);
+                this.emit('ExperienceChanged', this);
             }
             this.isWaiting = false;
         });
-}
+    }
 
     eventAddDocumentSubscription() {
         this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
@@ -179,6 +176,7 @@ class Freelancer extends EventEmitter {
             else {
                 if (event['blockNumber'] > this.firstBlock) {
                     this.getDocumentByEvent(event['args']);
+                    this.isWaiting = false;
                     this.emit('ExperienceChanged', this);
                 }
             }
@@ -200,6 +198,10 @@ class Freelancer extends EventEmitter {
             });
         });
         return competencies;
+    }
+
+    removeDoc(experience) {
+
     }
 
     addExperience(exp) {

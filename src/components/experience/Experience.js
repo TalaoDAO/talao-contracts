@@ -5,8 +5,12 @@ import Typography from '@material-ui/core/Typography';
 import CompetencyTag from '../competencyTag/CompetencyTag';
 import DateService from '../../services/DateService';
 import LineStyle from '@material-ui/icons/LineStyle';
+import Delete from '@material-ui/icons/Delete';
 import Button from 'material-ui/Button';
 import { Blockcerts } from 'react-blockcerts';
+import FreelancerService from '../../services/FreelancerService';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css'
 
 const styles = theme => ({
     experienceContainer: {
@@ -65,12 +69,22 @@ const styles = theme => ({
             backgroundColor: '#3b3838'
         }
     },
+    removeButton: {
+        margin: '20px 0px',
+        float: 'right',
+        backgroundColor: '#FF3C47',
+        color: '#ffffff',
+        '&:hover': {
+            backgroundColor: '#FF3C47'
+        }
+    },
 });
 
 class Experience extends React.Component {
 
     constructor() {
         super();
+        this.free = FreelancerService.getFreelancer();
         this.state = {
             showCert: false,
         };
@@ -86,10 +100,25 @@ class Experience extends React.Component {
     }
 
     showCertification() {
-        //TODO show certificat on button click
         this.setState({
             showCert: !this.state.showCert
         });
+    }
+
+    removeDocument = () => {
+        confirmAlert({
+            title: 'Remove ' + this.props.value.title + ' document?',
+            message: 'Are you sure you want to remove this document?',
+            buttons: [
+                {
+                    label: 'Yes',
+                    onClick: () => this.free.removeDoc(this.props.value)
+                },
+                {
+                    label: 'No',
+                }
+            ]
+        })
     }
 
     render() {
@@ -129,6 +158,10 @@ class Experience extends React.Component {
                             <LineStyle />
                             <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
                             <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
+                        </Button>
+                        <Button onClick={this.removeDocument} className={this.props.classes.removeButton}>
+                            <Delete />
+                            <span style={{ display: this.free.isFreelancer() ? 'inline-block' : 'none' }}>Remove document</span>
                         </Button>
                         <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
                             <Blockcerts url={this.props.value.certificat} />

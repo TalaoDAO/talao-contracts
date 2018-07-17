@@ -16,7 +16,6 @@ class Competency {
     }
 
     getConfidenceIndex() {
-        // TODO: compute the confidence index with real business rules
         if (this.experiences.length === 0) return 0;
         return this.confidenceIndex;
     }

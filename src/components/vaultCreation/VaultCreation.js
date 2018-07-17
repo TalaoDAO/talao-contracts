@@ -223,7 +223,6 @@ class VaultCreation extends React.Component {
     }
 
     submit() {
-        //TODO create Vault
         this.setState({ waiting: true });
         //uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description
         let price = this.state.accessPrice;
