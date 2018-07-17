@@ -182,34 +182,33 @@ class NewExperience extends React.Component {
     };
 
     submit() {
-        let newExperienceToAdd = new Experience(
-            '0x0',
-            this.state.title,
-            this.state.description,
-            new Date(this.state.from),
-            new Date(this.state.to),
-            this.state.competencies,
-            this.state.certificat,
-            this.state.confidenceIndex,
-            this.state.type
-        );
-        this.addDocument(newExperienceToAdd);
-    }
-
-    addDocument(experience) {
         // send document to ipfs
         if (this.state.uploadedDocument === null || this.state.uploadedDocument.length === 0) {
             alert("No document uploaded. Please add a document.");
             return;
         }
         this.uploadToIpfs(this.state.uploadedDocument).then(result => {
+            let newExperienceToAdd = new Experience(
+                result[0].path,
+                this.state.title,
+                this.state.description,
+                new Date(this.state.from),
+                new Date(this.state.to),
+                this.state.competencies,
+                this.state.certificat,
+                this.state.confidenceIndex,
+                this.state.type
+            );
+            this.free.addDocument(newExperienceToAdd);
             this.resetState();
-            experience.docId = result[0].path;
-            this.free.addDocument(experience);
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
         );
     }
+
+    // addDocument() {
+
+    // }
 
     uploadToIpfs(documentToUpload) {
         return new Promise((resolve, reject) => {
