@@ -159,9 +159,9 @@ class Experience extends React.Component {
                             <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
                             <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
                         </Button>
-                        <Button onClick={this.removeDocument} className={this.props.classes.removeButton}>
+                        <Button onClick={this.removeDocument} style={{ display: this.free.isFreelancer() ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
                             <Close />
-                            <span style={{ display: this.free.isFreelancer() ? 'inline-block' : 'none' }}>Remove</span>
+                            <span>Remove</span>
                         </Button>
                         <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
                             <Blockcerts url={this.props.value.certificat} />
