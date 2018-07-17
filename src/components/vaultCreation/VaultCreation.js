@@ -2,7 +2,7 @@ import React from 'react';
 import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
 import { withStyles, CardContent, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
-import { TextField, Grid, FormControl, Input, InputLabel } from '@material-ui/core';
+import { TextField, Grid } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import { constants } from '../../constants';
 import Collapse from '@material-ui/core/Collapse';
@@ -101,6 +101,7 @@ class VaultCreation extends React.Component {
 
         this.state = {
             waiting: false,
+            isAccessPriceSet: false,
             step: 0,
             accessPrice: '',
             firstName: '',
@@ -109,9 +110,13 @@ class VaultCreation extends React.Component {
             description: '',
             mail: '',
             phone: '',
-            tokenSymbol:'',
-            vaultDeposit:0,
-            helper:''
+            tokenSymbol: '',
+            vaultDeposit: 0,
+            
+            helperAccessPriceNotValid: '',
+            helperTextTooLong: 'Maximum length: 30 characters',
+            helperIncorrectMail: 'This is not a valid email address',
+            helperIncorrectPhoneNumber: 'This is not a valid phone number',
         };
 
         this.nextStep = this.nextStep.bind(this);
@@ -152,8 +157,7 @@ class VaultCreation extends React.Component {
             this.setState({
                 vaultDeposit: vaultDeposit
             });
-
-            this.setState({helper : "your price should be between 0 (free) and "  + this.state.vaultDeposit.toString() });
+            this.setState({helperAccessPriceNotValid : "your price should be between 0 (free) and "  + this.state.vaultDeposit.toString() });
         }
       });
     }
@@ -195,7 +199,7 @@ class VaultCreation extends React.Component {
     }
 
     goToStep(number) {
-        if (this.state.step === 0 && !this.isAccessPriceCorrect()) return;
+        if (this.state.step === 0 && (!this.isAccessPriceCorrect() || !this.state.isAccessPriceSet)) return;
         this.setState({
             step: number,
         })
@@ -203,14 +207,16 @@ class VaultCreation extends React.Component {
 
     nextStep() {
         if (this.state.step === 0 && !this.isAccessPriceCorrect()) return;
-        this.setState({
-            step: this.state.step + 1,
-        });
 
         let tokens_wei = window.web3.utils.toWei(this.state.accessPrice);
         this.tokenContract.methods.createVaultAccess(tokens_wei).send(
             {from: window.account}
-        ).on('error', console.error);
+        ).on('error', console.error).then( () => {
+            this.setState({ isAccessPriceSet : true })
+            this.setState({
+                step: this.state.step + 1,
+            });
+        });
     }
 
     isAccessPriceCorrect() {
@@ -220,6 +226,20 @@ class VaultCreation extends React.Component {
             && this.state.accessPrice % 1 === 0
             && this.state.accessPrice !== ''
         );
+    }
+
+    isTextLimitRespected(text) {
+        return text.length < 30;
+    }
+
+    isValidMail(mail) {
+        var mailRegex = /^(([^<>()[\].,;:\s@"]+(.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+.)+[^<>()[\].,;:\s@"]{2,})$/i;
+        return mail.match(mailRegex);
+    }
+
+    isValidPhoneNumber(phoneNumber) {
+        var phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
+        return phoneNumber.match(phoneRegex);
     }
 
     submit() {
@@ -273,7 +293,7 @@ class VaultCreation extends React.Component {
                                     type="number"
                                     value={this.state.accessPrice}
                                     error={!this.isAccessPriceCorrect()}
-                                    helperText={this.state.helper}
+                                    helperText={this.state.helperAccessPriceNotValid}
                                     onChange={this.handleAccessPriceChange.bind(this)}
                                     className={this.props.classes.textField}
                                     label="Access Price (in Talao Token)"
@@ -286,7 +306,7 @@ class VaultCreation extends React.Component {
                         </div>
                     </Collapse>
                     <div>
-                        <div onClick={() => this.goToStep(1)} className={this.props.classes.indicator} style={{ backgroundColor: this.isAccessPriceCorrect() ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
+                        <div onClick={() => this.goToStep(1)} className={this.props.classes.indicator} style={{ backgroundColor: this.state.isAccessPriceSet ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
                             <span style={{ fontSize: '25px' }}>2</span>
                         </div>
                         <div className={this.props.classes.timeLine} >
@@ -304,77 +324,101 @@ class VaultCreation extends React.Component {
                                         <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
                                     </Grid>
                                     <Grid item lg={3}>
-                                        <FormControl className={this.props.classes.textField}>
-                                            <InputLabel
-                                                required
-                                                FormLabelClasses={{
-                                                    root: this.props.classes.cssLabel,
-                                                    focused: this.props.classes.cssFocused,
-                                                }} htmlFor="custom-css-input">First name</InputLabel>
-                                            <Input value={this.state.firstName} onChange={this.handleFirstNameChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                        </FormControl>
+                                    <MuiThemeProvider theme={theme}>
+                                        <TextField
+                                            required
+                                            type="text"
+                                            value={this.state.firstName}
+                                            error={!this.isTextLimitRespected(this.state.firstName)}
+                                            helperText={this.isTextLimitRespected(this.state.firstName) ? '' : this.state.helperTextTooLong}
+                                            onChange={this.handleFirstNameChange}
+                                            className={this.props.classes.textField}
+                                            label="First name"
+                                            id="firstName"
+                                        />
+                                    </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={3}>
-                                        <FormControl className={this.props.classes.textField}>
-                                            <InputLabel
+                                        <MuiThemeProvider theme={theme}>
+                                            <TextField
                                                 required
-                                                FormLabelClasses={{
-                                                    root: this.props.classes.cssLabel,
-                                                    focused: this.props.classes.cssFocused,
-                                                }} htmlFor="custom-css-input">Last name</InputLabel>
-                                            <Input value={this.state.lastName} onChange={this.handleLastNameChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                        </FormControl>
+                                                type="text"
+                                                value={this.state.lastName}
+                                                error={!this.isTextLimitRespected(this.state.lastName)}
+                                                helperText={this.isTextLimitRespected(this.state.lastName) ? '' : this.state.helperTextTooLong}
+                                                onChange={this.handleLastNameChange}
+                                                className={this.props.classes.textField}
+                                                label="Last name"
+                                                id="lastName"
+                                            />
+                                        </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={4}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={3}>
-                                        <FormControl className={this.props.classes.textField}>
-                                            <InputLabel
+                                        <MuiThemeProvider theme={theme}>
+                                            <TextField
                                                 required
-                                                FormLabelClasses={{
-                                                    root: this.props.classes.cssLabel,
-                                                    focused: this.props.classes.cssFocused,
-                                                }} htmlFor="custom-css-input">Title</InputLabel>
-                                            <Input value={this.state.title} onChange={this.handleTitleChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                        </FormControl>
+                                                type="text"
+                                                value={this.state.title}
+                                                error={!this.isTextLimitRespected(this.state.title)}
+                                                helperText={this.isTextLimitRespected(this.state.title) ? '' : this.state.helperTextTooLong}
+                                                onChange={this.handleTitleChange}
+                                                className={this.props.classes.textField}
+                                                label="Title"
+                                                id="title"
+                                            />
+                                        </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={8}>
-                                        <FormControl className={this.props.classes.textField}>
-                                            <InputLabel
-                                                FormLabelClasses={{
-                                                    root: this.props.classes.cssLabel,
-                                                    focused: this.props.classes.cssFocused,
-                                                }} htmlFor="custom-css-input">Description</InputLabel>
-                                            <Input value={this.state.description} onChange={this.handleDescriptionChange} multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                        </FormControl>
+                                        <MuiThemeProvider theme={theme}>
+                                            <TextField
+                                                type="text"
+                                                multiline
+                                                rows="4"
+                                                value={this.state.description}
+                                                onChange={this.handleDescriptionChange}
+                                                className={this.props.classes.textField}
+                                                label="Description"
+                                                id="description"
+                                            />
+                                        </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={3}>
-                                        <FormControl className={this.props.classes.textField}>
-                                            <InputLabel
+                                        <MuiThemeProvider theme={theme}>
+                                            <TextField
                                                 required
-                                                FormLabelClasses={{
-                                                    root: this.props.classes.cssLabel,
-                                                    focused: this.props.classes.cssFocused,
-                                                }} htmlFor="custom-css-input">Email</InputLabel>
-                                            <Input value={this.state.mail} onChange={this.handleMailChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                        </FormControl>
+                                                type="email"
+                                                value={this.state.mail}
+                                                error={!this.isValidMail(this.state.mail)}
+                                                helperText={this.isValidMail(this.state.mail) ? '' : this.state.helperIncorrectMail}
+                                                onChange={this.handleMailChange}
+                                                className={this.props.classes.textField}
+                                                label="Email"
+                                                id="email"
+                                            />
+                                        </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={3}>
-                                        <FormControl className={this.props.classes.textField}>
-                                            <InputLabel
+                                        <MuiThemeProvider theme={theme}>
+                                            <TextField
                                                 required
-                                                FormLabelClasses={{
-                                                    root: this.props.classes.cssLabel,
-                                                    focused: this.props.classes.cssFocused,
-                                                }} htmlFor="custom-css-input">Phone number</InputLabel>
-                                            <Input value={this.state.phone} onChange={this.handlePhoneChange} classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
-                                        </FormControl>
+                                                type="tel"
+                                                value={this.state.phone}
+                                                error={!this.isValidPhoneNumber(this.state.phone)}
+                                                helperText={this.isValidPhoneNumber(this.state.phone) ? '' : this.state.helperIncorrectPhoneNumber}
+                                                onChange={this.handlePhoneChange}
+                                                className={this.props.classes.textField}
+                                                label="Phone number"
+                                                id="phoneNumber"
+                                            />
+                                        </MuiThemeProvider>
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}>

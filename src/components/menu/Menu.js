@@ -37,7 +37,12 @@ const styles = theme => ({
         textDecoration: 'none',
         color: theme.palette.text.primary,
         lineHeight: '30px',
-    }
+    },
+    menuItemSelected: {
+        textDecoration: 'underline',
+        color: theme.palette.text.primary,
+        lineHeight: '30px',
+    },
 });
 
 class Menu extends React.Component {
@@ -58,6 +63,7 @@ class Menu extends React.Component {
         this.free = FreelancerService.getFreelancer();
         this.forceUpdate();
     };
+
     render() {
         return (
             <div className={this.props.classes.root}>
@@ -69,10 +75,10 @@ class Menu extends React.Component {
                 <div className={this.props.classes.sidebar}>
                     <div>
                     <Typography to="/">
-                        <Link className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
+                        <Link style={{display: !this.free.isFreelancer() && !this.free.isVaultCreated ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
                     </Typography>
                     <Typography to="/">
-                        <Link className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
+                        <Link style={{display: !this.free.isFreelancer() && !this.free.isVaultCreated ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
                     </Typography>
                     <Typography to="/">
                         <Link style={{display: this.free.isFreelancer() ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/homepage">Homepage</Link>
