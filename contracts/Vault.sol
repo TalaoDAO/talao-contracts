@@ -129,7 +129,6 @@ contract Vault is Ownable {
     accessibility : only for authorized user
     */
     function getDocumentIsAlive(bytes32 documentId) 
-        allowance
         view
         public
         returns(bool) 
