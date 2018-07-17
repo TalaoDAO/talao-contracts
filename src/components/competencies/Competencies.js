@@ -2,6 +2,8 @@ import React from 'react';
 import Competency from '../competency/Competency';
 import { withStyles } from '@material-ui/core/styles';
 import FreelancerService from '../../services/FreelancerService';
+import { Grid } from '@material-ui/core';
+import Profile from '../profile/Profile';
 
 const styles = {
     competenciesContainer: {
@@ -89,7 +91,7 @@ class Competencies extends React.Component {
         }
 
         //A client is searching a freelancer, so we display his Vault
-        if(this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
+        if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
             this.free.initFreelancer(this.freelancerAddress);
 
         this.state = {
@@ -105,13 +107,13 @@ class Competencies extends React.Component {
         this.free.removeListener('ExperienceChanged', this.handleEvents, this);
         this.isCancelled = true;
     }
-    
+
 
     handleEvents = () => {
         !this.isCancelled && this.setState({
             competencies: this.free.getCompetencies()
         });
-        if(!this.isCancelled) this.forceUpdate();
+        if (!this.isCancelled) this.forceUpdate();
     };
 
     render() {
@@ -155,11 +157,18 @@ class Competencies extends React.Component {
                 );
             });
         return (
-            <div className={this.props.classes.competenciesContainer}>
-                {competencies}
-            </div>
+            <Grid container spacing={24}>
+                <Grid item xs={12}>
+                    <Profile />
+                </Grid>
+                <Grid item xs={12}>
+                    <div className={this.props.classes.competenciesContainer}>
+                        {competencies}
+                    </div>
+                </Grid>
+            </Grid>
         );
-        
+
     }
 }
 

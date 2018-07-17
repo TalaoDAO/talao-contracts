@@ -3,8 +3,9 @@ import Experience from '../experience/Experience';
 import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
 import ColorService from '../../services/ColorService';
-import { withStyles, CardContent } from '@material-ui/core';
+import { withStyles, CardContent, Grid } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
+import Profile from '../profile/Profile';
 const Loading = require('react-loading-animation');
 
 const styles = {
@@ -82,12 +83,19 @@ class Chronology extends React.Component {
             });
 
         return (
-            <Card className={this.props.classes.card}>
-                <CardContent>
-                    {this.free.isFreelancer() ? <NewExperience /> : null}
-                    {experiences}
-                </CardContent>
-            </Card>
+            <Grid container spacing={24}>
+                <Grid item xs={12}>
+                    <Profile />
+                </Grid>
+                <Grid item xs={12}>
+                    <Card className={this.props.classes.card}>
+                        <CardContent>
+                            {this.free.isFreelancer() ? <NewExperience /> : null}
+                            {experiences}
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
         );
     }
 }

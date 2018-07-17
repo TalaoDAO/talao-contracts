@@ -2,7 +2,6 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { constants } from './constants';
-import Profile from './components/profile/Profile';
 import Menu from './components/menu/Menu';
 import VaultCreation from './components/vaultCreation/VaultCreation';
 import Homepage from './components/homepage/Homepage';
@@ -72,9 +71,6 @@ class AppConnected extends React.Component {
                 <Grid container item xs={12} md={10} className={this.props.classes.content}>
                   <Grid item xs={12} lg={10}>
                     <Grid container spacing={24}>
-                      <Grid item xs={12}>
-                        {this.free.isVaultCreated ? <Profile /> : null }
-                      </Grid>
                       <Grid item xs={12}>
                         <Switch>
                           <Route exact path="/" component={this.free.isVaultCreated ? Chronology : Homepage} />
