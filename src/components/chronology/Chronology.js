@@ -50,6 +50,7 @@ class Chronology extends React.Component {
     }
 
     handleEvents = () => {
+        this.free = FreelancerService.getFreelancer();
         !this.isCancelled && this.setState({
             experiences: this.free.experiences,
             waiting: this.free.isWaiting,
