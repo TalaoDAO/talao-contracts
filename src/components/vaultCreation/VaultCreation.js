@@ -2,7 +2,7 @@ import React from 'react';
 import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
 import { withStyles, CardContent } from '@material-ui/core';
-import { TextField, Grid } from '@material-ui/core';
+import { TextField, Grid, CircularProgress } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import { constants } from '../../constants';
 import Collapse from '@material-ui/core/Collapse';
@@ -17,6 +17,14 @@ const styles = theme => ({
         '&:hover': {
             backgroundColor: '#3b3838'
         }
+    },
+    progress: {
+        color: '#ffffff',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        marginTop: -20,
+        marginLeft: -20
     },
     certificatButtonDisabled: {
         margin: '20px 20px 0px -35px',
@@ -49,6 +57,10 @@ const styles = theme => ({
         marginBottom: '20px',
         borderRadius: '50%',
         cursor: 'pointer',
+    },
+    wrapper: {
+        margin: theme.spacing.unit,
+        position: 'relative',
     },
     container: {
         display: 'flex',
@@ -95,6 +107,7 @@ class VaultCreation extends React.Component {
 
         this.state = {
             isWaiting: false,
+            priceWaiting: false,
             isAccessPriceSet: false,
             step: 0,
             accessPrice: '',
@@ -154,6 +167,15 @@ class VaultCreation extends React.Component {
                 this.setState({ helperAccessPriceNotValid: "your price should be between 0 (free) and " + this.state.vaultDeposit.toString() });
             }
         });
+
+        this.tokenContract.methods.data(this.free.freelancerAddress).call().then(info => {
+            let price = window.web3.utils.fromWei(info.accessPrice);
+            if (parseInt(price, 0) !== 0) {       
+                this.setState({ isAccessPriceSet: true })
+                this.setState({ step: this.state.step + 1 });
+                this.setState({ accessPrice: price });
+            }
+        })
     }
 
     componentWillUnmount() {
@@ -201,15 +223,18 @@ class VaultCreation extends React.Component {
 
     nextStep() {
         if (this.state.step === 0 && !this.isAccessPriceCorrect()) return;
-
+        this.setState({ priceWaiting: true });
         let tokens_wei = window.web3.utils.toWei(this.state.accessPrice);
-        this.tokenContract.methods.createVaultAccess(tokens_wei).send(
-            { from: window.account }
-        ).on('error', console.error).then(() => {
+        this.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: window.account }
+        ).then(() => {
+            this.setState({ priceWaiting: false })
             this.setState({ isAccessPriceSet: true })
             this.setState({
                 step: this.state.step + 1,
             });
+        }).catch((err) => { 
+            console.log('Erreur metamask : ' + err)
+            this.setState({ priceWaiting: false })
         });
     }
 
@@ -227,7 +252,7 @@ class VaultCreation extends React.Component {
     }
 
     isValidMail(mail) {
-        var mailRegex = /^(([^<>()[\].,;:\s@"]+(.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+.)+[^<>()[\].,;:\s@"]{2,})$/i;
+        var mailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return mail.match(mailRegex);
     }
 
@@ -303,12 +328,14 @@ class VaultCreation extends React.Component {
                                 helperText={this.state.helperAccessPriceNotValid}
                                 onChange={this.handleAccessPriceChange.bind(this)}
                                 className={this.props.classes.textField}
-                                label="Access Price (in Talao Token)"
+                                label="Access Price (Talao Token)"
                                 id="accessPrice"
                             />
-                            <Button onClick={this.nextStep} className={this.isAccessPriceCorrect() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                                Next
-                            </Button>
+                            <div className={this.props.classes.wrapper}>
+                                <Button onClick={this.nextStep} disabled={this.state.priceWaiting} className={this.isAccessPriceCorrect() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                                    {this.state.priceWaiting ? <CircularProgress className={this.props.classes.progress} /> : 'Next'}
+                                </Button>
+                            </div>
                         </div>
                     </Collapse>
                     <div>
