@@ -23,8 +23,8 @@ const styles = theme => ({
         position: 'absolute',
         top: '50%',
         left: '50%',
-        marginTop: -20,
-        marginLeft: -20
+        marginTop: -16,
+        marginLeft: -16
     },
     certificatButtonDisabled: {
         margin: '20px 20px 0px -35px',
@@ -313,7 +313,8 @@ class VaultCreation extends React.Component {
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
                             <div onClick={() => this.goToStep(0)} className={this.props.classes.timeContainer}>
-                                Set access price <span style={{ display: this.state.step > 0 ? 'inline' : 'none' }} > ({this.state.accessPrice} Talao Token) </span>
+                                <span style={{ display: this.state.step === 0 ? 'inline' : 'none'}}>Set access price</span>
+                                <span style={{ display: this.state.step > 0 ? 'inline' : 'none'}}>Price: {this.state.accessPrice > 1 ? this.state.accessPrice + ' tokens' : this.state.accessPrice + ' token'} </span>
                             </div>
                         </div>
                     </div>
@@ -333,7 +334,7 @@ class VaultCreation extends React.Component {
                             />
                             <div className={this.props.classes.wrapper}>
                                 <Button onClick={this.nextStep} disabled={this.state.priceWaiting} className={this.isAccessPriceCorrect() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                                    {this.state.priceWaiting ? <CircularProgress className={this.props.classes.progress} /> : 'Next'}
+                                    {this.state.priceWaiting ? <CircularProgress className={this.props.classes.progress} size={30}/> : 'Next'}
                                 </Button>
                             </div>
                         </div>
