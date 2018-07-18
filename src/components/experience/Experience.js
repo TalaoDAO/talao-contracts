@@ -11,6 +11,7 @@ import { Blockcerts } from 'react-blockcerts';
 import FreelancerService from '../../services/FreelancerService';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'
+import { Grid } from '../../../node_modules/material-ui';
 
 const styles = theme => ({
     experienceContainer: {
@@ -71,12 +72,21 @@ const styles = theme => ({
     },
     removeButton: {
         margin: '20px 0px',
-        float: 'right',
         backgroundColor: '#FF3C47',
         color: '#ffffff',
         '&:hover': {
             backgroundColor: '#FF3C47'
         }
+    },
+    popup: {
+        fontFamily: 'Arial, Helvetica, sans-serif',
+        width: '70vw',
+        padding: '30px',
+        textAlign: 'center',
+        background: '#fff',
+        borderRadius: '10px',
+        boxShadow: '0 20px 75px rgba(0, 0, 0, 0.13)',
+        color: '#666',
     },
 });
 
@@ -107,17 +117,19 @@ class Experience extends React.Component {
 
     removeDocument = () => {
         confirmAlert({
-            title: 'Remove ' + this.props.value.title + ' certificate?',
-            message: 'Are you sure you want to remove this certificate?',
-            buttons: [
-                {
-                    label: 'Yes',
-                    onClick: () => this.free.removeDoc(this.props.value)
-                },
-                {
-                    label: 'No',
-                }
-            ]
+            customUI: ({ onClose }) => {
+                return (
+                    <div className={this.props.classes.popup}>
+                        <h1>Remove {this.props.value.title} certificate?</h1>
+                        <p>Are you sure you want to remove this certificate?</p>
+                        <Button style={{ marginRight: '20px' }} className={this.props.classes.certificatButton} onClick={onClose}>No</Button>
+                        <Button className={this.props.classes.removeButton} onClick={() => {
+                            this.free.removeDoc(this.props.value)
+                            onClose()
+                        }}>Yes</Button>
+                    </div>
+                )
+            }
         })
     }
 
@@ -154,15 +166,19 @@ class Experience extends React.Component {
                         <Typography variant="body1" gutterBottom className={this.props.classes.description}>
                             {this.props.value.description}
                         </Typography>
-                        <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
-                            <LineStyle />
-                            <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
-                            <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
-                        </Button>
-                        <Button onClick={this.removeDocument} style={{ display: this.free.isFreelancer() ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
-                            <Close />
-                            <span>Remove</span>
-                        </Button>
+                        <Grid item xs={12}>
+                            <Button onClick={this.removeDocument} style={{ display: this.free.isFreelancer() ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                                <Close />
+                                <span>Remove</span>
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
+                                <LineStyle />
+                                <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
+                                <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
+                            </Button>
+                        </Grid>
                         <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
                             <Blockcerts url={this.props.value.certificat} />
                         </div>

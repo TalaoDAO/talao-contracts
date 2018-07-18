@@ -282,7 +282,7 @@ class NewExperience extends React.Component {
                     <div onClick={this.newExp} style={{ display: !this.state.newExperience ? 'inline-block' : 'none' }} className={this.props.classes.timeLine} >
                         <div className={this.props.classes.line} style={{ width: (5 * 5) + 'px' }}></div>
                         <div className={this.props.classes.timeContainer}>
-                            Click here to add a new experience to your vault
+                            Add a new experience
                         </div>
                     </div>
                 </div>
