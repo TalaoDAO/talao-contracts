@@ -335,7 +335,7 @@ class NewExperience extends React.Component {
                                     }}
                                 />
                             </Grid>
-                            <Grid item lg={6} xs={0}></Grid>
+                            <Grid item lg={6}></Grid>
                             <Grid item lg={6} xs={12}>
                                     <TextField
                                         required
@@ -403,7 +403,7 @@ class NewExperience extends React.Component {
                                     <Input value={this.state.description} onChange={this.handleDescriptionChange} multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
-                            <Grid item lg={3} xs={0}></Grid>
+                            <Grid item lg={3}></Grid>
                             <Grid item lg={3} xs={12}>
                                 <Button onClick={this.triggerInputFile} className={this.props.classes.certificatButton}>
                                     <LineStyle />
@@ -411,7 +411,7 @@ class NewExperience extends React.Component {
                                 </Button>
                                 <input onChange={(e) => this.detectCompetenciesFromCertification(e.target.files[0])} style={{ display: 'none' }} ref={fileInput => this.fileInput = fileInput} type="file" accept="application/json" />
                             </Grid>
-                            <Grid item lg={10} xs={0}></Grid>
+                            <Grid item lg={10}></Grid>
                             <Grid item lg={8} xs={12}>
                                 <Typography className={this.props.classes.textField} variant="headline" component="p">
                                     Competencies
@@ -420,7 +420,7 @@ class NewExperience extends React.Component {
                                     {competencyTags}
                                 </div>
                             </Grid>
-                            <Grid item lg={4} xs={0}></Grid>
+                            <Grid item lg={4}></Grid>
                             <Grid item lg={2} xs={12}>
                                 <Button onClick={this.submit} className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                     Submit

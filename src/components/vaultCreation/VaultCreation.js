@@ -326,10 +326,10 @@ class VaultCreation extends React.Component {
                         <div style={{ display: this.state.step === 1 ? 'inline-block' : 'none' }} className={this.props.classes.content}>
                             <Grid container spacing={40}>
                                 <form className={this.props.classes.container} noValidate autoComplete="off">
-                                    <Grid item lg={2}>
+                                    <Grid item lg={2} xs={12}>
                                         <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
                                     </Grid>
-                                    <Grid item lg={3}>
+                                    <Grid item lg={3} xs={12}>
                                         <TextField
                                             required
                                             type="text"
@@ -342,7 +342,7 @@ class VaultCreation extends React.Component {
                                             id="firstName"
                                         />
                                     </Grid>
-                                    <Grid item lg={3}>
+                                    <Grid item lg={3} xs={12}>
                                         <TextField
                                             required
                                             type="text"
@@ -357,7 +357,7 @@ class VaultCreation extends React.Component {
                                     </Grid>
                                     <Grid item lg={4}></Grid>
                                     <Grid item lg={2}></Grid>
-                                    <Grid item lg={3}>
+                                    <Grid item lg={3} xs={12}>
                                         <TextField
                                             required
                                             type="text"
@@ -372,7 +372,7 @@ class VaultCreation extends React.Component {
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}></Grid>
-                                    <Grid item lg={8}>
+                                    <Grid item lg={8} xs={12}>
                                         <TextField
                                             type="text"
                                             multiline
@@ -386,7 +386,7 @@ class VaultCreation extends React.Component {
                                     </Grid>
                                     <Grid item lg={2}></Grid>
                                     <Grid item lg={2}></Grid>
-                                    <Grid item lg={3}>
+                                    <Grid item lg={3} xs={12}>
                                         <TextField
                                             required
                                             type="email"
@@ -401,7 +401,7 @@ class VaultCreation extends React.Component {
                                     </Grid>
                                     <Grid item lg={7}></Grid>
                                     <Grid item lg={2}></Grid>
-                                    <Grid item lg={3}>
+                                    <Grid item lg={3} xs={12}>
                                         <TextField
                                             required
                                             type="tel"
@@ -415,7 +415,7 @@ class VaultCreation extends React.Component {
                                         />
                                     </Grid>
                                     <Grid item lg={7}></Grid>
-                                    <Grid item lg={2}>
+                                    <Grid item lg={2} xs={12}>
                                         <Button onClick={this.submit} className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                             Create
                                         </Button>
