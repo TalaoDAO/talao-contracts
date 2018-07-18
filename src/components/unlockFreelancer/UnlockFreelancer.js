@@ -77,8 +77,16 @@ class UnlockFreelancer extends React.Component {
 
     this.state = {
       freelancer: this.free,
-      competencies: this.free.getCompetencies()
+      competencies: this.free.getCompetencies(),
+      numTalaoForVault : null,
+      description : ''
     }
+
+    this.talaoContract = new window.web3.eth.Contract(
+      JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
+      process.env.REACT_APP_TALAOTOKEN_ADDRESS
+    );
+
   }
 
   componentDidMount() {
@@ -101,6 +109,11 @@ class UnlockFreelancer extends React.Component {
         state: { address: this.state.freelancerAddress }
       });
     }
+
+    this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
+      this.setState({numTalaoForVault: info.accessPrice});
+      this.setState({description: "The freelancer allows you to unlock his vault for " + info.accessPrice + " Talao tokens.You will then access to the description of his experiences and educations.You will be able to contact him."});
+    })
   }
 
   componentWillUnmount() {
@@ -117,10 +130,6 @@ class UnlockFreelancer extends React.Component {
 
   
   handleSubmit() {
-    this.talaoContract = new window.web3.eth.Contract(
-      JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
-      process.env.REACT_APP_TALAOTOKEN_ADDRESS
-    );
     
     this.talaoContract.methods.getVaultAccess(this.freelancerAddress).send({from: window.account}).then(response => {
       this.props.history.push({
@@ -166,9 +175,7 @@ class UnlockFreelancer extends React.Component {
             <Grid container>
               <Grid item xs={7} md={10} lg={10}>
                 <Typography>
-                    The freelancer allows you to unlock his vault for 1 Talao tokens.
-                    You will then access to the description of his experiences and educations.
-                    You will be able to contact him.
+                    {this.state.description}
                 </Typography>
               </Grid>
               <Grid item xs={5} md={2} lg={2}>

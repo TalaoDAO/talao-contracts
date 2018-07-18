@@ -123,7 +123,7 @@ class Freelancer extends EventEmitter {
     }
 
     getDocumentIsAlive(docId) {
-        return this.vaultContract.methods.getDocumentIsAlive(docId).call({ from: window.account });
+        return this.vaultContract.methods.getDocumentIsAlive(docId).call({ from: this.freelancerAddress });
     }
 
     getDocumentByEvent(event) {
