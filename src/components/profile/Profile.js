@@ -14,6 +14,7 @@ import BlurOnIcon from '@material-ui/icons/BlurOn';
 import FreelancerService from '../../services/FreelancerService';
 import classnames from 'classnames';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
+import Media from "react-media";
 
 const styles = theme => ({
   container: {
@@ -71,10 +72,10 @@ const styles = theme => ({
     transform: 'rotate(180deg)',
   },
   detailsContainer: {
-    marginLeft: '130px',
     marginBottom: '10px',
     display: 'flex',
     alignItems: 'center',
+    wordBreak: 'break-word',
   },
 });
 
@@ -140,17 +141,25 @@ class Profile extends React.Component {
           </div>
         </CardContent>
         <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
-          <CardContent>
-            <Typography className={this.props.classes.detailsContainer}>
-              <MailIcon />&nbsp;{this.state.freelancer.email}<br />
-            </Typography>
-            <Typography className={this.props.classes.detailsContainer}>
-              <PhoneIcon />&nbsp;{this.state.freelancer.phone}<br />
-            </Typography>
-            <Typography className={this.props.classes.detailsContainer}>
-              <BlurOnIcon />&nbsp;{this.state.freelancer.ethereumAddress}
-            </Typography>
-          </CardContent>
+          <Media query="(max-width: 959px)">
+            {matches => {
+              const marginLeftIfMobile = matches ? '0px' : '130px';
+              return (
+                <CardContent>
+                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                    <MailIcon />&nbsp;{this.state.freelancer.email}<br />
+                  </Typography>
+                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                    <PhoneIcon />&nbsp;{this.state.freelancer.phone}<br />
+                  </Typography>
+                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                    <BlurOnIcon />&nbsp;{this.state.freelancer.ethereumAddress}
+                  </Typography>
+                </CardContent>
+              )
+            }
+            }
+          </Media>
         </Collapse>
       </Card >
     );

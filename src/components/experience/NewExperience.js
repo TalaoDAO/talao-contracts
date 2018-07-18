@@ -187,7 +187,6 @@ class NewExperience extends React.Component {
         this.setState({ title: event.target.value });
     }
     handleTypeChange = event => {
-        console.log(event);
         this.setState({ type: event.target.value });
     };
     handleDescriptionChange = event => {
