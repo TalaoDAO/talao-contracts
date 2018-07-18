@@ -144,7 +144,9 @@ class NewExperience extends React.Component {
 
     triggerInputFile = () => this.fileInput.click();
 
-    detectCompetenciesFromCertification(file) {
+    detectCompetenciesFromCertification(event) {
+        let file = event.files[0];
+        event.value = null;
         if (typeof file === 'undefined') return;
         if (this.state.certificat !== '') {
             this.setState({
@@ -409,7 +411,7 @@ class NewExperience extends React.Component {
                                     <LineStyle />
                                     Add certificat
                                 </Button>
-                                <input onChange={(e) => this.detectCompetenciesFromCertification(e.target.files[0])} style={{ display: 'none' }} ref={fileInput => this.fileInput = fileInput} type="file" accept="application/json" />
+                                <input onChange={(e) => this.detectCompetenciesFromCertification(e.target)} style={{ display: 'none' }} ref={fileInput => this.fileInput = fileInput} type="file" accept="application/json" />
                             </Grid>
                             <Grid item lg={10}></Grid>
                             <Grid item lg={8} xs={12}>
