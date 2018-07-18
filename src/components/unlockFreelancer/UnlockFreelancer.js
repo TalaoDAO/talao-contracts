@@ -10,6 +10,7 @@ import Grid from '@material-ui/core/Grid';
 import Typography from "@material-ui/core/Typography";
 import FreelancerService from '../../services/FreelancerService';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
+import { Icon } from '@material-ui/core';
 
 
 const styles = theme => ({
@@ -181,6 +182,9 @@ class UnlockFreelancer extends React.Component {
               </Grid>
               <Grid item xs={5} md={2} lg={2}>
                 <Button onClick={() => this.handleSubmit()} variant="contained" color="primary" className={this.props.classes.unlockButton}>
+                  <Icon style={{ fontSize: 20, margin: 5 }}>
+                    no_encryption
+                  </Icon>
                   Unlock
                 </Button>
               </Grid>
