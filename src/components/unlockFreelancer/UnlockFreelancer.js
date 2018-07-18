@@ -114,7 +114,6 @@ class UnlockFreelancer extends React.Component {
     this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
       let price = window.web3.utils.fromWei(info.accessPrice);
       this.setState({numTalaoForVault: price});
-      this.setState({description: "The freelancer allows you to unlock his vault for " + price + " Talao tokens.You will then access to the description of his experiences and educations.You will be able to contact him."});
     })
   }
 
@@ -177,7 +176,11 @@ class UnlockFreelancer extends React.Component {
             <Grid container>
               <Grid item xs={7} md={10} lg={10}>
                 <Typography>
-                    {this.state.description}
+                  The freelancer allows you to unlock his vault for
+                  <span style={{fontWeight: 'bold'}}>
+                    {' ' + this.state.numTalaoForVault} Talao token{this.state.numTalaoForVault > 1 ? 's' : ''}.
+                  </span>
+                  You will then access to the description of his experiences and educations.You will be able to contact him.
                 </Typography>
               </Grid>
               <Grid item xs={5} md={2} lg={2}>
