@@ -52,7 +52,7 @@ class Menu extends React.Component {
     }
 
     componentDidMount() {
-        this.free.addListener('FreeDataChanged', this.handleEvents, this);
+        this.free.addListener('FreeDataChanged', this.handleEvents, this);  
     }
 
     componentWillUnmount() {
@@ -75,10 +75,10 @@ class Menu extends React.Component {
                 <div className={this.props.classes.sidebar}>
                     <div>
                     <Typography to="/">
-                        <Link style={{display: !this.free.isFreelancer() && !this.free.isVaultCreated ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
+                        <Link style={{display: this.free.isFreelancer() && this.free.isVaultCreated ? 'block' : 'none' }} className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
                     </Typography>
                     <Typography to="/">
-                        <Link style={{display: !this.free.isFreelancer() && !this.free.isVaultCreated ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
+                        <Link style={{display: this.free.isFreelancer() && this.free.isVaultCreated ? 'block' : 'none' }} className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
                     </Typography>
                     <Typography to="/">
                         <Link style={{display: this.free.isFreelancer() ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/homepage">Homepage</Link>
