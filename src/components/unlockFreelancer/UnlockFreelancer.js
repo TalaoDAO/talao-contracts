@@ -100,21 +100,18 @@ class UnlockFreelancer extends React.Component {
     }
 
     //A client is searching a freelancer, so we display his Vault
-    if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined') {
+    if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined' && window.web3.utils.isAddress(this.freelancerAddress)) {
         this.free.initFreelancer(this.freelancerAddress);
+        this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
+          let price = window.web3.utils.fromWei(info.accessPrice);
+          this.setState({numTalaoForVault: price});
+        })
     } else {
       //If someone access to the url directly without the freelance address, redirect on homepage
       this.props.history.push({
-        pathname: '/homepage',
-        search: this.state.freelancerAddress,
-        state: { address: this.state.freelancerAddress }
+        pathname: '/homepage'
       });
     }
-
-    this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
-      let price = window.web3.utils.fromWei(info.accessPrice);
-      this.setState({numTalaoForVault: price});
-    })
   }
 
   componentWillUnmount() {
