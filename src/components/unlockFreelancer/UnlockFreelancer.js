@@ -111,8 +111,9 @@ class UnlockFreelancer extends React.Component {
     }
 
     this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
-      this.setState({numTalaoForVault: info.accessPrice});
-      this.setState({description: "The freelancer allows you to unlock his vault for " + info.accessPrice + " Talao tokens.You will then access to the description of his experiences and educations.You will be able to contact him."});
+      let price = window.web3.utils.fromWei(info.accessPrice);
+      this.setState({numTalaoForVault: price});
+      this.setState({description: "The freelancer allows you to unlock his vault for " + price + " Talao tokens.You will then access to the description of his experiences and educations.You will be able to contact him."});
     })
   }
 
