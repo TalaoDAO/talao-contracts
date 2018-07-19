@@ -10,7 +10,7 @@ import UnlockFreelancer from './components/unlockFreelancer/UnlockFreelancer';
 import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import FreelancerService from './services/FreelancerService';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
@@ -51,14 +51,27 @@ class AppConnected extends React.Component {
     this.free.initFreelancer(window.account);
     this.state = {
       isWaiting: true,
-      value: 0,
+      accountChanged: false,
+      value: 0
     }
+    setInterval(this.handleRouteChange, 2000);
   }
 
   handleChange = (event, value) => {
     this.setState({ value });
   };
 
+  handleRouteChange = () => {
+    window.web3.eth.getAccounts(function (err, accounts) {
+      if (accounts[0].toUpperCase() !== window.account.toUpperCase()) {
+        window.account = accounts[0];
+        this.setState({ accountChanged: true });
+      }
+      if (err) {
+        console.log(err);
+      }
+    }.bind(this));
+  }
 
   componentDidMount() {
     this.free.addListener('ExperienceChanged', this.handleEvents, this);
@@ -78,6 +91,10 @@ class AppConnected extends React.Component {
 
   render() {
     if (this.state.isWaiting) return (<Loading />);
+    if (this.state.accountChanged){
+      this.setState({accountChanged: false});
+      return <Router><Redirect to='/'/></Router>
+    } 
     return (
       <Router>
         <div>
