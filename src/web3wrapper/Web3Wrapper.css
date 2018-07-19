@@ -12,3 +12,13 @@
 .logo{
   width: 400px;
 }
+
+@media (max-width: 640px) {
+  .Web3Wrapper {
+    width: 100%;
+  }
+  
+  .logo{
+    width: 100%;
+  }
+}
