@@ -4,6 +4,7 @@ import AppConnected from '../AppConnected';
 import Web3 from 'web3';
 import { Web3Provider } from 'react-web3';
 import logoTalao from '../images/logo-talao.png';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 // If the browser has injected Web3.JS
 if (window.web3) {
@@ -50,7 +51,11 @@ class Web3Wrapper extends Component {
         web3UnavailableScreen={Web3WrapperUnavailable}
         accountUnavailableScreen={Web3WrapperUnavailableAccount}
       >
-        <AppConnected />
+        <Router>
+          <Switch>
+            <Route path="*" component={AppConnected} />
+          </Switch>
+        </Router>
       </Web3Provider>
     );
   }

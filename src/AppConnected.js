@@ -10,7 +10,7 @@ import UnlockFreelancer from './components/unlockFreelancer/UnlockFreelancer';
 import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Redirect, Link } from 'react-router-dom';
 import FreelancerService from './services/FreelancerService';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
@@ -36,10 +36,15 @@ const styles = theme =>
       background: theme.palette.background.default,
     },
     bottomNav: {
-      position: 'absolute',
+      width: '100%',
       alignSelf: 'flex-end',
-      margin: '20px -20px -20px -20px',
-      width: '100vw',
+      backgroundImage: 'none',
+      backgroundRepeat: 'repeat',
+      backgroundAttachment: 'scroll',
+      backgroundPosition: '0% 0%',
+      position: 'fixed',
+      bottom: '0pt',
+      left: '0pt',
     },
   });
 
@@ -51,26 +56,48 @@ class AppConnected extends React.Component {
     this.free.initFreelancer(window.account);
     this.state = {
       isWaiting: true,
-      accountChanged: false,
-      value: 0
+      previousPath: window.location.path,
+      menuSelection: ''
     }
-    setInterval(this.handleRouteChange, 2000);
+    setInterval(this.handleAddressChange, 2000);
   }
 
-  handleChange = (event, value) => {
-    this.setState({ value });
+  handleMenuChange = (event, value) => {
+    if(typeof value === 'undefined') {
+      let newValue = '/' + event.target.text.toLowerCase();
+      this.setState({ menuSelection : newValue });
+    }
+    else
+      this.setState({ menuSelection: value });
   };
 
-  handleRouteChange = () => {
+  handleAddressChange = () => {
     window.web3.eth.getAccounts(function (err, accounts) {
       if (accounts[0].toUpperCase() !== window.account.toUpperCase()) {
         window.account = accounts[0];
-        this.setState({ accountChanged: true });
+        this.free.initFreelancer(window.account);
+        this.setState({ isWaiting: true });
+        this.props.history.push({
+          pathname: '/'
+        });
       }
       if (err) {
         console.log(err);
       }
     }.bind(this));
+  }
+
+  hasPathChanged() {
+    return this.state.previousPath !== window.location.pathanme;
+  }
+
+  componentWillUpdate() {
+    if (this.hasPathChanged()) {
+      this.setState({
+        previousPath: window.location.pathname,
+        menuSelection: this.free.isVaultCreated ? (window.location.pathname !== '/' ? window.location.pathname : '/chronology') : '/homepage'
+      });
+    }
   }
 
   componentDidMount() {
@@ -85,58 +112,55 @@ class AppConnected extends React.Component {
 
   handleEvents = () => {
     this.free = FreelancerService.getFreelancer();
-    this.setState({ isWaiting: false })
+    this.setState({
+      isWaiting: false,
+      menuSelection: this.free.isVaultCreated ? (window.location.pathname !== '/' ? window.location.pathname : '/chronology') : '/homepage'
+    })
     this.forceUpdate();
   };
 
   render() {
     if (this.state.isWaiting) return (<Loading />);
-    if (this.state.accountChanged){
-      this.setState({accountChanged: false});
-      return <Router><Redirect to='/'/></Router>
-    } 
     return (
       <Router>
-        <div>
-          <MuiThemeProvider theme={theme}>
-            <Grid container className={this.props.classes.root}>
-              <Hidden smDown>
-                <Grid item xs={2}>
-                  <Menu />
+        <MuiThemeProvider theme={theme}>
+          <Grid container className={this.props.classes.root}>
+            <Hidden smDown>
+              <Grid item xs={2}>
+                <Menu menuSelection={this.state.menuSelection} updateMenu={this.handleMenuChange} />
+              </Grid>
+            </Hidden>
+            <Grid container item xs={12} md={10} className={this.props.classes.content}>
+              <Grid item xs={12} lg={10}>
+                <Grid container spacing={24}>
+                  <Grid item xs={12}>
+                    <Switch>
+                      <Route exact path="/chronology" component={Chronology} />
+                      <Route exact path="/register" component={VaultCreation} />
+                      <Route exact path="/homepage" component={Homepage} />
+                      <Route exact path="/competencies" component={Competencies} />
+                      <Route exact path="/unlockfreelancer" component={UnlockFreelancer} />
+                      <Route path="/competencies/:competencyName" component={Competencies} />
+                      <Redirect from="/" to={this.state.menuSelection} />
+                    </Switch>
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Hidden mdUp>
+                <Grid item className={this.props.classes.bottomNav}>
+                  <BottomNavigation
+                    value={this.state.menuSelection}
+                    onChange={this.handleMenuChange}
+                    showLabels>
+                    <BottomNavigationAction component={({ ...props }) => <Link to='/competencies' {...props} />} style={{ display: this.free.isFreelancer() || this.free.isVaultCreated ? '' : 'none' }} value="/competencies" label="Competencies" icon={<StarIcon />} />
+                    <BottomNavigationAction component={({ ...props }) => <Link to='/chronology' {...props} />} style={{ display: this.free.isFreelancer() || this.free.isVaultCreated ? '' : 'none' }} value="/chronology" label="Chronology" icon={<ExploreIcon />} />
+                    <BottomNavigationAction component={({ ...props }) => <Link to='/homepage' {...props} />} style={{ display: this.free.isFreelancer() ? 'none' : '' }} value="/homepage" label="Homepage" icon={<HomeIcon />} />
+                  </BottomNavigation>
                 </Grid>
               </Hidden>
-              <Grid container item xs={12} md={10} className={this.props.classes.content}>
-                <Grid item xs={12} lg={10}>
-                  <Grid container spacing={24}>
-                    <Grid item xs={12}>
-                      <Switch>
-                        <Route exact path="/" component={this.free.isVaultCreated ? Chronology : Homepage} />
-                        <Route exact path="/chronology" component={Chronology} />
-                        <Route exact path="/register" component={VaultCreation} />
-                        <Route exact path="/homepage" component={Homepage} />
-                        <Route exact path="/competencies" component={Competencies} />
-                        <Route exact path="/unlockfreelancer" component={UnlockFreelancer} />
-                        <Route path="/competencies/:competencyName" component={Competencies} />
-                      </Switch>
-                    </Grid>
-                  </Grid>
-                </Grid>
-                <Hidden mdUp>
-                  <Grid item className={this.props.classes.bottomNav}>
-                    <BottomNavigation
-                      value={this.state.value}
-                      onChange={this.handleChange}
-                      showLabels>
-                      <BottomNavigationAction label="Competencies" icon={<StarIcon />} />
-                      <BottomNavigationAction label="Chronology" icon={<ExploreIcon />} />
-                      <BottomNavigationAction label="Homepage" icon={<HomeIcon />} />
-                    </BottomNavigation>
-                  </Grid>
-                </Hidden>
-              </Grid>
             </Grid>
-          </MuiThemeProvider>
-        </div>
+          </Grid>
+        </MuiThemeProvider>
       </Router>
     );
   }

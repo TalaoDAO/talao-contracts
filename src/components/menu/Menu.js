@@ -29,17 +29,19 @@ const styles = theme => ({
         fontSize: '16px',
         float: 'right',
     },
+    sidebarItemSelected: {
+        textDecoration: 'underline',
+        color: theme.palette.text.primary,
+        lineHeight: '50px',
+        fontSize: '16px',
+        float: 'right',
+    },
     menus: {
         position: 'absolute',
         bottom: '20px',
     },
     menuItem: {
         textDecoration: 'none',
-        color: theme.palette.text.primary,
-        lineHeight: '30px',
-    },
-    menuItemSelected: {
-        textDecoration: 'underline',
         color: theme.palette.text.primary,
         lineHeight: '30px',
     },
@@ -75,13 +77,34 @@ class Menu extends React.Component {
                 <div className={this.props.classes.sidebar}>
                     <div>
                     <Typography to="/">
-                        <Link style={{display: this.free.isFreelancer() && this.free.isVaultCreated ? 'block' : 'none' }} className={this.props.classes.sidebarItem} to="/competencies">Competencies</Link>
+                        <Link 
+                            onClick={this.props.updateMenu} 
+                            style={{display: this.free.isFreelancer() || this.free.isVaultCreated ? 'block' : 'none' }} 
+                            className={this.props.menuSelection === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                            to="/competencies"
+                        >
+                            Competencies
+                        </Link>
                     </Typography>
                     <Typography to="/">
-                        <Link style={{display: this.free.isFreelancer() && this.free.isVaultCreated ? 'block' : 'none' }} className={this.props.classes.sidebarItem} to="/chronology">Chronology</Link>
+                        <Link 
+                            onClick={this.props.updateMenu} 
+                            style={{display: this.free.isFreelancer() || this.free.isVaultCreated ? 'block' : 'none' }} 
+                            className={this.props.menuSelection === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                            to="/chronology"
+                        >
+                            Chronology
+                        </Link>
                     </Typography>
                     <Typography to="/">
-                        <Link style={{display: this.free.isFreelancer() ? 'none' : 'block' }} className={this.props.classes.sidebarItem} to="/homepage">Homepage</Link>
+                        <Link 
+                            onClick={this.props.updateMenu} 
+                            style={{display: this.free.isFreelancer() ? 'none' : 'block' }} 
+                            className={this.props.menuSelection === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                            to="/homepage"
+                        >
+                            Homepage
+                        </Link>
                     </Typography>
                     </div>
                 </div>
