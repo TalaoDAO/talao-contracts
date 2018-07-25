@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import FreelancerService from '../../services/FreelancerService';
 import { Grid } from '@material-ui/core';
 import Profile from '../profile/Profile';
+import queryString from 'query-string'
 
 const styles = {
     competenciesContainer: {
@@ -83,22 +84,69 @@ class Competencies extends React.Component {
     constructor(props) {
         super(props);
         this.free = FreelancerService.getFreelancer();
-        if (this.props.location.state != null) {
-            this.freelancerAddress = this.props.location.state.address;
-        } else if (this.props.location.search !== null && this.props.location.search !== "") {
-            var address = this.props.location.search
-            this.freelancerAddress = address.substring(1, address.length);
-        }
-
-        //A client is searching a freelancer, so we display his Vault
-        if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
-            this.free.initFreelancer(this.freelancerAddress);
 
         this.state = {
             competencies: this.free.getCompetencies(),
         };
+
+        this.vaultFactoryContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
+            process.env.REACT_APP_VAULTFACTORY_ADDRESS
+        );
+        this.talaoContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
+            process.env.REACT_APP_TALAOTOKEN_ADDRESS
+        );
+        this.freelancerContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
+            process.env.REACT_APP_FREELANCER_ADDRESS
+        );
     }
 
+    componentWillMount() {
+        //get the freelancer address from the url
+        this.freelancerAddress = queryString.extract(this.props.location.search);
+
+        //Check if this is the current user
+        if((!this.freelancerAddress && this.free.isVaultCreated) || (this.freelancerAddress.toLowerCase() === window.account.toLowerCase() && this.free.isVaultCreated)) {
+            this.free.initFreelancer(window.account);
+
+        //we are looking for a freelancer 
+        } else if (this.freelancerAddress.toLowerCase() !== window.account.toLowerCase() && window.web3.utils.isAddress(this.freelancerAddress)) {
+
+            this.vaultFactoryContract.methods.FreelanceVault(this.freelancerAddress).call().then(vaultAddress => {
+                //The vault exist ??
+                if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                    // This client is a partner of the freelancer ??
+                    this.freelancerContract.methods.isPartner(this.freelancerAddress, window.account).call().then(isPartner => {
+                        // This client has already unlock the freelancer vault ??
+                        this.talaoContract.methods.hasVaultAccess(this.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
+                            //The vault price of the freelancer is 0 talao token ??
+                            this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
+                                let accessPriceIsZeroTalaoToken = (parseInt(window.web3.utils.fromWei(info.accessPrice), 10) === 0 ) ? true : false;
+                                if (hasAccessToFreelanceVault || isPartner || accessPriceIsZeroTalaoToken) {
+                                    this.free.initFreelancer(this.freelancerAddress);
+                                } else {
+                                    this.props.history.push({
+                                        pathname: '/unlockfreelancer',
+                                        search: this.freelancerAddress,
+                                        state: { address: this.freelancerAddress }
+                                    });
+                                }
+                            })
+                        }); 
+                    });
+                }
+                //No vault exist for this address
+                else {
+                    this.props.history.push({pathname: '/homepage'});
+                }
+            });
+        //Error
+        } else {
+            this.props.history.push({pathname: '/homepage'});
+        }
+    }
     componentDidMount() {
         this.free.addListener('ExperienceChanged', this.handleEvents, this);
     }

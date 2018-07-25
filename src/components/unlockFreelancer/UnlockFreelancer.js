@@ -11,7 +11,7 @@ import Typography from "@material-ui/core/Typography";
 import FreelancerService from '../../services/FreelancerService';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 import { Icon } from '@material-ui/core';
-
+import queryString from 'query-string'
 
 const styles = theme => ({
   container: {
@@ -83,39 +83,69 @@ class UnlockFreelancer extends React.Component {
       description : ''
     }
 
-    this.talaoContract = new window.web3.eth.Contract(
-      JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
-      process.env.REACT_APP_TALAOTOKEN_ADDRESS
+    this.vaultFactoryContract = new window.web3.eth.Contract(
+      JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
+      process.env.REACT_APP_VAULTFACTORY_ADDRESS
     );
-
+    this.talaoContract = new window.web3.eth.Contract(
+        JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
+        process.env.REACT_APP_TALAOTOKEN_ADDRESS
+      );
+    this.freelancerContract = new window.web3.eth.Contract(
+        JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
+        process.env.REACT_APP_FREELANCER_ADDRESS
+      );
   }
 
   componentDidMount() {
-    this.free.addListener('ExperienceChanged', this.handleEvents, this);
-    if (this.props.location.state != null) {
-      this.freelancerAddress = this.props.location.state.address;
-    } else if (this.props.location.search !== null && this.props.location.search !== "") {
-        var address = this.props.location.search
-        this.freelancerAddress = address.substring(1, address.length);
-    }
 
-    //A client is searching a freelancer, so we display his Vault
-    if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined' && window.web3.utils.isAddress(this.freelancerAddress)) {
-        this.free.initFreelancer(this.freelancerAddress);
-        this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
-          let price = window.web3.utils.fromWei(info.accessPrice);
-          this.setState({numTalaoForVault: price});
-        })
-    } else {
-      //If someone access to the url directly without the freelance address, redirect on homepage
-      this.props.history.push({
-        pathname: '/homepage'
+    this.free.addListener('ExperienceChanged', this.handleEvents, this);
+
+    //get the freelancer address from the url
+    this.freelancerAddress = queryString.extract(this.props.location.search);
+
+    //if the address is not a valid ethereum address, redirect to homepage
+    if (!window.web3.utils.isAddress(this.freelancerAddress)) {
+        this.props.history.push({pathname: '/homepage'});
+
+    //Check if the user try to unlock himself
+    } else if (this.freelancerAddress.toLowerCase() !== window.account.toLowerCase()) {
+
+      this.vaultFactoryContract.methods.FreelanceVault(this.freelancerAddress).call().then(vaultAddress => {
+        //The vault exist ??
+        if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+            // This client is a partner of the freelancer ??
+            this.freelancerContract.methods.isPartner(this.freelancerAddress, window.account).call().then(isPartner => {
+                // This client has already unlock the freelancer vault ??
+                this.talaoContract.methods.hasVaultAccess(this.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
+                    //The vault price of the freelancer is 0 talao token ??
+                    this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
+                      let price = window.web3.utils.fromWei(info.accessPrice);
+                      let accessPriceIsZeroTalaoToken = (parseInt(price, 10) === 0 ) ? true : false;
+                      if (hasAccessToFreelanceVault || isPartner || accessPriceIsZeroTalaoToken) {
+                        this.props.history.push({pathname: '/homepage'});
+                      } else {
+                        this.setState({numTalaoForVault: price});
+                        this.free.initFreelancer(this.freelancerAddress);
+                      }
+                    })
+                }); 
+            });
+        }
+        //No vault exist for this address
+        else {
+            this.props.history.push({pathname: '/homepage'});
+        }
       });
+    } else {
+      //If the freelancer try to access unlock himself, redirect on his page
+      this.props.history.push({pathname: '/Chronology'});
     }
   }
 
   componentWillUnmount() {
       this.free.removeListener('ExperienceChanged', this.handleEvents, this);
+      this.free.initFreelancer();
       this.isCancelled = true;
   }
 
@@ -132,8 +162,8 @@ class UnlockFreelancer extends React.Component {
     this.talaoContract.methods.getVaultAccess(this.freelancerAddress).send({from: window.account}).then(response => {
       this.props.history.push({
         pathname: '/chronology',
-        search: this.state.freelancerAddress,
-        state: { address: this.state.freelancerAddress }
+        search: this.freelancerAddress,
+        state: { address: this.freelancerAddress }
       });
     }, function() {
       console.log('transaction failed');

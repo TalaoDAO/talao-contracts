@@ -101,10 +101,9 @@ const styles = theme => ({
 
 class VaultCreation extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.free = FreelancerService.getFreelancer();
-
         this.state = {
             isWaiting: false,
             priceWaiting: false,
@@ -146,6 +145,11 @@ class VaultCreation extends React.Component {
     }
 
     componentDidMount() {
+
+        if (this.free.isVaultCreated) {
+            this.props.history.push({pathname: '/Homepage'});
+        }
+
         // Get token symbol.
         this.tokenContract.methods.symbol().call((err, symbol) => {
             if (err) console.error(err);
@@ -177,14 +181,6 @@ class VaultCreation extends React.Component {
             }
         })
     }
-
-    componentWillUnmount() {
-        this.isCancelled = true;
-    }
-
-    handleEvents = () => {
-        this.forceUpdate();
-    };
 
     handleAccessPriceChange = event => {
         this.setState({ accessPrice: event.target.value });

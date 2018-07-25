@@ -50,6 +50,10 @@ const styles = theme => ({
 class Menu extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            currentPath: '/homepage'
+        }
         this.free = FreelancerService.getFreelancer();
     }
 
@@ -70,7 +74,7 @@ class Menu extends React.Component {
         return (
             <div className={this.props.classes.root}>
                 <div>
-                    <Link to="/">
+                    <Link to="/homepage" onClick={this.props.updateMenu} >
                         <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
                     </Link>
                 </div>
@@ -79,9 +83,9 @@ class Menu extends React.Component {
                     <Typography to="/">
                         <Link 
                             onClick={this.props.updateMenu} 
-                            style={{display: this.free.isFreelancer() || this.free.isVaultCreated ? 'block' : 'none' }} 
+                            style={{display: this.free.isVaultCreated ? 'block' : 'none' }} 
                             className={this.props.menuSelection === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to="/competencies"
+                            to={"/competencies?" + this.free.freelancerAddress}
                         >
                             Competencies
                         </Link>
@@ -89,9 +93,9 @@ class Menu extends React.Component {
                     <Typography to="/">
                         <Link 
                             onClick={this.props.updateMenu} 
-                            style={{display: this.free.isFreelancer() || this.free.isVaultCreated ? 'block' : 'none' }} 
+                            style={{display: this.free.isVaultCreated ? 'block' : 'none' }} 
                             className={this.props.menuSelection === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to="/chronology"
+                            to={"/chronology" + this.free.freelancerAddress}
                         >
                             Chronology
                         </Link>
@@ -99,7 +103,6 @@ class Menu extends React.Component {
                     <Typography to="/">
                         <Link 
                             onClick={this.props.updateMenu} 
-                            style={{display: this.free.isFreelancer() ? 'none' : 'block' }} 
                             className={this.props.menuSelection === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                             to="/homepage"
                         >

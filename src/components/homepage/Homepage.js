@@ -53,12 +53,13 @@ const styles = theme => ({
 });
 
 class Homepage extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             freelancerAddress: '',
             errorText: '',
         }
+
         this.handleSubmit = this.handleSubmit.bind(this);
         this.vaultFactoryContract = new window.web3.eth.Contract(
             JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
@@ -76,19 +77,30 @@ class Homepage extends React.Component {
 
     handleSubmit = event => {
         if (!window.web3.utils.isAddress(this.state.freelancerAddress)) {
-            this.setState({ errorText: 'This is not a valid ethereum address', });
+            this.setState({ errorText: 'This is not a valid ethereum address' });
+            return;
+        }
+        if (this.state.freelancerAddress.toLowerCase() === window.account.toLowerCase()) {
+            this.setState({ errorText: 'This is your ethereum address!' });
             return;
         }
         this.vaultFactoryContract.methods.FreelanceVault(this.state.freelancerAddress).call().then(vaultAddress => {
+            //The vault exist ??
             if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
+                // This client is a partner of the freelancer ??
                 this.freelancerContract.methods.isPartner(this.state.freelancerAddress, window.account).call().then(isPartner => {
+                    // This client has already unlock the freelancer vault ??
                     this.talaoContract.methods.hasVaultAccess(this.state.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
-                        this.path = (hasAccessToFreelanceVault || isPartner) ? '/chronology' : 'unlockfreelancer';
-                        this.props.history.push({
-                            pathname: this.path,
-                            search: this.state.freelancerAddress,
-                            state: { address: this.state.freelancerAddress }
-                        });
+                        //The vault price of the freelancer is 0 talao token ??
+                        this.talaoContract.methods.data(this.state.freelancerAddress).call().then(info => {
+                            let accessPriceIsZeroTalaoToken = (parseInt(window.web3.utils.fromWei(info.accessPrice), 10) === 0 ) ? true : false;
+                            this.path = (hasAccessToFreelanceVault || isPartner || accessPriceIsZeroTalaoToken) ? '/chronology' : '/unlockfreelancer';
+                            this.props.history.push({
+                                pathname: this.path,
+                                search: this.state.freelancerAddress,
+                                state: { address: this.state.freelancerAddress }
+                            });
+                        })
                     }); 
                 });
             }
@@ -107,6 +119,24 @@ class Homepage extends React.Component {
     }
 
     render() {
+        let showCreateYourVaultBlock;
+        if (!this.props.freelancer.isVaultCreated) {
+            showCreateYourVaultBlock = 
+            (<Grid item xs={12} lg={6}>
+                <Card className={this.props.classes.card}>
+                    <CardContent>
+                        <div className={this.props.classes.center}>
+                            <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p>
+                        </div>
+                        <div className={this.props.classes.center}>
+                            <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
+                                <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">Create my vault</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </Grid>)
+          }
         return (
             <Grid container className={this.props.classes.container}>
                 <Grid item xs={12} lg={6}>
@@ -135,20 +165,7 @@ class Homepage extends React.Component {
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid item xs={12} lg={6}>
-                    <Card className={this.props.classes.card}>
-                        <CardContent>
-                            <div className={this.props.classes.center}>
-                                <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p>
-                            </div>
-                            <div className={this.props.classes.center}>
-                                <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
-                                    <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">Create my vault</Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                {showCreateYourVaultBlock}
             </Grid>
         );
     }

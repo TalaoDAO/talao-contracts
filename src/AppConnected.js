@@ -17,6 +17,7 @@ import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import StarIcon from '@material-ui/icons/Star';
 import ExploreIcon from '@material-ui/icons/Explore';
 import HomeIcon from '@material-ui/icons/Home';
+import Web3Wrapper from './web3wrapper/Web3Wrapper';
 
 const Loading = require('react-loading-animation');
 
@@ -56,13 +57,16 @@ class AppConnected extends React.Component {
     this.free.initFreelancer(window.account);
     this.state = {
       isWaiting: true,
-      previousPath: window.location.path,
+      connected: true,
+    //  previousPath: window.location.path,
       menuSelection: ''
     }
     setInterval(this.handleAddressChange, 2000);
   }
 
   handleMenuChange = (event, value) => {
+    if(this.free.freelancerAddress.toLowerCase() !== window.account.toLowerCase())
+      this.free.initFreelancer(window.account);
     if(typeof value === 'undefined') {
       let newValue = '/' + event.target.text.toLowerCase();
       this.setState({ menuSelection : newValue });
@@ -73,7 +77,18 @@ class AppConnected extends React.Component {
 
   handleAddressChange = () => {
     window.web3.eth.getAccounts(function (err, accounts) {
-      if (accounts[0].toUpperCase() !== window.account.toUpperCase()) {
+      //First connection window.account is sometimes undefined so we check it
+      if(accounts[0] !== null && window.account === undefined) {
+        window.account = accounts[0];
+      }
+      //If log off to metamask, we return the wrapper
+      else if (accounts[0] === undefined) {
+        window.account = undefined;
+        this.setState({connected: false});
+        this.forceUpdate();
+      }
+      //In case of account switch, we update the profile with the new account
+      else if(accounts[0].toUpperCase() !== window.account.toUpperCase()) {
         window.account = accounts[0];
         this.free.initFreelancer(window.account);
         this.setState({ isWaiting: true });
@@ -94,8 +109,8 @@ class AppConnected extends React.Component {
   componentWillUpdate() {
     if (this.hasPathChanged()) {
       this.setState({
-        previousPath: window.location.pathname,
-        menuSelection: this.free.isVaultCreated ? (window.location.pathname !== '/' ? window.location.pathname : '/chronology') : '/homepage'
+        previousPath: window.location.pathname
+       // menuSelection: this.free.isVaultCreated ? (window.location.pathname !== '/' ? window.location.pathname : '/chronology') : '/homepage'
       });
     }
   }
@@ -120,6 +135,15 @@ class AppConnected extends React.Component {
   };
 
   render() {
+    const MyHomePageComponent = (props) => {
+      return (
+        <Homepage 
+          freelancer={this.free}
+          {...props}
+        />
+      );
+    }
+    if (!this.state.connected) return (<Web3Wrapper />);
     if (this.state.isWaiting) return (<Loading />);
     return (
       <Router>
@@ -137,11 +161,11 @@ class AppConnected extends React.Component {
                     <Switch>
                       <Route exact path="/chronology" component={Chronology} />
                       <Route exact path="/register" component={VaultCreation} />
-                      <Route exact path="/homepage" component={Homepage} />
+                      <Route exact path="/homepage" component={MyHomePageComponent} />
                       <Route exact path="/competencies" component={Competencies} />
-                      <Route exact path="/unlockfreelancer" component={UnlockFreelancer} />
+                      <Route exact path="/unlockfreelancer" component={UnlockFreelancer}/>
                       <Route path="/competencies/:competencyName" component={Competencies} />
-                      <Redirect from="/" to={this.state.menuSelection} />
+                      <Redirect from="/" to='/homepage' />
                     </Switch>
                   </Grid>
                 </Grid>

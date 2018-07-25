@@ -40,8 +40,19 @@ class Freelancer extends EventEmitter {
                 this.getAllDocuments();
             }
             else {
-                //User doesn't have a Vault, so we redirect him to the homepage
+                //User doesn't have a Vault, so we redirect him to the homepage              
                 this.isVaultCreated = false;
+                this.experiences = [];
+                this.freelancerAddress = null;
+                this.vaultAddress = null;
+                this.email = null;
+                this.title = null;
+                this.lastName = null;
+                this.firstName = null;
+                this.pictureUrl = null;
+                this.description = null;
+                this.phone = null;
+                this.ethereumAddress = null;
             }
             this.emit('ExperienceChanged', this);
             this.emit('FreeDataChanged', this);
