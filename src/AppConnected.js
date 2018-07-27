@@ -1,4 +1,3 @@
-import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { constants } from './constants';
@@ -10,19 +9,19 @@ import UnlockFreelancer from './components/unlockFreelancer/UnlockFreelancer';
 import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
-import { BrowserRouter as Router, Route, Switch, Redirect, Link } from 'react-router-dom';
-import FreelancerService from './services/FreelancerService';
-import BottomNavigation from '@material-ui/core/BottomNavigation';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+/*import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import StarIcon from '@material-ui/icons/Star';
 import ExploreIcon from '@material-ui/icons/Explore';
-import HomeIcon from '@material-ui/icons/Home';
-import Web3Wrapper from './web3wrapper/Web3Wrapper';
+import HomeIcon from '@material-ui/icons/Home';*/
+import { fetchUser } from './actions/user';
+import { connect } from "react-redux";
+import React from 'react';
+import compose from 'recompose/compose';
 
 const Loading = require('react-loading-animation');
-
 const theme = createMuiTheme(constants.theme);
-
 const styles = theme =>
   ({
     root: {
@@ -51,30 +50,12 @@ const styles = theme =>
 
 class AppConnected extends React.Component {
 
-  constructor(props) {
-    super(props);
-    this.free = FreelancerService.getFreelancer();
-    this.free.initFreelancer(window.account);
-    this.state = {
-      isWaiting: true,
-      connected: true,
-    //  previousPath: window.location.path,
-      menuSelection: ''
-    }
+  constructor() {
+    super()
     setInterval(this.handleAddressChange, 2000);
   }
 
-  handleMenuChange = (event, value) => {
-    if(this.free.freelancerAddress.toLowerCase() !== window.account.toLowerCase())
-      this.free.initFreelancer(window.account);
-    if(typeof value === 'undefined') {
-      let newValue = '/' + event.target.text.toLowerCase();
-      this.setState({ menuSelection : newValue });
-    }
-    else
-      this.setState({ menuSelection: value });
-  };
-
+  //No redux here to avoir action spamming every 2s
   handleAddressChange = () => {
     window.web3.eth.getAccounts(function (err, accounts) {
       //First connection window.account is sometimes undefined so we check it
@@ -84,14 +65,12 @@ class AppConnected extends React.Component {
       //If log off to metamask, we return the wrapper
       else if (accounts[0] === undefined) {
         window.account = undefined;
-        this.setState({connected: false});
         this.forceUpdate();
       }
       //In case of account switch, we update the profile with the new account
       else if(accounts[0].toUpperCase() !== window.account.toUpperCase()) {
         window.account = accounts[0];
-        this.free.initFreelancer(window.account);
-        this.setState({ isWaiting: true });
+        this.props.dispatch(fetchUser());
         this.props.history.push({
           pathname: '/'
         });
@@ -102,56 +81,59 @@ class AppConnected extends React.Component {
     }.bind(this));
   }
 
-  hasPathChanged() {
-    return this.state.previousPath !== window.location.pathanme;
-  }
-
-  componentWillUpdate() {
-    if (this.hasPathChanged()) {
-      this.setState({
-        previousPath: window.location.pathname
-       // menuSelection: this.free.isVaultCreated ? (window.location.pathname !== '/' ? window.location.pathname : '/chronology') : '/homepage'
-      });
-    }
-  }
-
+  //first fetch of the user
   componentDidMount() {
-    this.free.addListener('ExperienceChanged', this.handleEvents, this);
-    this.free.addListener('FreeDataChanged', this.handleEvents, this);
+    this.props.dispatch(fetchUser());
   }
-
-  componentWillUnmount() {
-    this.free.removeListener('ExperienceChanged', this.handleEvents, this);
-    this.free.removeListener('FreeDataChanged', this.handleEvents, this);
-  }
-
-  handleEvents = () => {
-    this.free = FreelancerService.getFreelancer();
-    this.setState({
-      isWaiting: false,
-      menuSelection: this.free.isVaultCreated ? (window.location.pathname !== '/' ? window.location.pathname : '/chronology') : '/homepage'
-    })
-    this.forceUpdate();
-  };
 
   render() {
+    const { error, loading, user } = this.props;
+    if (error) {
+      return <div>Error! {error.message}</div>;
+    }
+    if (loading) {
+      return <Loading />;
+    }
+
     const MyHomePageComponent = (props) => {
       return (
         <Homepage 
-          freelancer={this.free}
+          user={user}
           {...props}
         />
       );
     }
-    if (!this.state.connected) return (<Web3Wrapper />);
-    if (this.state.isWaiting) return (<Loading />);
+    const MyChronologyComponent = (props) => {
+      return (
+        <Chronology 
+          user={user}
+          {...props}
+        />
+      );
+    }
+    const MyCompetenciesComponent = (props) => {
+      return (
+        <Competencies
+          user={user}
+          {...props}
+        />
+      );
+    }
+    const MyVaultCreationComponent = (props) => {
+      return (
+        <VaultCreation
+          user={user}
+          {...props}
+        />
+      );
+    }
     return (
       <Router>
         <MuiThemeProvider theme={theme}>
           <Grid container className={this.props.classes.root}>
             <Hidden smDown>
               <Grid item xs={2}>
-                <Menu menuSelection={this.state.menuSelection} updateMenu={this.handleMenuChange} />
+              <Menu user={user}/>
               </Grid>
             </Hidden>
             <Grid container item xs={12} md={10} className={this.props.classes.content}>
@@ -159,10 +141,10 @@ class AppConnected extends React.Component {
                 <Grid container spacing={24}>
                   <Grid item xs={12}>
                     <Switch>
-                      <Route exact path="/chronology" component={Chronology} />
-                      <Route exact path="/register" component={VaultCreation} />
+                      <Route exact path="/chronology" component={MyChronologyComponent} />
+                      <Route exact path="/register" component={MyVaultCreationComponent} />
                       <Route exact path="/homepage" component={MyHomePageComponent} />
-                      <Route exact path="/competencies" component={Competencies} />
+                      <Route exact path="/competencies" component={MyCompetenciesComponent} />
                       <Route exact path="/unlockfreelancer" component={UnlockFreelancer}/>
                       <Route path="/competencies/:competencyName" component={Competencies} />
                       <Redirect from="/" to='/homepage' />
@@ -170,18 +152,18 @@ class AppConnected extends React.Component {
                   </Grid>
                 </Grid>
               </Grid>
-              <Hidden mdUp>
+              {/*<Hidden mdUp>
                 <Grid item className={this.props.classes.bottomNav}>
                   <BottomNavigation
                     value={this.state.menuSelection}
                     onChange={this.handleMenuChange}
                     showLabels>
-                    <BottomNavigationAction component={({ ...props }) => <Link to='/competencies' {...props} />} style={{ display: this.free.isFreelancer() || this.free.isVaultCreated ? '' : 'none' }} value="/competencies" label="Competencies" icon={<StarIcon />} />
-                    <BottomNavigationAction component={({ ...props }) => <Link to='/chronology' {...props} />} style={{ display: this.free.isFreelancer() || this.free.isVaultCreated ? '' : 'none' }} value="/chronology" label="Chronology" icon={<ExploreIcon />} />
-                    <BottomNavigationAction component={({ ...props }) => <Link to='/homepage' {...props} />} style={{ display: this.free.isFreelancer() ? 'none' : '' }} value="/homepage" label="Homepage" icon={<HomeIcon />} />
+                    <BottomNavigationAction component={({ ...props }) => <Link to='/competencies' {...props} />} style={{ display: freelancer.freelancerDatas !== null ? '' : 'none' }} value="/competencies" label="Competencies" icon={<StarIcon />} />
+                    <BottomNavigationAction component={({ ...props }) => <Link to='/chronology' {...props} />} style={{ display: freelancer.freelancerDatas !== null ? '' : 'none' }} value="/chronology" label="Chronology" icon={<ExploreIcon />} />
+                    <BottomNavigationAction component={({ ...props }) => <Link to='/homepage' {...props} />} style={{ display: freelancer.freelancerDatas !== null ? 'none' : '' }} value="/homepage" label="Homepage" icon={<HomeIcon />} />
                   </BottomNavigation>
                 </Grid>
-              </Hidden>
+              </Hidden>*/}
             </Grid>
           </Grid>
         </MuiThemeProvider>
@@ -190,4 +172,10 @@ class AppConnected extends React.Component {
   }
 }
 
-export default withStyles(styles)(AppConnected);
+const mapStateToProps = state => ({
+  user: state.userReducer.user,
+  loading: state.userReducer.loading,
+  error: state.userReducer.error
+});
+
+export default compose(withStyles(styles), connect(mapStateToProps))(AppConnected);

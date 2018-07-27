@@ -9,9 +9,11 @@ import blue from '@material-ui/core/colors/blue';
 import CompetencyTag from '../competencyTag/CompetencyTag';
 import Competency from '../../models/Competency';
 import Experience from '../../models/Experience';
-import FreelancerService from '../../services/FreelancerService';
 import IpfsApi from 'ipfs-api';
 import buffer from 'buffer';
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { addDocToFreelancer } from '../../actions/experience';
 
 const styles = theme => ({
     root: {
@@ -125,7 +127,6 @@ class NewExperience extends React.Component {
 
             helperTextTooLong: 'Maximum length: 30 characters',
         };
-        this.free = FreelancerService.getFreelancer();
         this.newExp = this.newExp.bind(this);
         this.submit = this.submit.bind(this);
         this.reader = new FileReader();
@@ -136,6 +137,9 @@ class NewExperience extends React.Component {
         );
     }
 
+    componentDidMount() {
+       // this.props.dispatch(createVault());
+    }
     newExp() {
         this.setState({
             newExperience: !this.state.newExperience
@@ -226,16 +230,12 @@ class NewExperience extends React.Component {
                 this.state.confidenceIndex,
                 this.state.type
             );
-            this.free.addDocument(newExperienceToAdd);
-            this.resetState();
+            this.props.dispatch(addDocToFreelancer(this.props.user, newExperienceToAdd));
+            //this.resetState();
         },
             err => alert("An error has occured when uploading your document to ipfs (ERR: " + err + ")")
         );
     }
-
-    // addDocument() {
-
-    // }
 
     uploadToIpfs(documentToUpload) {
         return new Promise((resolve, reject) => {
@@ -254,7 +254,7 @@ class NewExperience extends React.Component {
         });
     }
 
-    resetState() {
+   /* resetState() {
         this.setState({
             newExperience: false,
             from: '',
@@ -267,7 +267,7 @@ class NewExperience extends React.Component {
             confidenceIndex: 80,
             uploadedDocument: '',
         });
-    }
+    }*/
 
     render() {
         const competencyTags = this.state.competencies.map((competency, index) =>
@@ -435,4 +435,4 @@ class NewExperience extends React.Component {
     }
 }
 
-export default withStyles(styles)(NewExperience);
+export default compose(withStyles(styles), connect())(NewExperience);

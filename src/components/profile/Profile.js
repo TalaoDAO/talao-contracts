@@ -11,10 +11,10 @@ import Collapse from '@material-ui/core/Collapse';
 import MailIcon from '@material-ui/icons/Mail';
 import PhoneIcon from '@material-ui/icons/Phone';
 import BlurOnIcon from '@material-ui/icons/BlurOn';
-import FreelancerService from '../../services/FreelancerService';
 import classnames from 'classnames';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 import Media from "react-media";
+const Loading = require('react-loading-animation');
 
 const styles = theme => ({
   container: {
@@ -83,48 +83,38 @@ class Profile extends React.Component {
 
   constructor() {
     super();
-    this.free = FreelancerService.getFreelancer();
     this.state = {
-      freelancer: this.free,
       expanded: false
     }
   }
 
-  componentDidMount() {
-    this.free.addListener('FreeDataChanged', this.handleEvents, this);
-  }
-
-  componentWillUnmount() {
-    this.free.removeListener('FreeDataChanged', this.handleEvents, this);
-  }
-
-  handleEvents = () => {
-    this.setState({ freelancer: this.free });
-    this.forceUpdate();
-  };
-
   handleExpandClick = () => this.setState({ expanded: !this.state.expanded });
 
   render() {
+    if (!this.props.user) {
+      return (<Loading />)
+    } else if (this.props.user.freelancerDatas === null) {
+      return (<div></div>)
+    }
     return (
       <Card>
         <CardContent>
           <div className={this.props.classes.container}>
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
-                <div className={this.props.classes.confidenceIndex}>{this.state.freelancer.confidenceIndex}</div>
+                <div className={this.props.classes.confidenceIndex}>{this.props.user.freelancerDatas.confidenceIndex}</div>
               </div>
               <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
             <div className={this.props.classes.profileContainer}>
               <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>
-                {this.state.freelancer.firstName} {this.state.freelancer.lastName}
+                {this.props.user.freelancerDatas.firstName} {this.props.user.freelancerDatas.lastName}
               </Typography>
               <Typography variant="subheading" component="h2" className={this.props.classes.title}>
-                {this.state.freelancer.title}
+                {this.props.user.freelancerDatas.title}
               </Typography>
               <Typography>
-                {this.state.freelancer.description}
+                {this.props.user.freelancerDatas.description}
               </Typography>
             </div>
             <div className={this.props.classes.actionsContainer}>
@@ -147,13 +137,13 @@ class Profile extends React.Component {
               return (
                 <CardContent>
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <MailIcon />&nbsp;{this.state.freelancer.email}<br />
+                    <MailIcon />&nbsp;{this.props.user.freelancerDatas.email}<br />
                   </Typography>
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <PhoneIcon />&nbsp;{this.state.freelancer.phone}<br />
+                    <PhoneIcon />&nbsp;{this.props.user.freelancerDatas.phone}<br />
                   </Typography>
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <BlurOnIcon />&nbsp;{this.state.freelancer.ethereumAddress}
+                    <BlurOnIcon />&nbsp;{this.props.user.freelancerDatas.ethereumAddress}
                   </Typography>
                 </CardContent>
               )

@@ -1,12 +1,15 @@
 import React from 'react';
-import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
 import { withStyles, CardContent } from '@material-ui/core';
-import { TextField, Grid, CircularProgress } from '@material-ui/core';
+import { TextField, Grid } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import { constants } from '../../constants';
 import Collapse from '@material-ui/core/Collapse';
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
+import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault } from '../../actions/createVault';
+
 const Loading = require('react-loading-animation');
 
 const styles = theme => ({
@@ -97,356 +100,255 @@ const styles = theme => ({
         height: '100px',
         marginLeft: '30%',
     },
+    specialWidth: {
+        width: '250px'
+    }
 });
+
+//map the redux store the the props component
+const mapStateToProps = state => ({
+    user: state.userReducer.user,
+    step: state.createVaultReducer.step,
+    accessPrice: state.createVaultReducer.accessPrice,
+    firstName: state.createVaultReducer.firstName,
+    lastName: state.createVaultReducer.lastName,
+    title: state.createVaultReducer.title,
+    description: state.createVaultReducer.description,
+    mail: state.createVaultReducer.mail,
+    phone: state.createVaultReducer.phone,
+    vaultMaxAccessPrice: state.createVaultReducer.vaultMaxAccessPrice,
+    accessPriceError: state.createVaultReducer.accessPriceError,
+    isAccessPriceSet: state.createVaultReducer.isAccessPriceSet,
+    maxAccessPricePlaceholder: state.createVaultReducer.maxAccessPricePlaceholder,
+    loading: state.createVaultReducer.loading,
+    firstNameError: state.createVaultReducer.firstNameError,
+    firstNameEmpty: state.createVaultReducer.firstNameEmpty,
+    lastNameError: state.createVaultReducer.lastNameError,
+    lastNameEmpty: state.createVaultReducer.lastNameEmpty,
+    titleError: state.createVaultReducer.titleError,
+    titleEmpty: state.createVaultReducer.titleEmpty,
+    mailError: state.createVaultReducer.mailError,
+    mailEmpty: state.createVaultReducer.mailEmpty,
+    phoneError: state.createVaultReducer.phoneError,
+    phoneEmpty: state.createVaultReducer.phoneEmpty,
+    helperTextTooLong: state.createVaultReducer.helperTextTooLong,
+    helperIncorrectMail: state.createVaultReducer.helperIncorrectMail,
+    helperIncorrectPhoneNumber: state.createVaultReducer.helperIncorrectPhoneNumber,
+    helperTextEmpty: state.createVaultReducer.helperTextEmpty,
+    redirectTo: state.createVaultReducer.redirectTo
+  });
+
 
 class VaultCreation extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.free = FreelancerService.getFreelancer();
-        this.state = {
-            isWaiting: false,
-            priceWaiting: false,
-            isAccessPriceSet: false,
-            step: 0,
-            accessPrice: '',
-            firstName: '',
-            lastName: '',
-            title: '',
-            description: '',
-            mail: '',
-            phone: '',
-            tokenSymbol: '',
-            vaultDeposit: 0,
-
-            helperAccessPriceNotValid: '',
-            helperTextTooLong: 'Maximum length: 30 characters',
-            helperIncorrectMail: 'This is not a valid email address',
-            helperIncorrectPhoneNumber: 'This is not a valid phone number',
-        };
-
-        this.nextStep = this.nextStep.bind(this);
-        this.submit = this.submit.bind(this);
-
-        this.tokenContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
-            process.env.REACT_APP_TALAOTOKEN_ADDRESS
-        );
-
-        this.freelancerContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
-            process.env.REACT_APP_FREELANCER_ADDRESS
-        );
-
-        this.vaultFactoryContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
-            process.env.REACT_APP_VAULTFACTORY_ADDRESS
-        );
-    }
-
+    //check if the action ask for a redirection or init the vault if the user is loaded
     componentDidMount() {
-
-        if (this.free.isVaultCreated) {
-            this.props.history.push({pathname: '/Homepage'});
+        if (this.props.redirectTo) {
+            this.props.history.push(this.props.redirectTo);
         }
-
-        // Get token symbol.
-        this.tokenContract.methods.symbol().call((err, symbol) => {
-            if (err) console.error(err);
-            else {
-                this.setState({
-                    tokenSymbol: symbol
-                });
-            }
-        });
-
-        // Get vault deposit.
-        this.tokenContract.methods.vaultDeposit().call((err, vaultDepositWei) => {
-            if (err) console.error(err);
-            else {
-                let vaultDeposit = window.web3.utils.fromWei(vaultDepositWei);
-                this.setState({
-                    vaultDeposit: vaultDeposit
-                });
-                this.setState({ helperAccessPriceNotValid: "your price should be between 0 (free) and " + this.state.vaultDeposit.toString() });
-            }
-        });
-
-        this.tokenContract.methods.data(this.free.freelancerAddress).call().then(info => {
-            let price = window.web3.utils.fromWei(info.accessPrice);
-            if (parseInt(price, 0) !== 0) {       
-                this.setState({ isAccessPriceSet: true })
-                this.setState({ step: this.state.step + 1 });
-                this.setState({ accessPrice: price });
-            }
-        })
+        else if (this.props.user) {
+            this.props.dispatch(initVaultCreation(this.props.user));
+        }
     }
-
-    handleAccessPriceChange = event => {
-        this.setState({ accessPrice: event.target.value });
-    }
-
-    handleFirstNameChange = event => {
-        this.setState({ firstName: event.target.value });
-    }
-
-    handleLastNameChange = event => {
-        this.setState({ lastName: event.target.value });
-    }
-
-    handleTitleChange = event => {
-        this.setState({ title: event.target.value });
-    }
-
-    handleDescriptionChange = event => {
-        this.setState({ description: event.target.value });
-    }
-
-    handleMailChange = event => {
-        this.setState({ mail: event.target.value });
-    }
-
-    handlePhoneChange = event => {
-        this.setState({ phone: event.target.value });
-    }
-
-    goToStep(number) {
-        if (this.state.step === 0 && (!this.isAccessPriceCorrect() || !this.state.isAccessPriceSet)) return;
-        this.setState({
-            step: number,
-        })
-    }
-
-    nextStep() {
-        if (this.state.step === 0 && !this.isAccessPriceCorrect()) return;
-        this.setState({ priceWaiting: true });
-        let tokens_wei = window.web3.utils.toWei(this.state.accessPrice);
-        this.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: window.account }
-        ).then(() => {
-            this.setState({ priceWaiting: false })
-            this.setState({ isAccessPriceSet: true })
-            this.setState({
-                step: this.state.step + 1,
-            });
-        }).catch((err) => { 
-            console.log('Erreur metamask : ' + err)
-            this.setState({ priceWaiting: false })
-        });
-    }
-
-    isAccessPriceCorrect() {
-        return (
-            this.state.accessPrice >= 0
-            && this.state.accessPrice <= 10
-            && this.state.accessPrice % 1 === 0
-            && this.state.accessPrice !== ''
-        );
-    }
-
-    isTextLimitRespected(text) {
-        return text.length < 30;
-    }
-
-    isValidMail(mail) {
-        var mailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return mail.match(mailRegex);
-    }
-
-    isValidPhoneNumber(phoneNumber) {
-        var phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im;
-        return phoneNumber.match(phoneRegex);
-    }
-
-    canSubmit() {
-        return (
-            this.isValidPhoneNumber(this.state.phone) &&
-            this.isValidMail(this.state.mail) &&
-            this.isTextLimitRespected(this.state.firstName) &&
-            this.isTextLimitRespected(this.state.lastName) &&
-            this.isTextLimitRespected(this.state.title) &&
-            this.state.firstName.length > 0 &&
-            this.state.lastName.length > 0 &&
-            this.state.title.length > 0
-        );
-    }
-
-    submit() {
-        if(!this.canSubmit()) return;
-        this.setState({ isWaiting: true });
-        //uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description
-        let price = this.state.accessPrice;
-        let firstName = window.web3.utils.fromAscii(this.state.firstName);
-        let lastname = window.web3.utils.fromAscii(this.state.lastName);
-        let phone = window.web3.utils.fromAscii(this.state.phone);
-        let email = window.web3.utils.fromAscii(this.state.mail);
-        let title = window.web3.utils.fromAscii(this.state.title);
-        let desc = this.state.description
-        this.vaultFactoryContract.methods.CreateVaultContract(price, firstName, lastname, phone, email, title, desc).send(
-            {
-                from: window.account
-            })
-            .on('error', error => {
-                alert("An error has occured when creating your vault (ERR: " + error + ")");
-                this.setState({ isWaiting: false });
-                return;
-            }).then(result => {
-                this.free.initFreelancer(window.account);
-                this.setState({ isWaiting: false });
-                this.props.history.push('/chronology');
-            });
-    }
-
 
     render() {
-        if (this.state.isWaiting) return (<Loading />);
+        const { 
+            user,
+            step, 
+            accessPrice, 
+            firstName, 
+            lastName, 
+            title, 
+            description, 
+            mail, 
+            phone, 
+            vaultMaxAccessPrice, 
+            accessPriceError, 
+            maxAccessPricePlaceholder, 
+            loading, 
+            isAccessPriceSet, 
+            firstNameError, 
+            firstNameEmpty,
+            lastNameError, 
+            lastNameEmpty,
+            titleError, 
+            titleEmpty,
+            phoneError, 
+            mailError,
+            helperTextTooLong,
+            helperIncorrectMail,
+            helperIncorrectPhoneNumber,
+            helperTextEmpty
+        } = this.props;
+
+        //Loading user from parent AppConnected...
+        if (!this.props.user || loading) {
+            return (<Loading />)
+        }
+
+        let canSubmit = (!firstNameError && !firstNameEmpty && !lastNameError && !lastNameEmpty && !titleError && !titleEmpty && !mailError && !phoneError);
+
+        //Header display if the price is set
+        let stepHeader = (step === 0) ? 
+        <span >Set access price</span> :
+        <span> Price: {accessPrice > 1 ? accessPrice + ' tokens' : accessPrice + ' token'} </span>
+
+        //Block for access price
+        let accessPriceInputs = (step === 0) ?               
+        <div className={this.props.classes.content}>
+            <TextField
+                autoFocus={true}
+                required
+                type="number"
+                value={accessPrice}
+                error={accessPriceError}
+                helperText={maxAccessPricePlaceholder}
+                onChange={(event) => this.props.dispatch(accessPriceChange(event.target.value, vaultMaxAccessPrice))}
+                className={this.props.classes.specialWidth}
+                label="Access Price (Talao Token)"
+                id="accessPrice"
+            />
+            <div className={this.props.classes.wrapper}>
+                <Button onClick={() => this.props.dispatch(setAccessPrice(accessPrice, this.props.user))} className={!accessPriceError ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                    Next
+                </Button>
+            </div>
+        </div> 
+        : null;
+
+        //Bloc for vault form
+        let vaultInputs = (step === 1) ?
+        <div className={this.props.classes.content}>
+            <Grid container spacing={40}>
+                <form className={this.props.classes.container} noValidate autoComplete="off">
+                    <Grid item lg={2} xs={12}>
+                        <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
+                    </Grid>
+                    <Grid item lg={3} xs={12}>
+                        <TextField
+                            required
+                            type="text"
+                            value={firstName}
+                            error={firstNameError || firstNameEmpty}
+                            helperText={(!firstNameError && !firstNameEmpty) ? '' : (firstNameError) ? helperTextTooLong : helperTextEmpty}
+                            onChange={(event) => this.props.dispatch(setVaultInput('firstName', event.target.value))}
+                            className={this.props.classes.textField}
+                            label="First name"
+                            id="firstName"
+                        />
+                    </Grid>
+                    <Grid item lg={3} xs={12}>
+                        <TextField
+                            required
+                            type="text"
+                            value={lastName}
+                            error={lastNameError || lastNameEmpty}
+                            helperText={(!lastNameError && !lastNameEmpty) ? '' : (lastNameError) ? helperTextTooLong : helperTextEmpty}
+                            onChange={(event) => this.props.dispatch(setVaultInput('lastName', event.target.value))}
+                            className={this.props.classes.textField}
+                            label="Last name"
+                            id="lastName"
+                        />
+                    </Grid>
+                    <Grid item lg={4}></Grid>
+                    <Grid item lg={2}></Grid>
+                    <Grid item lg={3} xs={12}>
+                        <TextField
+                            required
+                            type="text"
+                            value={title}
+                            error={titleError || titleEmpty}
+                            helperText={(!titleError && !titleEmpty) ? '' : (titleError) ? helperTextTooLong : helperTextEmpty}
+                            onChange={(event) => this.props.dispatch(setVaultInput('title', event.target.value))}
+                            className={this.props.classes.textField}
+                            label="Title"
+                            id="title"
+                        />
+                    </Grid>
+                    <Grid item lg={7}></Grid>
+                    <Grid item lg={2}></Grid>
+                    <Grid item lg={8} xs={12}>
+                        <TextField
+                            type="text"
+                            multiline
+                            rows="4"
+                            value={description}
+                            onChange={(event) => this.props.dispatch(setVaultInput('description', event.target.value))}
+                            className={this.props.classes.textField}
+                            label="Description"
+                            id="description"
+                        />
+                    </Grid>
+                    <Grid item lg={2}></Grid>
+                    <Grid item lg={2}></Grid>
+                    <Grid item lg={3} xs={12}>
+                        <TextField
+                            required
+                            type="email"
+                            value={mail}
+                            error={mailError}
+                            helperText={!mailError ? '' : helperIncorrectMail}
+                            onChange={(event) => this.props.dispatch(setVaultInput('mail', event.target.value))}
+                            className={this.props.classes.textField}
+                            label="Email"
+                            id="email"
+                        />
+                    </Grid>
+                    <Grid item lg={7}></Grid>
+                    <Grid item lg={2}></Grid>
+                    <Grid item lg={3} xs={12}>
+                        <TextField
+                            required
+                            type="tel"
+                            value={phone}
+                            error={phoneError}
+                            helperText={!phoneError ? '' : helperIncorrectPhoneNumber}
+                            onChange={(event) => this.props.dispatch(setVaultInput('phone', event.target.value))}
+                            className={this.props.classes.textField}
+                            label="Phone number"
+                            id="phoneNumber"
+                        />
+                    </Grid>
+                    <Grid item lg={7}></Grid>
+                    <Grid item lg={2} xs={12}>
+                        <Button onClick={() => canSubmit && this.props.dispatch(submitVault(user, accessPrice, firstName, lastName, title, description, phone, mail))} disabled={!canSubmit} className={canSubmit ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                            Create
+                        </Button>
+                    </Grid>
+                </form>
+            </Grid>
+        </div>
+        : null
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
                     <div>
-                        <div onClick={() => this.goToStep(0)} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["accent2"], color: constants.colors["textAccent2"] }}>
+                        <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["accent2"], color: constants.colors["textAccent2"] }}>
                             <span style={{ fontSize: '25px' }}>1</span>
                         </div>
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
-                            <div onClick={() => this.goToStep(0)} className={this.props.classes.timeContainer}>
-                                <span style={{ display: this.state.step === 0 ? 'inline' : 'none'}}>Set access price</span>
-                                <span style={{ display: this.state.step > 0 ? 'inline' : 'none'}}>Price: {this.state.accessPrice > 1 ? this.state.accessPrice + ' tokens' : this.state.accessPrice + ' token'} </span>
+                            <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.timeContainer}>
+                                {stepHeader}
                             </div>
                         </div>
                     </div>
-                    <Collapse in={this.state.step === 0} timeout="auto">
-                        <div style={{ display: this.state.step === 0 ? 'inline-block' : 'none' }} className={this.props.classes.content}>
-                            <TextField
-                                autoFocus={true}
-                                required
-                                type="number"
-                                value={this.state.accessPrice}
-                                error={!this.isAccessPriceCorrect()}
-                                helperText={this.state.helperAccessPriceNotValid}
-                                onChange={this.handleAccessPriceChange.bind(this)}
-                                className={this.props.classes.textField}
-                                label="Access Price (Talao Token)"
-                                id="accessPrice"
-                            />
-                            <div className={this.props.classes.wrapper}>
-                                <Button onClick={this.nextStep} disabled={this.state.priceWaiting} className={this.isAccessPriceCorrect() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                                    {this.state.priceWaiting ? <CircularProgress className={this.props.classes.progress} size={30}/> : 'Next'}
-                                </Button>
-                            </div>
-                        </div>
+                    <Collapse in={step === 0} timeout="auto">
+                        {accessPriceInputs}
                     </Collapse>
                     <div>
-                        <div onClick={() => this.goToStep(1)} className={this.props.classes.indicator} style={{ backgroundColor: this.state.isAccessPriceSet ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
+                        <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: isAccessPriceSet ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
                             <span style={{ fontSize: '25px' }}>2</span>
                         </div>
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
-                            <div onClick={() => this.goToStep(1)} className={this.props.classes.timeContainer}>
+                            <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.timeContainer}>
                                 Create Vault
                             </div>
                         </div>
                     </div>
-                    <Collapse in={this.state.step === 1} timeout="auto">
-                        <div style={{ display: this.state.step === 1 ? 'inline-block' : 'none' }} className={this.props.classes.content}>
-                            <Grid container spacing={40}>
-                                <form className={this.props.classes.container} noValidate autoComplete="off">
-                                    <Grid item lg={2} xs={12}>
-                                        <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
-                                    </Grid>
-                                    <Grid item lg={3} xs={12}>
-                                        <TextField
-                                            required
-                                            type="text"
-                                            value={this.state.firstName}
-                                            error={!this.isTextLimitRespected(this.state.firstName)}
-                                            helperText={this.isTextLimitRespected(this.state.firstName) ? '' : this.state.helperTextTooLong}
-                                            onChange={this.handleFirstNameChange}
-                                            className={this.props.classes.textField}
-                                            label="First name"
-                                            id="firstName"
-                                        />
-                                    </Grid>
-                                    <Grid item lg={3} xs={12}>
-                                        <TextField
-                                            required
-                                            type="text"
-                                            value={this.state.lastName}
-                                            error={!this.isTextLimitRespected(this.state.lastName)}
-                                            helperText={this.isTextLimitRespected(this.state.lastName) ? '' : this.state.helperTextTooLong}
-                                            onChange={this.handleLastNameChange}
-                                            className={this.props.classes.textField}
-                                            label="Last name"
-                                            id="lastName"
-                                        />
-                                    </Grid>
-                                    <Grid item lg={4}></Grid>
-                                    <Grid item lg={2}></Grid>
-                                    <Grid item lg={3} xs={12}>
-                                        <TextField
-                                            required
-                                            type="text"
-                                            value={this.state.title}
-                                            error={!this.isTextLimitRespected(this.state.title)}
-                                            helperText={this.isTextLimitRespected(this.state.title) ? '' : this.state.helperTextTooLong}
-                                            onChange={this.handleTitleChange}
-                                            className={this.props.classes.textField}
-                                            label="Title"
-                                            id="title"
-                                        />
-                                    </Grid>
-                                    <Grid item lg={7}></Grid>
-                                    <Grid item lg={2}></Grid>
-                                    <Grid item lg={8} xs={12}>
-                                        <TextField
-                                            type="text"
-                                            multiline
-                                            rows="4"
-                                            value={this.state.description}
-                                            onChange={this.handleDescriptionChange}
-                                            className={this.props.classes.textField}
-                                            label="Description"
-                                            id="description"
-                                        />
-                                    </Grid>
-                                    <Grid item lg={2}></Grid>
-                                    <Grid item lg={2}></Grid>
-                                    <Grid item lg={3} xs={12}>
-                                        <TextField
-                                            required
-                                            type="email"
-                                            value={this.state.mail}
-                                            error={!this.isValidMail(this.state.mail)}
-                                            helperText={this.isValidMail(this.state.mail) ? '' : this.state.helperIncorrectMail}
-                                            onChange={this.handleMailChange}
-                                            className={this.props.classes.textField}
-                                            label="Email"
-                                            id="email"
-                                        />
-                                    </Grid>
-                                    <Grid item lg={7}></Grid>
-                                    <Grid item lg={2}></Grid>
-                                    <Grid item lg={3} xs={12}>
-                                        <TextField
-                                            required
-                                            type="tel"
-                                            value={this.state.phone}
-                                            error={!this.isValidPhoneNumber(this.state.phone)}
-                                            helperText={this.isValidPhoneNumber(this.state.phone) ? '' : this.state.helperIncorrectPhoneNumber}
-                                            onChange={this.handlePhoneChange}
-                                            className={this.props.classes.textField}
-                                            label="Phone number"
-                                            id="phoneNumber"
-                                        />
-                                    </Grid>
-                                    <Grid item lg={7}></Grid>
-                                    <Grid item lg={2} xs={12}>
-                                        <Button onClick={this.submit} className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                                            Create
-                                        </Button>
-                                    </Grid>
-                                </form>
-                            </Grid>
-                        </div>
+                    <Collapse in={step === 1} timeout="auto">
+                        {vaultInputs}
                     </Collapse>
                 </CardContent>
             </Card>
@@ -454,4 +356,4 @@ class VaultCreation extends React.Component {
     }
 }
 
-export default withStyles(styles)(VaultCreation);
+export default compose(withStyles(styles), connect(mapStateToProps))(VaultCreation);

@@ -6,6 +6,8 @@ import Button from 'material-ui/Button';
 import Grid from '@material-ui/core/Grid';
 import { Link } from 'react-router-dom';
 
+const Loading = require('react-loading-animation');
+
 const styles = theme => ({
     certificatButton: {
         margin: '20px',
@@ -55,24 +57,10 @@ const styles = theme => ({
 class Homepage extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            freelancerAddress: '',
-            errorText: '',
-        }
 
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.vaultFactoryContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
-            process.env.REACT_APP_VAULTFACTORY_ADDRESS
-        );
-        this.talaoContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
-            process.env.REACT_APP_TALAOTOKEN_ADDRESS
-        );
-        this.freelancerContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
-            process.env.REACT_APP_FREELANCER_ADDRESS
-        );
+        this.state = {
+            errorText: ''
+        }
     }
 
     handleSubmit = event => {
@@ -119,8 +107,14 @@ class Homepage extends React.Component {
     }
 
     render() {
+        //Loading user...
+        if (!this.props.user) {
+            return (<Loading />)
+        }
+        
+        //If the user is a freelancer he can't create a new vault
         let showCreateYourVaultBlock;
-        if (!this.props.freelancer.isVaultCreated) {
+        if (this.props.user.freelancerDatas === null) {
             showCreateYourVaultBlock = 
             (<Grid item xs={12} lg={6}>
                 <Card className={this.props.classes.card}>
@@ -136,7 +130,7 @@ class Homepage extends React.Component {
                     </CardContent>
                 </Card>
             </Grid>)
-          }
+        }
         return (
             <Grid container className={this.props.classes.container}>
                 <Grid item xs={12} lg={6}>

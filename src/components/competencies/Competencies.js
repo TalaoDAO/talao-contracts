@@ -1,10 +1,13 @@
 import React from 'react';
 import Competency from '../competency/Competency';
 import { withStyles } from '@material-ui/core/styles';
-import FreelancerService from '../../services/FreelancerService';
 import { Grid } from '@material-ui/core';
 import Profile from '../profile/Profile';
-import queryString from 'query-string'
+//import queryString from 'query-string'
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+
+const Loading = require('react-loading-animation');
 
 const styles = {
     competenciesContainer: {
@@ -81,29 +84,7 @@ const styles = {
 
 class Competencies extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.free = FreelancerService.getFreelancer();
-
-        this.state = {
-            competencies: this.free.getCompetencies(),
-        };
-
-        this.vaultFactoryContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
-            process.env.REACT_APP_VAULTFACTORY_ADDRESS
-        );
-        this.talaoContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
-            process.env.REACT_APP_TALAOTOKEN_ADDRESS
-        );
-        this.freelancerContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
-            process.env.REACT_APP_FREELANCER_ADDRESS
-        );
-    }
-
-    componentWillMount() {
+    /*componentWillMount() {
         //get the freelancer address from the url
         this.freelancerAddress = queryString.extract(this.props.location.search);
 
@@ -146,68 +127,57 @@ class Competencies extends React.Component {
         } else {
             this.props.history.push({pathname: '/homepage'});
         }
-    }
-    componentDidMount() {
-        this.free.addListener('ExperienceChanged', this.handleEvents, this);
-    }
-
-    componentWillUnmount() {
-        this.free.removeListener('ExperienceChanged', this.handleEvents, this);
-        this.isCancelled = true;
-    }
-
-
-    handleEvents = () => {
-        !this.isCancelled && this.setState({
-            competencies: this.free.getCompetencies()
-        });
-        if (!this.isCancelled) this.forceUpdate();
-    };
+    }*/
 
     render() {
-        const oneCompetencyFocused = (this.props.match.params.competencyName);
-        const competencies = this.state.competencies
+    const { user } = this.props;
 
-            // Compute confidence index of each competency
-            .map((competency) => ({
-                competency: competency,
-                confidenceIndex: competency.getConfidenceIndex(),
-            }))
+    if (!user) {
+        return (<Loading />);
+    }
+    
+    const oneCompetencyFocused = (this.props.match.params.competencyName);
+    const competencies = user.freelancerDatas.competencies
+        // Compute confidence index of each competency
+        .map((competency) => ({
+            competency: competency,
+            confidenceIndex: competency.getConfidenceIndex(),
+        }))
 
-            // Sort descending by confidence index and let the education at the end
-            .sort((extendedCompetencyA, extendedCompetencyB) => {
-                if (extendedCompetencyA.competency.name === "Education") return true;
-                if (extendedCompetencyB.competency.name === "Education") return false;
-                return extendedCompetencyA.confidenceIndex < extendedCompetencyB.confidenceIndex;
-            })
+        // Sort descending by confidence index and let the education at the end
+        .sort((extendedCompetencyA, extendedCompetencyB) => {
+            if (extendedCompetencyA.competency.name === "Education") return true;
+            if (extendedCompetencyB.competency.name === "Education") return false;
+            return extendedCompetencyA.confidenceIndex < extendedCompetencyB.confidenceIndex;
+        })
 
-            // Generate components
-            .map((extendedCompetency, index) => {
-                const thisCompetencyFocused = extendedCompetency.competency.name === this.props.match.params.competencyName;
-                let appliedClasses = [this.props.classes.competencyContainer];
-                let layout = 'normal';
-                if (thisCompetencyFocused) {
-                    layout = 'focused';
-                    appliedClasses.push(this.props.classes.competencyContainerFocused);
-                }
-                else if (oneCompetencyFocused) {
-                    layout = 'hidden';
-                    appliedClasses.push(this.props.classes.competencyContainerHidden);
-                }
-                return (
-                    <div key={index} className={appliedClasses.join(' ')}>
-                        <Competency
-                            competency={extendedCompetency.competency}
-                            confidenceIndex={extendedCompetency.confidenceIndex}
-                            layout={layout}>
-                        </Competency>
-                    </div>
-                );
-            });
+        // Generate components
+        .map((extendedCompetency, index) => {
+            const thisCompetencyFocused = extendedCompetency.competency.name === this.props.match.params.competencyName;
+            let appliedClasses = [this.props.classes.competencyContainer];
+            let layout = 'normal';
+            if (thisCompetencyFocused) {
+                layout = 'focused';
+                appliedClasses.push(this.props.classes.competencyContainerFocused);
+            }
+            else if (oneCompetencyFocused) {
+                layout = 'hidden';
+                appliedClasses.push(this.props.classes.competencyContainerHidden);
+            }
+            return (
+                <div key={index} className={appliedClasses.join(' ')}>
+                    <Competency
+                        competency={extendedCompetency.competency}
+                        confidenceIndex={extendedCompetency.confidenceIndex}
+                        layout={layout}>
+                    </Competency>
+                </div>
+            );
+        });
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <Profile />
+                    <Profile user={user}/>
                 </Grid>
                 <Grid item xs={12}>
                     <div className={this.props.classes.competenciesContainer}>
@@ -220,4 +190,10 @@ class Competencies extends React.Component {
     }
 }
 
-export default withStyles(styles)(Competencies);
+const mapStateToProps = state => ({
+    user: state.userReducer.user,
+    loading: state.userReducer.loading,
+    error: state.userReducer.error
+  });
+
+export default compose(withStyles(styles), connect(mapStateToProps))(Competencies);

@@ -1,12 +1,13 @@
 import React from 'react';
 import Experience from '../experience/Experience';
-import FreelancerService from '../../services/FreelancerService';
 import Card from '@material-ui/core/Card';
 import ColorService from '../../services/ColorService';
 import { withStyles, CardContent, Grid } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
 import Profile from '../profile/Profile';
-import queryString from 'query-string'
+//import queryString from 'query-string'
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
 
 const Loading = require('react-loading-animation');
 
@@ -18,36 +19,12 @@ const styles = {
 }
 
 class Chronology extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.free = FreelancerService.getFreelancer();
-
-        this.state = {
-            experiences: this.free.experiences,
-            isWaiting: true
-        };
-
-        this.vaultFactoryContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_VAULTFACTORY_ABI),
-            process.env.REACT_APP_VAULTFACTORY_ADDRESS
-        );
-        this.talaoContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
-            process.env.REACT_APP_TALAOTOKEN_ADDRESS
-        );
-        this.freelancerContract = new window.web3.eth.Contract(
-            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
-            process.env.REACT_APP_FREELANCER_ADDRESS
-        );
-    }
-
+    
     componentWillMount() {
-        console.log('avant...');
-        //get the freelancer address from the url
-        this.freelancerAddress = queryString.extract(this.props.location.search);
 
-        //Check if this is the current user
+        //get the address from the url
+      //  this.urlAddress = queryString.extract(this.props.location.search);
+        /*//Check if this is the current user
         if((!this.freelancerAddress && this.free.isVaultCreated) || (this.freelancerAddress.toLowerCase() === window.account.toLowerCase() && this.free.isVaultCreated)) {
             this.free.initFreelancer(window.account);
 
@@ -88,31 +65,17 @@ class Chronology extends React.Component {
         } else {
             console.log('ok2');
             this.props.history.push({pathname: '/homepage'});
-        }
+        }*/
     }
-
-    componentDidMount() {
-        this.free.addListener('ExperienceChanged', this.handleEvents, this);
-    }
-
-    componentWillUnmount() {
-        this.free.removeListener('ExperienceChanged', this.handleEvents, this);
-        this.isCancelled = true;
-    }
-
-    handleEvents = () => {
-        this.free = FreelancerService.getFreelancer();
-        !this.isCancelled && this.setState({
-            experiences: this.free.experiences,
-            isWaiting: false,
-        });
-        if (!this.isCancelled) this.forceUpdate();
-    };
 
     render() {
-        if (this.state.experiences == null) return (<NewExperience />);
-        if (this.state.isWaiting) return (<Loading />);
-        const experiences = this.state.experiences//this.state.experiences
+        const { user } = this.props;
+        let experiences = null;
+        if (!this.props.user) {
+            return (<Loading />);
+        }
+        else {
+            experiences = user.freelancerDatas.experiences
             // Sort descending by date
             .sort((extendedExperienceA, extendedExperienceB) => {
                 return extendedExperienceA.from < extendedExperienceB.from;
@@ -125,6 +88,7 @@ class Chronology extends React.Component {
                 const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
                 return (
                     <Experience
+                        user={user}
                         value={extendedExperience}
                         key={extendedExperience.title}
                         color={backgroundColorString}
@@ -133,16 +97,33 @@ class Chronology extends React.Component {
                     />
                 );
             });
-
+        }
+       const MyProfileComponent = (props) => {
+            return (
+            <Profile 
+                user={user}
+                {...props}
+            />
+            );
+        }
+        const MyNewExperienceComponent = (props) => {
+            return (
+            <NewExperience 
+                user={user}
+                {...props}
+            />
+            );
+        }
+        
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <Profile />
+                    <MyProfileComponent />
                 </Grid>
                 <Grid item xs={12}>
                     <Card className={this.props.classes.card}>
                         <CardContent>
-                            {this.free.isFreelancer() ? <NewExperience /> : null}
+                            {user.freelancerDatas !== null ? <MyNewExperienceComponent /> : null}
                             {experiences}
                         </CardContent>
                     </Card>
@@ -152,4 +133,10 @@ class Chronology extends React.Component {
     }
 }
 
-export default withStyles(styles)(Chronology);
+const mapStateToProps = state => ({
+    user: state.userReducer.user,
+    loading: state.userReducer.loading,
+    error: state.userReducer.error
+  });
+
+export default compose(withStyles(styles), connect(mapStateToProps))(Chronology);

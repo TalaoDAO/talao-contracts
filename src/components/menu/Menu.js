@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 import logoTalao from '../../images/logo-talao.png';
-import FreelancerService from '../../services/FreelancerService';
+
+const Loading = require('react-loading-animation');
 
 const styles = theme => ({
     root: {
@@ -48,33 +49,49 @@ const styles = theme => ({
 });
 
 class Menu extends React.Component {
-    constructor(props) {
-        super(props);
 
-        this.state = {
-            currentPath: '/homepage'
-        }
-        this.free = FreelancerService.getFreelancer();
+    //No redux here for now...
+    constructor() {
+        super();
+        this.state = { currentMenu: window.location.pathname }
+        this.handleMenuChange = this.handleMenuChange.bind(this);
     }
 
-    componentDidMount() {
-        this.free.addListener('FreeDataChanged', this.handleEvents, this);  
+    handleMenuChange(location) {
+        this.setState({currentMenu: location})
     }
-
-    componentWillUnmount() {
-        this.free.removeListener('FreeDataChanged', this.handleEvents, this);
-    }
-
-    handleEvents = () => {
-        this.free = FreelancerService.getFreelancer();
-        this.forceUpdate();
-    };
 
     render() {
+        //Loading user from parent AppConnected...
+        if (!this.props.user) {
+            return (<Loading />)
+        }
+
+        let showFreelancerMenu = (this.props.user.freelancerDatas) ?
+            <div>
+                <Typography to="/">
+                <Link 
+                    onClick={() => this.handleMenuChange('/competencies')}
+                    className={this.state.currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                    to={"/competencies?" + this.props.user.ethAddress}
+                >
+                    Competencies
+                </Link>
+                </Typography>
+                <Typography to="/">
+                    <Link 
+                        onClick={() => this.handleMenuChange('/chronology')}
+                        className={this.state.currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                        to={"/chronology?" + this.props.user.ethAddress}
+                    >
+                        Chronology
+                    </Link>
+                </Typography> 
+            </div>  : null      
         return (
             <div className={this.props.classes.root}>
                 <div>
-                    <Link to="/homepage" onClick={this.props.updateMenu} >
+                    <Link to="/homepage" onClick={() => this.handleMenuChange('/homepage')} >
                         <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
                     </Link>
                 </div>
@@ -82,28 +99,18 @@ class Menu extends React.Component {
                     <div>
                     <Typography to="/">
                         <Link 
-                            onClick={this.props.updateMenu} 
-                            style={{display: this.free.isVaultCreated ? 'block' : 'none' }} 
-                            className={this.props.menuSelection === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to={"/competencies?" + this.free.freelancerAddress}
+                            onClick={() => this.handleMenuChange('/register')}
+                            className={this.state.currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                            to="/register"
                         >
-                            Competencies
+                            {this.props.user.freelancerDatas ? 'Update vault' : 'Create vault'}
                         </Link>
                     </Typography>
+                    {showFreelancerMenu}
                     <Typography to="/">
                         <Link 
-                            onClick={this.props.updateMenu} 
-                            style={{display: this.free.isVaultCreated ? 'block' : 'none' }} 
-                            className={this.props.menuSelection === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to={"/chronology" + this.free.freelancerAddress}
-                        >
-                            Chronology
-                        </Link>
-                    </Typography>
-                    <Typography to="/">
-                        <Link 
-                            onClick={this.props.updateMenu} 
-                            className={this.props.menuSelection === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                            onClick={() => this.handleMenuChange('/homepage')}
+                            className={this.state.currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                             to="/homepage"
                         >
                             Homepage
