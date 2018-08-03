@@ -3,9 +3,11 @@ import Competency from '../competency/Competency';
 import { withStyles } from '@material-ui/core/styles';
 import { Grid } from '@material-ui/core';
 import Profile from '../profile/Profile';
-//import queryString from 'query-string'
+import queryString from 'query-string'
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
+import { hasAccess } from '../../actions/guard';
+import { fetchFreelancer } from '../../actions/user';
 
 const Loading = require('react-loading-animation');
 
@@ -82,62 +84,42 @@ const styles = {
     },
 };
 
+const mapStateToProps = state => ({
+    loadingGuard: state.guardReducer.loading,   
+    guardCheck: state.guardReducer.guardCheck
+  });
+
 class Competencies extends React.Component {
 
-    /*componentWillMount() {
-        //get the freelancer address from the url
-        this.freelancerAddress = queryString.extract(this.props.location.search);
-
-        //Check if this is the current user
-        if((!this.freelancerAddress && this.free.isVaultCreated) || (this.freelancerAddress.toLowerCase() === window.account.toLowerCase() && this.free.isVaultCreated)) {
-            this.free.initFreelancer(window.account);
-
-        //we are looking for a freelancer 
-        } else if (this.freelancerAddress.toLowerCase() !== window.account.toLowerCase() && window.web3.utils.isAddress(this.freelancerAddress)) {
-
-            this.vaultFactoryContract.methods.FreelanceVault(this.freelancerAddress).call().then(vaultAddress => {
-                //The vault exist ??
-                if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                    // This client is a partner of the freelancer ??
-                    this.freelancerContract.methods.isPartner(this.freelancerAddress, window.account).call().then(isPartner => {
-                        // This client has already unlock the freelancer vault ??
-                        this.talaoContract.methods.hasVaultAccess(this.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
-                            //The vault price of the freelancer is 0 talao token ??
-                            this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
-                                let accessPriceIsZeroTalaoToken = (parseInt(window.web3.utils.fromWei(info.accessPrice), 10) === 0 ) ? true : false;
-                                if (hasAccessToFreelanceVault || isPartner || accessPriceIsZeroTalaoToken) {
-                                    this.free.initFreelancer(this.freelancerAddress);
-                                } else {
-                                    this.props.history.push({
-                                        pathname: '/unlockfreelancer',
-                                        search: this.freelancerAddress,
-                                        state: { address: this.freelancerAddress }
-                                    });
-                                }
-                            })
-                        }); 
-                    });
-                }
-                //No vault exist for this address
-                else {
-                    this.props.history.push({pathname: '/homepage'});
-                }
-            });
-        //Error
-        } else {
-            this.props.history.push({pathname: '/homepage'});
+    componentDidMount() {      
+        if (this.props.user && !this.props.guardCheck) {
+            this.props.dispatch(hasAccess(window.location.pathname.split('/')[1], queryString.extract(window.location.search), this.props.user, this.props.history));
         }
-    }*/
+    }
+
+    componentDidUpdate() {
+        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers) {
+            this.props.dispatch(fetchFreelancer(this.props.user, queryString.extract(window.location.search)));
+        }
+    }
 
     render() {
-    const { user } = this.props;
+    const { loadingGuard } = this.props;
 
-    if (!user) {
+    if (!this.props.user || loadingGuard) {
         return (<Loading />);
     }
-    
+    else {
+        if ((!this.props.user.freelancerDatas && !queryString.extract(window.location.search)) || (!this.props.user.searchedFreelancers && queryString.extract(window.location.search))) {
+            return (<Loading />)
+        }
+    }
+
+    //pick the current user or a searched freelancer
+    let freelancer = (queryString.extract(window.location.search)) ? this.props.user.searchedFreelancers : this.props.user.freelancerDatas;
+
     const oneCompetencyFocused = (this.props.match.params.competencyName);
-    const competencies = user.freelancerDatas.competencies
+    const competencies = freelancer.competencies
         // Compute confidence index of each competency
         .map((competency) => ({
             competency: competency,
@@ -177,7 +159,7 @@ class Competencies extends React.Component {
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <Profile user={user}/>
+                    <Profile freelancer={freelancer}/>
                 </Grid>
                 <Grid item xs={12}>
                     <div className={this.props.classes.competenciesContainer}>
@@ -189,11 +171,5 @@ class Competencies extends React.Component {
 
     }
 }
-
-const mapStateToProps = state => ({
-    user: state.userReducer.user,
-    loading: state.userReducer.loading,
-    error: state.userReducer.error
-  });
 
 export default compose(withStyles(styles), connect(mapStateToProps))(Competencies);

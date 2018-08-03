@@ -1,5 +1,6 @@
-import { transactionHash, transactionReceipt, transactionError } from '../actions/transactions'
+import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 import { fetchUser } from '../actions/user'
+import { changeMenu } from './menu';
 
 export const CREATE_VAULT_BEGIN       = 'CREATE_VAULT_BEGIN';
 export const INIT_VAULT_DEPOSIT       = 'INIT_VAULT_DEPOSIT';
@@ -13,6 +14,7 @@ export const CHANGE_DESCRIPTION       = 'CHANGE_DESCRIPTION';
 export const CHANGE_TITLE             = 'CHANGE_TITLE';
 export const CHANGE_MAIL              = 'CHANGE_MAIL';
 export const CHANGE_PHONE             = 'CHANGE_PHONE';
+export const RESET_REDIRECT           = 'RESET_REDIRECT';
 export const SET_ACCESS_PRICE_BEGIN   = 'SET_ACCESS_PRICE_BEGIN';
 export const SET_ACCESS_PRICE_SUCCESS = 'SET_ACCESS_PRICE_SUCCESS';
 export const SET_ACCESS_PRICE_ERROR   = 'SET_ACCESS_PRICE_ERROR';
@@ -23,6 +25,10 @@ export const TEXT_VALIDATOR_LENGTH    = 30;
 
 export const createVaultBegin = () => ({
     type: CREATE_VAULT_BEGIN
+});
+
+export const resetRedirect = () => ({
+    type: RESET_REDIRECT
 });
 
 export const submitVaultBegin = () => ({
@@ -141,9 +147,9 @@ export function initVaultCreation(user) {
     }
 }
 
-export function canSwitchStep(step, accessPrice, maxAccessPrice) {
+export function canSwitchStep(step, accessPrice, maxAccessPrice, isAccessPriceSet) {
     return dispatch => {
-        if (isAccessPriceCorrect(accessPrice, maxAccessPrice))
+        if (step === 0 || (isAccessPriceCorrect(accessPrice, maxAccessPrice) && isAccessPriceSet))
             dispatch(switchStep(step));
     }
 }
@@ -161,7 +167,8 @@ export function isAccessPriceCorrect(accessPrice, maxAccessPrice) {
 export function setAccessPrice(accessPrice, user) {
     return dispatch => {
         dispatch(setAccessPriceBegin());
-        let tokens_wei = window.web3.utils.toWei(accessPrice);
+        dispatch(transactionBegin())
+        let tokens_wei = window.web3.utils.toWei(accessPrice.toString());
         user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress }
         ).once('transactionHash', (hash) => { 
             dispatch(transactionHash(hash));
@@ -181,7 +188,9 @@ export function setAccessPrice(accessPrice, user) {
 
 export function submitVault(user, accessPrice, fName, lName, titl, description, pho, mail) {
     return dispatch => {
-        dispatch(submitVaultBegin())
+        dispatch(transactionBegin());
+        dispatch(submitVaultBegin());
+
         let firstName = window.web3.utils.fromAscii(fName);
         let lastname = window.web3.utils.fromAscii(lName);
         let phone = window.web3.utils.fromAscii(pho);
@@ -201,7 +210,8 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                 dispatch(transactionError(error));
             }).then(() => {
                 dispatch(submitVaultSuccess());
-                dispatch(fetchUser());
+                dispatch(changeMenu('/chronology'));
+                dispatch(fetchUser(user.ethAddress));
             }).catch((err) => { 
                 dispatch(submitVaultError(err));
             });

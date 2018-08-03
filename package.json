@@ -13,6 +13,7 @@
     "react-blockcerts": "^0.4.1",
     "react-confirm-alert": "^2.0.5",
     "react-dom": "^16.4.1",
+    "react-error-boundary": "^1.2.3",
     "react-loading-animation": "^1.4.0",
     "react-media": "^1.8.0",
     "react-redux": "^5.0.7",

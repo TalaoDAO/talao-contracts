@@ -10,15 +10,15 @@ import Chronology from './components/chronology/Chronology';
 import Grid from '@material-ui/core/Grid';
 import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
-/*import BottomNavigation from '@material-ui/core/BottomNavigation';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
-import StarIcon from '@material-ui/icons/Star';
-import ExploreIcon from '@material-ui/icons/Explore';
-import HomeIcon from '@material-ui/icons/Home';*/
-import { fetchUser } from './actions/user';
+import { fetchUser, logout, login } from './actions/user';
+import { resetTransaction } from './actions/transactions';
+import { guardRedirect } from './actions/guard';
 import { connect } from "react-redux";
 import React from 'react';
 import compose from 'recompose/compose';
+import Transaction from './components/transaction/Transaction';
+import TabBarMenu from './components/menu/TabBarMenu';
+import queryString from 'query-string'
 
 const Loading = require('react-loading-animation');
 const theme = createMuiTheme(constants.theme);
@@ -48,6 +48,16 @@ const styles = theme =>
     },
   });
 
+const mapStateToProps = state => ({
+    user: state.userReducer.user,
+    ethAddress: state.userReducer.ethAddress,
+    loading: state.userReducer.loading,
+    resetAccount: state.userReducer.resetAccount,
+    useAccount: state.userReducer.useAccount
+});
+
+let INIT_ONCE = false;
+
 class AppConnected extends React.Component {
 
   constructor() {
@@ -55,42 +65,51 @@ class AppConnected extends React.Component {
     setInterval(this.handleAddressChange, 2000);
   }
 
-  //No redux here to avoir action spamming every 2s
+  //No redux here to avoid action spamming every 2s
+  //Handle the logout / login
+  //We have no choice to check like that
+  //The library web3-react doesn't supply redux event to handle it
   handleAddressChange = () => {
     window.web3.eth.getAccounts(function (err, accounts) {
-      //First connection window.account is sometimes undefined so we check it
-      if(accounts[0] !== null && window.account === undefined) {
-        window.account = accounts[0];
-      }
-      //If log off to metamask, we return the wrapper
-      else if (accounts[0] === undefined) {
-        window.account = undefined;
-        this.forceUpdate();
-      }
-      //In case of account switch, we update the profile with the new account
-      else if(accounts[0].toUpperCase() !== window.account.toUpperCase()) {
-        window.account = accounts[0];
-        this.props.dispatch(fetchUser());
-        this.props.history.push({
-          pathname: '/'
-        });
-      }
-      if (err) {
-        console.log(err);
+      if (accounts[0] === undefined && window.account) {
+        window.account = null;
+        this.props.dispatch(logout());
+      } else if (accounts[0] && !window.account) {
+        this.props.dispatch(login(accounts[0]));
       }
     }.bind(this));
   }
-
-  //first fetch of the user
+  
+  //If no ethAddress, we init an empty user
+  //This action is trigger each time we first log in
+  //If the user has a wallet, this action is erase by the action 'RECEIVE ACCOUNT'
   componentDidMount() {
-    this.props.dispatch(fetchUser());
+    if (!this.props.ethAddress && !INIT_ONCE) {
+      let parameter = queryString.extract(window.location.search);
+      if (parameter && window.web3.utils.isAddress(parameter)) {
+        this.props.dispatch(guardRedirect(window.location.pathname + '?' + parameter))
+      }
+      this.props.dispatch(fetchUser());
+      INIT_ONCE = true;
+      window.account = null;
+    }
+  }
+
+  //get the first action 'RECEIVE ACCOUNT' and set this.props.ethAddress
+  //each action 'RECEIVE ACCOUNT' OR 'CHANGE_ACCOUNT' trigger this.props.resetAccount and the user is re fetch
+  //if the first init isn't done, we init the user
+  //this.props.resetAccount handle a change beetween accounts, so we re fetch the new user
+  componentDidUpdate() {
+    if ((this.props.ethAddress && !INIT_ONCE) || this.props.resetAccount) {
+      this.props.dispatch(resetTransaction());
+      this.props.dispatch(fetchUser(this.props.ethAddress));
+      INIT_ONCE = true;
+      window.account = this.props.ethAddress;
+    }
   }
 
   render() {
-    const { error, loading, user } = this.props;
-    if (error) {
-      return <div>Error! {error.message}</div>;
-    }
+    const { loading, user} = this.props;
     if (loading) {
       return <Loading />;
     }
@@ -127,13 +146,22 @@ class AppConnected extends React.Component {
         />
       );
     }
+    const MyUnlockFreelancerComponent = (props) => {
+      return (
+        <UnlockFreelancer
+          user={user}
+          {...props}
+        />
+      );
+    }
+
     return (
       <Router>
         <MuiThemeProvider theme={theme}>
           <Grid container className={this.props.classes.root}>
             <Hidden smDown>
               <Grid item xs={2}>
-              <Menu user={user}/>
+                <Menu user={user}/>
               </Grid>
             </Hidden>
             <Grid container item xs={12} md={10} className={this.props.classes.content}>
@@ -142,28 +170,20 @@ class AppConnected extends React.Component {
                   <Grid item xs={12}>
                     <Switch>
                       <Route exact path="/chronology" component={MyChronologyComponent} />
+                      <Route exact path="/transaction" component={Transaction} />
                       <Route exact path="/register" component={MyVaultCreationComponent} />
                       <Route exact path="/homepage" component={MyHomePageComponent} />
                       <Route exact path="/competencies" component={MyCompetenciesComponent} />
-                      <Route exact path="/unlockfreelancer" component={UnlockFreelancer}/>
-                      <Route path="/competencies/:competencyName" component={Competencies} />
+                      <Route exact path="/unlockfreelancer" component={MyUnlockFreelancerComponent}/>
+                      <Route path="/competencies/:competencyName" component={MyCompetenciesComponent} />
                       <Redirect from="/" to='/homepage' />
                     </Switch>
                   </Grid>
                 </Grid>
               </Grid>
-              {/*<Hidden mdUp>
-                <Grid item className={this.props.classes.bottomNav}>
-                  <BottomNavigation
-                    value={this.state.menuSelection}
-                    onChange={this.handleMenuChange}
-                    showLabels>
-                    <BottomNavigationAction component={({ ...props }) => <Link to='/competencies' {...props} />} style={{ display: freelancer.freelancerDatas !== null ? '' : 'none' }} value="/competencies" label="Competencies" icon={<StarIcon />} />
-                    <BottomNavigationAction component={({ ...props }) => <Link to='/chronology' {...props} />} style={{ display: freelancer.freelancerDatas !== null ? '' : 'none' }} value="/chronology" label="Chronology" icon={<ExploreIcon />} />
-                    <BottomNavigationAction component={({ ...props }) => <Link to='/homepage' {...props} />} style={{ display: freelancer.freelancerDatas !== null ? 'none' : '' }} value="/homepage" label="Homepage" icon={<HomeIcon />} />
-                  </BottomNavigation>
-                </Grid>
-              </Hidden>*/}
+              <Hidden mdUp>
+                <TabBarMenu user={user} />
+              </Hidden>
             </Grid>
           </Grid>
         </MuiThemeProvider>
@@ -171,11 +191,5 @@ class AppConnected extends React.Component {
     );
   }
 }
-
-const mapStateToProps = state => ({
-  user: state.userReducer.user,
-  loading: state.userReducer.loading,
-  error: state.userReducer.error
-});
 
 export default compose(withStyles(styles), connect(mapStateToProps))(AppConnected);

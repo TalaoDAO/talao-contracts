@@ -1,6 +1,12 @@
 export const TRANSACTION_HASH     = 'TRANSACTION_HASH';
 export const TRANSACTION_RECEIPT  = 'TRANSACTION_RECEIPT';
 export const TRANSACTION_ERROR    = 'TRANSACTION_ERROR';
+export const RESET_TRANSACTION    = 'RESET_TRANSACTION';
+export const TRANSACTION_BEGIN    = 'TRANSACTION_BEGIN';
+
+export const transactionBegin = () => ({
+    type: TRANSACTION_BEGIN
+  });
 
 export const transactionHash = txHash => ({
     type: TRANSACTION_HASH,
@@ -15,4 +21,8 @@ export const transactionReceipt = receipt => ({
 export const transactionError = error => ({
     type: TRANSACTION_ERROR,
     error
+});
+
+export const resetTransaction = () => ({
+    type: RESET_TRANSACTION
 });

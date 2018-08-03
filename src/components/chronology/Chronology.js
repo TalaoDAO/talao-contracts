@@ -5,9 +5,13 @@ import ColorService from '../../services/ColorService';
 import { withStyles, CardContent, Grid } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
 import Profile from '../profile/Profile';
-//import queryString from 'query-string'
+import queryString from 'query-string'
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
+import { hasAccess } from '../../actions/guard';
+import Transaction from '../transaction/Transaction';
+import CustomizedSnackbars from '../snackbars/snackbars';
+import { fetchFreelancer } from '../../actions/user';
 
 const Loading = require('react-loading-animation');
 
@@ -18,98 +22,85 @@ const styles = {
     },
 }
 
+const mapStateToProps = state => ({
+    loadingGuard: state.guardReducer.loading,   
+    guardCheck: state.guardReducer.guardCheck,
+    transactionError: state.transactionReducer.transactionError,
+    transactionHash: state.transactionReducer.transactionHash, 
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    transaction: state.transactionReducer.transaction,
+    loading: state.userReducer.loading
+  });
+  
 class Chronology extends React.Component {
     
-    componentWillMount() {
+    componentDidMount() {
+        //The user is initialize and the guard is not check
+        if (this.props.user && !this.props.guardCheck && !this.props.loading) {
+            this.props.dispatch(hasAccess(window.location.pathname.split('/')[1], queryString.extract(window.location.search), this.props.user, this.props.history));
+        }
+    }
 
-        //get the address from the url
-      //  this.urlAddress = queryString.extract(this.props.location.search);
-        /*//Check if this is the current user
-        if((!this.freelancerAddress && this.free.isVaultCreated) || (this.freelancerAddress.toLowerCase() === window.account.toLowerCase() && this.free.isVaultCreated)) {
-            this.free.initFreelancer(window.account);
-
-        //we are looking for a freelancer 
-        } else if (this.freelancerAddress.toLowerCase() !== window.account.toLowerCase() && window.web3.utils.isAddress(this.freelancerAddress)) {
-            console.log('ok1');
-            this.vaultFactoryContract.methods.FreelanceVault(this.freelancerAddress).call().then(vaultAddress => {
-                //The vault exist ??
-                if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                    // This client is a partner of the freelancer ??
-                    this.freelancerContract.methods.isPartner(this.freelancerAddress, window.account).call().then(isPartner => {
-                        // This client has already unlock the freelancer vault ??
-                        this.talaoContract.methods.hasVaultAccess(this.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
-                            //The vault price of the freelancer is 0 talao token ??
-                            this.talaoContract.methods.data(this.freelancerAddress).call().then(info => {
-                                let accessPriceIsZeroTalaoToken = (parseInt(window.web3.utils.fromWei(info.accessPrice), 10) === 0 ) ? true : false;
-                                if (hasAccessToFreelanceVault || isPartner || accessPriceIsZeroTalaoToken) {
-                                    console.log('ok');
-                                    this.free.initFreelancer(this.freelancerAddress);
-                                } else {
-                                    this.props.history.push({
-                                        pathname: '/unlockfreelancer',
-                                        search: this.freelancerAddress,
-                                        state: { address: this.freelancerAddress }
-                                    });
-                                }
-                            })
-                        }); 
-                    });
-                }
-                //No vault exist for this address
-                else {
-                    console.log('ok');
-                    this.props.history.push({pathname: '/homepage'});
-                }
-            });
-        //Error
-        } else {
-            console.log('ok2');
-            this.props.history.push({pathname: '/homepage'});
-        }*/
+    componentDidUpdate() {
+        //The guard check is over, so the request is valid, so we init the searched freelancer
+        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers) {
+            this.props.dispatch(fetchFreelancer(this.props.user, queryString.extract(window.location.search)));
+        }
     }
 
     render() {
-        const { user } = this.props;
-        let experiences = null;
-        if (!this.props.user) {
+        const { loadingGuard, transactionError, transactionHash, transactionReceipt, transaction   } = this.props;
+
+        if (!this.props.user || loadingGuard) {
             return (<Loading />);
         }
         else {
-            experiences = user.freelancerDatas.experiences
-            // Sort descending by date
-            .sort((extendedExperienceA, extendedExperienceB) => {
-                return extendedExperienceA.from < extendedExperienceB.from;
-            })
+            if ((!this.props.user.freelancerDatas && !queryString.extract(window.location.search)) || (!this.props.user.searchedFreelancers && queryString.extract(window.location.search))) {
+                return (<Loading />)
+            }
+        }
 
-            // Generate components
-            .map((extendedExperience) => {
-                const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
-                const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
-                const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
-                return (
-                    <Experience
-                        user={user}
-                        value={extendedExperience}
-                        key={extendedExperience.title}
-                        color={backgroundColorString}
-                        lightColor={backgroundLightColorString}
-                        textColor={textColorString}
-                    />
-                );
-            });
+        if (transaction) {
+            return (<Transaction />);
         }
-       const MyProfileComponent = (props) => {
+
+        let snackbar;
+        if (transactionHash && transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message={'Transaction successfull !'} time={2000} type='success'/>);
+        }
+        if (transactionError) {
+            snackbar = (<CustomizedSnackbars message={transactionError.message} time={12000} type='error'/>);
+        }
+        //pick the current user or a searched freelancer
+        let freelancer = (queryString.extract(window.location.search)) ? this.props.user.searchedFreelancers : this.props.user.freelancerDatas;
+        let experiences = freelancer.experiences
+        // Sort descending by date
+        .sort((extendedExperienceA, extendedExperienceB) => {
+            return extendedExperienceA.from < extendedExperienceB.from;
+        })
+
+        // Generate components
+        .map((extendedExperience) => {
+            const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
+            const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
+            const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
             return (
-            <Profile 
-                user={user}
-                {...props}
-            />
+                <Experience
+                    user={freelancer}
+                    isClient={(queryString.extract(window.location.search)) ? true : false}
+                    value={extendedExperience}
+                    key={extendedExperience.title}
+                    color={backgroundColorString}
+                    lightColor={backgroundLightColorString}
+                    textColor={textColorString}
+                />
             );
-        }
+        });
+
         const MyNewExperienceComponent = (props) => {
             return (
             <NewExperience 
-                user={user}
+                user={this.props.user}
                 {...props}
             />
             );
@@ -118,25 +109,31 @@ class Chronology extends React.Component {
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <MyProfileComponent />
+                    <Profile freelancer={freelancer}/>
                 </Grid>
-                <Grid item xs={12}>
-                    <Card className={this.props.classes.card}>
-                        <CardContent>
-                            {user.freelancerDatas !== null ? <MyNewExperienceComponent /> : null}
-                            {experiences}
-                        </CardContent>
-                    </Card>
-                </Grid>
+                {!queryString.extract(window.location.search) &&
+                    <Grid item xs={12}>
+                        <Card className={this.props.classes.card}>
+                            <CardContent>
+                                <MyNewExperienceComponent />
+                                {experiences.length > 0 && experiences}
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                }
+                {(queryString.extract(window.location.search) && experiences.length > 0) &&
+                    <Grid item xs={12}>
+                        <Card className={this.props.classes.card}>
+                            <CardContent>
+                                {experiences}
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                }
+                {snackbar}
             </Grid>
         );
     }
 }
-
-const mapStateToProps = state => ({
-    user: state.userReducer.user,
-    loading: state.userReducer.loading,
-    error: state.userReducer.error
-  });
 
 export default compose(withStyles(styles), connect(mapStateToProps))(Chronology);

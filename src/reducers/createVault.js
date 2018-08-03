@@ -16,7 +16,8 @@ import {
     SET_ACCESS_PRICE_ERROR,
     SUBMIT_VAULT_BEGIN,
     SUBMIT_VAULT_SUCCESS,
-    SUBMIT_VAULT_ERROR
+    SUBMIT_VAULT_ERROR,
+    RESET_REDIRECT
   } from '../actions/createVault'
   
   const initialState = {
@@ -41,7 +42,6 @@ import {
       accessPriceError: false,
       maxAccessPricePlaceholder : '',
       isAccessPriceSet: false,
-      loading: false,
       error: null,
       helperTextTooLong: 'Maximum length: 30 characters',
       helperIncorrectMail: 'This is not a valid email address',
@@ -75,7 +75,6 @@ import {
           accessPriceError: false,
           maxAccessPricePlaceholder: '',
           isAccessPriceSet: false,
-          loading: false,
           error: null,
           helperTextTooLong: 'Maximum length: 30 characters',
           helperTextEmpty: 'This field is required',
@@ -125,7 +124,8 @@ import {
         return {
           ...state,
           accessPrice: action.price,
-          accessPriceError: action.error
+          accessPriceError: action.error,
+          accessPriceDirty: true
         };
 
       case CHANGE_FIRST_NAME:
@@ -174,14 +174,12 @@ import {
 
       case SET_ACCESS_PRICE_BEGIN:
         return {
-          ...state,
-          loading: true
+          ...state
         };
 
       case SET_ACCESS_PRICE_SUCCESS:
         return {
           ...state,
-          loading: false,
           isAccessPriceSet: true,
           step: 1
         };
@@ -189,30 +187,31 @@ import {
       case SET_ACCESS_PRICE_ERROR:
         return {
           ...state,
-          loading: false,
           error: action.error
         };
 
       case SUBMIT_VAULT_BEGIN:
         return {
-          ...state,
-          loading: true
+          ...state
         };
 
       case SUBMIT_VAULT_SUCCESS:
         return {
           ...state,
-          loading: false,
           redirectTo: '/chronology'
         };
 
       case SUBMIT_VAULT_ERROR:
         return {
           ...state,
-          loading: false,
           error: action.error
         };
 
+      case RESET_REDIRECT:
+        return {
+          ...state,
+          redirectTo: null
+        };
       default:
         // ALWAYS have a default case in a reducer
         return state;

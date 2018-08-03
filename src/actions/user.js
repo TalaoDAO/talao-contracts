@@ -1,16 +1,30 @@
 import User from "../models/User";
 import Freelancer from "../models/Freelancer";
+import { resetGuard } from './guard';
 
-export const FETCH_USER_BEGIN   = 'FETCH_USER_BEGIN';
-export const FETCH_USER_SUCCESS = 'FETCH_USER_SUCCESS';
-export const FETCH_USER_FAILURE = 'FETCH_USER_FAILURE';
-export const USER_CHANGE = 'USER_CHANGE';
+export const FETCH_USER_BEGIN         = 'FETCH_USER_BEGIN';
+export const FETCH_USER_SUCCESS       = 'FETCH_USER_SUCCESS';
+export const FETCH_USER_FAILURE       = 'FETCH_USER_FAILURE';
+export const FETCH_FREELANCER_BEGIN   = 'FETCH_FREELANCER_BEGIN';
+export const FETCH_FREELANCER_SUCCESS = 'FETCH_FREELANCER_SUCCESS';
+export const FETCH_FREELANCER_FAILURE = 'FETCH_FREELANCER_FAILURE';
+export const LOGOUT                   = 'web3/LOGOUT';
+export const LOGIN                    = 'web3/LOGIN'
+
+export const logout = () => ({
+    type: LOGOUT
+});
+
+export const login = (address) => ({
+    type: LOGIN,
+    address
+});
 
 export const fetchUserBegin = () => ({
     type: FETCH_USER_BEGIN
 });
 
-  export const fetchUserSuccess = user => ({
+export const fetchUserSuccess = user => ({
     type: FETCH_USER_SUCCESS,
     user
 });
@@ -20,13 +34,29 @@ export const fetchUserError = error => ({
     error
 });
 
+export const fetchFreelancerBegin = () => ({
+    type: FETCH_FREELANCER_BEGIN
+});
+
+  export const fetchFreelancerSuccess = user => ({
+    type: FETCH_FREELANCER_SUCCESS,
+    user
+});
+
+export const fetchFreelancerError = error => ({
+    type: FETCH_FREELANCER_FAILURE,
+    error
+});
+
 //User fetch
-export function fetchUser() {
+export function fetchUser(address) {
     return dispatch => {
         //Fetch freelancer datas begin
         dispatch(fetchUserBegin());
             //user initialisation
-            let user = new User();
+            let user = new User(address);
+
+            if (user.ethAddress) {
             //check if the user is a freelancer
             user.isFreelancer().then((resolve, reject) => {
                 //if error, log
@@ -38,8 +68,8 @@ export function fetchUser() {
                     user.freelancerDatas = new Freelancer(user.vaultAddress, user.ethAddress);
 
                     //subscribe to the adddocevent
-                    user.freelancerDatas.eventAddDocumentSubscription().then((resolve) => {
-                        if (resolve) {
+                   // user.freelancerDatas.eventAddDocumentSubscription().then((resolve) => {
+                       // if (resolve) {
                             //get the freelancer data
                             user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
                                 if (reject) {
@@ -51,18 +81,65 @@ export function fetchUser() {
                                         if (resolve) {      
                                             //User is a freelancer                                                              
                                             dispatch(fetchUserSuccess(user));
+                                            dispatch(resetGuard());
                                         }
                                     })
                                 }
                             });
-                        }
-                    });
+                   //     }
+                   // });
                 } else {
-                    //User is a client
+                    //User is a client with an ethAddress!
                     dispatch(fetchUserSuccess(user));
+                    dispatch(resetGuard());
                 }
             })
             //catch any error incoming
             .catch(error => dispatch(fetchUserError(error)));
+        } else {
+            //User is a client without an ethAddress!
+            dispatch(resetGuard());
+            dispatch(fetchUserSuccess(user));
+        }
+    };
+}
+
+//User fetch
+export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
+    return dispatch => {
+
+        //Fetch freelancer datas begin
+        dispatch(fetchFreelancerBegin());
+        let user = new User(searchedFreelancerAddress);
+        //check if the user is a freelancer
+        user.isFreelancer().then((resolve, reject) => {
+            //if error, log
+            if (reject) {
+                dispatch(fetchFreelancerError(reject))
+            }
+            else if (resolve) {
+                currentUser.searchedFreelancers = new Freelancer(resolve, searchedFreelancerAddress);
+                currentUser.searchedFreelancers.getFreelanceData().then((resolve, reject) => {
+                    if (reject) {
+                        dispatch(fetchFreelancerError(reject))
+                    }
+                    //get all documents & competencies
+                    if (resolve) {
+                        //get the access price
+                        currentUser.talaoContract.methods.data(searchedFreelancerAddress).call().then(info => {
+                            currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
+                        });
+                        currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
+                            if (resolve) {      
+                                //User is a freelancer                                                            
+                                dispatch(fetchFreelancerSuccess(currentUser));
+                            }
+                        })
+                    }
+                });
+            }
+        })
+        //catch any error incoming
+        .catch(error => dispatch(fetchFreelancerError(error)));
     };
 }

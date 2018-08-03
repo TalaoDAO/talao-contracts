@@ -102,15 +102,7 @@ class Experience extends React.Component {
         };
         this.showCertification = this.showCertification.bind(this);
     }
-
-    monthDiff(d1, d2) {
-        var months;
-        months = (d2.getFullYear() - d1.getFullYear()) * 12;
-        months -= d1.getMonth() + 1;
-        months += d2.getMonth();
-        return months <= 0 ? 0 : months;
-    }
-
+    
     showCertification() {
         this.setState({
             showCert: !this.state.showCert
@@ -136,7 +128,6 @@ class Experience extends React.Component {
     }
 
     render() {
-        const { user } = this.props;
         let competencyTags;
         let dateDiff;
         let monthDiff;
@@ -176,7 +167,7 @@ class Experience extends React.Component {
                             {this.props.value.description}
                         </Typography>
                         <Grid item xs={12}>
-                            <Button onClick={this.removeDocument} style={{ display: user.freelancerDatas !== null ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                            <Button onClick={this.removeDocument} style={{ display: !this.props.isClient ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
                                 <Close />
                                 <span>Remove</span>
                             </Button>

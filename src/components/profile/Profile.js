@@ -91,30 +91,29 @@ class Profile extends React.Component {
   handleExpandClick = () => this.setState({ expanded: !this.state.expanded });
 
   render() {
-    if (!this.props.user) {
+    if (!this.props.freelancer) {
       return (<Loading />)
-    } else if (this.props.user.freelancerDatas === null) {
-      return (<div></div>)
     }
+
     return (
       <Card>
         <CardContent>
           <div className={this.props.classes.container}>
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
-                <div className={this.props.classes.confidenceIndex}>{this.props.user.freelancerDatas.confidenceIndex}</div>
+                <div className={this.props.classes.confidenceIndex}>{this.props.freelancer.confidenceIndex}</div>
               </div>
               <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
             <div className={this.props.classes.profileContainer}>
               <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>
-                {this.props.user.freelancerDatas.firstName} {this.props.user.freelancerDatas.lastName}
+                {this.props.freelancer.firstName} {this.props.freelancer.lastName}
               </Typography>
               <Typography variant="subheading" component="h2" className={this.props.classes.title}>
-                {this.props.user.freelancerDatas.title}
+                {this.props.freelancer.title}
               </Typography>
               <Typography>
-                {this.props.user.freelancerDatas.description}
+                {this.props.freelancer.description}
               </Typography>
             </div>
             <div className={this.props.classes.actionsContainer}>
@@ -137,13 +136,13 @@ class Profile extends React.Component {
               return (
                 <CardContent>
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <MailIcon />&nbsp;{this.props.user.freelancerDatas.email}<br />
+                    <MailIcon />&nbsp;{this.props.freelancer.email}<br />
                   </Typography>
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <PhoneIcon />&nbsp;{this.props.user.freelancerDatas.phone}<br />
+                    <PhoneIcon />&nbsp;{this.props.freelancer.phone}<br />
                   </Typography>
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <BlurOnIcon />&nbsp;{this.props.user.freelancerDatas.ethereumAddress}
+                    <BlurOnIcon />&nbsp;{this.props.freelancer.ethereumAddress}
                   </Typography>
                 </CardContent>
               )

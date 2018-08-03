@@ -3,8 +3,18 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 import logoTalao from '../../images/logo-talao.png';
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { changeMenuClicked } from '../../actions/menu';
 
 const Loading = require('react-loading-animation');
+
+const mapStateToProps = state => ({  
+    transactionError: state.transactionReducer.transactionError,
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    currentMenu: state.menuReducer.selectedMenu,
+    transaction: state.transactionReducer.transaction
+  });
 
 const styles = theme => ({
     root: {
@@ -50,72 +60,90 @@ const styles = theme => ({
 
 class Menu extends React.Component {
 
-    //No redux here for now...
-    constructor() {
-        super();
-        this.state = { currentMenu: window.location.pathname }
-        this.handleMenuChange = this.handleMenuChange.bind(this);
-    }
-
-    handleMenuChange(location) {
-        this.setState({currentMenu: location})
-    }
-
     render() {
+        const { transactionError, transactionReceipt, transaction, currentMenu } = this.props;
+
         //Loading user from parent AppConnected...
         if (!this.props.user) {
             return (<Loading />)
         }
 
-        let showFreelancerMenu = (this.props.user.freelancerDatas) ?
+        //if this is a freelancer
+        let showFreelancerMenu = (this.props.user.freelancerDatas && !transaction) &&
             <div>
                 <Typography to="/">
                 <Link 
-                    onClick={() => this.handleMenuChange('/competencies')}
-                    className={this.state.currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                    to={"/competencies?" + this.props.user.ethAddress}
+                    onClick={() => this.props.dispatch(changeMenuClicked('/competencies'))}
+                    className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                    to={"/competencies"}
                 >
                     Competencies
                 </Link>
                 </Typography>
                 <Typography to="/">
                     <Link 
-                        onClick={() => this.handleMenuChange('/chronology')}
-                        className={this.state.currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                        to={"/chronology?" + this.props.user.ethAddress}
+                        onClick={() => this.props.dispatch(changeMenuClicked('/chronology'))}
+                        className={currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                        to={"/chronology"}
                     >
                         Chronology
                     </Link>
                 </Typography> 
-            </div>  : null      
+            </div>  
+        
+        //if there are transactions
+        let showTransactionMenu = (transactionReceipt || transactionError) &&
+        <Typography to="/">
+            <Link 
+                onClick={() => this.props.dispatch(changeMenuClicked('/transaction'))}
+                className={currentMenu === '/transaction' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                to="/transaction"
+            >
+            Last transaction
+            </Link>
+        </Typography>
+
+        //if this is a client or a freelancer
+        let showCreateVaultMenu = (this.props.user.ethAddress  && !transaction) &&
+        <Typography to="/">
+            <Link 
+                onClick={() => this.props.dispatch(changeMenuClicked('/register'))}
+                className={currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                to="/register"
+            >
+                {this.props.user.freelancerDatas ? 'Update vault' : 'Create vault'}
+            </Link>
+        </Typography>
+
+        let showHomePageMenu = (!transaction) &&
+        <Typography to="/">
+        <Link 
+            onClick={() => this.props.dispatch(changeMenuClicked('/homepage'))}
+            className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+            to="/homepage"
+        >
+            Homepage
+        </Link>
+        </Typography>
+
         return (
             <div className={this.props.classes.root}>
                 <div>
-                    <Link to="/homepage" onClick={() => this.handleMenuChange('/homepage')} >
+                    {(transaction) 
+                    ?
                         <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
-                    </Link>
+                    :
+                        <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage'))} >
+                            <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
+                        </Link>
+                    }
                 </div>
                 <div className={this.props.classes.sidebar}>
                     <div>
-                    <Typography to="/">
-                        <Link 
-                            onClick={() => this.handleMenuChange('/register')}
-                            className={this.state.currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to="/register"
-                        >
-                            {this.props.user.freelancerDatas ? 'Update vault' : 'Create vault'}
-                        </Link>
-                    </Typography>
-                    {showFreelancerMenu}
-                    <Typography to="/">
-                        <Link 
-                            onClick={() => this.handleMenuChange('/homepage')}
-                            className={this.state.currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to="/homepage"
-                        >
-                            Homepage
-                        </Link>
-                    </Typography>
+                        {showTransactionMenu}
+                        {showCreateVaultMenu}
+                        {showFreelancerMenu}
+                        {showHomePageMenu}
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>
@@ -131,4 +159,4 @@ class Menu extends React.Component {
     }
 }
 
-export default withStyles(styles)(Menu);
+export default compose(withStyles(styles), connect(mapStateToProps))(Menu);

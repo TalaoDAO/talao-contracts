@@ -5,6 +5,11 @@ import { TextField } from '@material-ui/core';
 import Button from 'material-ui/Button';
 import Grid from '@material-ui/core/Grid';
 import { Link } from 'react-router-dom';
+import CustomizedSnackbars from '../snackbars/snackbars';
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { createVaultClicked, setFreelancerAddress, searchFreelancerClicked } from '../../actions/homepage';
+import { guardRedirect } from '../../actions/guard';
 
 const Loading = require('react-loading-animation');
 
@@ -17,6 +22,14 @@ const styles = theme => ({
             backgroundColor: '#3b3838'
         }
     },
+    certificatButtonDisabled: {
+        margin: '20px',
+        color: 'rgba(0, 0, 0, 0.26)',
+        backgroundColor: '#f2f2f2',
+        cursor: 'default',
+        pointerEvents: 'none',
+        border: '1px solid rgba(0, 0, 0, 0.23)'
+    },
     content: {
         display: 'inline-block',
         verticalAlign: 'top',
@@ -24,7 +37,7 @@ const styles = theme => ({
         marginLeft: '30px',
         marginBottom: '20px',
         padding: '20px 0px 20px 25px',
-        borderLeft: '1px solid ' + theme.palette.grey[300],
+        borderLeft: '1px solid ' + theme.palette.grey[300]
     },
     card: {
         flexBasis: 'auto',
@@ -54,77 +67,55 @@ const styles = theme => ({
     }
 });
 
+const mapStateToProps = state => ({
+    message: state.guardReducer.message,
+    freelancerAddress: state.homepageReducer.freelancerAddress, 
+    freelancerAddressError: state.homepageReducer.freelancerAddressError, 
+    freelancerAddressEmpty: state.homepageReducer.freelancerAddressEmpty, 
+    invalidAddress: state.homepageReducer.invalidAddress, 
+    emptyAddress: state.homepageReducer.emptyAddress,
+    guardRedirect: state.guardReducer.guardRedirect
+  });
+  
 class Homepage extends React.Component {
-    constructor(props) {
-        super(props);
 
-        this.state = {
-            errorText: ''
+    componentWillReceiveProps() {
+        if (this.props.guardRedirect) {
+            this.props.history.push(this.props.guardRedirect)
+            this.props.dispatch(guardRedirect(''));
         }
     }
-
-    handleSubmit = event => {
-        if (!window.web3.utils.isAddress(this.state.freelancerAddress)) {
-            this.setState({ errorText: 'This is not a valid ethereum address' });
-            return;
-        }
-        if (this.state.freelancerAddress.toLowerCase() === window.account.toLowerCase()) {
-            this.setState({ errorText: 'This is your ethereum address!' });
-            return;
-        }
-        this.vaultFactoryContract.methods.FreelanceVault(this.state.freelancerAddress).call().then(vaultAddress => {
-            //The vault exist ??
-            if (vaultAddress !== '0x0000000000000000000000000000000000000000') {
-                // This client is a partner of the freelancer ??
-                this.freelancerContract.methods.isPartner(this.state.freelancerAddress, window.account).call().then(isPartner => {
-                    // This client has already unlock the freelancer vault ??
-                    this.talaoContract.methods.hasVaultAccess(this.state.freelancerAddress, window.account).call().then(hasAccessToFreelanceVault => {
-                        //The vault price of the freelancer is 0 talao token ??
-                        this.talaoContract.methods.data(this.state.freelancerAddress).call().then(info => {
-                            let accessPriceIsZeroTalaoToken = (parseInt(window.web3.utils.fromWei(info.accessPrice), 10) === 0 ) ? true : false;
-                            this.path = (hasAccessToFreelanceVault || isPartner || accessPriceIsZeroTalaoToken) ? '/chronology' : '/unlockfreelancer';
-                            this.props.history.push({
-                                pathname: this.path,
-                                search: this.state.freelancerAddress,
-                                state: { address: this.state.freelancerAddress }
-                            });
-                        })
-                    }); 
-                });
-            }
-            else {
-                this.setState({ errorText: 'This address is not associated to a freelancer account or doesn\'t exist', });
-            }
-        });
-    }
-
-    isError() {
-        return (this.state.errorText.length !== 0);
-    }
-
-    handleAddressChanged = event => {
-        this.setState({ freelancerAddress: event.target.value });
-    }
-
+    
     render() {
+        //get props
+        const { message, freelancerAddress, freelancerAddressError, freelancerAddressEmpty, invalidAddress, emptyAddress } = this.props;
+
         //Loading user...
         if (!this.props.user) {
-            return (<Loading />)
+            return (<Loading />);
         }
-        
-        //If the user is a freelancer he can't create a new vault
+        //snackbar if guard has an error
+        let snackbar;
+        if (message) {
+            snackbar = (<CustomizedSnackbars message={message} time={5000} type='error'/>);
+        }
+
+        //If the user is doesn't have a wallet he can't create a vault
         let showCreateYourVaultBlock;
-        if (this.props.user.freelancerDatas === null) {
+        if (this.props.user.ethAddress) {
             showCreateYourVaultBlock = 
             (<Grid item xs={12} lg={6}>
                 <Card className={this.props.classes.card}>
                     <CardContent>
                         <div className={this.props.classes.center}>
-                            <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p>
+                        {(!this.props.user.freelancerDatas) ?
+                            <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p> :
+                            <p className={this.props.classes.title}>Update your vault</p>
+                        }
                         </div>
                         <div className={this.props.classes.center}>
-                            <Button onClick={this.submit} className={this.props.classes.certificatButton} label="login">
-                                <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">Create my vault</Link>
+                            <Button onClick={() => this.props.dispatch(createVaultClicked(this.props.history))} className={this.props.classes.certificatButton} label="login">
+                                <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">{(!this.props.user.freelancerDatas) ? 'Create my vault' : 'Update your vault'}</Link>
                             </Button>
                         </div>
                     </CardContent>
@@ -139,30 +130,29 @@ class Homepage extends React.Component {
                             <div className={this.props.classes.center}>
                                 <p className={this.props.classes.title}>Looking for a freelancer?<br />Type his address here:</p>
                             </div>
-                            <form onSubmit={this.handleSubmit}>
-                                <TextField
-                                    error={this.isError()}
-                                    helperText={this.state.errorText}
-                                    value={this.state.freelancerAddress}
-                                    onChange={this.handleAddressChanged}
-                                    className={this.props.classes.textField}
-                                    inputProps={{
-                                        style: { textAlign: "center" }
-                                    }}
-                                />
-                                <div className={this.props.classes.center}>
-                                    <Button onClick={() => this.handleSubmit()} className={this.props.classes.certificatButton} label="login">
+                            <TextField
+                                value={freelancerAddress}
+                                error={freelancerAddressError || freelancerAddressEmpty}
+                                helperText={(!freelancerAddressError && !freelancerAddressEmpty) ? '' : (freelancerAddressEmpty) ? emptyAddress : invalidAddress}
+                                onChange={(event) => this.props.dispatch(setFreelancerAddress(event.target.value))}
+                                className={this.props.classes.textField}
+                                inputProps={{
+                                    style: { textAlign: "center" }
+                                }}
+                            />
+                            <div className={this.props.classes.center}>
+                                <Button onClick={() => this.props.dispatch(searchFreelancerClicked(this.props.history, freelancerAddress))} className={(!freelancerAddressError && !freelancerAddressEmpty) ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                         Find my freelancer
                                 </Button>
-                                </div>
-                            </form>
+                            </div>
                         </CardContent>
                     </Card>
                 </Grid>
                 {showCreateYourVaultBlock}
+                {snackbar}
             </Grid>
         );
     }
 }
 
-export default withStyles(styles)(Homepage);
+export default compose(withStyles(styles), connect(mapStateToProps))(Homepage);

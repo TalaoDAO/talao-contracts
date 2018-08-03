@@ -1,6 +1,6 @@
 class User {
 
-    constructor() {
+    constructor(address) {
 
         //get a ref to the vaultfactory
         this.vaultFactoryContract = new window.web3.eth.Contract(
@@ -12,15 +12,25 @@ class User {
             JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
             process.env.REACT_APP_TALAOTOKEN_ADDRESS
         );
+
+        this.talaoContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_TALAOTOKEN_ABI),
+            process.env.REACT_APP_TALAOTOKEN_ADDRESS
+        );
+
+        this.freelancerContract = new window.web3.eth.Contract(
+            JSON.parse(process.env.REACT_APP_FREELANCER_ABI),
+            process.env.REACT_APP_FREELANCER_ADDRESS
+        );
         
         //if the user is a freelancer, we store his datas
         this.freelancerDatas = null;
         
         //store the address of the current user
-        this.ethAddress = window.account;
+        this.ethAddress = address;
 
         //store the researched freelancers
-        this.searchedFreelancers = [];
+        this.searchedFreelancers = null;
     }
 
     isFreelancer() {

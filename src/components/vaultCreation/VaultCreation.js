@@ -8,7 +8,12 @@ import Collapse from '@material-ui/core/Collapse';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
-import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault } from '../../actions/createVault';
+import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault, resetRedirect } from '../../actions/createVault';
+import queryString from 'query-string'
+import { hasAccess } from '../../actions/guard';
+import Transaction from '../transaction/Transaction';
+import CustomizedSnackbars from '../snackbars/snackbars';
+import { resetTransaction } from '../../actions/transactions';
 
 const Loading = require('react-loading-animation');
 
@@ -120,7 +125,6 @@ const mapStateToProps = state => ({
     accessPriceError: state.createVaultReducer.accessPriceError,
     isAccessPriceSet: state.createVaultReducer.isAccessPriceSet,
     maxAccessPricePlaceholder: state.createVaultReducer.maxAccessPricePlaceholder,
-    loading: state.createVaultReducer.loading,
     firstNameError: state.createVaultReducer.firstNameError,
     firstNameEmpty: state.createVaultReducer.firstNameEmpty,
     lastNameError: state.createVaultReducer.lastNameError,
@@ -135,7 +139,10 @@ const mapStateToProps = state => ({
     helperIncorrectMail: state.createVaultReducer.helperIncorrectMail,
     helperIncorrectPhoneNumber: state.createVaultReducer.helperIncorrectPhoneNumber,
     helperTextEmpty: state.createVaultReducer.helperTextEmpty,
-    redirectTo: state.createVaultReducer.redirectTo
+    redirectTo: state.createVaultReducer.redirectTo,   
+    transactionError: state.transactionReducer.transactionError,
+    loadingGuard: state.guardReducer.loading,
+    transaction: state.transactionReducer.transaction
   });
 
 
@@ -145,9 +152,15 @@ class VaultCreation extends React.Component {
     componentDidMount() {
         if (this.props.redirectTo) {
             this.props.history.push(this.props.redirectTo);
+            this.props.dispatch(resetRedirect());
         }
+        //check the user access to this route and init his datas
         else if (this.props.user) {
+            this.urlParams = queryString.extract(this.props.location.search);
+            this.route = window.location.pathname.split('/')[1];
+            this.props.dispatch(hasAccess(this.route, this.urlParams, this.props.user, this.props.history));
             this.props.dispatch(initVaultCreation(this.props.user));
+            this.props.dispatch(resetTransaction());
         }
     }
 
@@ -165,7 +178,6 @@ class VaultCreation extends React.Component {
             vaultMaxAccessPrice, 
             accessPriceError, 
             maxAccessPricePlaceholder, 
-            loading, 
             isAccessPriceSet, 
             firstNameError, 
             firstNameEmpty,
@@ -178,19 +190,31 @@ class VaultCreation extends React.Component {
             helperTextTooLong,
             helperIncorrectMail,
             helperIncorrectPhoneNumber,
-            helperTextEmpty
+            helperTextEmpty,
+            transactionError, 
+            loadingGuard,
+            transaction
         } = this.props;
 
         //Loading user from parent AppConnected...
-        if (!this.props.user || loading) {
+        if (!this.props.user || loadingGuard) {
             return (<Loading />)
+        }
+
+        if (transaction) {
+            return (<Transaction />);
+        }
+
+        let snackbar;
+        if (transactionError) {
+            snackbar = (<CustomizedSnackbars message={transactionError.message} time={12000} type='error'/>);
         }
 
         let canSubmit = (!firstNameError && !firstNameEmpty && !lastNameError && !lastNameEmpty && !titleError && !titleEmpty && !mailError && !phoneError);
 
         //Header display if the price is set
         let stepHeader = (step === 0) ? 
-        <span >Set access price</span> :
+        <span>{(this.props.user.freelancerDatas) ? 'Update access price' : 'Set access price'}</span> :
         <span> Price: {accessPrice > 1 ? accessPrice + ' tokens' : accessPrice + ' token'} </span>
 
         //Block for access price
@@ -312,7 +336,7 @@ class VaultCreation extends React.Component {
                     <Grid item lg={7}></Grid>
                     <Grid item lg={2} xs={12}>
                         <Button onClick={() => canSubmit && this.props.dispatch(submitVault(user, accessPrice, firstName, lastName, title, description, phone, mail))} disabled={!canSubmit} className={canSubmit ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                            Create
+                            {(this.props.user.freelancerDatas) ? 'Update' : 'Create'}
                         </Button>
                     </Grid>
                 </form>
@@ -337,13 +361,13 @@ class VaultCreation extends React.Component {
                         {accessPriceInputs}
                     </Collapse>
                     <div>
-                        <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: isAccessPriceSet ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
+                        <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice, accessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: isAccessPriceSet ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
                             <span style={{ fontSize: '25px' }}>2</span>
                         </div>
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
-                            <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.timeContainer}>
-                                Create Vault
+                            <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice, accessPrice))} className={this.props.classes.timeContainer}>
+                                {(this.props.user.freelancerDatas) ? 'Update vault' : 'Create vault'}
                             </div>
                         </div>
                     </div>
@@ -351,6 +375,7 @@ class VaultCreation extends React.Component {
                         {vaultInputs}
                     </Collapse>
                 </CardContent>
+                {snackbar}
             </Card>
         );
     }

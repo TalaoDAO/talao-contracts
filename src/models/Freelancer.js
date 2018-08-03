@@ -1,7 +1,6 @@
 import Experience from './Experience';
 import Competency from './Competency';
-import bs58 from 'bs58';
-
+import FileService from '../services/FileService';
 
 class Freelancer {
 
@@ -25,28 +24,9 @@ class Freelancer {
         this.ethAddress = ethAddress;
         this.vaultAddress = vaultAddress;
         this.experiences = [];
+        this.competencies = [];
     }
-
-    eventAddDocumentSubscription() {
-        return new Promise((resolve) => {
-            this.contractObjectOldWeb3 = window.web3old.eth.contract(JSON.parse(process.env.REACT_APP_VAULT_ABI));
-            var vaultWithOldWeb3 = this.contractObjectOldWeb3.at(this.vaultAddress);
-
-            this.eventDocAdded = vaultWithOldWeb3.VaultDocAdded();
-            this.eventDocAdded.watch((err, event) => {
-                if (err) {
-                    console.log(err);
-                }
-                else {
-                    if (event['blockNumber'] > this.firstBlock) {
-                        this.getDocumentByEvent(event['args'], resolve);
-                    }
-                }
-            });
-            resolve(true);
-        });
-    }
-
+    
     getFreelanceData() {
         return new Promise((resolve, reject) => {
             this.freelancerContract.methods.FreelancerInformation(this.ethAddress).call().then(element => {
@@ -87,7 +67,7 @@ class Freelancer {
                             )
                         );
                     }
-                    let url = "https://gateway.ipfs.io/ipfs/" + this.getIpfsHashFromBytes32(docId);
+                    let url = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(docId);
                     var newExp = new Experience(
                         docId,
                         title,
@@ -141,7 +121,7 @@ class Freelancer {
     }
     
     addDocument(experience) {
-        var docId = this.getBytes32FromIpfsHash(experience.docId);
+        var docId = FileService.getBytes32FromIpfsHash(experience.docId);
         var title = window.web3.utils.fromAscii(experience.title);
         var description = window.web3.utils.fromAscii(experience.description);
         var keywords = [], ratings = [];
@@ -162,31 +142,21 @@ class Freelancer {
         return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account });
     }
 
-    updateProfil(accessPrice, firstName, lastName, title, description, email, phone) {
-        //TODO push data to smart contracts
-        this.accessPrice = accessPrice;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.title = title;
-        this.description = description;
-        this.email = email;
-        this.phone = phone;
-    }
-
-
-    ////HELPERS////
-    getBytes32FromIpfsHash(ipfsAddress) {
-        return "0x" + bs58.decode(ipfsAddress).slice(2).toString('hex')
-    }
-
-    getIpfsHashFromBytes32(bytes32Hex) {
-        // Add our default ipfs values for first 2 bytes:
-        // function:0x12=sha2, size:0x20=256 bits
-        // and cut off leading "0x"
-        const hashHex = "1220" + bytes32Hex.slice(2)
-        const hashBytes = Buffer.from(hashHex, 'hex');
-        const hashStr = bs58.encode(hashBytes)
-        return hashStr
+    getCompetencies() {
+        let competencies = [];
+        this.experiences.forEach((experience) => {
+            experience.competencies.forEach((competency) => {
+                let indexCompetency = competencies.findIndex(c => c.name === competency.name);
+                if (indexCompetency === -1) {
+                    competencies.push(new Competency(competency.name, competency.confidenceIndex, [experience]));
+                }
+                else {
+                    competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex);
+                    competencies[indexCompetency].experiences.push(experience);
+                }
+            });
+        });
+        this.competencies = competencies;
     }
 }
 
