@@ -111,6 +111,8 @@ class Menu extends React.Component {
                                 usr.searchedFreelancers = null; 
                                 this.props.dispatch(removeResearch(usr)); 
                                 this.props.dispatch(changeMenuClicked('/chronology'));
+                                //Nothing change here to redux and we need to forceUpdate to update the menu
+                                this.forceUpdate();
                                 }
                 }
                 className={this.props.classes.sidebarItem} 
