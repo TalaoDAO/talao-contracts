@@ -14,7 +14,6 @@ import queryString from 'query-string'
 import { hasAccess } from '../../actions/guard';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import Transaction from '../transaction/Transaction';
 import { fetchFreelancer } from '../../actions/user';
 import { unlockFreelancerClicked } from '../../actions/unlockFreelancer';
 import CustomizedSnackbars from '../snackbars/snackbars';
@@ -81,7 +80,10 @@ const mapStateToProps = state => ({
   loadingGuard: state.guardReducer.loading,
   guardCheck: state.guardReducer.guardCheck,
   transactionError: state.transactionReducer.transactionError,
-  transaction: state.transactionReducer.transaction
+  transaction: state.transactionReducer.transaction,
+  transactionReceipt: state.transactionReducer.transactionReceipt,
+  object: state.transactionReducer.object,
+  transactionHash: state.transactionReducer.transactionHash
 });
 
 class UnlockFreelancer extends React.Component {
@@ -101,7 +103,7 @@ class UnlockFreelancer extends React.Component {
   }
 
   render() {
-    const { loadingGuard, transactionError, transaction } = this.props;
+    const { loadingGuard, transactionError, object, transactionReceipt, transactionHash } = this.props;
 
     if (!this.props.user || loadingGuard) {
       return (<Loading />);
@@ -112,13 +114,13 @@ class UnlockFreelancer extends React.Component {
         }
     }
 
-    if (transaction) {
-      return (<Transaction />);
-    }
-
     let snackbar;
-    if (transactionError) {
-        snackbar = (<CustomizedSnackbars message={transactionError.message} time={6000} type='error'/>);
+    if (transactionHash && !transactionReceipt) {
+        snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+    } else if (transactionError) {
+        snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
+    } else if (transactionReceipt) {
+        snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
     }
 
     let freelancer = this.props.user.searchedFreelancers;

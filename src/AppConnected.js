@@ -16,7 +16,6 @@ import { guardRedirect } from './actions/guard';
 import { connect } from "react-redux";
 import React from 'react';
 import compose from 'recompose/compose';
-import Transaction from './components/transaction/Transaction';
 import TabBarMenu from './components/menu/TabBarMenu';
 import queryString from 'query-string'
 
@@ -170,7 +169,6 @@ class AppConnected extends React.Component {
                   <Grid item xs={12}>
                     <Switch>
                       <Route exact path="/chronology" component={MyChronologyComponent} />
-                      <Route exact path="/transaction" component={Transaction} />
                       <Route exact path="/register" component={MyVaultCreationComponent} />
                       <Route exact path="/homepage" component={MyHomePageComponent} />
                       <Route exact path="/competencies" component={MyCompetenciesComponent} />

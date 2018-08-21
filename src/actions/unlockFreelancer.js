@@ -21,7 +21,7 @@ export const unlockError = error => ({
 
 export function unlockFreelancerClicked(user, history) {
     return dispatch => {
-        dispatch(transactionBegin());
+        dispatch(transactionBegin("This freelancer is being unlock..."));
         dispatch(unlockBegin());   
         user.talaoContract.methods.getVaultAccess(user.searchedFreelancers.ethAddress).send({from: user.ethAddress})
         .once('transactionHash', (hash) => { 

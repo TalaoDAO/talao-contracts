@@ -9,7 +9,6 @@ import queryString from 'query-string'
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
-import Transaction from '../transaction/Transaction';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import { fetchFreelancer } from '../../actions/user';
 
@@ -27,8 +26,9 @@ const mapStateToProps = state => ({
     guardCheck: state.guardReducer.guardCheck,
     transactionError: state.transactionReducer.transactionError,
     transactionHash: state.transactionReducer.transactionHash, 
-    transactionReceipt: state.transactionReducer.transactionReceipt,
     transaction: state.transactionReducer.transaction,
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    object: state.transactionReducer.object,
     loading: state.userReducer.loading
   });
   
@@ -49,7 +49,7 @@ class Chronology extends React.Component {
     }
 
     render() {
-        const { loadingGuard, transactionError, transactionHash, transactionReceipt, transaction   } = this.props;
+        const { loadingGuard, transactionError, transactionHash, transactionReceipt, object } = this.props;
 
         if (!this.props.user || loadingGuard) {
             return (<Loading />);
@@ -60,17 +60,15 @@ class Chronology extends React.Component {
             }
         }
 
-        if (transaction) {
-            return (<Transaction />);
+        let snackbar;
+        if (transactionHash && !transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+        } else if (transactionError) {
+            snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
+        } else if (transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
         }
 
-        let snackbar;
-        if (transactionHash && transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message={'Transaction successfull !'} time={2000} type='success'/>);
-        }
-        if (transactionError) {
-            snackbar = (<CustomizedSnackbars message={transactionError.message} time={12000} type='error'/>);
-        }
         //pick the current user or a searched freelancer
         let freelancer = (queryString.extract(window.location.search)) ? this.props.user.searchedFreelancers : this.props.user.freelancerDatas;
         let experiences = freelancer.experiences

@@ -10,9 +10,15 @@ export const FETCH_FREELANCER_SUCCESS = 'FETCH_FREELANCER_SUCCESS';
 export const FETCH_FREELANCER_FAILURE = 'FETCH_FREELANCER_FAILURE';
 export const LOGOUT                   = 'web3/LOGOUT';
 export const LOGIN                    = 'web3/LOGIN'
+export const REMOVE_RESEARCH          = 'REMOVE_RESEARCH'
 
 export const logout = () => ({
     type: LOGOUT
+});
+
+export const removeResearch = (user) => ({
+    type: REMOVE_RESEARCH,
+    user
 });
 
 export const login = (address) => ({
@@ -66,28 +72,21 @@ export function fetchUser(address) {
                 //the user is a freelancer so we init his datas
                 else if (resolve !== false) {
                     user.freelancerDatas = new Freelancer(user.vaultAddress, user.ethAddress);
-
-                    //subscribe to the adddocevent
-                   // user.freelancerDatas.eventAddDocumentSubscription().then((resolve) => {
-                       // if (resolve) {
-                            //get the freelancer data
-                            user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
-                                if (reject) {
-                                    dispatch(fetchUserError(reject))
-                                }
-                                //get all documents & competencies
-                                if (resolve) {
-                                    user.freelancerDatas.getAllDocuments().then((resolve) => {
-                                        if (resolve) {      
-                                            //User is a freelancer                                                              
-                                            dispatch(fetchUserSuccess(user));
-                                            dispatch(resetGuard());
-                                        }
-                                    })
-                                }
-                            });
-                   //     }
-                   // });
+                        user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
+                            if (reject) {
+                                dispatch(fetchUserError(reject))
+                            }
+                            //get all documents & competencies
+                            if (resolve) {
+                                user.freelancerDatas.getAllDocuments().then((resolve) => {
+                                    if (resolve) {      
+                                        //User is a freelancer                                                              
+                                        dispatch(fetchUserSuccess(user));
+                                        dispatch(resetGuard());
+                                    }
+                                })
+                            }
+                        });
                 } else {
                     //User is a client with an ethAddress!
                     dispatch(fetchUserSuccess(user));

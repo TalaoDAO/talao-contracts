@@ -4,8 +4,9 @@ export const TRANSACTION_ERROR    = 'TRANSACTION_ERROR';
 export const RESET_TRANSACTION    = 'RESET_TRANSACTION';
 export const TRANSACTION_BEGIN    = 'TRANSACTION_BEGIN';
 
-export const transactionBegin = () => ({
-    type: TRANSACTION_BEGIN
+export const transactionBegin = object => ({
+    type: TRANSACTION_BEGIN,
+    object
   });
 
 export const transactionHash = txHash => ({

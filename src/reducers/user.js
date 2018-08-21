@@ -6,7 +6,8 @@ import {
   FETCH_FREELANCER_SUCCESS,
   FETCH_FREELANCER_FAILURE,
   LOGOUT,
-  LOGIN
+  LOGIN,
+  REMOVE_RESEARCH
 } from '../actions/user'
 
 const initialState = {
@@ -92,6 +93,13 @@ export default function userReducer(state = initialState, action) {
         error: action.error,
         user: null
       };
+
+    case REMOVE_RESEARCH:
+      return {
+        ...state,
+        user: action.user
+      };
+
     default:
       // ALWAYS have a default case in a reducer
       return state;

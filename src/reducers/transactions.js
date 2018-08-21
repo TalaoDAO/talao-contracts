@@ -10,7 +10,8 @@ const initialState = {
   transactionHash: null,
   transactionReceipt: null,
   transactionError: null,
-  transaction: null
+  transaction: null,
+  object: null
 };
 
 export default function transactionReducer(state = initialState, action) {
@@ -22,7 +23,8 @@ export default function transactionReducer(state = initialState, action) {
       transaction: true,
       transactionReceipt: null,
       transactionError: null,
-      transactionHash: null
+      transactionHash: null,
+      object: action.object
     };
 
     case TRANSACTION_HASH:
@@ -37,7 +39,6 @@ export default function transactionReducer(state = initialState, action) {
     return {
       ...state,
       transactionReceipt: action.receipt,
-      transactionError: action.error,
       transaction: false
     };
 
@@ -55,7 +56,8 @@ export default function transactionReducer(state = initialState, action) {
         transactionHash: null,
         transactionReceipt: null,
         transactionError: null,
-        transaction: false
+        transaction: false,
+        object: null
     };
     default:
       // ALWAYS have a default case in a reducer

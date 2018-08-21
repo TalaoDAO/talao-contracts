@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import { createVaultClicked, setFreelancerAddress, searchFreelancerClicked } from '../../actions/homepage';
+import { createVaultClicked, setFreelancerAddress, searchFreelancerClicked, viewDatasClicked } from '../../actions/homepage';
 import { guardRedirect } from '../../actions/guard';
 
 const Loading = require('react-loading-animation');
@@ -74,7 +74,11 @@ const mapStateToProps = state => ({
     freelancerAddressEmpty: state.homepageReducer.freelancerAddressEmpty, 
     invalidAddress: state.homepageReducer.invalidAddress, 
     emptyAddress: state.homepageReducer.emptyAddress,
-    guardRedirect: state.guardReducer.guardRedirect
+    guardRedirect: state.guardReducer.guardRedirect,
+    transactionError: state.transactionReducer.transactionError,
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    object: state.transactionReducer.object,
+    transactionHash: state.transactionReducer.transactionHash,
   });
   
 class Homepage extends React.Component {
@@ -88,7 +92,16 @@ class Homepage extends React.Component {
     
     render() {
         //get props
-        const { message, freelancerAddress, freelancerAddressError, freelancerAddressEmpty, invalidAddress, emptyAddress } = this.props;
+        const { message, 
+                freelancerAddress, 
+                freelancerAddressError, 
+                freelancerAddressEmpty, 
+                invalidAddress, 
+                emptyAddress, 
+                transactionError, 
+                transactionHash,
+                transactionReceipt,
+                object } = this.props;
 
         //Loading user...
         if (!this.props.user) {
@@ -99,7 +112,13 @@ class Homepage extends React.Component {
         if (message) {
             snackbar = (<CustomizedSnackbars message={message} time={5000} type='error'/>);
         }
-
+        if (transactionHash && !transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+        } else if (transactionError) {
+            snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
+        } else if (transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+        }
         //If the user is doesn't have a wallet he can't create a vault
         let showCreateYourVaultBlock;
         if (this.props.user.ethAddress) {
@@ -110,12 +129,12 @@ class Homepage extends React.Component {
                         <div className={this.props.classes.center}>
                         {(!this.props.user.freelancerDatas) ?
                             <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p> :
-                            <p className={this.props.classes.title}>Update your vault</p>
+                            <p className={this.props.classes.title}>View my datas</p>
                         }
                         </div>
                         <div className={this.props.classes.center}>
-                            <Button onClick={() => this.props.dispatch(createVaultClicked(this.props.history))} className={this.props.classes.certificatButton} label="login">
-                                <Link style={{ textDecoration: 'none', color: '#fff' }} to="/register">{(!this.props.user.freelancerDatas) ? 'Create my vault' : 'Update your vault'}</Link>
+                            <Button onClick={() => this.props.user.freelancerDatas ? this.props.dispatch(viewDatasClicked(this.props.history)) : this.props.dispatch(createVaultClicked(this.props.history))} className={this.props.classes.certificatButton} label="login">
+                                <Link style={{ textDecoration: 'none', color: '#fff' }} to={(!this.props.user.freelancerDatas) ? "/register" : "/chronology"}>{(!this.props.user.freelancerDatas) ? 'Create my vault' : 'View my datas'}</Link>
                             </Button>
                         </div>
                     </CardContent>

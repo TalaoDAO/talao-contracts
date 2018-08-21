@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
 import { fetchFreelancer } from '../../actions/user';
+import CustomizedSnackbars from '../snackbars/snackbars';
 
 const Loading = require('react-loading-animation');
 
@@ -86,7 +87,12 @@ const styles = {
 
 const mapStateToProps = state => ({
     loadingGuard: state.guardReducer.loading,   
-    guardCheck: state.guardReducer.guardCheck
+    guardCheck: state.guardReducer.guardCheck,
+    transactionError: state.transactionReducer.transactionError,
+    transactionHash: state.transactionReducer.transactionHash,
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    object: state.transactionReducer.object,
+    transaction: state.transactionReducer.transaction
   });
 
 class Competencies extends React.Component {
@@ -104,7 +110,7 @@ class Competencies extends React.Component {
     }
 
     render() {
-    const { loadingGuard } = this.props;
+    const { loadingGuard, transactionError, transactionHash, transactionReceipt, object } = this.props;
 
     if (!this.props.user || loadingGuard) {
         return (<Loading />);
@@ -113,6 +119,15 @@ class Competencies extends React.Component {
         if ((!this.props.user.freelancerDatas && !queryString.extract(window.location.search)) || (!this.props.user.searchedFreelancers && queryString.extract(window.location.search))) {
             return (<Loading />)
         }
+    }
+
+    let snackbar;
+    if (transactionHash && !transactionReceipt) {
+        snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+    } else if (transactionError) {
+        snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
+    } else if (transactionReceipt) {
+        snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
     }
 
     //pick the current user or a searched freelancer
@@ -166,6 +181,7 @@ class Competencies extends React.Component {
                         {competencies}
                     </div>
                 </Grid>
+                {snackbar}
             </Grid>
         );
 

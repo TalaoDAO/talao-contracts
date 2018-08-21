@@ -118,7 +118,7 @@ export const removeDocError = error => ({
 
 export function addDocToFreelancer(user, experience) {
     return dispatch => {
-        dispatch(transactionBegin());
+        dispatch(transactionBegin("Your experience is being added..."));
         dispatch(addDocBegin(user, experience));   
         user.freelancerDatas.addDocument(experience)
         .once('transactionHash', (hash) => { 
@@ -132,7 +132,7 @@ export function addDocToFreelancer(user, experience) {
         })
         .then((success) => {
             user.freelancerDatas.experiences.push(experience);
-            user.freelancerDatas.getCompetencies();
+            //user.freelancerDatas.getCompetencies();
             dispatch(addDocSuccess(user, success));
             dispatch(fetchUserSuccess(user));
         })
@@ -144,7 +144,7 @@ export function addDocToFreelancer(user, experience) {
 
 export function removeDocToFreelancer(user, experience) {
     return dispatch => {
-        dispatch(transactionBegin());
+        dispatch(transactionBegin("Your experience is being deleted..."));
         dispatch(removeDocBegin(user, experience));
         user.freelancerDatas.removeDoc(experience)
         .once('transactionHash', (hash) => { 

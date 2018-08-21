@@ -11,9 +11,7 @@ import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault, resetRedirect } from '../../actions/createVault';
 import queryString from 'query-string'
 import { hasAccess } from '../../actions/guard';
-import Transaction from '../transaction/Transaction';
 import CustomizedSnackbars from '../snackbars/snackbars';
-import { resetTransaction } from '../../actions/transactions';
 
 const Loading = require('react-loading-animation');
 
@@ -141,8 +139,10 @@ const mapStateToProps = state => ({
     helperTextEmpty: state.createVaultReducer.helperTextEmpty,
     redirectTo: state.createVaultReducer.redirectTo,   
     transactionError: state.transactionReducer.transactionError,
-    loadingGuard: state.guardReducer.loading,
-    transaction: state.transactionReducer.transaction
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    object: state.transactionReducer.object,
+    transactionHash: state.transactionReducer.transactionHash,
+    loadingGuard: state.guardReducer.loading
   });
 
 
@@ -160,7 +160,6 @@ class VaultCreation extends React.Component {
             this.route = window.location.pathname.split('/')[1];
             this.props.dispatch(hasAccess(this.route, this.urlParams, this.props.user, this.props.history));
             this.props.dispatch(initVaultCreation(this.props.user));
-            this.props.dispatch(resetTransaction());
         }
     }
 
@@ -192,8 +191,10 @@ class VaultCreation extends React.Component {
             helperIncorrectPhoneNumber,
             helperTextEmpty,
             transactionError, 
-            loadingGuard,
-            transaction
+            transactionReceipt,
+            transactionHash,
+            object,
+            loadingGuard
         } = this.props;
 
         //Loading user from parent AppConnected...
@@ -201,13 +202,13 @@ class VaultCreation extends React.Component {
             return (<Loading />)
         }
 
-        if (transaction) {
-            return (<Transaction />);
-        }
-
         let snackbar;
-        if (transactionError) {
-            snackbar = (<CustomizedSnackbars message={transactionError.message} time={12000} type='error'/>);
+        if (transactionHash && !transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+        } else if (transactionError) {
+            snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
+        } else if (transactionReceipt) {
+            snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
         }
 
         let canSubmit = (!firstNameError && !firstNameEmpty && !lastNameError && !lastNameEmpty && !titleError && !titleEmpty && !mailError && !phoneError);
@@ -218,7 +219,7 @@ class VaultCreation extends React.Component {
         <span> Price: {accessPrice > 1 ? accessPrice + ' tokens' : accessPrice + ' token'} </span>
 
         //Block for access price
-        let accessPriceInputs = (step === 0) ?               
+        let accessPriceInputs = (step === 0) &&             
         <div className={this.props.classes.content}>
             <TextField
                 autoFocus={true}
@@ -237,8 +238,7 @@ class VaultCreation extends React.Component {
                     Next
                 </Button>
             </div>
-        </div> 
-        : null;
+        </div>
 
         //Bloc for vault form
         let vaultInputs = (step === 1) ?

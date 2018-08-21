@@ -23,6 +23,7 @@ import {
   const initialState = {
       step: 0,
       accessPrice: '',
+      accessPriceSet: false,
       firstName: '',
       firstNameError: false,
       firstNameEmpty: true,
@@ -55,6 +56,7 @@ import {
           ...state,
           step: 0,
           accessPrice: '',
+          accessPriceSet: false,
           firstName: '',
           firstNameError: false,
           firstNameEmpty: true,
@@ -93,7 +95,7 @@ import {
         return {
           ...state,
           accessPrice: action.price,
-          isAccessPriceSet: (action.price !== 0) ? true : false,
+          isAccessPriceSet: action.accessPriceSet,
           step: action.step,
           firstName: (action.user) ? action.user.firstName : '',
           lastName: (action.user) ? action.user.lastName : '',

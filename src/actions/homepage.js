@@ -41,6 +41,13 @@ export function createVaultClicked(history) {
     }
 }
 
+export function viewDatasClicked(history) {
+    return dispatch => {
+        dispatch(changeMenu('/chronology'));
+        history.push('/chronology');
+    }
+}
+
 export function searchFreelancerClicked(history, address) {
     return dispatch => {
         dispatch(changeMenu('/chronology'));

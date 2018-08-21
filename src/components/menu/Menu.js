@@ -6,6 +6,7 @@ import logoTalao from '../../images/logo-talao.png';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { changeMenuClicked } from '../../actions/menu';
+import { removeResearch } from '../../actions/user';
 
 const Loading = require('react-loading-animation');
 
@@ -61,7 +62,7 @@ const styles = theme => ({
 class Menu extends React.Component {
 
     render() {
-        const { transactionError, transactionReceipt, transaction, currentMenu } = this.props;
+        const { currentMenu } = this.props;
 
         //Loading user from parent AppConnected...
         if (!this.props.user) {
@@ -69,13 +70,13 @@ class Menu extends React.Component {
         }
 
         //if this is a freelancer
-        let showFreelancerMenu = (this.props.user.freelancerDatas && !transaction) &&
+        let showFreelancerMenu = (this.props.user.freelancerDatas || this.props.user.searchedFreelancers) &&
             <div>
                 <Typography to="/">
                 <Link 
                     onClick={() => this.props.dispatch(changeMenuClicked('/competencies'))}
                     className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                    to={"/competencies"}
+                    to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress}
                 >
                     Competencies
                 </Link>
@@ -84,27 +85,15 @@ class Menu extends React.Component {
                     <Link 
                         onClick={() => this.props.dispatch(changeMenuClicked('/chronology'))}
                         className={currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                        to={"/chronology"}
+                        to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
                     >
                         Chronology
                     </Link>
                 </Typography> 
             </div>  
-        
-        //if there are transactions
-        let showTransactionMenu = (transactionReceipt || transactionError) &&
-        <Typography to="/">
-            <Link 
-                onClick={() => this.props.dispatch(changeMenuClicked('/transaction'))}
-                className={currentMenu === '/transaction' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                to="/transaction"
-            >
-            Last transaction
-            </Link>
-        </Typography>
 
         //if this is a client or a freelancer
-        let showCreateVaultMenu = (this.props.user.ethAddress  && !transaction) &&
+        let showCreateVaultMenu = (this.props.user.ethAddress && !this.props.user.searchedFreelancers) &&
         <Typography to="/">
             <Link 
                 onClick={() => this.props.dispatch(changeMenuClicked('/register'))}
@@ -115,35 +104,48 @@ class Menu extends React.Component {
             </Link>
         </Typography>
 
-        let showHomePageMenu = (!transaction) &&
+        let showMyVaultMenu = (this.props.user.freelancerDatas && this.props.user.searchedFreelancers) && 
         <Typography to="/">
-        <Link 
-            onClick={() => this.props.dispatch(changeMenuClicked('/homepage'))}
-            className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-            to="/homepage"
-        >
-            Homepage
-        </Link>
+            <Link 
+                onClick={() => { let usr = this.props.user; 
+                                usr.searchedFreelancers = null; 
+                                this.props.dispatch(removeResearch(usr)); 
+                                this.props.dispatch(changeMenuClicked('/chronology'));
+                                }
+                }
+                className={this.props.classes.sidebarItem} 
+                to="/chronology"
+            >
+                My vault
+            </Link>
         </Typography>
 
         return (
             <div className={this.props.classes.root}>
                 <div>
-                    {(transaction) 
-                    ?
+                    <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage'))} >
                         <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
-                    :
-                        <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage'))} >
-                            <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
-                        </Link>
-                    }
+                    </Link>
                 </div>
                 <div className={this.props.classes.sidebar}>
                     <div>
-                        {showTransactionMenu}
                         {showCreateVaultMenu}
+                        {showMyVaultMenu}
                         {showFreelancerMenu}
-                        {showHomePageMenu}
+                        <Typography to="/">
+                        <Link 
+                            onClick={() => { let usr = this.props.user; 
+                                             usr.searchedFreelancers = null; 
+                                             this.props.dispatch(removeResearch(usr)); 
+                                             this.props.dispatch(changeMenuClicked('/homepage'));
+                                            }
+                                    }
+                            className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                            to="/homepage"
+                        >
+                            Homepage
+                        </Link>
+                        </Typography>
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>

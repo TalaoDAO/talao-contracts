@@ -33,7 +33,7 @@ const styles = theme => ({
         textAlign: 'center',
     },
     marginDivider: {
-        marginTop: '10px'
+        marginTop: '25px'
     }
 });
 
@@ -44,13 +44,6 @@ const mapStateToProps = state => ({
   });
 
 class Transaction extends React.Component {
-  /*  componentDidMount() {
-        if(!this.props.transactionError && !this.props.transactionHash && !this.props.transactionReceipt) {
-            this.props.history.push('Homepage');
-            this.props.dispatch(changeMenu('/homepage'));
-        }*/
-   // }
-
     render() {
         const { transactionError, transactionHash, transactionReceipt } = this.props;
         return (
@@ -76,7 +69,11 @@ class Transaction extends React.Component {
                                     <a href={ETHERSCANURL + transactionHash} target="_blank">Follow your transaction on etherscan !</a>
                                 </div>
                             }
-                            {(transactionReceipt) && 
+                            <Divider className={this.props.classes.marginDivider}/>
+                            <div className={this.props.classes.marginDivider}>
+                                You can navigate while the transaction is pending with the left menu.
+                            </div>
+                            {/*{(transactionReceipt) && 
                                 <div>
                                     <Divider className={this.props.classes.marginDivider}/>
                                     <div className={this.props.classes.center}>
@@ -94,7 +91,7 @@ class Transaction extends React.Component {
                                     <p className={this.props.classes.title}>Transaction error</p>
                                     <p>{transactionError.message}</p>
                                 </div>
-                            }
+                            }*/}
                         </CardContent>
                     </Card>
                 </Grid>
