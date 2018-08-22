@@ -2,15 +2,13 @@ import {
     GUARD_ERROR,
     GUARD_BEGIN,
     GUARD_VALID,
-    RESET_GUARD,
-    GUARD_REDIRECT
+    RESET_GUARD
   } from '../actions/guard'
   
   const initialState = {
     loading: true,
     message: '',
-    guardCheck: false,
-    guardRedirect: ''
+    guardCheck: false
   };
   
   export default function guardReducer(state = initialState, action) {
@@ -45,14 +43,6 @@ import {
           loading: false,
           message: '',
           guardCheck: false
-        };
-
-      case GUARD_REDIRECT:
-        return {
-          ...state,
-          loading: false,
-          message: '',
-          guardRedirect: action.redirectTo
         };
 
       default:

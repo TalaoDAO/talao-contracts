@@ -26,17 +26,15 @@ const mapStateToProps = state => ({
     guardCheck: state.guardReducer.guardCheck,
     transactionError: state.transactionReducer.transactionError,
     transactionHash: state.transactionReducer.transactionHash, 
-    transaction: state.transactionReducer.transaction,
     transactionReceipt: state.transactionReducer.transactionReceipt,
-    object: state.transactionReducer.object,
-    loading: state.userReducer.loading
+    object: state.transactionReducer.object
   });
   
 class Chronology extends React.Component {
     
     componentDidMount() {
         //The user is initialize and the guard is not check
-        if (this.props.user && !this.props.guardCheck && !this.props.loading) {
+        if (this.props.user && !this.props.guardCheck) {
             this.props.dispatch(hasAccess(window.location.pathname.split('/')[1], queryString.extract(window.location.search), this.props.user, this.props.history));
         }
     }

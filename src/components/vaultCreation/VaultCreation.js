@@ -8,7 +8,7 @@ import Collapse from '@material-ui/core/Collapse';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
-import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault, resetRedirect } from '../../actions/createVault';
+import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault } from '../../actions/createVault';
 import queryString from 'query-string'
 import { hasAccess } from '../../actions/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
@@ -136,8 +136,7 @@ const mapStateToProps = state => ({
     helperTextTooLong: state.createVaultReducer.helperTextTooLong,
     helperIncorrectMail: state.createVaultReducer.helperIncorrectMail,
     helperIncorrectPhoneNumber: state.createVaultReducer.helperIncorrectPhoneNumber,
-    helperTextEmpty: state.createVaultReducer.helperTextEmpty,
-    redirectTo: state.createVaultReducer.redirectTo,   
+    helperTextEmpty: state.createVaultReducer.helperTextEmpty, 
     transactionError: state.transactionReducer.transactionError,
     transactionReceipt: state.transactionReducer.transactionReceipt,
     object: state.transactionReducer.object,
@@ -150,12 +149,8 @@ class VaultCreation extends React.Component {
 
     //check if the action ask for a redirection or init the vault if the user is loaded
     componentDidMount() {
-        if (this.props.redirectTo) {
-            this.props.history.push(this.props.redirectTo);
-            this.props.dispatch(resetRedirect());
-        }
         //check the user access to this route and init his datas
-        else if (this.props.user) {
+        if (this.props.user) {
             this.urlParams = queryString.extract(this.props.location.search);
             this.route = window.location.pathname.split('/')[1];
             this.props.dispatch(hasAccess(this.route, this.urlParams, this.props.user, this.props.history));

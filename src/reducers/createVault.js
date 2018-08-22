@@ -16,8 +16,7 @@ import {
     SET_ACCESS_PRICE_ERROR,
     SUBMIT_VAULT_BEGIN,
     SUBMIT_VAULT_SUCCESS,
-    SUBMIT_VAULT_ERROR,
-    RESET_REDIRECT
+    SUBMIT_VAULT_ERROR
   } from '../actions/createVault'
   
   const initialState = {
@@ -209,11 +208,6 @@ import {
           error: action.error
         };
 
-      case RESET_REDIRECT:
-        return {
-          ...state,
-          redirectTo: null
-        };
       default:
         // ALWAYS have a default case in a reducer
         return state;

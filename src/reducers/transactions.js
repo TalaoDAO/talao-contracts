@@ -10,7 +10,6 @@ const initialState = {
   transactionHash: null,
   transactionReceipt: null,
   transactionError: null,
-  transaction: null,
   object: null
 };
 
@@ -20,7 +19,6 @@ export default function transactionReducer(state = initialState, action) {
     case TRANSACTION_BEGIN:
     return {
       ...state,
-      transaction: true,
       transactionReceipt: null,
       transactionError: null,
       transactionHash: null,
@@ -38,16 +36,14 @@ export default function transactionReducer(state = initialState, action) {
     case TRANSACTION_RECEIPT:
     return {
       ...state,
-      transactionReceipt: action.receipt,
-      transaction: false
+      transactionReceipt: action.receipt
     };
 
     case TRANSACTION_ERROR:
     return {
       ...state,
       transactionReceipt: null,
-      transactionError: action.error,
-      transaction: false
+      transactionError: action.error
     };
 
     case RESET_TRANSACTION:
@@ -56,7 +52,6 @@ export default function transactionReducer(state = initialState, action) {
         transactionHash: null,
         transactionReceipt: null,
         transactionError: null,
-        transaction: false,
         object: null
     };
     default:

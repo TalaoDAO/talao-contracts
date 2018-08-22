@@ -1,15 +1,17 @@
 import { resetGuard } from '../actions/guard'
-export const CHANGE_MENU_SELECTED     = 'CHANGE_MENU_SELECTED';
+export const REDIRECT     = 'REDIRECT';
 
 
 export const changeMenu = selectedMenu => ({
-    type: CHANGE_MENU_SELECTED,
+    type: REDIRECT,
     selectedMenu
   });
 
-export function changeMenuClicked(address) {
+export function changeMenuClicked(address, reset) {
     return dispatch => {
         dispatch(changeMenu(address));
-        dispatch(resetGuard());
+        if (reset) {
+            dispatch(resetGuard());
+        }
     }
 }

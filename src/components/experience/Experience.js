@@ -14,6 +14,7 @@ import { Grid } from '../../../node_modules/material-ui';
 import { removeDocToFreelancer } from '../../actions/experience';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
+import { isMobile } from 'react-device-detect';
 
 const Loading = require('react-loading-animation');
 const styles = theme => ({
@@ -97,16 +98,12 @@ class Experience extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            showCert: false,
-        };
+        this.state = { showCert: false };
         this.showCertification = this.showCertification.bind(this);
     }
     
     showCertification() {
-        this.setState({
-            showCert: !this.state.showCert
-        });
+        this.setState({ showCert: !this.state.showCert });
     }
 
     removeDocument = () => {
@@ -131,7 +128,7 @@ class Experience extends React.Component {
         let competencyTags;
         let dateDiff;
         let monthDiff;
-        console.log(this.props.value);
+
         if (!this.props.user) {
             return (<Loading />);
         } else {
@@ -148,7 +145,7 @@ class Experience extends React.Component {
                         &nbsp;
                     </div>
                     <div className={this.props.classes.timeLine} >
-                        <div className={this.props.classes.line} style={{ width: (monthDiff * 5) + 'px' }}></div>
+                        <div className={this.props.classes.line} style={{ width: (isMobile) ? '28px' : (monthDiff * 5) + 'px' }}></div>
                         <div className={this.props.classes.timeContainer}>
                             {dateDiff}
                         </div>
@@ -189,10 +186,5 @@ class Experience extends React.Component {
         );
     }
 }
-const mapStateToProps = state => ({
-    user: state.userReducer.user,
-    loading: state.userReducer.loading,
-    error: state.userReducer.error
-  });
 
-export default compose(withStyles(styles), connect(mapStateToProps))(Experience);
+export default compose(withStyles(styles), connect())(Experience);

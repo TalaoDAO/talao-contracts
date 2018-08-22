@@ -9,7 +9,6 @@ import CustomizedSnackbars from '../snackbars/snackbars';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { createVaultClicked, setFreelancerAddress, searchFreelancerClicked, viewDatasClicked } from '../../actions/homepage';
-import { guardRedirect } from '../../actions/guard';
 
 const Loading = require('react-loading-animation');
 
@@ -74,7 +73,6 @@ const mapStateToProps = state => ({
     freelancerAddressEmpty: state.homepageReducer.freelancerAddressEmpty, 
     invalidAddress: state.homepageReducer.invalidAddress, 
     emptyAddress: state.homepageReducer.emptyAddress,
-    guardRedirect: state.guardReducer.guardRedirect,
     transactionError: state.transactionReducer.transactionError,
     transactionReceipt: state.transactionReducer.transactionReceipt,
     object: state.transactionReducer.object,
@@ -83,13 +81,6 @@ const mapStateToProps = state => ({
   
 class Homepage extends React.Component {
 
-    componentWillReceiveProps() {
-        if (this.props.guardRedirect) {
-            this.props.history.push(this.props.guardRedirect)
-            this.props.dispatch(guardRedirect(''));
-        }
-    }
-    
     render() {
         //get props
         const { message, 
@@ -119,7 +110,7 @@ class Homepage extends React.Component {
         } else if (transactionReceipt) {
             snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
         }
-        //If the user is doesn't have a wallet he can't create a vault
+        //If the user doesn't have a wallet he can't create a vault
         let showCreateYourVaultBlock;
         if (this.props.user.ethAddress) {
             showCreateYourVaultBlock = 

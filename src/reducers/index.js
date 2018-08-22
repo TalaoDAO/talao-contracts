@@ -7,7 +7,7 @@ import guardReducer from './guard';
 import homepageReducer from './homepage';
 import menuReducer from './menu'
 
-export default combineReducers({
+const appReducer = combineReducers({
     userReducer,
     createVaultReducer,
     transactionReducer,
@@ -16,3 +16,12 @@ export default combineReducers({
     homepageReducer,
     menuReducer
 });
+
+export const rootReducer = (state, action) => {
+    //Reset all the datas if needed
+    if (action.type === 'RESET_STORE') {
+      state = undefined
+    }
+  
+    return appReducer(state, action)
+  }

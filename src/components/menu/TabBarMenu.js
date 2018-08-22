@@ -11,12 +11,12 @@ import ExploreIcon from '@material-ui/icons/Explore';
 import HomeIcon from '@material-ui/icons/Home';
 import Grid from '@material-ui/core/Grid';
 import { changeMenuClicked } from '../../actions/menu';
+import { removeResearch } from '../../actions/user';
 
 const Loading = require('react-loading-animation');
 
 const mapStateToProps = state => ({  
-    currentMenu: state.menuReducer.selectedMenu,
-    transaction: state.transactionReducer.transaction
+    currentMenu: state.menuReducer.selectedMenu
   });
 
   const styles = () =>
@@ -40,13 +40,13 @@ class TabBarMenu extends React.Component {
       };
     
     handleChange = (event, value) => {
-    this.props.dispatch(changeMenuClicked(value));
+    this.props.dispatch(changeMenuClicked(value, true));
     };
     
     render() {
-        const { transaction, currentMenu } = this.props;
+        const { currentMenu } = this.props;
 
-        if (!this.props.user || transaction) {
+        if (!this.props.user) {
             return (<Loading />);
         }
 
@@ -56,10 +56,45 @@ class TabBarMenu extends React.Component {
               value={currentMenu}
               onChange={this.handleChange}
               showLabels>
-              <BottomNavigationAction component={({ ...props }) => <Link to='/homepage' {...props} />} value="/homepage" label="Homepage" icon={<HomeIcon />} />
-              <BottomNavigationAction component={({ ...props }) => <Link to='/chronology' {...props} />} style={{ display: this.props.user.freelancerDatas ? '' : 'none' }} value="/chronology" label="Chronology" icon={<ExploreIcon />} />
-              <BottomNavigationAction component={({ ...props }) => <Link to='/competencies' {...props} />} style={{ display: this.props.user.freelancerDatas ? '' : 'none' }} value="/competencies" label="Competencies" icon={<StarIcon />} />
-              <BottomNavigationAction component={({ ...props }) => <Link to='/register' {...props} />} value="/register" label={this.props.user.freelancerDatas ? 'Update' : 'Register'} icon={<AccountCircle />} />
+              <BottomNavigationAction component={({ ...props }) => <Link to='/homepage' {...props} />} 
+                                                                    value="/homepage" 
+                                                                    label="Homepage" 
+                                                                    onClick={() => { 
+                                                                      let usr = this.props.user; 
+                                                                      usr.searchedFreelancers = null; 
+                                                                      this.props.dispatch(removeResearch(usr)); 
+                                                                     }
+                                                                    }
+                                                                    icon={<HomeIcon />} />
+              <BottomNavigationAction component={({ ...props }) => <Link to="/chronology" {...props} />} 
+                                                                    style={{ display: ((this.props.user.freelancerDatas && this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') ? '' : 'none' }} 
+                                                                    value="/chronology2" 
+                                                                    label="My vault"
+                                                                    onClick={() => { 
+                                                                      let usr = this.props.user; 
+                                                                      usr.searchedFreelancers = null; 
+                                                                      this.props.dispatch(removeResearch(usr)); 
+                                                                      this.props.dispatch(changeMenuClicked('/chronology', true));
+                                                                      //Nothing change here to redux and we need to forceUpdate to update the menu
+                                                                      this.forceUpdate();
+                                                                      }
+                                                                    }
+                                                                    icon={<ExploreIcon />} />
+              <BottomNavigationAction component={({ ...props }) => <Link to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress} {...props} />} 
+                                                                    style={{ display: ((this.props.user.freelancerDatas || this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') ? '' : 'none' }} 
+                                                                    value="/chronology" 
+                                                                    label="Chronology" 
+                                                                    icon={<ExploreIcon />} />
+              <BottomNavigationAction component={({ ...props }) => <Link to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress} {...props} />} 
+                                                                    style={{ display: ((this.props.user.freelancerDatas || this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') ? '' : 'none' }}  
+                                                                    value="/competencies" 
+                                                                    label="Competencies" 
+                                                                    icon={<StarIcon />} />
+              <BottomNavigationAction component={({ ...props }) => <Link to='/register' {...props} />} 
+                                                                    value="/register" 
+                                                                    style={{ display: ((this.props.user.ethAddress && !this.props.user.searchedFreelancers && currentMenu !== '/unlockfreelancer')) ? '' : 'none' }}  
+                                                                    label={this.props.user.freelancerDatas ? 'Update' : 'Register'} 
+                                                                    icon={<AccountCircle />} />
             </BottomNavigation>
           </Grid>
         );

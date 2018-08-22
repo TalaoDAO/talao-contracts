@@ -12,14 +12,11 @@ import Hidden from '@material-ui/core/Hidden';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import { fetchUser, logout, login } from './actions/user';
 import { resetTransaction } from './actions/transactions';
-import { guardRedirect } from './actions/guard';
 import { connect } from "react-redux";
 import React from 'react';
 import compose from 'recompose/compose';
 import TabBarMenu from './components/menu/TabBarMenu';
-import queryString from 'query-string'
 
-const Loading = require('react-loading-animation');
 const theme = createMuiTheme(constants.theme);
 const styles = theme =>
   ({
@@ -50,9 +47,7 @@ const styles = theme =>
 const mapStateToProps = state => ({
     user: state.userReducer.user,
     ethAddress: state.userReducer.ethAddress,
-    loading: state.userReducer.loading,
-    resetAccount: state.userReducer.resetAccount,
-    useAccount: state.userReducer.useAccount
+    resetAccount: state.userReducer.resetAccount
 });
 
 let INIT_ONCE = false;
@@ -83,15 +78,13 @@ class AppConnected extends React.Component {
   //This action is trigger each time we first log in
   //If the user has a wallet, this action is erase by the action 'RECEIVE ACCOUNT'
   componentDidMount() {
-    if (!this.props.ethAddress && !INIT_ONCE) {
-      let parameter = queryString.extract(window.location.search);
-      if (parameter && window.web3.utils.isAddress(parameter)) {
-        this.props.dispatch(guardRedirect(window.location.pathname + '?' + parameter))
+    setTimeout(function() {
+      if (!this.props.ethAddress && !INIT_ONCE) {
+        this.props.dispatch(fetchUser());
+        INIT_ONCE = true;
+        window.account = null;
       }
-      this.props.dispatch(fetchUser());
-      INIT_ONCE = true;
-      window.account = null;
-    }
+    }.bind(this), 1000);
   }
 
   //get the first action 'RECEIVE ACCOUNT' and set this.props.ethAddress
@@ -108,11 +101,8 @@ class AppConnected extends React.Component {
   }
 
   render() {
-    const { loading, user} = this.props;
-    if (loading) {
-      return <Loading />;
-    }
-
+    const { user} = this.props;
+    
     const MyHomePageComponent = (props) => {
       return (
         <Homepage 

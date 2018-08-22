@@ -91,8 +91,7 @@ const mapStateToProps = state => ({
     transactionError: state.transactionReducer.transactionError,
     transactionHash: state.transactionReducer.transactionHash,
     transactionReceipt: state.transactionReducer.transactionReceipt,
-    object: state.transactionReducer.object,
-    transaction: state.transactionReducer.transaction
+    object: state.transactionReducer.object
   });
 
 class Competencies extends React.Component {
@@ -164,6 +163,7 @@ class Competencies extends React.Component {
             return (
                 <div key={index} className={appliedClasses.join(' ')}>
                     <Competency
+                        user={this.props.user}
                         competency={extendedCompetency.competency}
                         confidenceIndex={extendedCompetency.confidenceIndex}
                         layout={layout}>

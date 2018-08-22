@@ -1,10 +1,9 @@
-import { changeMenu } from '../actions/menu'
+import { changeMenuClicked, changeMenu } from '../actions/menu'
 
 export const GUARD_ERROR = 'GUARD_ERROR';
 export const GUARD_VALID = 'GUARD_VALID';
 export const GUARD_BEGIN = 'GUARD_BEGIN';
 export const RESET_GUARD = 'RESET_GUARD';
-export const GUARD_REDIRECT = 'GUARD_REDIRECT';
 
 export const guardBegin = () => ({
     type: GUARD_BEGIN
@@ -23,52 +22,42 @@ export const resetGuard = () => ({
     type: RESET_GUARD
 });
 
-export const guardRedirect = (redirectTo) => ({
-    type: GUARD_REDIRECT,
-    redirectTo
-});
-
 export function hasAccess(location, params, user, history) {
     return dispatch => {
 
         dispatch(guardBegin());
         
         let redirectTo = null;
-        //No parameters
+        //No parameters in the url
         if (!params) {
             switch (location.toLowerCase()) 
             {
                 case 'chronology':
                 case 'competencies':
-                    if (!user.freelancerDatas) {
-                        dispatch(guardError('Please create your vault first.'));
-                        redirectTo = '/homepage';
-                        dispatch(changeMenu(redirectTo));
-                    }
+                    if (!user.freelancerDatas)
+                        redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');
                     break;
                 case 'unlockfreelancer': 
-                    dispatch(guardError('Invalid parameters.'));
-                    redirectTo = '/homepage';
-                    dispatch(changeMenu(redirectTo));
+                    redirectTo = guardHasError(dispatch, 'Invalid parameters.', '/homepage');
                     break;
-                case 'register': if (!user.ethAddress) {
-                    dispatch(guardError('Please log in to an account with a wallet before creating a vault.'));
-                    redirectTo = '/homepage';
-                    dispatch(changeMenu(redirectTo));
-                }
+                case 'register': 
+                    if (!user.ethAddress)
+                        redirectTo = guardHasError(dispatch, 'Please log in to an account with a wallet before creating a vault.', '/homepage');
                 break; 
                 default: redirectTo = '/homepage';
             }
+            //if no redirection, the user is authorize
             (redirectTo) ? history.push(redirectTo) : dispatch(guardValid());
 
-        //Parameter invalid
+        //Url Parameter invalid
         } else if (!window.web3.utils.isAddress(params)) {
-            dispatch(guardError('This address is not a valid ethereum address.'));
-            history.push('/homepage');
-            dispatch(changeMenu('/homepage'));
+            redirectTo = guardHasError(dispatch, 'This address is not a valid ethereum address.', '/homepage');
+            history.push(redirectTo);
         }
+
         //Valid parameter
         else {
+
             //The vault price of the freelancer is 0 talao token ??
             let accessPriceIsZeroTalaoToken;
             user.talaoContract.methods.data(params).call().then(info => {
@@ -82,20 +71,16 @@ export function hasAccess(location, params, user, history) {
                     case 'chronology':
                     case 'competencies':
                         //if the vault is free : authorize
-                        if (!accessPriceIsZeroTalaoToken) {
-                            dispatch(guardError('This vault is not free ! Please log in to unlock this freelancer'));  
-                            redirectTo = '/homepage';
-                            dispatch(changeMenu(redirectTo));
-                        }  
+                        if (!accessPriceIsZeroTalaoToken)
+                            redirectTo = guardHasError(dispatch, 'This vault is not free ! Please log in to unlock this freelancer', '/homepage');         
                         break;
                     case 'unlockfreelancer': 
                     case 'register':
-                        dispatch(guardError('Please log in to an account with a wallet before creating a vault.'));
-                        redirectTo = '/homepage';
-                        dispatch(changeMenu(redirectTo));
+                        redirectTo = guardHasError(dispatch, 'Please log in to an account with a wallet.', '/homepage');  
                         break;
                     default: redirectTo = '/homepage';
                 }
+                //if no redirection, the user is authorize
                 (redirectTo) ? history.push(redirectTo) : dispatch(guardValid());
 
             //The account is log in and the params is correct
@@ -106,39 +91,37 @@ export function hasAccess(location, params, user, history) {
                     {
                         case 'chronology':
                             if (!user.freelancerDatas) {
-                                redirectTo = '/homepage';
-                                dispatch(guardError('Please create your vault first.'));
-                                dispatch(changeMenu(redirectTo));
+                                redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');  
                             } else {
                                 dispatch(guardValid());
+                                //force the url redirection to remove the url params
                                 redirectTo = '/chronology';
                                 dispatch(changeMenu(redirectTo));
                             }
                             break;
                         case 'competencies':
                             if (!user.freelancerDatas) {
-                                redirectTo = '/homepage';
-                                dispatch(guardError('Please create your vault first.'));
-                                dispatch(changeMenu(redirectTo));
+                                redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');  
                             } else {
+                                //force the url redirection to remove the url params
                                 dispatch(guardValid());
                                 redirectTo = '/competencies';
                                 dispatch(changeMenu(redirectTo));
                             }
                             break;
                         case 'unlockfreelancer':
-                            redirectTo = '/homepage';
-                            dispatch(guardError('You can\'t unlock yourself.'));
-                            dispatch(changeMenu(redirectTo));
-                        break
-                        case 'register': break;
+                            redirectTo = guardHasError(dispatch, 'You can\'t unlock yourself.', '/homepage');  
+                            break
+                        case 'register': 
+                            break;
                         default: redirectTo = '/homepage';
                     }
+                    //if no redirection, the user is authorize
                     (redirectTo) ? history.push(redirectTo) : dispatch(guardValid());
 
                 //The user is a client looking for a freelancer
                 } else {
-
+                    //The user has a wallet and he is looking for someonelse, and the parameter is valid
                     let isPartner = null;
                     let hasVaultAccess = null;
                     let hasVault = null;
@@ -159,28 +142,24 @@ export function hasAccess(location, params, user, history) {
                                     case 'chronology':
                                     case 'competencies':
                                         if (!hasVault) {
-                                            redirectTo = '/homepage';
-                                            dispatch(guardError('This freelancer doesn\'t have a vault.'));
-                                            dispatch(changeMenu(redirectTo));
+                                            redirectTo = guardHasError(dispatch, 'This freelancer doesn\'t have a vault.', '/homepage');         
                                         } else if (!isPartner && !hasVaultAccess && !accessPriceIsZeroTalaoToken) {
+                                            //Access needed, so redirect to unlockfreelancer
                                             redirectTo = '/unlockfreelancer?' + params;
                                             dispatch(changeMenu('/unlockfreelancer'));
                                         }
                                         break;
                                     case 'unlockfreelancer':
                                         if (!hasVault) {
-                                            redirectTo = '/homepage';
-                                            dispatch(guardError('This freelancer doesn\'t have a vault.'));
-                                            dispatch(changeMenu(redirectTo));
+                                            redirectTo = guardHasError(dispatch, 'This freelancer doesn\'t have a vault.', '/homepage');      
                                         } else if (isPartner || hasVaultAccess || accessPriceIsZeroTalaoToken) {
+                                            //The user has access, so redirect him directly on the chronology of the searchedfreelancer
                                             redirectTo = '/chronology?' + params;
                                             dispatch(changeMenu('/chronology'));
                                         }
                                         break
                                     case 'register':
-                                        redirectTo = '/homepage';
-                                        dispatch(changeMenu(redirectTo));
-                                        dispatch(guardError('You can\'t edit this vault.'));
+                                        redirectTo = guardHasError(dispatch, 'You can\'t edit this vault.', '/homepage');      
                                         break;
                                     default: redirectTo = '/homepage';
                                 }
@@ -189,8 +168,13 @@ export function hasAccess(location, params, user, history) {
                         });
                     });
                 }
-                }
-            });
+            }});
         }
     }
+}
+
+export function guardHasError(dispatch, message, redirection) {
+    dispatch(guardError(message));
+    dispatch(changeMenuClicked(redirection, false));
+    return redirection;
 }

@@ -1,6 +1,5 @@
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 import { fetchUser } from '../actions/user'
-import { changeMenu } from './menu';
 
 export const CREATE_VAULT_BEGIN       = 'CREATE_VAULT_BEGIN';
 export const INIT_VAULT_DEPOSIT       = 'INIT_VAULT_DEPOSIT';
@@ -14,7 +13,6 @@ export const CHANGE_DESCRIPTION       = 'CHANGE_DESCRIPTION';
 export const CHANGE_TITLE             = 'CHANGE_TITLE';
 export const CHANGE_MAIL              = 'CHANGE_MAIL';
 export const CHANGE_PHONE             = 'CHANGE_PHONE';
-export const RESET_REDIRECT           = 'RESET_REDIRECT';
 export const SET_ACCESS_PRICE_BEGIN   = 'SET_ACCESS_PRICE_BEGIN';
 export const SET_ACCESS_PRICE_SUCCESS = 'SET_ACCESS_PRICE_SUCCESS';
 export const SET_ACCESS_PRICE_ERROR   = 'SET_ACCESS_PRICE_ERROR';
@@ -25,10 +23,6 @@ export const TEXT_VALIDATOR_LENGTH    = 30;
 
 export const createVaultBegin = () => ({
     type: CREATE_VAULT_BEGIN
-});
-
-export const resetRedirect = () => ({
-    type: RESET_REDIRECT
 });
 
 export const submitVaultBegin = () => ({
@@ -239,7 +233,6 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     dispatch(transactionError(error));
                 }).then(() => {
                     dispatch(submitVaultSuccess());
-                    //dispatch(changeMenu('/chronology'));
                     dispatch(fetchUser(user.ethAddress));
                 }).catch((err) => { 
                     dispatch(submitVaultError(err));
@@ -260,7 +253,6 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     dispatch(transactionError(error));
                 }).then(() => {
                     dispatch(submitVaultSuccess());
-                    dispatch(changeMenu('/chronology'));
                     dispatch(fetchUser(user.ethAddress));
                 }).catch((err) => { 
                     dispatch(submitVaultError(err));

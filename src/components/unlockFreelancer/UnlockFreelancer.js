@@ -80,7 +80,6 @@ const mapStateToProps = state => ({
   loadingGuard: state.guardReducer.loading,
   guardCheck: state.guardReducer.guardCheck,
   transactionError: state.transactionReducer.transactionError,
-  transaction: state.transactionReducer.transaction,
   transactionReceipt: state.transactionReducer.transactionReceipt,
   object: state.transactionReducer.object,
   transactionHash: state.transactionReducer.transactionHash

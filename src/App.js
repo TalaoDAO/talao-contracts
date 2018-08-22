@@ -12,11 +12,11 @@ if (window.web3) {
 }
 
 const myErrorHandler = (error, componentStack) => {
-    let errors = JSON.parse(localStorage.getItem('errors'));
+    /*let errors = JSON.parse(localStorage.getItem('errors'));
     errors = (!errors) && [];
     let err = error + ' ' + componentStack;
     errors.push(err);
-    localStorage.setItem('errors', JSON.stringify(errors));
+    localStorage.setItem('errors', JSON.stringify(errors));*/
 };
 
 class App extends React.Component {

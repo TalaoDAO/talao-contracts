@@ -97,8 +97,8 @@ export function fetchUser(address) {
             .catch(error => dispatch(fetchUserError(error)));
         } else {
             //User is a client without an ethAddress!
-            dispatch(resetGuard());
             dispatch(fetchUserSuccess(user));
+            dispatch(resetGuard());
         }
     };
 }

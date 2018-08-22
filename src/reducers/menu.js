@@ -1,5 +1,5 @@
 import {
-    CHANGE_MENU_SELECTED  
+    REDIRECT  
   } from '../actions/menu'
   
   const initialState = {
@@ -9,7 +9,7 @@ import {
   export default function menuReducer(state = initialState, action) {
     switch(action.type) {
   
-      case CHANGE_MENU_SELECTED:
+      case REDIRECT:
       return {
         ...state,
         selectedMenu: action.selectedMenu

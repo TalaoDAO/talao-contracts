@@ -8,13 +8,10 @@ import compose from 'recompose/compose';
 import { changeMenuClicked } from '../../actions/menu';
 import { removeResearch } from '../../actions/user';
 
-const Loading = require('react-loading-animation');
-
 const mapStateToProps = state => ({  
     transactionError: state.transactionReducer.transactionError,
     transactionReceipt: state.transactionReducer.transactionReceipt,
-    currentMenu: state.menuReducer.selectedMenu,
-    transaction: state.transactionReducer.transaction
+    currentMenu: state.menuReducer.selectedMenu
   });
 
 const styles = theme => ({
@@ -66,15 +63,16 @@ class Menu extends React.Component {
 
         //Loading user from parent AppConnected...
         if (!this.props.user) {
-            return (<Loading />)
+            //to avoid having multiple loader at the same time
+            return (<div />)
         }
 
         //if this is a freelancer
-        let showFreelancerMenu = (this.props.user.freelancerDatas || this.props.user.searchedFreelancers) &&
+        let showFreelancerMenu = ((this.props.user.freelancerDatas || this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') &&
             <div>
                 <Typography to="/">
                 <Link 
-                    onClick={() => this.props.dispatch(changeMenuClicked('/competencies'))}
+                    onClick={() => this.props.dispatch(changeMenuClicked('/competencies', true))}
                     className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                     to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress}
                 >
@@ -83,7 +81,7 @@ class Menu extends React.Component {
                 </Typography>
                 <Typography to="/">
                     <Link 
-                        onClick={() => this.props.dispatch(changeMenuClicked('/chronology'))}
+                        onClick={() => this.props.dispatch(changeMenuClicked('/chronology', true))}
                         className={currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                         to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
                     >
@@ -93,10 +91,10 @@ class Menu extends React.Component {
             </div>  
 
         //if this is a client or a freelancer
-        let showCreateVaultMenu = (this.props.user.ethAddress && !this.props.user.searchedFreelancers) &&
+        let showCreateVaultMenu = (this.props.user.ethAddress && !this.props.user.searchedFreelancers && currentMenu !== '/unlockfreelancer') &&
         <Typography to="/">
             <Link 
-                onClick={() => this.props.dispatch(changeMenuClicked('/register'))}
+                onClick={() => this.props.dispatch(changeMenuClicked('/register', true))}
                 className={currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                 to="/register"
             >
@@ -104,13 +102,13 @@ class Menu extends React.Component {
             </Link>
         </Typography>
 
-        let showMyVaultMenu = (this.props.user.freelancerDatas && this.props.user.searchedFreelancers) && 
+        let showMyVaultMenu = ((this.props.user.freelancerDatas && this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') && 
         <Typography to="/">
             <Link 
                 onClick={() => { let usr = this.props.user; 
                                 usr.searchedFreelancers = null; 
                                 this.props.dispatch(removeResearch(usr)); 
-                                this.props.dispatch(changeMenuClicked('/chronology'));
+                                this.props.dispatch(changeMenuClicked('/chronology', true));
                                 //Nothing change here to redux and we need to forceUpdate to update the menu
                                 this.forceUpdate();
                                 }
@@ -125,7 +123,7 @@ class Menu extends React.Component {
         return (
             <div className={this.props.classes.root}>
                 <div>
-                    <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage'))} >
+                    <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage', true))} >
                         <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
                     </Link>
                 </div>
@@ -139,7 +137,7 @@ class Menu extends React.Component {
                             onClick={() => { let usr = this.props.user; 
                                              usr.searchedFreelancers = null; 
                                              this.props.dispatch(removeResearch(usr)); 
-                                             this.props.dispatch(changeMenuClicked('/homepage'));
+                                             this.props.dispatch(changeMenuClicked('/homepage', true));
                                             }
                                     }
                             className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
