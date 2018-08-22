@@ -13,7 +13,8 @@ import {
     NEW_EXPERIENCE_CLICKED,
     ADD_CERTIFICAT_CLICKED,
     ADD_CERTIFICAT_SUCCESS,
-    UPLOAD_SUCCESS
+    UPLOAD_SUCCESS,
+    UPLOAD_BEGIN
   } from '../actions/experience'
   
   const initialState = {
@@ -35,10 +36,10 @@ import {
     helperTextTooLong: 'Maximum length: 30 characters',
     helperTextEmpty: 'This field is required',
     newExperience: false,
-    uploadedDocument: null,
     confidenceIndex: null,
     certificat: null,
-    competencies: []
+    competencies: [],
+    uploadLoading: false
   };
   
   export default function experienceReducer(state = initialState, action) {
@@ -66,7 +67,8 @@ import {
             return {
                 ...state,
                 loading: false,
-                error: action.error
+                error: action.error,
+                uploadLoading: false
             };
 
         case ADD_DOC_BEGIN:
@@ -141,7 +143,7 @@ import {
                 titleEmpty: true,
                 type: '4',
                 description: '',
-                uploadedDocument: null,
+                formData: null,
                 confidenceIndex: null,
                 certificat: null,
                 competencies: []
@@ -165,16 +167,23 @@ import {
                 titleEmpty: true,
                 type: '4',
                 description: '',
-                uploadedDocument: null,
+                formData: null,
                 confidenceIndex: null,
                 certificat: null,
-                competencies: []
+                competencies: [],
+                uploadLoading: false
+            };
+
+        case UPLOAD_BEGIN:
+            return {
+                ...state,
+                uploadLoading: true
             };
 
         case ADD_CERTIFICAT_SUCCESS:
             return {
                 ...state,
-                uploadedDocument: action.uploadedDocument,
+                formData: action.formData,
                 confidenceIndex: action.confidenceIndex,
                 certificat: action.certificat,
                 competencies: action.competencies

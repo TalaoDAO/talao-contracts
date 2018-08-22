@@ -131,6 +131,7 @@ class Experience extends React.Component {
         let competencyTags;
         let dateDiff;
         let monthDiff;
+        console.log(this.props.value);
         if (!this.props.user) {
             return (<Loading />);
         } else {

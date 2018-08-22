@@ -1,24 +1,26 @@
-import IpfsApi from 'ipfs-api';
-import buffer from 'buffer';
 import bs58 from 'bs58';
 
+export const IPFSAPI = 'https://ipfs.infura.io:5001/api/';
+export const IPFSADD = IPFSAPI + 'v0/add'
+
 class FileService {
-    
-    static uploadToIpfs(documentToUpload) {
+    static uploadToIpfs(formData) {
+        let form_data = new FormData();
+        form_data.append("data", formData);
+        
         return new Promise((resolve, reject) => {
-            try {
-                let ipfsApi = IpfsApi(process.env.REACT_APP_IPFS_API, 5001, { protocol: 'http' });
-                const arrayBuffer = buffer.Buffer(documentToUpload);
-                ipfsApi.files.add(arrayBuffer, (err, result) => { // Upload buffer to IPFS
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve(result);
+            (async () => {
+                const rawResponse = await fetch(IPFSADD, {
+                  method: 'POST',
+                  body: form_data
                 });
-            }
-            catch (e) {
-                reject(e)
-            }
+                const content = await rawResponse.json();
+                if (content) {
+                    resolve(content.Hash)
+                } else {
+                    reject('Upload failed');
+                }
+              })();
         });
     }
 

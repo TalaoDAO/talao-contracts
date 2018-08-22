@@ -27,17 +27,22 @@ export const ADD_CERTIFICAT_CLICKED = 'ADD_CERTIFICAT_CLICKED';
 export const ADD_CERTIFICAT_BEGIN   = 'ADD_CERTIFICAT_BEGIN';
 export const ADD_CERTIFICAT_SUCCESS = 'ADD_CERTIFICAT_SUCCESS';
 export const UPLOAD_SUCCESS = 'UPLOAD_SUCCESS';
+export const UPLOAD_BEGIN = 'UPLOAD_BEGIN';
 
-export const addCertificatSuccess = (competencies, uploadedDocument, confidenceIndex, certificat) => ({
+export const addCertificatSuccess = (competencies, formData, confidenceIndex, certificat) => ({
     type: ADD_CERTIFICAT_SUCCESS,
     competencies: competencies,
-    uploadedDocument: uploadedDocument,
+    formData: formData,
     confidenceIndex: confidenceIndex,
     certificat: certificat
 });
 
 export const uploadFileSuccess = () => ({
     type: UPLOAD_SUCCESS
+})
+
+export const uploadFileBegin = () => ({
+    type: UPLOAD_BEGIN
 })
 
 export const addCertificatBegin = () => ({
@@ -131,8 +136,9 @@ export function addDocToFreelancer(user, experience) {
             dispatch(transactionError(error));
         })
         .then((success) => {
+            experience.docId = FileService.getBytes32FromIpfsHash(experience.docId);
+            experience.certificat = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(experience.docId);
             user.freelancerDatas.experiences.push(experience);
-            //user.freelancerDatas.getCompetencies();
             dispatch(addDocSuccess(user, success));
             dispatch(fetchUserSuccess(user));
         })
@@ -222,7 +228,6 @@ export function detectCompetenciesFromCertification(event) {
         reader.onload = function (event) {
             content = event.target.result;
             var jsonContent = JSON.parse(content);
-            let uploadedDocument = content;
             Object.keys(jsonContent).forEach(key => {
                 if (key.startsWith("jobSkill")) {
                     if (jsonContent[key] !== "") {
@@ -233,17 +238,18 @@ export function detectCompetenciesFromCertification(event) {
                     }
                 }
             });
-            dispatch(addCertificatSuccess(competencies, uploadedDocument, 80, certificat));
+            dispatch(addCertificatSuccess(competencies, file, 80, certificat));
         }
         reader.readAsText(file);
     }
 }
 
-export function addDocument(uploadedDocument, user, experience) {
+export function addDocument(formData, user, experience) {
     return dispatch => {
-        FileService.uploadToIpfs(uploadedDocument).then(result => {
+        dispatch(uploadFileBegin());
+        FileService.uploadToIpfs(formData).then(result => {
             let newExperienceToAdd = new Experience(
-                result[0].path,
+                result,
                 experience.title,
                 experience.description,
                 new Date(experience.from),

@@ -116,10 +116,11 @@ const mapStateToProps = state => ({
     helperTextTooLong: state.experienceReducer.helperTextTooLong,
     helperTextEmpty: state.experienceReducer.helperTextEmpty,
     newExperience: state.experienceReducer.newExperience,
-    uploadedDocument: state.experienceReducer.uploadedDocument,
+    formData: state.experienceReducer.formData,
     competencies: state.experienceReducer.competencies,
     confidenceIndex: state.experienceReducer.confidenceIndex,
-    certificat: state.experienceReducer.certificat
+    certificat: state.experienceReducer.certificat,
+    uploadLoading: state.experienceReducer.uploadLoading
   });
 
 class NewExperience extends React.Component {
@@ -142,7 +143,8 @@ class NewExperience extends React.Component {
             certificat,
             confidenceIndex,
             competencies,
-            uploadedDocument
+            formData,
+            uploadLoading
         } = this.props;
 
         const competencyTags = competencies.map((competency, index) =>
@@ -307,7 +309,7 @@ class NewExperience extends React.Component {
                             <Grid item lg={4}></Grid>
                             <Grid item lg={2} xs={12}>
                                 <Button onClick={() => this.props.dispatch(
-                                addDocument(uploadedDocument,
+                                addDocument(formData,
                                 this.props.user,
                                 new Experience(
                                     '',
@@ -319,7 +321,7 @@ class NewExperience extends React.Component {
                                     certificat,
                                     confidenceIndex,
                                     type)))}  
-                                    className={competencies.length > 0 && !titleEmpty && !titleError && !toEmpty && !fromEmpty ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                                    className={competencies.length > 0 && !titleEmpty && !titleError && !toEmpty && !fromEmpty && !uploadLoading ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                     Submit
                                 </Button>
                             </Grid>
