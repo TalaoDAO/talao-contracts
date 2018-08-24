@@ -100,10 +100,12 @@ const styles = {
 class Competency extends React.Component {
 
     render() {
+        //if a client or a freelancer is looking on a freelancer profile
+        //Allow us to know if we need to be on /competencies/C or /competencies/C?0x995465456454656546
         let isWatching = null;
-        if (this.props.user) {
+        if (this.props.user)
             isWatching = (this.props.user.searchedFreelancers) ? true : false;
-        }
+        
         const backgroundColorString = ColorService.getCompetencyColorName(this.props.competency.name, this.props.competency.confidenceIndex);
         const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
         const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);

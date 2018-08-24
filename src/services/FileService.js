@@ -18,7 +18,7 @@ class FileService {
                 if (content) {
                     resolve(content.Hash)
                 } else {
-                    reject('Upload failed');
+                    reject('Upload fail');
                 }
               })();
         });

@@ -1,9 +1,4 @@
-import {
-    transactionHash, 
-    transactionReceipt,
-    transactionError,           
-    transactionBegin
-  } from '../actions/transactions'
+import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 
 import Experience from '../models/Experience';
 import { fetchUserSuccess } from '../actions/user'
@@ -19,15 +14,16 @@ export const REMOVE_DOC_SUCCESS     = 'REMOVE_DOC_SUCCESS';
 export const REMOVE_DOC_ERROR       = 'REMOVE_DOC_ERROR';
 export const CHANGE_FROM            = 'CHANGE_FROM';
 export const CHANGE_TO              = 'CHANGE_TO';
-export const CHANGE_DESCRIPTION     = 'CHANGE_DESCRIPTION';
-export const CHANGE_TITLE           = 'CHANGE_TITLE';
+export const CHANGE_DESCRIPTION_EXP = 'CHANGE_DESCRIPTION_EXP';
+export const CHANGE_TITLE_EXP       = 'CHANGE_TITLE_EXP';
 export const CHANGE_TYPE            = 'CHANGE_TYPE';
 export const NEW_EXPERIENCE_CLICKED = 'NEW_EXPERIENCE_CLICKED';
 export const ADD_CERTIFICAT_CLICKED = 'ADD_CERTIFICAT_CLICKED';
 export const ADD_CERTIFICAT_BEGIN   = 'ADD_CERTIFICAT_BEGIN';
 export const ADD_CERTIFICAT_SUCCESS = 'ADD_CERTIFICAT_SUCCESS';
-export const UPLOAD_SUCCESS = 'UPLOAD_SUCCESS';
-export const UPLOAD_BEGIN = 'UPLOAD_BEGIN';
+export const UPLOAD_SUCCESS =         'UPLOAD_SUCCESS';
+export const UPLOAD_BEGIN =           'UPLOAD_BEGIN';
+export const EXPAND_PROFIL =          'EXPAND_PROFIL';
 
 export const addCertificatSuccess = (competencies, formData, confidenceIndex, certificat) => ({
     type: ADD_CERTIFICAT_SUCCESS,
@@ -71,7 +67,7 @@ export const changeTo = (to, errorEmpty) => ({
 });
 
 export const changeTitle = (title, error, errorEmpty) => ({
-    type: CHANGE_TITLE,
+    type: CHANGE_TITLE_EXP,
     title,
     error,
     errorEmpty
@@ -83,7 +79,7 @@ export const changeType = (typeExp) => ({
 });
 
 export const changeDescription = (description) => ({
-    type: CHANGE_DESCRIPTION,
+    type: CHANGE_DESCRIPTION_EXP,
     description
 });
 
@@ -120,6 +116,11 @@ export const removeDocError = error => ({
     type: REMOVE_DOC_ERROR,
     error
 });
+
+export const expandProfil = expandProfil => ({
+    type: EXPAND_PROFIL,
+    expandProfil
+})
 
 export function addDocToFreelancer(user, experience) {
     return dispatch => {

@@ -14,7 +14,9 @@ import BlurOnIcon from '@material-ui/icons/BlurOn';
 import classnames from 'classnames';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 import Media from "react-media";
-const Loading = require('react-loading-animation');
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { expandProfil } from '../../actions/experience';
 
 const styles = theme => ({
   container: {
@@ -79,20 +81,17 @@ const styles = theme => ({
   },
 });
 
+const mapStateToProps = state => ({
+  expanded: state.experienceReducer.expandProfil
+});
+
 class Profile extends React.Component {
 
-  constructor() {
-    super();
-    this.state = {
-      expanded: false
-    }
-  }
-
-  handleExpandClick = () => this.setState({ expanded: !this.state.expanded });
-
   render() {
+    const { expanded } = this.props;
     if (!this.props.freelancer) {
-      return (<Loading />)
+      //Prevent to have multiple loader
+      return (<div />)
     }
 
     return (
@@ -119,9 +118,9 @@ class Profile extends React.Component {
             <div className={this.props.classes.actionsContainer}>
               <CardActions className={this.props.classes.actions} disableActionSpacing>
                 <IconButton
-                  className={classnames(this.props.classes.expand, { [this.props.classes.expandOpen]: this.state.expanded })}
-                  onClick={this.handleExpandClick}
-                  aria-expanded={this.state.expanded}
+                  className={classnames(this.props.classes.expand, { [this.props.classes.expandOpen]: expanded })}
+                  onClick={() => this.props.dispatch(expandProfil(!expanded))}
+                  aria-expanded={expanded}
                   aria-label="Show more">
                   <ExpandMoreIcon />
                 </IconButton>
@@ -129,7 +128,7 @@ class Profile extends React.Component {
             </div>
           </div>
         </CardContent>
-        <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Media query="(max-width: 959px)">
             {matches => {
               const marginLeftIfMobile = matches ? '0px' : '130px';
@@ -155,4 +154,4 @@ class Profile extends React.Component {
   }
 }
 
-export default withStyles(styles)(Profile);
+export default compose(withStyles(styles), connect(mapStateToProps))(Profile);

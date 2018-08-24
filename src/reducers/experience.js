@@ -7,14 +7,15 @@ import {
     REMOVE_DOC_ERROR,
     CHANGE_FROM,
     CHANGE_TO,
-    CHANGE_DESCRIPTION,
-    CHANGE_TITLE,
+    CHANGE_DESCRIPTION_EXP,
+    CHANGE_TITLE_EXP,
     CHANGE_TYPE,
     NEW_EXPERIENCE_CLICKED,
     ADD_CERTIFICAT_CLICKED,
     ADD_CERTIFICAT_SUCCESS,
     UPLOAD_SUCCESS,
-    UPLOAD_BEGIN
+    UPLOAD_BEGIN,
+    EXPAND_PROFIL
   } from '../actions/experience'
   
   const initialState = {
@@ -39,7 +40,8 @@ import {
     confidenceIndex: null,
     certificat: null,
     competencies: [],
-    uploadLoading: false
+    uploadLoading: false,
+    expandProfil: false
   };
   
   export default function experienceReducer(state = initialState, action) {
@@ -110,7 +112,7 @@ import {
                 toEmpty: action.errorEmpty
             };
 
-        case CHANGE_TITLE:
+        case CHANGE_TITLE_EXP:
             return {
                 ...state,
                 title: action.title,
@@ -118,7 +120,7 @@ import {
                 titleEmpty: action.errorEmpty
             };
 
-        case CHANGE_DESCRIPTION:
+        case CHANGE_DESCRIPTION_EXP:
             return {
                 ...state,
                 description: action.description
@@ -187,6 +189,12 @@ import {
                 confidenceIndex: action.confidenceIndex,
                 certificat: action.certificat,
                 competencies: action.competencies
+            };
+
+        case EXPAND_PROFIL:
+            return {
+                ...state,
+                expandProfil: action.expandProfil
             };
 
         default:

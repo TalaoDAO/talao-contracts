@@ -77,6 +77,7 @@ import {
           maxAccessPricePlaceholder: '',
           isAccessPriceSet: false,
           error: null,
+          initVaultDatasFinish: false,
           helperTextTooLong: 'Maximum length: 30 characters',
           helperTextEmpty: 'This field is required',
           helperIncorrectMail: 'This is not a valid email address',
@@ -107,6 +108,7 @@ import {
           firstNameEmpty: (action.user && action.user.firstName.length > 0) ? false : true,
           lastNameEmpty: (action.user && action.user.lastName.length > 0) ? false : true,
           titleEmpty: (action.user && action.user.title.length > 0) ? false : true,
+          initVaultDatasFinish: true
         };
 
       case CREATE_VAULT_ERROR:
@@ -198,8 +200,7 @@ import {
 
       case SUBMIT_VAULT_SUCCESS:
         return {
-          ...state,
-          redirectTo: '/chronology'
+          ...state
         };
 
       case SUBMIT_VAULT_ERROR:

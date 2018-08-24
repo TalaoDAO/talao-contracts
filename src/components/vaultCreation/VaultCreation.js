@@ -141,7 +141,8 @@ const mapStateToProps = state => ({
     transactionReceipt: state.transactionReducer.transactionReceipt,
     object: state.transactionReducer.object,
     transactionHash: state.transactionReducer.transactionHash,
-    loadingGuard: state.guardReducer.loading
+    loadingGuard: state.guardReducer.loading,
+    initVaultDatasFinish : state.createVaultReducer.initVaultDatasFinish
   });
 
 
@@ -189,11 +190,12 @@ class VaultCreation extends React.Component {
             transactionReceipt,
             transactionHash,
             object,
-            loadingGuard
+            loadingGuard,
+            initVaultDatasFinish
         } = this.props;
 
         //Loading user from parent AppConnected...
-        if (!this.props.user || loadingGuard) {
+        if (!this.props.user || loadingGuard || !initVaultDatasFinish) {
             return (<Loading />)
         }
 

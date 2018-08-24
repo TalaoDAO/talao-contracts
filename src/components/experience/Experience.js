@@ -94,6 +94,10 @@ const styles = theme => ({
     },
 });
 
+const mapStateToProps = state => ({
+    user: state.userReducer.user
+  });
+
 class Experience extends React.Component {
 
     constructor(props) {
@@ -187,4 +191,4 @@ class Experience extends React.Component {
     }
 }
 
-export default compose(withStyles(styles), connect())(Experience);
+export default compose(withStyles(styles), connect(mapStateToProps))(Experience);

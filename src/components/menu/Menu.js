@@ -9,8 +9,6 @@ import { changeMenuClicked } from '../../actions/menu';
 import { removeResearch } from '../../actions/user';
 
 const mapStateToProps = state => ({  
-    transactionError: state.transactionReducer.transactionError,
-    transactionReceipt: state.transactionReducer.transactionReceipt,
     currentMenu: state.menuReducer.selectedMenu
   });
 
