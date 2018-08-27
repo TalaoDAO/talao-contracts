@@ -320,7 +320,8 @@ class NewExperience extends React.Component {
                                     competencies,
                                     certificat,
                                     confidenceIndex,
-                                    type)))}  
+                                    type,
+                                    competencies[0].jobDuration)))}  
                                     className={competencies.length > 0 && !titleEmpty && !titleError && !toEmpty && !fromEmpty && !uploadLoading ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                     Submit
                                 </Button>

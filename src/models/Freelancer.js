@@ -32,7 +32,6 @@ class Freelancer {
             this.freelancerContract.methods.FreelancerInformation(this.ethAddress).call().then(element => {
                 this.firstName = window.web3.utils.hexToAscii(element.firstName).replace(/\u0000/g, '');
                 this.lastName = window.web3.utils.hexToAscii(element.lastName).replace(/\u0000/g, '');
-                this.confidenceIndex = 82;
                 this.title = window.web3.utils.hexToAscii(element.title).replace(/\u0000/g, '');
                 this.description = element.description;
                 this.pictureUrl = "freelancer-picture.jpg";
@@ -58,6 +57,7 @@ class Freelancer {
                     let ratings = event['ratings'];
                     let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
                     let keywords = event['keywords'];
+                    let jobDuration = Math.floor(Math.random() * Math.floor(5000)); //TODO:REPLACE BY READ SC
                     let competencies = [];
                     for (let index = 0; index < ratings.length; index++) {
                         competencies.push(
@@ -76,7 +76,9 @@ class Freelancer {
                         new Date(endDate),
                         competencies,
                         url,
-                        100
+                        100,
+                        null,
+                        jobDuration
                     )
                     this.addExperience(newExp);
                 }
@@ -86,15 +88,20 @@ class Freelancer {
                     experience.competencies.forEach((competency) => {
                         let indexCompetency = competencies.findIndex(c => c.name === competency.name);
                         if (indexCompetency === -1) {
-                            competencies.push(new Competency(competency.name, competency.confidenceIndex, [experience]));
+                            competencies.push(new Competency(competency.name, parseInt(competency.confidenceIndex, 10), [experience], experience.jobDuration));
                         }
                         else {
-                            competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex);
+                            competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex, experience.jobDuration);
                             competencies[indexCompetency].experiences.push(experience);
                         }
                     });
                 });
                 this.competencies = competencies;
+                let confidenceIndex = 0;
+                competencies.forEach((competencie) => {
+                    confidenceIndex += competencie.confidenceIndex;
+                });
+                this.confidenceIndex = confidenceIndex / competencies.length;
                 cb()
             });
     }
@@ -143,20 +150,30 @@ class Freelancer {
     }
 
     getCompetencies() {
-        let competencies = [];
-        this.experiences.forEach((experience) => {
-            experience.competencies.forEach((competency) => {
-                let indexCompetency = competencies.findIndex(c => c.name === competency.name);
-                if (indexCompetency === -1) {
-                    competencies.push(new Competency(competency.name, competency.confidenceIndex, [experience]));
-                }
-                else {
-                    competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex);
-                    competencies[indexCompetency].experiences.push(experience);
-                }
+        return new Promise((resolve) => {
+            let competencies = [];
+            console.log(this.experiences);
+            this.experiences.forEach((experience) => {
+                experience.competencies.forEach((competency) => {
+                    let indexCompetency = competencies.findIndex(c => c.name === competency.name);
+                    if (indexCompetency === -1) {
+                        competencies.push(new Competency(competency.name, parseInt(competency.confidenceIndex, 10), [experience], experience.jobDuration));
+                    }
+                    else {
+                        competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex, experience.jobDuration);
+                        competencies[indexCompetency].experiences.push(experience);
+                    }
+                });
             });
+            this.competencies = competencies;
+            let confidenceIndex = 0;
+            competencies.forEach((competencie) => {
+                confidenceIndex += competencie.confidenceIndex;
+            });
+            this.confidenceIndex = confidenceIndex / competencies.length;
+            this.competencies = competencies;
+            resolve(true);
         });
-        this.competencies = competencies;
     }
 }
 

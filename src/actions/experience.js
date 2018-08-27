@@ -140,8 +140,10 @@ export function addDocToFreelancer(user, experience) {
             experience.docId = FileService.getBytes32FromIpfsHash(experience.docId);
             experience.certificat = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(experience.docId);
             user.freelancerDatas.experiences.push(experience);
-            dispatch(addDocSuccess(user, success));
-            dispatch(fetchUserSuccess(user));
+            user.freelancerDatas.getCompetencies().then(() => {
+                dispatch(addDocSuccess(user, success));
+                dispatch(fetchUserSuccess(user));
+            });
         })
         .catch((error) => {
             dispatch(addDocError(error));
@@ -167,8 +169,10 @@ export function removeDocToFreelancer(user, experience) {
             var index = user.freelancerDatas.experiences.indexOf(experience);
             if (index !== -1) {
                 user.freelancerDatas.experiences.splice(index, 1);
-                dispatch(removeDocSuccess(user, success));
-                dispatch(fetchUserSuccess(user));
+                user.freelancerDatas.getCompetencies().then(() => {
+                    dispatch(removeDocSuccess(user, success));
+                    dispatch(fetchUserSuccess(user));
+                });
             } else {
                 dispatch(removeDocError('No documents to delete.'));
             }
@@ -225,6 +229,7 @@ export function detectCompetenciesFromCertification(event) {
         let competencies = [];
         let certificat = file.name;
         let content;
+        let jobDuration = Math.floor(Math.random() * Math.floor(5000)); //TODO:REPLACE COMMENTAIRE
         let reader = new FileReader();
         reader.onload = function (event) {
             content = event.target.result;
@@ -235,7 +240,7 @@ export function detectCompetenciesFromCertification(event) {
                         let number = key.substring(8);
                         let competencyName = jsonContent[key];
                         let rating = jsonContent["jobRating" + number];
-                        competencies.push(new Competency(competencyName, rating * 20));
+                        competencies.push(new Competency(competencyName, rating, null, jobDuration));//jsonContent.jobDuration)); 
                     }
                 }
             });
@@ -258,7 +263,8 @@ export function addDocument(formData, user, experience) {
                 experience.competencies,
                 experience.certificat,
                 experience.confidenceIndex,
-                experience.type
+                experience.type,
+                experience.jobDuration
             );
             dispatch(uploadFileSuccess());
             dispatch(addDocToFreelancer(user, newExperienceToAdd));

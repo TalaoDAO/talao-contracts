@@ -100,7 +100,7 @@ class Profile extends React.Component {
           <div className={this.props.classes.container}>
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
-                <div className={this.props.classes.confidenceIndex}>{this.props.freelancer.confidenceIndex}</div>
+                <div className={this.props.classes.confidenceIndex}>{Math.round(this.props.freelancer.confidenceIndex * 10) / 10}</div>
               </div>
               <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
