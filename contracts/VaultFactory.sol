@@ -33,30 +33,41 @@ contract VaultFactory is Ownable {
         return nbVault;
     }
 
+     modifier allowance () { //require sur l'aggreement
+        bool agreement = false;
+        if(!agreement)
+        {
+            uint unused = 0;
+            (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
+            require(agreement == true);
+        }
+        _;
+    }
+
+    /*
+        this method return vault adress
+    */
+    function GetVault(address freelance)
+        public
+        view
+        allowance
+    returns(address)
+    {
+        return this.FreelanceVault(freelance);
+    }
+
     /**
      * Talent can call this method to create a new Vault contract
      *  with the maker being the owner of this new vault
      */
-    function CreateVaultContract (uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description)
+    function CreateVaultContract (uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description, bytes32 _pic)
         public
+        allowance
         returns(address)
     {
-        // TODO We have to delegate the call to pass the original msg.sender
-        // 3 ways to do that: delegate call, tx.origin, pass the msg.sender in parameter
-        //myToken.createVaultAccess(msg.sender, 5);
         
-        //address(myToken).delegatecall(bytes4(keccak256("createVaultAccess(uint256)")), 5);
-
-        //Verify using Talao token if sender is authorized to create a Vault
-        // bool agreement = false;
-        // uint unused = 0;
-
-        //require(FreelanceVault[msg.sender] == address(0),"Freelance has an existing vault");
+        myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description,_pic);
         
-        //create vaultAccess
-        //myToken.createVaultAccess(_price);
-        //create Freelancer data
-        myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description);
         //create vault
         Vault newVault = new Vault(myToken, myFreelancer);
         

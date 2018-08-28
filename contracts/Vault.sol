@@ -25,6 +25,7 @@ contract Vault is Ownable {
         uint documentType; //ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4
         uint startDate;
         uint endDate;
+        uint duration;
     }
 
     // TODO Infura gateway blockchain
@@ -79,7 +80,7 @@ contract Vault is Ownable {
     accessibility : only for authorized user and owner of this contract
     */
     function addDocument(
-        bytes32 documentId, bytes32 title, string description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate
+        bytes32 documentId, bytes32 title, string description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, uint duration
     )
         onlyOwner
         allowance
@@ -101,6 +102,7 @@ contract Vault is Ownable {
         talentsDocuments[documentId].documentType = documentType;
         talentsDocuments[documentId].startDate = startDate;
         talentsDocuments[documentId].endDate = endDate;
+        talentsDocuments[documentId].duration = duration;
         
         emit VaultDocAdded(documentId,title,description,documentType,startDate,endDate,ratings,keywords);
         return true;

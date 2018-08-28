@@ -4,8 +4,6 @@ import "./Talao.sol";
 
 contract Freelancer is Ownable {
 
-    // TODO A modifier en mode token
-
     TalaoToken myToken;
     
     struct Information {
@@ -16,8 +14,9 @@ contract Freelancer is Ownable {
         bytes32 email;
         bytes32 title;
         string description;
-
+        bytes32 picture;
         FreelancerState state;
+
         bool isUserKYC;
         // this is the origin of the freelance for future use
         uint8 referral;
@@ -32,6 +31,11 @@ contract Freelancer is Ownable {
     //whitelisted address of partners to get a free access to vault
     mapping(address => mapping(address=>bool)) public ListedPartner;
 
+    /*
+     * Innactive = Freelance has desactited his data
+     * Active = Freelance data are accessible
+     * Suspended = Another one person has deactvited data for this freelancer
+     */
     enum FreelancerState { Inactive, Active, Suspended }
 
     event FreelancerUpdateData (
@@ -41,7 +45,8 @@ contract Freelancer is Ownable {
         bytes32 phone,
         bytes32 email,
         bytes32 title,
-        string description
+        string description,
+        bytes32 picture
     );
 
     event FreelancerInternalData (
@@ -59,10 +64,10 @@ contract Freelancer is Ownable {
     /**
      * Freelance subscribes/updates his data
     */
-    function UpdateFreelancerData(address _faddress,bytes32 _firstname,bytes32 _lastname,bytes32 _phone,bytes32 _email,bytes32 _title,string _desc)
+    function UpdateFreelancerData(address _faddress,bytes32 _firstname,bytes32 _lastname,bytes32 _phone,bytes32 _email,bytes32 _title,string _desc, bytes32 _picture)
         public
     {
-        require(FreelancerInformation[_faddress].state != FreelancerState.Suspended);
+        require(FreelancerInformation[_faddress].state != FreelancerState.Suspended,"Freelancer is suspended");
         if (FreelancerInformation[_faddress].state == FreelancerState.Inactive)
         {
             FreelancerInformation[_faddress].subscriptionDate = now;
@@ -73,9 +78,11 @@ contract Freelancer is Ownable {
         FreelancerInformation[_faddress].email = _email;
         FreelancerInformation[_faddress].title = _title;
         FreelancerInformation[_faddress].description = _desc;
+        FreelancerInformation[_faddress].picture = _picture;
 
-        emit FreelancerUpdateData(_faddress, _firstname, _lastname, _phone, _email, _title, _desc);
+        emit FreelancerUpdateData(_faddress, _firstname, _lastname, _phone, _email, _title, _desc, _picture);
     }
+
     /**
      * General Data Protection Regulation
      * Freelancer unsubscribes
@@ -98,7 +105,8 @@ contract Freelancer is Ownable {
         FreelancerInformation[msg.sender].isUserKYC = _iskyc;
         FreelancerInformation[msg.sender].referral = _referral;
         emit FreelancerInternalData(msg.sender, _iskyc, _referral);
-    }   
+    }
+       
     /**
      * Set Confidence Index (public data) by owner in case of bad behavior) 
      */
@@ -110,12 +118,14 @@ contract Freelancer is Ownable {
         FreelancerInformation[_freelancer].karma = karma;
     }
 
+
     function setInactive(address _freelancer)
         onlyOwner
         public
     {
         FreelancerInformation[_freelancer].state = FreelancerState.Inactive;
     }
+
 
     function setActive(address _freelancer)
         onlyOwner
