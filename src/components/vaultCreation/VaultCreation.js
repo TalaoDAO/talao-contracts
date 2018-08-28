@@ -8,7 +8,7 @@ import Collapse from '@material-ui/core/Collapse';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
-import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault } from '../../actions/createVault';
+import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault, addImageClicked, addProfilePicture } from '../../actions/createVault';
 import queryString from 'query-string'
 import { hasAccess } from '../../actions/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
@@ -142,7 +142,8 @@ const mapStateToProps = state => ({
     object: state.transactionReducer.object,
     transactionHash: state.transactionReducer.transactionHash,
     loadingGuard: state.guardReducer.loading,
-    initVaultDatasFinish : state.createVaultReducer.initVaultDatasFinish
+    initVaultDatasFinish: state.createVaultReducer.initVaultDatasFinish,
+    profilPicture: state.createVaultReducer.profilPicture
   });
 
 
@@ -191,7 +192,9 @@ class VaultCreation extends React.Component {
             transactionHash,
             object,
             loadingGuard,
-            initVaultDatasFinish
+            initVaultDatasFinish,
+            profilPicture,
+            pictureToUpload
         } = this.props;
 
         //Loading user from parent AppConnected...
@@ -243,7 +246,14 @@ class VaultCreation extends React.Component {
             <Grid container spacing={40}>
                 <form className={this.props.classes.container} noValidate autoComplete="off">
                     <Grid item lg={2} xs={12}>
-                        <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
+                        <img src={(profilPicture) ? profilPicture : defaultFreelancerPicture} 
+                             onClick={() => this.props.dispatch(addImageClicked(this.fileInput))} 
+                             className={this.props.classes.picture}
+                             alt="Freelancer" />
+                        <input onChange={(e) => this.props.dispatch(addProfilePicture(e.target))}
+                               style={{ display: 'none' }} 
+                               ref={fileInput => this.fileInput = fileInput} 
+                               type="file" accept="image/*" />
                     </Grid>
                     <Grid item lg={3} xs={12}>
                         <TextField
@@ -332,7 +342,7 @@ class VaultCreation extends React.Component {
                     </Grid>
                     <Grid item lg={7}></Grid>
                     <Grid item lg={2} xs={12}>
-                        <Button onClick={() => canSubmit && this.props.dispatch(submitVault(user, accessPrice, firstName, lastName, title, description, phone, mail))} disabled={!canSubmit} className={canSubmit ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                        <Button onClick={() => canSubmit && this.props.dispatch(submitVault(user, accessPrice, firstName, lastName, title, description, phone, mail, pictureToUpload))} disabled={!canSubmit} className={canSubmit ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                             {(this.props.user.freelancerDatas) ? 'Update' : 'Create'}
                         </Button>
                     </Grid>

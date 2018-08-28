@@ -1,5 +1,8 @@
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 import { fetchUser } from '../actions/user'
+import FileService from '../services/FileService';
+import {uploadFileBegin, uploadFileSuccess } from '../actions/experience';
+
 
 export const CREATE_VAULT_BEGIN       = 'CREATE_VAULT_BEGIN';
 export const INIT_VAULT_DEPOSIT       = 'INIT_VAULT_DEPOSIT';
@@ -19,6 +22,9 @@ export const SET_ACCESS_PRICE_ERROR   = 'SET_ACCESS_PRICE_ERROR';
 export const SUBMIT_VAULT_BEGIN       = 'SUBMIT_VAULT_BEGIN';
 export const SUBMIT_VAULT_SUCCESS     = 'SUBMIT_VAULT_SUCCESS';
 export const SUBMIT_VAULT_ERROR       = 'SUBMIT_VAULT_ERROR';
+export const ADD_PICTURE              = 'ADD_PICTURE';
+export const ADD_PICTURE_BEGIN        = 'ADD_PICTURE_BEGIN';
+export const ADD_PICTURE_SUCCESS      = 'ADD_PICTURE_SUCCESS';
 export const TEXT_VALIDATOR_LENGTH    = 30;
 
 export const createVaultBegin = () => ({
@@ -48,6 +54,10 @@ export const initVaultDatas = (price, accessPriceSet, step, user) => ({
     accessPriceSet,
     step,
     user
+});
+
+export const addPictureClicked = () => ({
+    type: ADD_PICTURE
 });
 
 export const changeAccessPrice = (price, error) => ({
@@ -118,6 +128,33 @@ export const setAccessPriceError = (error) => ({
     error
 });
 
+export const addProfilPictureBegin = () => ({
+    type: ADD_PICTURE_BEGIN
+});
+
+export const addProfilPictureSuccess = (picture, pictureToUpload) => ({
+    type: ADD_PICTURE_SUCCESS,
+    picture,
+    pictureToUpload
+});
+
+export function addProfilePicture(event) {
+    return dispatch => {
+
+        dispatch(addProfilPictureBegin());
+        let profilePicture = event.files[0];
+        event.value = null;
+        if (typeof profilePicture === 'undefined')
+            return;
+
+        let reader = new FileReader();
+        reader.onload = function (event) {
+            dispatch(addProfilPictureSuccess(event.target.result, profilePicture));
+        }
+        reader.readAsDataURL(profilePicture);    
+    }
+};
+
 export function initVaultCreation(user) {
     return dispatch => {
         dispatch(createVaultBegin(user));
@@ -142,6 +179,13 @@ export function initVaultCreation(user) {
                 })
             })
         });
+    }
+}
+
+export function addImageClicked(fileInput) {
+    return dispatch => {
+        fileInput.click();
+        dispatch(addPictureClicked());
     }
 }
 
@@ -206,8 +250,15 @@ export function setAccessPrice(accessPrice, user) {
     }
 }
 
-export function submitVault(user, accessPrice, fName, lName, titl, description, pho, mail) {
+export function submitVault(user, accessPrice, fName, lName, titl, description, pho, mail, pictureToUpload) {
     return dispatch => {
+
+        dispatch(uploadFileBegin());
+        FileService.uploadToIpfs(pictureToUpload).then(result => {
+            user.freelancerDatas.pictureUrl = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(result);
+        });
+        dispatch(uploadFileSuccess());
+
         dispatch(submitVaultBegin());
 
         let firstName = window.web3.utils.fromAscii(fName);
