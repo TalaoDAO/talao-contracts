@@ -1,4 +1,3 @@
-
 pragma solidity ^0.4.23;
 
 import "./Vault.sol";
@@ -12,7 +11,7 @@ contract VaultFactory is Ownable {
 
     //first address is Talent ethereum address 
     //second address is Smart Contract vault address dedicated to this talent
-    mapping (address=>address) public FreelanceVault;
+    mapping (address=>address) FreelanceVault;
 
     enum VaultState { AccessDenied, AlreadyExist, Created }
     event VaultCreation(address indexed talent, address vaultaddress, VaultState msg);
@@ -33,15 +32,18 @@ contract VaultFactory is Ownable {
         return nbVault;
     }
 
-     modifier allowance () { //require sur l'aggreement
-        bool agreement = false;
-        if(!agreement)
-        {
-            uint unused = 0;
-            (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
-            require(agreement == true);
+    function HasVault (address freelance)
+        public
+        view
+    returns (bool)
+    {
+        bool result = false;
+        address freeAdd = FreelanceVault[freelance];
+        if(freeAdd != address(0)) {
+            result = true;
         }
-        _;
+        
+        return result;
     }
 
     /*
@@ -50,10 +52,23 @@ contract VaultFactory is Ownable {
     function GetVault(address freelance)
         public
         view
-        allowance
     returns(address)
     {
-        return this.FreelanceVault(freelance);
+        address freeAdd = address(0);
+        uint256 accessPrice;
+        address appointedAgent;
+        uint sharingPlan;
+        uint256 userDeposit;
+
+        (accessPrice, appointedAgent,sharingPlan,userDeposit) = myToken.data(freelance);
+        bool isAccess = myToken.hasVaultAccess(freelance,msg.sender);
+        bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
+
+        if(accessPrice <= 0 || isAccess || isPartner) {
+            freeAdd = FreelanceVault[freelance];
+        }
+       
+        return freeAdd;
     }
 
     /**
@@ -62,10 +77,11 @@ contract VaultFactory is Ownable {
      */
     function CreateVaultContract (uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description, bytes32 _pic)
         public
-        allowance
         returns(address)
     {
-        
+        bool isAccess = myToken.hasVaultAccess(msg.sender,msg.sender);
+        require(isAccess == true,"sender hasn't access to vault");
+
         myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description,_pic);
         
         //create vault

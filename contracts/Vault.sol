@@ -45,11 +45,11 @@ contract Vault is Ownable {
         bytes32 documentId,
         bytes32 title,
         string description,
-        uint documentType,
         uint startDate,
         uint endDate,
         uint[] ratings,
-        bytes32[] keywords
+        bytes32[] keywords,
+        uint duration
     );
 
     /*
@@ -64,14 +64,9 @@ contract Vault is Ownable {
     }
 
     modifier allowance () { //require sur l'aggreement
-        bool agreement = false;
-        agreement = myFreelancer.isPartner(owner, msg.sender);
-        if(!agreement)
-        {
-            uint unused = 0;
-            (agreement, unused) = myToken.accessAllowance(msg.sender,msg.sender);
-            require(agreement == true);
-        }
+        bool isPartner = myFreelancer.isPartner(owner, msg.sender);
+        bool isVaultAccess = myToken.hasVaultAccess(owner,msg.sender);
+        require(isPartner || isVaultAccess,"user has no vault access");
         _;
     }
 
@@ -87,9 +82,9 @@ contract Vault is Ownable {
         public 
         returns (bool)
     {
-        require(documentId != 0 && keywords.length != 0 && startDate != 0);
-        require(keywords.length == ratings.length);
-        require(!talentsDocuments[documentId].isAlive);
+        require(documentId != 0 && keywords.length != 0 && startDate != 0, "document ID is not correct");
+        require(keywords.length == ratings.length, "Error on keywords and ratings tab");
+        require(!talentsDocuments[documentId].isAlive, "document already exists");
         SafeMath.add(NbOfValidDocument,1);
 
         talentsDocuments[documentId].keywords = keywords;
@@ -104,7 +99,7 @@ contract Vault is Ownable {
         talentsDocuments[documentId].endDate = endDate;
         talentsDocuments[documentId].duration = duration;
         
-        emit VaultDocAdded(documentId,title,description,documentType,startDate,endDate,ratings,keywords);
+        emit VaultDocAdded(documentId,title,description,startDate,endDate,ratings,keywords,duration);
         return true;
     }
 
@@ -117,8 +112,8 @@ contract Vault is Ownable {
         allowance 
         public
     {
-        require(documentId != 0);
-        //if(talentsDocuments[documentId].description != 0) {
+        require(documentId != 0, "document ID is not correct");
+
         NbOfValidDocument--;
         delete talentsDocuments[documentId]; //set isValid to false
         assert(talentsDocuments[documentId].isAlive==false);
@@ -131,11 +126,13 @@ contract Vault is Ownable {
     accessibility : only for authorized user
     */
     function getDocumentIsAlive(bytes32 documentId) 
+        onlyOwner 
+        allowance 
         view
         public
         returns(bool) 
     {
-        require(documentId != 0);
+        require(documentId != 0, "document ID is not correct");
         return(talentsDocuments[documentId].isAlive);
     }
 
@@ -150,7 +147,7 @@ contract Vault is Ownable {
         public
         returns (string desc, uint docType, uint startDate, uint endDate) 
     {
-        require(dId != 0 && talentsDocuments[dId].isAlive == true);
+        require(dId != 0 && talentsDocuments[dId].isAlive == true, "document ID is not correct");
         return (talentsDocuments[dId].description, talentsDocuments[dId].documentType,
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
     }
@@ -168,56 +165,6 @@ contract Vault is Ownable {
         bytes32 dId = documentIndex[index];
         return (dId, talentsDocuments[dId].description, talentsDocuments[dId].documentType,
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
-    }
-
-    /*
-    Get FCR of the owner of the VaultDocAdded
-    */
-    function getScoring()
-        public
-        allowance
-        view
-        returns(uint)
-    {
-        uint scoreEducation = 0;
-        uint scoreWork = 0;
-        uint scoreSkills = 0;
-        for(uint i = 0; i < documentIndex.length; i++) {
-            bytes32 index = documentIndex[i];
-            scoreSkills += talentsDocuments[index].keywords.length;
-            if(talentsDocuments[index].documentType == 2 && scoreEducation < 10) {
-                scoreEducation += 2;
-            }
-            else if(talentsDocuments[index].documentType == 4 && scoreWork < 20) {
-                scoreWork += 2;
-            }
-        }
-        if(scoreSkills > 40) scoreSkills = 40;
-        return scoreEducation + scoreWork + scoreSkills;
-    }
-
-    function getScoringByKeyword(bytes32 keyword)
-        public
-        allowance
-        view
-        returns(uint)
-    {
-        uint Score = 0;
-        uint count = 0;
-        for(uint i = 0; i < documentIndex.length; i++) {
-            bytes32 index = documentIndex[i];
-            for(uint j = 0; j < talentsDocuments[index].keywords.length; j++)
-            {
-                if(talentsDocuments[index].keywords[j] == keyword)
-                {
-                    //Only one keyword by experience
-                    Score += talentsDocuments[index].ratings[j];
-                    count++;
-                    break;
-                }
-            }
-        }
-        return (Score * 20) / count;
     }
 
     function () 
