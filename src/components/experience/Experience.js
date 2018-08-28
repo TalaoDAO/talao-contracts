@@ -8,10 +8,15 @@ import LineStyle from '@material-ui/icons/LineStyle';
 import Close from '@material-ui/icons/Close';
 import Button from 'material-ui/Button';
 import { Blockcerts } from 'react-blockcerts';
-import FreelancerService from '../../services/FreelancerService';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'
+import { Grid } from '../../../node_modules/material-ui';
+import { removeDocToFreelancer } from '../../actions/experience';
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { isMobile } from 'react-device-detect';
 
+const Loading = require('react-loading-animation');
 const styles = theme => ({
     experienceContainer: {
         marginBottom: '30px',
@@ -71,63 +76,72 @@ const styles = theme => ({
     },
     removeButton: {
         margin: '20px 0px',
-        float: 'right',
         backgroundColor: '#FF3C47',
         color: '#ffffff',
         '&:hover': {
             backgroundColor: '#FF3C47'
         }
     },
+    popup: {
+        fontFamily: 'Arial, Helvetica, sans-serif',
+        width: '70vw',
+        padding: '30px',
+        textAlign: 'center',
+        background: '#fff',
+        borderRadius: '10px',
+        boxShadow: '0 20px 75px rgba(0, 0, 0, 0.13)',
+        color: '#666',
+    },
 });
+
+const mapStateToProps = state => ({
+    user: state.userReducer.user
+  });
 
 class Experience extends React.Component {
 
-    constructor() {
-        super();
-        this.free = FreelancerService.getFreelancer();
-        this.state = {
-            showCert: false,
-        };
+    constructor(props) {
+        super(props);
+        this.state = { showCert: false };
         this.showCertification = this.showCertification.bind(this);
     }
-
-    monthDiff(d1, d2) {
-        var months;
-        months = (d2.getFullYear() - d1.getFullYear()) * 12;
-        months -= d1.getMonth() + 1;
-        months += d2.getMonth();
-        return months <= 0 ? 0 : months;
-    }
-
+    
     showCertification() {
-        this.setState({
-            showCert: !this.state.showCert
-        });
+        this.setState({ showCert: !this.state.showCert });
     }
 
     removeDocument = () => {
         confirmAlert({
-            title: 'Remove ' + this.props.value.title + ' certificate?',
-            message: 'Are you sure you want to remove this certificate?',
-            buttons: [
-                {
-                    label: 'Yes',
-                    onClick: () => this.free.removeDoc(this.props.value)
-                },
-                {
-                    label: 'No',
-                }
-            ]
+            customUI: ({ onClose }) => {
+                return (
+                    <div className={this.props.classes.popup}>
+                        <h1>Remove {this.props.value.title} certificate?</h1>
+                        <p>Are you sure you want to remove this certificate?</p>
+                        <Button style={{ marginRight: '20px' }} className={this.props.classes.certificatButton} onClick={onClose}>No</Button>
+                        <Button className={this.props.classes.removeButton} onClick={() => {
+                            this.props.dispatch(removeDocToFreelancer(this.props.user, this.props.value));
+                            onClose()
+                        }}>Yes</Button>
+                    </div>
+                )
+            }
         })
     }
 
     render() {
-        const competencyTags = this.props.value.competencies.map((competency, index) =>
-            (<CompetencyTag value={competency} key={index} />)
-        );
-        const dateDiff = DateService.dateDiffAsString(this.props.value.from, this.props.value.to);
-        const monthDiff = DateService.monthDiff(this.props.value.from, this.props.value.to);
+        let competencyTags;
+        let dateDiff;
+        let monthDiff;
 
+        if (!this.props.user) {
+            return (<Loading />);
+        } else {
+            competencyTags = this.props.value.competencies.map((competency, index) =>
+                (<CompetencyTag value={competency} key={index} />)
+            );
+            dateDiff = DateService.dateDiffAsString(this.props.value.from, this.props.value.to);
+            monthDiff = DateService.monthDiff(this.props.value.from, this.props.value.to);
+        }
         return (
             <div className={this.props.classes.experienceContainer}>
                 <div>
@@ -135,7 +149,7 @@ class Experience extends React.Component {
                         &nbsp;
                     </div>
                     <div className={this.props.classes.timeLine} >
-                        <div className={this.props.classes.line} style={{ width: (monthDiff * 5) + 'px' }}></div>
+                        <div className={this.props.classes.line} style={{ width: (isMobile) ? '28px' : (monthDiff * 5) + 'px' }}></div>
                         <div className={this.props.classes.timeContainer}>
                             {dateDiff}
                         </div>
@@ -154,15 +168,19 @@ class Experience extends React.Component {
                         <Typography variant="body1" gutterBottom className={this.props.classes.description}>
                             {this.props.value.description}
                         </Typography>
-                        <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
-                            <LineStyle />
-                            <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
-                            <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
-                        </Button>
-                        <Button onClick={this.removeDocument} style={{ display: this.free.isFreelancer() ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
-                            <Close />
-                            <span>Remove</span>
-                        </Button>
+                        <Grid item xs={12}>
+                            <Button onClick={this.removeDocument} style={{ display: !this.props.isClient ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                                <Close />
+                                <span>Remove</span>
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
+                                <LineStyle />
+                                <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
+                                <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
+                            </Button>
+                        </Grid>
                         <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
                             <Blockcerts url={this.props.value.certificat} />
                         </div>
@@ -173,4 +191,4 @@ class Experience extends React.Component {
     }
 }
 
-export default withStyles(styles)(Experience);
+export default compose(withStyles(styles), connect(mapStateToProps))(Experience);

@@ -11,9 +11,12 @@ import Collapse from '@material-ui/core/Collapse';
 import MailIcon from '@material-ui/icons/Mail';
 import PhoneIcon from '@material-ui/icons/Phone';
 import BlurOnIcon from '@material-ui/icons/BlurOn';
-import FreelancerService from '../../services/FreelancerService';
 import classnames from 'classnames';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
+import Media from "react-media";
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { expandProfil } from '../../actions/experience';
 
 const styles = theme => ({
   container: {
@@ -71,67 +74,53 @@ const styles = theme => ({
     transform: 'rotate(180deg)',
   },
   detailsContainer: {
-    marginLeft: '130px',
     marginBottom: '10px',
     display: 'flex',
     alignItems: 'center',
+    wordBreak: 'break-word',
   },
+});
+
+const mapStateToProps = state => ({
+  expanded: state.experienceReducer.expandProfil
 });
 
 class Profile extends React.Component {
 
-  constructor() {
-    super();
-    this.free = FreelancerService.getFreelancer();
-    this.state = {
-      freelancer: this.free,
-      expanded: false
-    }
-  }
-
-  componentDidMount() {
-    this.free.addListener('FreeDataChanged', this.handleEvents, this);
-  }
-
-  componentWillUnmount() {
-    this.free.removeListener('FreeDataChanged', this.handleEvents, this);
-  }
-
-  handleEvents = () => {
-    this.setState({ freelancer: this.free });
-    this.forceUpdate();
-  };
-
-  handleExpandClick = () => this.setState({ expanded: !this.state.expanded });
-
   render() {
+    const { expanded } = this.props;
+    if (!this.props.freelancer) {
+      //Prevent to have multiple loader
+      return (<div />)
+    }
+
     return (
       <Card>
         <CardContent>
           <div className={this.props.classes.container}>
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
-                <div className={this.props.classes.confidenceIndex}>{this.state.freelancer.confidenceIndex}</div>
+                <div className={this.props.classes.confidenceIndex}>{Math.round(this.props.freelancer.confidenceIndex * 10) / 10}</div>
               </div>
               <img src={defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
             <div className={this.props.classes.profileContainer}>
               <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>
-                {this.state.freelancer.firstName} {this.state.freelancer.lastName}
+                {this.props.freelancer.firstName} {this.props.freelancer.lastName}
               </Typography>
               <Typography variant="subheading" component="h2" className={this.props.classes.title}>
-                {this.state.freelancer.title}
+                {this.props.freelancer.title}
               </Typography>
               <Typography>
-                {this.state.freelancer.description}
+                {this.props.freelancer.description}
               </Typography>
             </div>
             <div className={this.props.classes.actionsContainer}>
               <CardActions className={this.props.classes.actions} disableActionSpacing>
                 <IconButton
-                  className={classnames(this.props.classes.expand, { [this.props.classes.expandOpen]: this.state.expanded })}
-                  onClick={this.handleExpandClick}
-                  aria-expanded={this.state.expanded}
+                  className={classnames(this.props.classes.expand, { [this.props.classes.expandOpen]: expanded })}
+                  onClick={() => this.props.dispatch(expandProfil(!expanded))}
+                  aria-expanded={expanded}
                   aria-label="Show more">
                   <ExpandMoreIcon />
                 </IconButton>
@@ -139,22 +128,30 @@ class Profile extends React.Component {
             </div>
           </div>
         </CardContent>
-        <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
-          <CardContent>
-            <Typography className={this.props.classes.detailsContainer}>
-              <MailIcon />&nbsp;{this.state.freelancer.email}<br />
-            </Typography>
-            <Typography className={this.props.classes.detailsContainer}>
-              <PhoneIcon />&nbsp;{this.state.freelancer.phone}<br />
-            </Typography>
-            <Typography className={this.props.classes.detailsContainer}>
-              <BlurOnIcon />&nbsp;{this.state.freelancer.ethereumAddress}
-            </Typography>
-          </CardContent>
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
+          <Media query="(max-width: 959px)">
+            {matches => {
+              const marginLeftIfMobile = matches ? '0px' : '130px';
+              return (
+                <CardContent>
+                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                    <MailIcon />&nbsp;{this.props.freelancer.email}<br />
+                  </Typography>
+                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                    <PhoneIcon />&nbsp;{this.props.freelancer.phone}<br />
+                  </Typography>
+                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                    <BlurOnIcon />&nbsp;{this.props.freelancer.ethereumAddress}
+                  </Typography>
+                </CardContent>
+              )
+            }
+            }
+          </Media>
         </Collapse>
       </Card >
     );
   }
 }
 
-export default withStyles(styles)(Profile);
+export default compose(withStyles(styles), connect(mapStateToProps))(Profile);

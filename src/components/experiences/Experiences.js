@@ -1,10 +1,5 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
 import Experience from '../experience/Experience';
-
-const styles = {
-
-};
 
 class Experiences extends React.Component {
 
@@ -27,4 +22,4 @@ class Experiences extends React.Component {
     }
 }
 
-export default withStyles(styles)(Experiences);
+export default (Experiences);

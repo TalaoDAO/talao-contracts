@@ -1,9 +1,16 @@
 import React from 'react';
 import Competency from '../competency/Competency';
 import { withStyles } from '@material-ui/core/styles';
-import FreelancerService from '../../services/FreelancerService';
 import { Grid } from '@material-ui/core';
 import Profile from '../profile/Profile';
+import queryString from 'query-string'
+import { connect } from "react-redux";
+import compose from 'recompose/compose';
+import { hasAccess } from '../../actions/guard';
+import { fetchFreelancer } from '../../actions/user';
+import CustomizedSnackbars from '../snackbars/snackbars';
+
+const Loading = require('react-loading-animation');
 
 const styles = {
     competenciesContainer: {
@@ -78,98 +85,107 @@ const styles = {
     },
 };
 
+const mapStateToProps = state => ({
+    loadingGuard: state.guardReducer.loading,   
+    guardCheck: state.guardReducer.guardCheck,
+    transactionError: state.transactionReducer.transactionError,
+    transactionHash: state.transactionReducer.transactionHash,
+    transactionReceipt: state.transactionReducer.transactionReceipt,
+    object: state.transactionReducer.object
+  });
+
 class Competencies extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.free = FreelancerService.getFreelancer();
-        if (this.props.location.state != null) {
-            this.freelancerAddress = this.props.location.state.address;
-        } else if (this.props.location.search !== null && this.props.location.search !== "") {
-            var address = this.props.location.search
-            this.freelancerAddress = address.substring(1, address.length);
+    componentDidMount() {      
+        if (this.props.user && !this.props.guardCheck) {
+            this.props.dispatch(hasAccess(window.location.pathname.split('/')[1], queryString.extract(window.location.search), this.props.user, this.props.history));
         }
-
-        //A client is searching a freelancer, so we display his Vault
-        if (this.freelancerAddress !== null && typeof this.freelancerAddress !== 'undefined')
-            this.free.initFreelancer(this.freelancerAddress);
-
-        this.state = {
-            competencies: this.free.getCompetencies(),
-        };
     }
 
-    componentDidMount() {
-        this.free.addListener('ExperienceChanged', this.handleEvents, this);
+    componentDidUpdate() {
+        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers) {
+            this.props.dispatch(fetchFreelancer(this.props.user, queryString.extract(window.location.search)));
+        }
     }
-
-    componentWillUnmount() {
-        this.free.removeListener('ExperienceChanged', this.handleEvents, this);
-        this.isCancelled = true;
-    }
-
-
-    handleEvents = () => {
-        !this.isCancelled && this.setState({
-            competencies: this.free.getCompetencies()
-        });
-        if (!this.isCancelled) this.forceUpdate();
-    };
 
     render() {
-        const oneCompetencyFocused = (this.props.match.params.competencyName);
-        const competencies = this.state.competencies
+    const { loadingGuard, transactionError, transactionHash, transactionReceipt, object } = this.props;
 
-            // Compute confidence index of each competency
-            .map((competency) => ({
-                competency: competency,
-                confidenceIndex: competency.getConfidenceIndex(),
-            }))
+    if (!this.props.user || loadingGuard) {
+        return (<Loading />);
+    }
+    else {
+        if ((!this.props.user.freelancerDatas && !queryString.extract(window.location.search)) || (!this.props.user.searchedFreelancers && queryString.extract(window.location.search))) {
+            return (<Loading />)
+        }
+    }
 
-            // Sort descending by confidence index and let the education at the end
-            .sort((extendedCompetencyA, extendedCompetencyB) => {
-                if (extendedCompetencyA.competency.name === "Education") return true;
-                if (extendedCompetencyB.competency.name === "Education") return false;
-                return extendedCompetencyA.confidenceIndex < extendedCompetencyB.confidenceIndex;
-            })
+    let snackbar;
+    if (transactionHash && !transactionReceipt) {
+        snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+    } else if (transactionError) {
+        snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
+    } else if (transactionReceipt) {
+        snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+    }
 
-            // Generate components
-            .map((extendedCompetency, index) => {
-                const thisCompetencyFocused = extendedCompetency.competency.name === this.props.match.params.competencyName;
-                let appliedClasses = [this.props.classes.competencyContainer];
-                let layout = 'normal';
-                if (thisCompetencyFocused) {
-                    layout = 'focused';
-                    appliedClasses.push(this.props.classes.competencyContainerFocused);
-                }
-                else if (oneCompetencyFocused) {
-                    layout = 'hidden';
-                    appliedClasses.push(this.props.classes.competencyContainerHidden);
-                }
-                return (
-                    <div key={index} className={appliedClasses.join(' ')}>
-                        <Competency
-                            competency={extendedCompetency.competency}
-                            confidenceIndex={extendedCompetency.confidenceIndex}
-                            layout={layout}>
-                        </Competency>
-                    </div>
-                );
-            });
+    //pick the current user or a searched freelancer
+    let freelancer = (queryString.extract(window.location.search)) ? this.props.user.searchedFreelancers : this.props.user.freelancerDatas;
+
+    const oneCompetencyFocused = (this.props.match.params.competencyName);
+    const competencies = freelancer.competencies
+        // Compute confidence index of each competency
+        .map((competency) => ({
+            competency: competency,
+            confidenceIndex: competency.getConfidenceIndex(),
+        }))
+
+        // Sort descending by confidence index and let the education at the end
+        .sort((extendedCompetencyA, extendedCompetencyB) => {
+            if (extendedCompetencyA.competency.name === "Education") return true;
+            if (extendedCompetencyB.competency.name === "Education") return false;
+            return extendedCompetencyA.confidenceIndex < extendedCompetencyB.confidenceIndex;
+        })
+
+        // Generate components
+        .map((extendedCompetency, index) => {
+            const thisCompetencyFocused = extendedCompetency.competency.name === this.props.match.params.competencyName;
+            let appliedClasses = [this.props.classes.competencyContainer];
+            let layout = 'normal';
+            if (thisCompetencyFocused) {
+                layout = 'focused';
+                appliedClasses.push(this.props.classes.competencyContainerFocused);
+            }
+            else if (oneCompetencyFocused) {
+                layout = 'hidden';
+                appliedClasses.push(this.props.classes.competencyContainerHidden);
+            }
+            return (
+                <div key={index} className={appliedClasses.join(' ')}>
+                    <Competency
+                        user={this.props.user}
+                        competency={extendedCompetency.competency}
+                        confidenceIndex={extendedCompetency.confidenceIndex}
+                        layout={layout}>
+                    </Competency>
+                </div>
+            );
+        });
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <Profile />
+                    <Profile freelancer={freelancer}/>
                 </Grid>
                 <Grid item xs={12}>
                     <div className={this.props.classes.competenciesContainer}>
                         {competencies}
                     </div>
                 </Grid>
+                {snackbar}
             </Grid>
         );
 
     }
 }
 
-export default withStyles(styles)(Competencies);
+export default compose(withStyles(styles), connect(mapStateToProps))(Competencies);

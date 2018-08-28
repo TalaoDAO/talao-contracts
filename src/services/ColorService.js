@@ -4,9 +4,9 @@ class ColorService {
 
     static getCompetencyColorName(competencyName, confidenceIndex) {
         if (competencyName === "Education") return "grey";
-        if (confidenceIndex > 80) return "accent1";
-        if (confidenceIndex > 60) return "accent2";
-        if (confidenceIndex > 40) return "accent3";
+        if (confidenceIndex > 4) return "accent1";
+        if (confidenceIndex > 3) return "accent2";
+        if (confidenceIndex > 2) return "accent3";
         return "accent4";
     }
 

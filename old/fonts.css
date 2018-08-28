@@ -1,8 +1,0 @@
-/* Fonts */
-@font-face {
-  font-family: 'Akkmono';
-  src: local('Akkmono'),
-  url(./assets/fonts/akkmono.eot) format('embedded-opentype'),
-  url(./assets/fonts/akkmono.woff) format('woff'),
-  url(./assets/fonts/akkmono.ttf) format('truetype');
-}

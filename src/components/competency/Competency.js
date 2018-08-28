@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import Experiences from '../experiences/Experiences';
 import CloseIcon from '@material-ui/icons/Close';
 import ColorService from '../../services/ColorService';
+import queryString from 'query-string'
 
 const styles = {
     media: {
@@ -99,6 +100,12 @@ const styles = {
 class Competency extends React.Component {
 
     render() {
+        //if a client or a freelancer is looking on a freelancer profile
+        //Allow us to know if we need to be on /competencies/C or /competencies/C?0x995465456454656546
+        let isWatching = null;
+        if (this.props.user)
+            isWatching = (this.props.user.searchedFreelancers) ? true : false;
+        
         const backgroundColorString = ColorService.getCompetencyColorName(this.props.competency.name, this.props.competency.confidenceIndex);
         const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
         const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
@@ -106,14 +113,14 @@ class Competency extends React.Component {
         return (
             <Card className={this.props.classes.card + ' ' + this.props.classes['card' + this.props.layout]}>
                 <CardContent className={this.props.classes.close} style={{ display: layoutFocused ? 'initial' : 'none' }}>
-                    <Link to='/competencies'>
+                    <Link to={(isWatching) ? '/competencies?' + queryString.extract(window.location.search) : '/competencies'}>
                         <CloseIcon />
                     </Link>
                 </CardContent>
-                <Link to={'/competencies/' + this.props.competency.name} className={this.props.classes.link}>
+                <Link to={(isWatching) ? '/competencies/' + this.props.competency.name + '?' + queryString.extract(window.location.search) : '/competencies/' + this.props.competency.name} className={this.props.classes.link}>
                     <CardContent className={this.props.classes.badge} style={{ backgroundColor: constants.colors[backgroundLightColorString] }}>
                         <Typography variant="headline" className={this.props.classes.textBadge}>
-                            {Math.round(this.props.confidenceIndex)}
+                            {Math.round(this.props.confidenceIndex * 10) / 10}
                         </Typography>
                     </CardContent>
                     <CardMedia

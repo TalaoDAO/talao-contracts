@@ -1,5 +1,5 @@
 class Experience {
-    constructor(docId, title, description, from, to, competencies, certificat, confidenceIndex,type) {
+    constructor(docId, title, description, from, to, competencies, certificat, confidenceIndex, type, jobDuration) {
         this.docId = docId;
         this.title = title;
         this.description = description;
@@ -9,6 +9,7 @@ class Experience {
         this.certificat = certificat;
         this.confidenceIndex = confidenceIndex;
         this.type = type;
+        this.jobDuration = jobDuration;
     }
 }
 
