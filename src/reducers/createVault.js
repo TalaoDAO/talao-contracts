@@ -16,7 +16,10 @@ import {
     SET_ACCESS_PRICE_ERROR,
     SUBMIT_VAULT_BEGIN,
     SUBMIT_VAULT_SUCCESS,
-    SUBMIT_VAULT_ERROR
+    SUBMIT_VAULT_ERROR,
+    ADD_PICTURE,
+    ADD_PICTURE_SUCCESS, 
+    ADD_PICTURE_BEGIN
   } from '../actions/createVault'
   
   const initialState = {
@@ -43,6 +46,8 @@ import {
       maxAccessPricePlaceholder : '',
       isAccessPriceSet: false,
       error: null,
+      profilPicture: null,
+      pictureToUpload: null,
       helperTextTooLong: 'Maximum length: 30 characters',
       helperIncorrectMail: 'This is not a valid email address',
       helperIncorrectPhoneNumber: 'This is not a valid phone number'
@@ -175,6 +180,18 @@ import {
           phoneError: action.error
       };
 
+      case ADD_PICTURE_BEGIN:
+        return {
+          ...state
+      };
+
+      case ADD_PICTURE_SUCCESS:
+      return {
+        ...state,
+        profilPicture: action.picture,
+        pictureToUpload: action.pictureToUpload
+      };
+
       case SET_ACCESS_PRICE_BEGIN:
         return {
           ...state
@@ -208,6 +225,11 @@ import {
           ...state,
           error: action.error
         };
+
+      case ADD_PICTURE:
+            return {
+                ...state
+            };
 
       default:
         // ALWAYS have a default case in a reducer
