@@ -229,7 +229,6 @@ export function detectCompetenciesFromCertification(event) {
         let competencies = [];
         let certificat = file.name;
         let content;
-        let jobDuration = Math.floor(Math.random() * Math.floor(5000)); //TODO:REPLACE COMMENTAIRE
         let reader = new FileReader();
         reader.onload = function (event) {
             content = event.target.result;
@@ -240,7 +239,7 @@ export function detectCompetenciesFromCertification(event) {
                         let number = key.substring(8);
                         let competencyName = jsonContent[key];
                         let rating = jsonContent["jobRating" + number];
-                        competencies.push(new Competency(competencyName, rating, null, jobDuration));//jsonContent.jobDuration)); 
+                        competencies.push(new Competency(competencyName, rating, null, jsonContent.jobDuration)); 
                     }
                 }
             });

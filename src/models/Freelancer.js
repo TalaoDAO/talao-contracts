@@ -34,10 +34,11 @@ class Freelancer {
                 this.lastName = window.web3.utils.hexToAscii(element.lastName).replace(/\u0000/g, '');
                 this.title = window.web3.utils.hexToAscii(element.title).replace(/\u0000/g, '');
                 this.description = element.description;
-                this.pictureUrl = "freelancer-picture.jpg";
+                this.pictureUrl = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(element.picture);
                 this.email = window.web3.utils.hexToAscii(element.email).replace(/\u0000/g, '');
                 this.phone = window.web3.utils.hexToAscii(element.mobilePhone).replace(/\u0000/g, '');
                 this.ethereumAddress = this.ethAddress;
+                this.confidenceIndex = 0;
                 resolve(true);
             }).catch(error => {
                 reject(error);
@@ -57,7 +58,7 @@ class Freelancer {
                     let ratings = event['ratings'];
                     let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
                     let keywords = event['keywords'];
-                    let jobDuration = Math.floor(Math.random() * Math.floor(5000)); //TODO:REPLACE BY READ SC
+                    let jobDuration = event['duration'] ? event['duration'] : 1;
                     let competencies = [];
                     for (let index = 0; index < ratings.length; index++) {
                         competencies.push(
@@ -136,12 +137,12 @@ class Freelancer {
             keywords.push(window.web3.utils.fromAscii(element.name));
             ratings.push(element.confidenceIndex);
         });
-
+        var jobDuration = experience.jobDuration;
         var documentType = parseInt(experience.type, 10);
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
         
-        return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate)
+        return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, jobDuration)
                                         .send({from: window.account});
     }
     
