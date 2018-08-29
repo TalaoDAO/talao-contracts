@@ -61,7 +61,7 @@ contract VaultFactory is Ownable {
         uint256 userDeposit;
 
         (accessPrice, appointedAgent,sharingPlan,userDeposit) = myToken.data(freelance);
-        bool isAccess = myToken.hasVaultAccess(freelance,msg.sender);
+        bool isAccess = myToken.hasVaultAccess(msg.sender,freelance);
         bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
 
         if(accessPrice <= 0 || isAccess || isPartner) {
