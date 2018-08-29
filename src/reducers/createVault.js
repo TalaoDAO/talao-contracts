@@ -113,6 +113,7 @@ import {
           firstNameEmpty: (action.user && action.user.firstName.length > 0) ? false : true,
           lastNameEmpty: (action.user && action.user.lastName.length > 0) ? false : true,
           titleEmpty: (action.user && action.user.title.length > 0) ? false : true,
+          profilPicture: (action.user && action.user.pictureUrl) ? action.user.pictureUrl : null,
           initVaultDatasFinish: true
         };
 

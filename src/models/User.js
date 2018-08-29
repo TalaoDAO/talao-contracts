@@ -36,9 +36,14 @@ class User {
     isFreelancer() {
         return new Promise((resolve, reject) => {
             //Check if the current user is a freelancer
-            this.vaultFactoryContract.methods.FreelanceVault(this.ethAddress).call().then(vaultAddress => {
-                this.vaultAddress = (vaultAddress === '0x0000000000000000000000000000000000000000') ? false : vaultAddress;
-                resolve(this.vaultAddress);
+            this.vaultFactoryContract.methods.HasVault(this.ethAddress).call().then(hasVault => {
+                if (hasVault) {
+                    this.vaultFactoryContract.methods.GetVault(this.ethAddress).call().then(vaultAddress => {
+                        resolve(vaultAddress);
+                    });
+                } else {
+                    resolve(false);
+                }
             }).catch(error => {
                 reject(error);
             });

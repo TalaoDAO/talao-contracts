@@ -15,7 +15,8 @@ import {
     ADD_CERTIFICAT_SUCCESS,
     UPLOAD_SUCCESS,
     UPLOAD_BEGIN,
-    EXPAND_PROFIL
+    EXPAND_PROFIL,
+    UPLOAD_ERROR
   } from '../actions/experience'
   
   const initialState = {
@@ -180,6 +181,12 @@ import {
             return {
                 ...state,
                 uploadLoading: true
+            };
+
+        case UPLOAD_ERROR:
+            return {
+                ...state,
+                uploadLoading: false
             };
 
         case ADD_CERTIFICAT_SUCCESS:

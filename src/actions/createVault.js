@@ -1,8 +1,7 @@
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 import { fetchUser } from '../actions/user'
 import FileService from '../services/FileService';
-import {uploadFileBegin, uploadFileSuccess } from '../actions/experience';
-
+import { uploadFileBegin, uploadFileSuccess } from '../actions/experience';
 
 export const CREATE_VAULT_BEGIN       = 'CREATE_VAULT_BEGIN';
 export const INIT_VAULT_DEPOSIT       = 'INIT_VAULT_DEPOSIT';
@@ -143,6 +142,7 @@ export function addProfilePicture(event) {
 
         dispatch(addProfilPictureBegin());
         let profilePicture = event.files[0];
+
         event.value = null;
         if (typeof profilePicture === 'undefined')
             return;
@@ -151,7 +151,7 @@ export function addProfilePicture(event) {
         reader.onload = function (event) {
             dispatch(addProfilPictureSuccess(event.target.result, profilePicture));
         }
-        reader.readAsDataURL(profilePicture);    
+        reader.readAsDataURL(profilePicture); 
     }
 };
 
@@ -212,41 +212,22 @@ export function setAccessPrice(accessPrice, user) {
         dispatch(setAccessPriceBegin());
         dispatch(transactionBegin("Your access price is being set..."));
         let tokens_wei = window.web3.utils.toWei(accessPrice.toString());
-        /*if (user.freelancerDatas) {
-            //Update the access price
-            user.talaoContract.methods.data.send({from: user.ethAddress, data: tokens_wei})
-                .once('transactionHash', (hash) => { 
-                    dispatch(transactionHash(hash));
-                })
-                .once('receipt', (receipt) => { 
-                    dispatch(transactionReceipt(receipt));
-                })
-                .on('error', (error) => { 
-                    dispatch(transactionError(error));
-                }).then(() => {
-                    dispatch(submitVaultSuccess());
-                    dispatch(changeMenu('/chronology'));
-                    dispatch(fetchUser(user.ethAddress));
-                }).catch((err) => { 
-                    dispatch(submitVaultError(err));
-                });
-        } else {*/
-            //set the access price
-            user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress }
-            ).once('transactionHash', (hash) => { 
-                dispatch(transactionHash(hash));
-            })
-            .once('receipt', (receipt) => { 
-                dispatch(transactionReceipt(receipt));
-            })
-            .on('error', (error) => { 
-                dispatch(transactionError(error));
-            }).then(() => {
-                dispatch(setAccessPriceSuccess());
-            }).catch((err) => { 
-                dispatch(setAccessPriceError(err));
-            });
-       // }
+
+        //set the access price
+        user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress }
+        ).once('transactionHash', (hash) => { 
+            dispatch(transactionHash(hash));
+        })
+        .once('receipt', (receipt) => { 
+            dispatch(transactionReceipt(receipt));
+        })
+        .on('error', (error) => { 
+            dispatch(transactionError(error));
+        }).then(() => {
+            dispatch(setAccessPriceSuccess());
+        }).catch((err) => { 
+            dispatch(setAccessPriceError(err));
+        });
     }
 }
 
@@ -254,61 +235,63 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
     return dispatch => {
 
         dispatch(uploadFileBegin());
+        let pictureUrl;
         FileService.uploadToIpfs(pictureToUpload).then(result => {
-            user.freelancerDatas.pictureUrl = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(result);
+            pictureUrl = FileService.getBytes32FromIpfsHash(result);
+        }).then(() => {
+            dispatch(uploadFileSuccess());
+
+            dispatch(submitVaultBegin());
+    
+            let firstName = window.web3.utils.fromAscii(fName);
+            let lastname = window.web3.utils.fromAscii(lName);
+            let phone = window.web3.utils.fromAscii(pho);
+            let email = window.web3.utils.fromAscii(mail);
+            let title = window.web3.utils.fromAscii(titl);
+            let desc = description;
+    
+            if (user.freelancerDatas) {
+                //Update the vault
+                dispatch(transactionBegin("Your vault is being updated..."));
+                user.freelancerContract.methods.UpdateFreelancerData(user.ethAddress, firstName, lastname, phone, email, title, desc, pictureUrl).send(
+                    {
+                        from: user.ethAddress
+                    }).once('transactionHash', (hash) => { 
+                        dispatch(transactionHash(hash));
+                    })
+                    .once('receipt', (receipt) => { 
+                        dispatch(transactionReceipt(receipt));
+                    })
+                    .on('error', (error) => { 
+                        dispatch(transactionError(error));
+                    }).then(() => {
+                        dispatch(submitVaultSuccess());
+                        dispatch(fetchUser(user.ethAddress));
+                    }).catch((err) => { 
+                        dispatch(submitVaultError(err));
+                    });
+            } else {
+                //Create the vault
+                dispatch(transactionBegin("Your vault is being created..."));
+                user.vaultFactoryContract.methods.CreateVaultContract(accessPrice, firstName, lastname, phone, email, title, desc, pictureUrl).send(
+                    {
+                        from: user.ethAddress
+                    }).once('transactionHash', (hash) => { 
+                        dispatch(transactionHash(hash));
+                    })
+                    .once('receipt', (receipt) => { 
+                        dispatch(transactionReceipt(receipt));
+                    })
+                    .on('error', (error) => { 
+                        dispatch(transactionError(error));
+                    }).then(() => {
+                        dispatch(submitVaultSuccess());
+                        dispatch(fetchUser(user.ethAddress));
+                    }).catch((err) => { 
+                        dispatch(submitVaultError(err));
+                    });
+            }
         });
-        dispatch(uploadFileSuccess());
-
-        dispatch(submitVaultBegin());
-
-        let firstName = window.web3.utils.fromAscii(fName);
-        let lastname = window.web3.utils.fromAscii(lName);
-        let phone = window.web3.utils.fromAscii(pho);
-        let email = window.web3.utils.fromAscii(mail);
-        let title = window.web3.utils.fromAscii(titl);
-        let desc = description;
-
-        if (user.freelancerDatas) {
-            //Update the vault
-            dispatch(transactionBegin("Your vault is being updated..."));
-            user.freelancerContract.methods.UpdateFreelancerData(user.ethAddress, firstName, lastname, phone, email, title, desc).send(
-                {
-                    from: user.ethAddress
-                }).once('transactionHash', (hash) => { 
-                    dispatch(transactionHash(hash));
-                })
-                .once('receipt', (receipt) => { 
-                    dispatch(transactionReceipt(receipt));
-                })
-                .on('error', (error) => { 
-                    dispatch(transactionError(error));
-                }).then(() => {
-                    dispatch(submitVaultSuccess());
-                    dispatch(fetchUser(user.ethAddress));
-                }).catch((err) => { 
-                    dispatch(submitVaultError(err));
-                });
-        } else {
-            //Create the vault
-            dispatch(transactionBegin("Your vault is being created..."));
-            user.vaultFactoryContract.methods.CreateVaultContract(accessPrice, firstName, lastname, phone, email, title, desc).send(
-                {
-                    from: user.ethAddress
-                }).once('transactionHash', (hash) => { 
-                    dispatch(transactionHash(hash));
-                })
-                .once('receipt', (receipt) => { 
-                    dispatch(transactionReceipt(receipt));
-                })
-                .on('error', (error) => { 
-                    dispatch(transactionError(error));
-                }).then(() => {
-                    dispatch(submitVaultSuccess());
-                    dispatch(fetchUser(user.ethAddress));
-                }).catch((err) => { 
-                    dispatch(submitVaultError(err));
-                });
-        }
     }
 }
 
