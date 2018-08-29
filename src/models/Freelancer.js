@@ -58,7 +58,7 @@ class Freelancer {
                     let ratings = event['ratings'];
                     let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
                     let keywords = event['keywords'];
-                    let jobDuration = Math.floor(Math.random() * Math.floor(5000)); //TODO:REPLACE BY READ SC
+                    let jobDuration = event['duration'] ? event['duration'] : 1;
                     let competencies = [];
                     for (let index = 0; index < ratings.length; index++) {
                         competencies.push(
