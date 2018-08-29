@@ -354,23 +354,25 @@ class VaultCreation extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    <div>
-                        <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["accent2"], color: constants.colors["textAccent2"] }}>
-                            <span style={{ fontSize: '25px' }}>1</span>
-                        </div>
-                        <div className={this.props.classes.timeLine} >
-                            <div className={this.props.classes.line} style={{ width: '25px' }}></div>
-                            <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.timeContainer}>
-                                {stepHeader}
+                    {!this.props.user.freelancerDatas && 
+                        <div>
+                            <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["accent2"], color: constants.colors["textAccent2"] }}>
+                                <span style={{ fontSize: '25px' }}>1</span>
+                            </div>
+                            <div className={this.props.classes.timeLine} >
+                                <div className={this.props.classes.line} style={{ width: '25px' }}></div>
+                                <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.timeContainer}>
+                                    {stepHeader}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
                     <Collapse in={step === 0} timeout="auto">
                         {accessPriceInputs}
                     </Collapse>
                     <div>
                         <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice, accessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: isAccessPriceSet ? constants.colors["accent2"] : constants.colors["grey"], color: constants.colors["textAccent2"] }}>
-                            <span style={{ fontSize: '25px' }}>2</span>
+                            <span style={{ fontSize: '25px' }}>{this.props.user.freelancerDatas ? 1 : 2}</span>
                         </div>
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
