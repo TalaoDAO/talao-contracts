@@ -143,7 +143,8 @@ const mapStateToProps = state => ({
     transactionHash: state.transactionReducer.transactionHash,
     loadingGuard: state.guardReducer.loading,
     initVaultDatasFinish: state.createVaultReducer.initVaultDatasFinish,
-    profilPicture: state.createVaultReducer.profilPicture
+    profilPicture: state.createVaultReducer.profilPicture,
+    pictureToUpload: state.createVaultReducer.pictureToUpload
   });
 
 
