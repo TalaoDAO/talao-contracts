@@ -95,7 +95,7 @@ contract VaultFactory is Ownable {
         Vault newVault = new Vault(myToken, myFreelancer);
         
         FreelanceVault[msg.sender] = address(newVault);
-        SafeMath.add(nbVault,1);
+        nbVault = SafeMath.add(nbVault,1);
         newVault.transferOwnership(msg.sender);
         emit VaultCreation(msg.sender, newVault, VaultState.Created);
 
