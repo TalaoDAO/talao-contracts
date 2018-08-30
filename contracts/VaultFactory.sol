@@ -5,7 +5,7 @@ import "./Talao.sol";
 import "./Freelancer.sol";
 
 contract VaultFactory is Ownable {
-    uint public nbVault;
+    uint nbVault;
     TalaoToken myToken;
     Freelancer myFreelancer;
 
@@ -54,21 +54,28 @@ contract VaultFactory is Ownable {
         view
     returns(address)
     {
-        address freeAdd = address(0);
+        //tupple used for data
         uint256 accessPrice;
         address appointedAgent;
         uint sharingPlan;
         uint256 userDeposit;
 
         (accessPrice, appointedAgent,sharingPlan,userDeposit) = myToken.data(freelance);
-        bool isAccess = myToken.hasVaultAccess(msg.sender,freelance);
-        bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
 
-        if(accessPrice <= 0 || isAccess || isPartner) {
-            freeAdd = FreelanceVault[freelance];
+        if (accessPrice <= 0) {
+            return FreelanceVault[freelance];
         }
-       
-        return freeAdd;
+
+        if (msg.sender != address(0)) {
+            bool isAccess = myToken.hasVaultAccess(msg.sender,freelance);
+            bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
+
+            if (isAccess || isPartner) {
+                return FreelanceVault[freelance];
+            }
+        }
+
+        return address(0);
     }
 
     /**

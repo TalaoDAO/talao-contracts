@@ -64,8 +64,10 @@ contract Vault is Ownable {
     }
 
     modifier allowance () { //require sur l'aggreement
+        require(msg.sender!=address(0),"The sender must be initialized");
+        
         bool isPartner = myFreelancer.isPartner(owner, msg.sender);
-        bool isVaultAccess = myToken.hasVaultAccess(owner,msg.sender);
+        bool isVaultAccess = myToken.hasVaultAccess(msg.sender,owner);
         require(isPartner || isVaultAccess,"user has no vault access");
         _;
     }

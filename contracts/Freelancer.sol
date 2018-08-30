@@ -21,8 +21,7 @@ contract Freelancer is Ownable {
         // this is the origin of the freelance for future use
         uint8 referral;
         uint256 subscriptionDate;
-        //used to penalize (bad behavior, wrong info) or reward (fidelity, good activity) a user
-        uint256 karma;
+
     }
 
     // mapping between Vault Ethereum address and Confidence Index
@@ -90,7 +89,7 @@ contract Freelancer is Ownable {
     function unsubscribe()
         public
     {
-        require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive);
+        require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive, "this freelance is inactive");
         delete FreelancerInformation[msg.sender];
     }
     
@@ -101,31 +100,18 @@ contract Freelancer is Ownable {
     function setInternalData(bool _iskyc, uint8 _referral) 
         public
     {
-        require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive);
+        require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive,"this freelance is inactive" );
         FreelancerInformation[msg.sender].isUserKYC = _iskyc;
         FreelancerInformation[msg.sender].referral = _referral;
         emit FreelancerInternalData(msg.sender, _iskyc, _referral);
     }
        
-    /**
-     * Set Confidence Index (public data) by owner in case of bad behavior) 
-     */
-    function setKarma(address _freelancer, uint256 karma)
-        onlyOwner
-        public
-    {
-        require(FreelancerInformation[_freelancer].state == FreelancerState.Active);
-        FreelancerInformation[_freelancer].karma = karma;
-    }
-
-
     function setInactive(address _freelancer)
         onlyOwner
         public
     {
         FreelancerInformation[_freelancer].state = FreelancerState.Inactive;
     }
-
 
     function setActive(address _freelancer)
         onlyOwner
