@@ -21,9 +21,10 @@ export const NEW_EXPERIENCE_CLICKED = 'NEW_EXPERIENCE_CLICKED';
 export const ADD_CERTIFICAT_CLICKED = 'ADD_CERTIFICAT_CLICKED';
 export const ADD_CERTIFICAT_BEGIN   = 'ADD_CERTIFICAT_BEGIN';
 export const ADD_CERTIFICAT_SUCCESS = 'ADD_CERTIFICAT_SUCCESS';
-export const UPLOAD_SUCCESS =         'UPLOAD_SUCCESS';
-export const UPLOAD_BEGIN =           'UPLOAD_BEGIN';
-export const EXPAND_PROFIL =          'EXPAND_PROFIL';
+export const UPLOAD_SUCCESS         = 'UPLOAD_SUCCESS';
+export const UPLOAD_BEGIN           = 'UPLOAD_BEGIN';
+export const EXPAND_PROFIL          = 'EXPAND_PROFIL';
+export const UPLOAD_ERROR           = 'UPLOAD_ERROR'
 
 export const addCertificatSuccess = (competencies, formData, confidenceIndex, certificat) => ({
     type: ADD_CERTIFICAT_SUCCESS,
@@ -35,6 +36,10 @@ export const addCertificatSuccess = (competencies, formData, confidenceIndex, ce
 
 export const uploadFileSuccess = () => ({
     type: UPLOAD_SUCCESS
+})
+
+export const uploadFileError = () => ({
+    type: UPLOAD_ERROR
 })
 
 export const uploadFileBegin = () => ({
@@ -253,20 +258,32 @@ export function addDocument(formData, user, experience) {
     return dispatch => {
         dispatch(uploadFileBegin());
         FileService.uploadToIpfs(formData).then(result => {
-            let newExperienceToAdd = new Experience(
-                result,
-                experience.title,
-                experience.description,
-                new Date(experience.from),
-                new Date(experience.to),
-                experience.competencies,
-                experience.certificat,
-                experience.confidenceIndex,
-                experience.type,
-                experience.jobDuration
-            );
-            dispatch(uploadFileSuccess());
-            dispatch(addDocToFreelancer(user, newExperienceToAdd));
+            //Check if the doc is already uploaded
+            let alreadyUploded = false;
+            user.freelancerDatas.experiences.forEach(experience => {
+                if (FileService.getIpfsHashFromBytes32(experience.docId) === result) {
+                    alreadyUploded = true;
+                    dispatch(transactionError(new Error('You have already upload this file.')));
+                    dispatch(uploadFileError());
+                }
+            });  
+
+            if (!alreadyUploded) {
+                let newExperienceToAdd = new Experience(
+                    result,
+                    experience.title,
+                    experience.description,
+                    new Date(experience.from),
+                    new Date(experience.to),
+                    experience.competencies,
+                    experience.certificat,
+                    experience.confidenceIndex,
+                    experience.type,
+                    experience.jobDuration
+                );
+                dispatch(uploadFileSuccess());
+                dispatch(addDocToFreelancer(user, newExperienceToAdd));
+            }
         }, err => dispatch(addDocError(err)));
     }
 }
