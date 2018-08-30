@@ -38,7 +38,7 @@ class User {
             //Check if the current user is a freelancer
             this.vaultFactoryContract.methods.HasVault(this.ethAddress).call().then(hasVault => {
                 if (hasVault) {
-                    this.vaultFactoryContract.methods.GetVault(this.ethAddress).call().then(vaultAddress => {
+                    this.vaultFactoryContract.methods.GetVault(this.ethAddress).call({from: this.ethAddress}).then(vaultAddress => {
                         resolve(vaultAddress);
                     });
                 } else {

@@ -67,7 +67,7 @@ contract VaultFactory is Ownable {
         }
 
         if (msg.sender != address(0)) {
-            bool isAccess = myToken.hasVaultAccess(msg.sender,freelance);
+            bool isAccess = myToken.hasVaultAccess(freelance, msg.sender);
             bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
 
             if (isAccess || isPartner) {

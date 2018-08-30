@@ -267,7 +267,6 @@ export function addDocument(formData, user, experience) {
                     dispatch(uploadFileError());
                 }
             });  
-
             if (!alreadyUploded) {
                 let newExperienceToAdd = new Experience(
                     result,

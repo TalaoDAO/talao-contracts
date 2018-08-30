@@ -237,7 +237,7 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
         dispatch(uploadFileBegin());
         let pictureUrl;
         FileService.uploadToIpfs(pictureToUpload).then(result => {
-            pictureUrl = FileService.getBytes32FromIpfsHash(result);
+            pictureUrl = (pictureToUpload) ? FileService.getBytes32FromIpfsHash(result) : '0x0000000000000000000000000000000000000000';
         }).then(() => {
             dispatch(uploadFileSuccess());
 

@@ -164,7 +164,10 @@ export function userHasAccessToFreelancer(user, freelancer) {
     return new Promise((resolve, reject) => {
         user.vaultFactoryContract.methods.HasVault(freelancer).call().then(hasVault => {
             if (hasVault) {
+                console.log(freelancer);
+                console.log(user.ethAddress);
                 user.vaultFactoryContract.methods.GetVault(freelancer).call({from: user.ethAddress}).then(vaultAddress => {
+                    console.log(vaultAddress);
                     resolve(vaultAddress);
                 });
             } else {

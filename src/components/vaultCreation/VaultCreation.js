@@ -247,7 +247,7 @@ class VaultCreation extends React.Component {
             <Grid container spacing={40}>
                 <form className={this.props.classes.container} noValidate autoComplete="off">
                     <Grid item lg={2} xs={12}>
-                        <img src={(profilPicture) ? profilPicture : (this.props.user.freelancerDatas) ? this.props.user.freelancerDatas.pictureUrl : defaultFreelancerPicture} 
+                        <img src={(profilPicture) ? profilPicture : (this.props.user.freelancerDatas && this.props.user.freelancerDatas.pictureUrl) ? this.props.user.freelancerDatas.pictureUrl : defaultFreelancerPicture} 
                              onClick={() => this.props.dispatch(addImageClicked(this.fileInput))} 
                              className={this.props.classes.picture}
                              alt="Freelancer" />

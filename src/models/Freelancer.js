@@ -34,7 +34,7 @@ class Freelancer {
                 this.lastName = window.web3.utils.hexToAscii(element.lastName).replace(/\u0000/g, '');
                 this.title = window.web3.utils.hexToAscii(element.title).replace(/\u0000/g, '');
                 this.description = element.description;
-                this.pictureUrl = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(element.picture);
+                this.pictureUrl = (element.picture === '0x0000000000000000000000000000000000000000000000000000000000000000') ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(element.picture);
                 this.email = window.web3.utils.hexToAscii(element.email).replace(/\u0000/g, '');
                 this.phone = window.web3.utils.hexToAscii(element.mobilePhone).replace(/\u0000/g, '');
                 this.ethereumAddress = this.ethAddress;
@@ -141,7 +141,6 @@ class Freelancer {
         var documentType = parseInt(experience.type, 10);
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
-        
         return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, jobDuration)
                                         .send({from: window.account});
     }
@@ -153,7 +152,6 @@ class Freelancer {
     getCompetencies() {
         return new Promise((resolve) => {
             let competencies = [];
-            console.log(this.experiences);
             this.experiences.forEach((experience) => {
                 experience.competencies.forEach((competency) => {
                     let indexCompetency = competencies.findIndex(c => c.name === competency.name);
