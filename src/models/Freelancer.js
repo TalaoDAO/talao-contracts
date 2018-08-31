@@ -84,26 +84,9 @@ class Freelancer {
                     this.addExperience(newExp);
                 }
             }).then(() => {
-                let competencies = [];
-                this.experiences.forEach((experience) => {
-                    experience.competencies.forEach((competency) => {
-                        let indexCompetency = competencies.findIndex(c => c.name === competency.name);
-                        if (indexCompetency === -1) {
-                            competencies.push(new Competency(competency.name, parseInt(competency.confidenceIndex, 10), [experience], experience.jobDuration));
-                        }
-                        else {
-                            competencies[indexCompetency].updateConfidenceIndex(competency.confidenceIndex, experience.jobDuration);
-                            competencies[indexCompetency].experiences.push(experience);
-                        }
-                    });
+                this.getCompetencies().then(() => {
+                    cb();
                 });
-                this.competencies = competencies;
-                let confidenceIndex = 0;
-                competencies.forEach((competencie) => {
-                    confidenceIndex += competencie.confidenceIndex;
-                });
-                this.confidenceIndex = confidenceIndex / competencies.length;
-                cb()
             });
     }
 
@@ -169,7 +152,7 @@ class Freelancer {
             competencies.forEach((competencie) => {
                 confidenceIndex += competencie.confidenceIndex;
             });
-            this.confidenceIndex = confidenceIndex / competencies.length;
+            this.confidenceIndex = (confidenceIndex === 0) ? 0 : confidenceIndex / competencies.length;
             this.competencies = competencies;
             resolve(true);
         });

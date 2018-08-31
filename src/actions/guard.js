@@ -62,8 +62,6 @@ export function hasAccess(location, params, user, history) {
             userHasAccessToFreelancer(user, params).then((resolve, reject) => {
             let hasVault = (!resolve) ? false : true;
             let userHasAccess = (!resolve || resolve === '0x0000000000000000000000000000000000000000') ? false : true;
-            console.log(hasVault);
-            console.log(userHasAccess);
             //the client doesn't have a wallet
             if (!user.ethAddress) {
                 switch (location.toLowerCase()) 
@@ -164,10 +162,7 @@ export function userHasAccessToFreelancer(user, freelancer) {
     return new Promise((resolve, reject) => {
         user.vaultFactoryContract.methods.HasVault(freelancer).call().then(hasVault => {
             if (hasVault) {
-                console.log(freelancer);
-                console.log(user.ethAddress);
                 user.vaultFactoryContract.methods.GetVault(freelancer).call({from: user.ethAddress}).then(vaultAddress => {
-                    console.log(vaultAddress);
                     resolve(vaultAddress);
                 });
             } else {

@@ -41,7 +41,7 @@ class Chronology extends React.Component {
 
     componentDidUpdate() {
         //The guard check is over, so the request is valid, so we init the searched freelancer
-        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers) {
+        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers && queryString.extract(window.location.search).toLowerCase() !== this.props.user.ethAddress) {
             this.props.dispatch(fetchFreelancer(this.props.user, queryString.extract(window.location.search)));
         }
     }

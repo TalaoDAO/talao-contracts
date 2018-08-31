@@ -103,7 +103,7 @@ class Competencies extends React.Component {
     }
 
     componentDidUpdate() {
-        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers) {
+        if (queryString.extract(window.location.search) && this.props.guardCheck && !this.props.user.searchedFreelancers && queryString.extract(window.location.search).toLowerCase() !== this.props.user.ethAddress) {
             this.props.dispatch(fetchFreelancer(this.props.user, queryString.extract(window.location.search)));
         }
     }
