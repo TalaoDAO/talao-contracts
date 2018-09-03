@@ -65,10 +65,10 @@ class AppConnected extends React.Component {
   //The library web3-react doesn't supply redux event to handle it
   handleAddressChange = () => {
     window.web3.eth.getAccounts(function (err, accounts) {
-      if (accounts[0] === undefined && window.account) {
+      if (accounts && accounts[0] === undefined && window.account) {
         window.account = null;
         this.props.dispatch(logout());
-      } else if (accounts[0] && !window.account) {
+      } else if (accounts && accounts[0] && !window.account) {
         this.props.dispatch(login(accounts[0]));
       }
     }.bind(this));
