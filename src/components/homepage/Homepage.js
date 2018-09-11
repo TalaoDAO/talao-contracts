@@ -9,6 +9,7 @@ import CustomizedSnackbars from '../snackbars/snackbars';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { createVaultClicked, setFreelancerAddress, searchFreelancerClicked, viewDatasClicked } from '../../actions/homepage';
+import { isMobile } from 'react-device-detect';
 
 const Loading = require('react-loading-animation');
 
@@ -40,7 +41,7 @@ const styles = theme => ({
     },
     card: {
         flexBasis: 'auto',
-        height: '400px',
+        height: '450px',
         marginRight: '20px',
         marginBottom: '20px',
     },
@@ -59,7 +60,14 @@ const styles = theme => ({
         color: theme.palette.text.primary,
         lineHeight: '50px',
         fontSize: '30px',
-        display: 'inlin-block',
+        display: 'inline-block',
+    },
+    titleSecondary: {
+        color: theme.palette.text.primary,
+        textAlign: 'left',
+        lineHeight: '30px',
+        fontSize: (isMobile) ? '15px' : '20px',
+        display: 'inline-block',
     },
     center: {
         textAlign: 'center',
@@ -104,12 +112,13 @@ class Homepage extends React.Component {
             snackbar = (<CustomizedSnackbars message={message} time={5000} type='error'/>);
         }
         if (transactionHash && !transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+            snackbar = (<CustomizedSnackbars message={object} showSpinner={true} type='info'/>);
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
             snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
         }
+
         //If the user doesn't have a wallet he can't create a vault
         let showCreateYourVaultBlock;
         if (this.props.user.ethAddress) {
@@ -119,26 +128,50 @@ class Homepage extends React.Component {
                     <CardContent>
                         <div className={this.props.classes.center}>
                         {(!this.props.user.freelancerDatas) ?
-                            <p className={this.props.classes.title}>You are a freelancer?<br />Create your vault right now!</p> :
-                            <p className={this.props.classes.title}>View my datas</p>
+                            <p className={this.props.classes.title}>Are you a Talent ? Create you Certified Resume right now !<br /><br /><span className={this.props.classes.titleSecondary}>Talao provide you with the ultimate Blockchain protocol for experience, skills and diploma certifications</span></p> :
+                            <p className={this.props.classes.title}>You are connected to your account !</p>
                         }
                         </div>
                         <div className={this.props.classes.center}>
                             <Button onClick={() => this.props.user.freelancerDatas ? this.props.dispatch(viewDatasClicked(this.props.history)) : this.props.dispatch(createVaultClicked(this.props.history))} className={this.props.classes.certificatButton} label="login">
-                                <Link style={{ textDecoration: 'none', color: '#fff' }} to={(!this.props.user.freelancerDatas) ? "/register" : "/chronology"}>{(!this.props.user.freelancerDatas) ? 'Create my vault' : 'View my datas'}</Link>
+                                <Link style={{ textDecoration: 'none', color: '#fff' }} to={(!this.props.user.freelancerDatas) ? "/register" : "/chronology"}>{(!this.props.user.freelancerDatas) ? 'Create Account' : 'View my data'}</Link>
                             </Button>
                         </div>
                     </CardContent>
                 </Card>
             </Grid>)
         }
+
+        //If the user doesn't have a wallet we propose him to install it
+        let createYourWallet;
+        if (!this.props.user.ethAddress) {
+            createYourWallet = 
+            (<Grid item xs={12} lg={6}>
+                <Card className={this.props.classes.card}>
+                    <CardContent>
+                        <div className={this.props.classes.center}>
+                        {(!this.props.user.freelancerDatas) ?
+                            <p className={this.props.classes.title}>Are you a Talent ?<br /><br /><span className={this.props.classes.titleSecondary}>Welcome to the Talao Blockchain protocol for experience, skills and diploma certifications !<br />Please connect with your Ethereum wallet to create a certified Resume</span></p> :
+                            <p className={this.props.classes.title}>You are connected to your account !</p>
+                        }
+                        </div>
+                        <div className={this.props.classes.center}>
+                            <Button className={this.props.classes.certificatButton} onClick={() => console.log('click')} label="login">
+                                I do not have an Ethereum wallet
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </Grid>)
+        }
+
         return (
             <Grid container className={this.props.classes.container}>
                 <Grid item xs={12} lg={6}>
                     <Card className={this.props.classes.card}>
                         <CardContent>
                             <div className={this.props.classes.center}>
-                                <p className={this.props.classes.title}>Looking for a freelancer?<br />Type his address here:</p>
+                                <p className={this.props.classes.title}>Looking for a certified resume ?<br />Type the talent Ethereum address here</p>
                             </div>
                             <TextField
                                 value={freelancerAddress}
@@ -159,6 +192,7 @@ class Homepage extends React.Component {
                     </Card>
                 </Grid>
                 {showCreateYourVaultBlock}
+                {createYourWallet}
                 {snackbar}
             </Grid>
         );

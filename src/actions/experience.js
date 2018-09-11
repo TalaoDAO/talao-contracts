@@ -5,6 +5,7 @@ import { fetchUserSuccess } from '../actions/user'
 import { TEXT_VALIDATOR_LENGTH } from '../actions/createVault';
 import Competency from '../models/Competency';
 import FileService from '../services/FileService';
+import { changeMenu } from './menu';
 
 export const ADD_DOC_BEGIN          = 'ADD_DOC_BEGIN';
 export const ADD_DOC_SUCCESS        = 'ADD_DOC_SUCCESS';
@@ -24,7 +25,8 @@ export const ADD_CERTIFICAT_SUCCESS = 'ADD_CERTIFICAT_SUCCESS';
 export const UPLOAD_SUCCESS         = 'UPLOAD_SUCCESS';
 export const UPLOAD_BEGIN           = 'UPLOAD_BEGIN';
 export const EXPAND_PROFIL          = 'EXPAND_PROFIL';
-export const UPLOAD_ERROR           = 'UPLOAD_ERROR'
+export const UPLOAD_ERROR           = 'UPLOAD_ERROR';
+export const MOVE_TO_ADD_NEW_EXP    = 'MOVE_TO_ADD_NEW_EXP';
 
 export const addCertificatSuccess = (competencies, formData, confidenceIndex, certificat) => ({
     type: ADD_CERTIFICAT_SUCCESS,
@@ -59,16 +61,18 @@ export const addCertificat = () => ({
     type: ADD_CERTIFICAT_CLICKED
 });
 
-export const changeFrom = (from, errorEmpty) => ({
+export const changeFrom = (from, errorEmpty, toBeforeFrom) => ({
     type: CHANGE_FROM,
     from,
-    errorEmpty
+    errorEmpty,
+    toBeforeFrom
 });
 
-export const changeTo = (to, errorEmpty) => ({
+export const changeTo = (to, errorEmpty, toBeforeFrom) => ({
     type: CHANGE_TO,
     to,
-    errorEmpty
+    errorEmpty,
+    toBeforeFrom
 });
 
 export const changeTitle = (title, error, errorEmpty) => ({
@@ -129,7 +133,7 @@ export const expandProfil = expandProfil => ({
 
 export function addDocToFreelancer(user, experience) {
     return dispatch => {
-        dispatch(transactionBegin("Your experience is being added..."));
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
         dispatch(addDocBegin(user, experience));   
         user.freelancerDatas.addDocument(experience)
         .once('transactionHash', (hash) => { 
@@ -158,7 +162,7 @@ export function addDocToFreelancer(user, experience) {
 
 export function removeDocToFreelancer(user, experience) {
     return dispatch => {
-        dispatch(transactionBegin("Your experience is being deleted..."));
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
         dispatch(removeDocBegin(user, experience));
         user.freelancerDatas.removeDoc(experience)
         .once('transactionHash', (hash) => { 
@@ -188,12 +192,12 @@ export function removeDocToFreelancer(user, experience) {
     };
 }
 
-export function setNewExperienceInput(input, value) {
+export function setNewExperienceInput(input, value, from) {
     return dispatch => {
         switch (input) 
         {
-            case 'from': dispatch(changeFrom(value, isEmpty(value))); break;
-            case 'to': dispatch(changeTo(value, isEmpty(value))); break;
+            case 'from': dispatch(changeFrom(from, isEmpty(from), isBefore(value, from))); break;
+            case 'to': dispatch(changeTo(value, isEmpty(value), isBefore(value, from))); break;
             case 'title': dispatch(changeTitle(value, !isTextLimitRespected(value), isEmpty(value))); break;
             case 'description': dispatch(changeDescription(value)); break;
             case 'type': dispatch(changeType(value)); break;
@@ -241,9 +245,9 @@ export function detectCompetenciesFromCertification(event) {
             Object.keys(jsonContent).forEach(key => {
                 if (key.startsWith("jobSkill")) {
                     if (jsonContent[key] !== "") {
-                        let number = key.substring(8);
+                        //let number = key.substring(8);
                         let competencyName = jsonContent[key];
-                        let rating = jsonContent["jobRating" + number];
+                        let rating = jsonContent["jobRating2"];// + number];
                         competencies.push(new Competency(competencyName, rating, null, jsonContent.jobDuration)); 
                     }
                 }
@@ -284,5 +288,17 @@ export function addDocument(formData, user, experience) {
                 dispatch(addDocToFreelancer(user, newExperienceToAdd));
             }
         }, err => dispatch(addDocError(err)));
+    }
+}
+
+export function isBefore(to, from) {
+    return new Date(to) < new Date(from);
+}
+
+export function moveToNewExp(history) {
+    return dispatch => {
+        dispatch(newExperience(true));
+        dispatch(changeMenu('/chronology', false));
+        history.push('/chronology');
     }
 }

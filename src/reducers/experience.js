@@ -25,6 +25,7 @@ import {
     experienceToAdd: null,
     to: '',
     toEmpty: true,
+    toBeforeFrom: false,
     from: '',
     fromEmpty: true,
     title: '',
@@ -103,14 +104,16 @@ import {
             return {
                 ...state,
                 from: action.from,
-                fromEmpty: action.errorEmpty
+                fromEmpty: action.errorEmpty,
+                toBeforeFrom: action.toBeforeFrom
             };   
 
         case CHANGE_TO:
             return {
                 ...state,
                 to: action.to,
-                toEmpty: action.errorEmpty
+                toEmpty: action.errorEmpty,
+                toBeforeFrom: action.toBeforeFrom
             };
 
         case CHANGE_TITLE_EXP:

@@ -9,6 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Collapse from '@material-ui/core/Collapse';
 import MailIcon from '@material-ui/icons/Mail';
+import Share from '@material-ui/icons/Share';
 import PhoneIcon from '@material-ui/icons/Phone';
 import BlurOnIcon from '@material-ui/icons/BlurOn';
 import classnames from 'classnames';
@@ -17,6 +18,8 @@ import Media from "react-media";
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { expandProfil } from '../../actions/experience';
+import Grid from '@material-ui/core/Grid';
+import SimplePopover from '../buttons/simplePopover';
 
 const styles = theme => ({
   container: {
@@ -100,7 +103,9 @@ class Profile extends React.Component {
           <div className={this.props.classes.container}>
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
-                <div className={this.props.classes.confidenceIndex}>{Math.round(this.props.freelancer.confidenceIndex * 10) / 10}</div>
+                <div className={this.props.classes.confidenceIndex}>{Math.round(this.props.freelancer.confidenceIndex * 10) / 10}
+                  <span style={{fontSize: '12px'}}>/5</span>
+                </div>
               </div>
               <img src={(this.props.freelancer.pictureUrl) ? this.props.freelancer.pictureUrl : defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
@@ -143,6 +148,10 @@ class Profile extends React.Component {
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
                     <BlurOnIcon />&nbsp;{this.props.freelancer.ethereumAddress}
                   </Typography>
+                  <Grid style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                      <Share />
+                      <SimplePopover ethAddress={this.props.freelancer.ethAddress}/>
+                  </Grid>             
                 </CardContent>
               )
             }

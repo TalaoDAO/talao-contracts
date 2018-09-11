@@ -120,7 +120,7 @@ class Competency extends React.Component {
                 <Link to={(isWatching) ? '/competencies/' + this.props.competency.name + '?' + queryString.extract(window.location.search) : '/competencies/' + this.props.competency.name} className={this.props.classes.link}>
                     <CardContent className={this.props.classes.badge} style={{ backgroundColor: constants.colors[backgroundLightColorString] }}>
                         <Typography variant="headline" className={this.props.classes.textBadge}>
-                            {Math.round(this.props.confidenceIndex * 10) / 10}
+                        {Math.round(this.props.confidenceIndex * 10) / 10}<span style={{fontSize: '15px'}}>/5</span>
                         </Typography>
                     </CardContent>
                     <CardMedia

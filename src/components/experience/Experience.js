@@ -149,7 +149,7 @@ class Experience extends React.Component {
                         &nbsp;
                     </div>
                     <div className={this.props.classes.timeLine} >
-                        <div className={this.props.classes.line} style={{ width: (isMobile) ? '28px' : (monthDiff * 5) + 'px' }}></div>
+                        <div className={this.props.classes.line} style={{ width: (isMobile) ? '28px' : (monthDiff >= 120) ? (120 * 5) + 'px' : (monthDiff * 5) + 'px' }}></div>
                         <div className={this.props.classes.timeContainer}>
                             {dateDiff}
                         </div>
@@ -169,7 +169,7 @@ class Experience extends React.Component {
                             {this.props.value.description}
                         </Typography>
                         <Grid item xs={12}>
-                            <Button onClick={this.removeDocument} style={{ display: !this.props.isClient ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                            <Button onClick={this.removeDocument} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
                                 <Close />
                                 <span>Remove</span>
                             </Button>

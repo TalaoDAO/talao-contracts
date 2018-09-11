@@ -56,7 +56,7 @@ class Freelancer {
                     let startDate = parseInt(event['startDate'], 10);
                     let endDate = parseInt(event['endDate'], 10);
                     let ratings = event['ratings'];
-                    let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
+                    //let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
                     let keywords = event['keywords'];
                     let jobDuration = event['duration'] ? event['duration'] : 1;
                     let competencies = [];
@@ -64,7 +64,8 @@ class Freelancer {
                         competencies.push(
                             new Competency(
                                 window.web3.utils.hexToAscii(keywords[index]).replace(/\u0000/g, ''),
-                                (isNumber) ? ratings[index] : ratings[index].c[0]
+                                //(isNumber) ? ratings[index] : ratings[index].c[0]
+                                ratings[1]
                             )
                         );
                     }
@@ -129,7 +130,7 @@ class Freelancer {
     }
     
     removeDoc(experience) {
-        return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account });
+        return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account, gasPrice: '5000000000' });
     }
 
     getCompetencies() {

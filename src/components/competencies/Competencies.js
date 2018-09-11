@@ -9,10 +9,21 @@ import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
 import { fetchFreelancer } from '../../actions/user';
 import CustomizedSnackbars from '../snackbars/snackbars';
+import Button from 'material-ui/Button';
+import { moveToNewExp } from '../../actions/experience';
+import Typography from "@material-ui/core/Typography";
 
 const Loading = require('react-loading-animation');
 
 const styles = {
+    certificatButton: {
+        margin: '20px 0px',
+        backgroundColor: '#3b3838',
+        color: '#ffffff',
+        '&:hover': {
+            backgroundColor: '#3b3838'
+        }
+    },
     competenciesContainer: {
         display: 'flex',
         width: '100%',
@@ -122,7 +133,7 @@ class Competencies extends React.Component {
 
     let snackbar;
     if (transactionHash && !transactionReceipt) {
-        snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+        snackbar = (<CustomizedSnackbars message={object} showSpinner={true} type='info'/>);
     } else if (transactionError) {
         snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
@@ -181,6 +192,18 @@ class Competencies extends React.Component {
                         {competencies}
                     </div>
                 </Grid>
+                {(!this.props.user.searchedFreelancers && freelancer.competencies.length === 0) && 
+                        <Grid item xs={12}
+                              container
+                              direction="column"
+                              justify="center"
+                              alignItems="center">          
+                            <Typography variant="subheading">The skills section is automatically filled with your experience information.</Typography>                 
+                            <Button onClick={() => this.props.dispatch(moveToNewExp(this.props.history))} className={this.props.classes.certificatButton}>
+                                Add your first experience
+                            </Button>
+                        </Grid>
+                }
                 {snackbar}
             </Grid>
         );

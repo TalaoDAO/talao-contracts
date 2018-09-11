@@ -43,6 +43,7 @@ class CompetencyTag extends React.Component {
             <div className={this.props.classes.container} style={{ backgroundColor: ColorService.getColorFromName(backgroundColorString) }}>
                 <div className={this.props.classes.confidenceIndex} style={{ backgroundColor: ColorService.getColorFromName(backgroundLightColorString) }}>
                     {Math.round(this.props.value.confidenceIndex * 10) / 10}
+                    <span style={{fontSize: '10px'}}>/5</span>
                 </div>
                 <div className={this.props.classes.name} style={{ color: ColorService.getColorFromName(textColorString) }}>
                     {this.props.value.name}

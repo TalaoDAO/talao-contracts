@@ -31,6 +31,9 @@ class User {
 
         //store the researched freelancers
         this.searchedFreelancers = null;
+
+        //TalaoToken balance
+        this.talaoBalance = null;
     }
 
     isFreelancer() {

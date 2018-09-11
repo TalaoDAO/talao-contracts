@@ -52,6 +52,11 @@ const styles = theme => ({
         color: theme.palette.text.primary,
         lineHeight: '30px',
     },
+    underLogo: {
+        marginLeft: '23%',
+        marginTop: '10px',
+        fontSize: '20px',
+    }
 });
 
 class Menu extends React.Component {
@@ -69,23 +74,28 @@ class Menu extends React.Component {
         let showFreelancerMenu = ((this.props.user.freelancerDatas || this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') &&
             <div>
                 <Typography to="/">
-                <Link 
-                    onClick={() => this.props.dispatch(changeMenuClicked('/competencies', true))}
-                    className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                    to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress}
-                >
-                    Competencies
-                </Link>
-                </Typography>
-                <Typography to="/">
                     <Link 
                         onClick={() => this.props.dispatch(changeMenuClicked('/chronology', true))}
                         className={currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                         to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
                     >
-                        Chronology
+                        Experiences
                     </Link>
-                </Typography> 
+                </Typography>
+                <Typography to="/" style={{clear: "both"}}>
+                    <Link 
+                        onClick={() => this.props.dispatch(changeMenuClicked('/competencies', true))}
+                        className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                        to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress}
+                    >
+                        Skills
+                    </Link>
+                </Typography>
+                <Typography to="/" style={{clear: "both"}}>
+                    <Link to="#" className={this.props.classes.sidebarItem} style={{color: "lightgray"}}>
+                        Diploma
+                    </Link>
+                </Typography>
             </div>  
 
         //if this is a client or a freelancer
@@ -96,25 +106,7 @@ class Menu extends React.Component {
                 className={currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                 to="/register"
             >
-                {this.props.user.freelancerDatas ? 'Update vault' : 'Create vault'}
-            </Link>
-        </Typography>
-
-        let showMyVaultMenu = ((this.props.user.freelancerDatas && this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') && 
-        <Typography to="/">
-            <Link 
-                onClick={() => { let usr = this.props.user; 
-                                usr.searchedFreelancers = null; 
-                                this.props.dispatch(removeResearch(usr)); 
-                                this.props.dispatch(changeMenuClicked('/chronology', true));
-                                //Nothing change here to redux and we need to forceUpdate to update the menu
-                                this.forceUpdate();
-                                }
-                }
-                className={this.props.classes.sidebarItem} 
-                to="/chronology"
-            >
-                My vault
+                {this.props.user.freelancerDatas ? 'Update profile' : 'Create resume'}
             </Link>
         </Typography>
 
@@ -124,31 +116,37 @@ class Menu extends React.Component {
                     <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage', true))} >
                         <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
                     </Link>
+                    <Typography className={this.props.classes.underLogo}>Certified<br/>Resume</Typography>
                 </div>
                 <div className={this.props.classes.sidebar}>
                     <div>
-                        {showCreateVaultMenu}
-                        {showMyVaultMenu}
-                        {showFreelancerMenu}
                         <Typography to="/">
-                        <Link 
-                            onClick={() => { let usr = this.props.user; 
-                                             usr.searchedFreelancers = null; 
-                                             this.props.dispatch(removeResearch(usr)); 
-                                             this.props.dispatch(changeMenuClicked('/homepage', true));
-                                            }
-                                    }
-                            className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                            to="/homepage"
-                        >
-                            Homepage
-                        </Link>
+                            <Link 
+                                onClick={() => { let usr = this.props.user; 
+                                                usr.searchedFreelancers = null; 
+                                                this.props.dispatch(removeResearch(usr)); 
+                                                this.props.dispatch(changeMenuClicked('/homepage', true));
+                                                }
+                                        }
+                                className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                                to="/homepage"
+                            >
+                                Home page
+                            </Link>
                         </Typography>
+                        {showFreelancerMenu}
+                        {showCreateVaultMenu}
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>
                     <Typography>
-                        <a className={this.props.classes.menuItem} href="#TODO">TALAO DAO</a>
+                        <a className={this.props.classes.menuItem} href="#TODO">HOW DOES IT WORK ?</a>
+                    </Typography>
+                    <Typography>
+                        <a className={this.props.classes.menuItem} href="#TODO">WHAT IS IT ?</a>
+                    </Typography>
+                    <Typography>
+                        <a className={this.props.classes.menuItem} href="#TODO">TALAO.IO</a>
                     </Typography>
                     <Typography>
                         <a className={this.props.classes.menuItem} href="#TODO">ABOUT</a>

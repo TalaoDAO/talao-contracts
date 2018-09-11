@@ -60,7 +60,7 @@ class Chronology extends React.Component {
 
         let snackbar;
         if (transactionHash && !transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+            snackbar = (<CustomizedSnackbars message={object} showSpinner={true} type='info'/>);
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {

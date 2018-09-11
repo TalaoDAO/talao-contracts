@@ -210,11 +210,11 @@ export function isAccessPriceCorrect(accessPrice, maxAccessPrice) {
 export function setAccessPrice(accessPrice, user) {
     return dispatch => {
         dispatch(setAccessPriceBegin());
-        dispatch(transactionBegin("Your access price is being set..."));
+        dispatch(transactionBegin("Your account is being created...this transaction can last several seconds !"));
         let tokens_wei = window.web3.utils.toWei(accessPrice.toString());
 
         //set the access price
-        user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress }
+        user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress, gasPrice: '5000000000' }
         ).once('transactionHash', (hash) => { 
             dispatch(transactionHash(hash));
         })
@@ -252,10 +252,11 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
     
             if (user.freelancerDatas) {
                 //Update the vault
-                dispatch(transactionBegin("Your vault is being updated..."));
+                dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
                 user.freelancerContract.methods.UpdateFreelancerData(user.ethAddress, firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
-                        from: user.ethAddress
+                        from: user.ethAddress, 
+                        gasPrice: '5000000000'
                     }).once('transactionHash', (hash) => { 
                         dispatch(transactionHash(hash));
                     })
@@ -272,10 +273,11 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     });
             } else {
                 //Create the vault
-                dispatch(transactionBegin("Your vault is being created..."));
+                dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
                 user.vaultFactoryContract.methods.CreateVaultContract(accessPrice, firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
-                        from: user.ethAddress
+                        from: user.ethAddress, 
+                        gasPrice: '5000000000'
                     }).once('transactionHash', (hash) => { 
                         dispatch(transactionHash(hash));
                     })

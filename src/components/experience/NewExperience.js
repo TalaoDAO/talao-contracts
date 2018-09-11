@@ -1,7 +1,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core';
 import { constants } from '../../constants';
-import { Grid, Radio, FormControl, Input, InputLabel, FormControlLabel, TextField, InputAdornment, Typography } from '@material-ui/core';
+import { Grid, FormControl, Input, InputLabel, TextField, InputAdornment, Typography } from '@material-ui/core'; //Radio, FormControlLabel
 import Button from 'material-ui/Button';
 import LineStyle from '@material-ui/icons/LineStyle';
 import Icon from '@material-ui/core/Icon';
@@ -80,6 +80,10 @@ const styles = theme => ({
         width: '-webkit-fill-available',
         color: theme.palette.primary,
     },
+    textFieldNoExpand: {
+        margin: '10px 20px',
+        color: theme.palette.primary,
+    },
     formControl: {
         margin: '60px',
     },
@@ -106,6 +110,7 @@ const styles = theme => ({
 const mapStateToProps = state => ({
     to: state.experienceReducer.to,
     toEmpty: state.experienceReducer.toEmpty,
+    toBeforeFrom: state.experienceReducer.toBeforeFrom,
     from: state.experienceReducer.from,
     fromEmpty: state.experienceReducer.fromEmpty,
     title: state.experienceReducer.title,
@@ -130,6 +135,7 @@ class NewExperience extends React.Component {
         const { 
             to,
             toEmpty,
+            toBeforeFrom,
             from, 
             fromEmpty,
             type,
@@ -144,7 +150,7 @@ class NewExperience extends React.Component {
             confidenceIndex,
             competencies,
             formData,
-            uploadLoading
+            uploadLoading,     
         } = this.props;
 
         const competencyTags = competencies.map((competency, index) =>
@@ -174,7 +180,7 @@ class NewExperience extends React.Component {
                                     label="From"
                                     type="date"
                                     value={from}
-                                    onChange={(event) => this.props.dispatch(setNewExperienceInput('from', event.target.value))}
+                                    onChange={(event) => this.props.dispatch(setNewExperienceInput('from', to, event.target.value))}
                                     required
                                     error={fromEmpty}
                                     className={this.props.classes.textField}
@@ -198,8 +204,8 @@ class NewExperience extends React.Component {
                                     label="To"
                                     type="date"
                                     value={to}
-                                    error={toEmpty}
-                                    onChange={(event) => this.props.dispatch(setNewExperienceInput('to', event.target.value))}
+                                    error={toEmpty || toBeforeFrom}
+                                    onChange={(event) => this.props.dispatch(setNewExperienceInput('to', event.target.value, from))}
                                     required
                                     className={this.props.classes.textField}
                                     InputProps={{
@@ -230,7 +236,7 @@ class NewExperience extends React.Component {
                                         id="title"
                                     />
                             </Grid>
-                            <Grid item lg={6} xs={12} className={this.props.classes.textField}>
+                            {/*<Grid item lg={6} xs={12} className={this.props.classes.textField}>
                                 <FormControl>
                                     <FormControlLabel control={
                                         <Radio
@@ -273,7 +279,7 @@ class NewExperience extends React.Component {
                                             }}
                                         />} label="Certification" />
                                 </FormControl>
-                            </Grid>
+                            </Grid>*/}
                             <Grid item lg={9} xs={12}>
                                 <FormControl className={this.props.classes.textField}>
                                     <InputLabel
@@ -287,21 +293,26 @@ class NewExperience extends React.Component {
                                 </FormControl>
                             </Grid>
                             <Grid item lg={3}></Grid>
-                            <Grid item lg={3} xs={12}>
+                            <Grid item lg={6} xs={12}>
                                 <Button onClick={() => this.props.dispatch(addCertificatClicked(this.fileInput))} className={this.props.classes.certificatButton}>
                                     <LineStyle />
-                                    Add certificat
+                                    Add the certificate issued by my customer
                                 </Button>
                                 <input onChange={(e) => this.props.dispatch(detectCompetenciesFromCertification(e.target))} 
                                        style={{ display: 'none' }} 
                                        ref={fileInput => this.fileInput = fileInput} 
                                        type="file" accept="application/json" />
                             </Grid>
-                            <Grid item lg={10}></Grid>
-                            <Grid item lg={8} xs={12}>
-                                <Typography className={this.props.classes.textField} variant="headline" component="p">
+                            <Grid item lg={3}></Grid>
+                            <Grid container direction="row" justify="flex-start" alignItems="center">
+                                <Typography className={this.props.classes.textFieldNoExpand} variant="headline" component="p">
                                     Competencies
                                 </Typography>
+                                <Button /*onClick={() => todo}*/ className={this.props.classes.certificatButton}>
+                                    I did not receive this certificate from Talao
+                                </Button>
+                            </Grid>
+                            <Grid item lg={8} xs={12}>
                                 <div className={this.props.classes.textField}>
                                     {competencyTags}
                                 </div>
@@ -322,7 +333,7 @@ class NewExperience extends React.Component {
                                     confidenceIndex,
                                     type,
                                     competencies[0].jobDuration)))}  
-                                    className={competencies.length > 0 && !titleEmpty && !titleError && !toEmpty && !fromEmpty && !uploadLoading ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                                    className={competencies.length > 0 && !toBeforeFrom && !titleEmpty && !titleError && !toEmpty && !fromEmpty && !uploadLoading ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                                     Submit
                                 </Button>
                             </Grid>

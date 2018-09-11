@@ -11,6 +11,7 @@
     "react": "^16.4.1",
     "react-blockcerts": "^0.4.1",
     "react-confirm-alert": "^2.0.5",
+    "react-copy-to-clipboard": "^5.0.1",
     "react-device-detect": "^1.5.9",
     "react-dom": "^16.4.1",
     "react-error-boundary": "^1.2.3",

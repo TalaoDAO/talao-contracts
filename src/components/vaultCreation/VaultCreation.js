@@ -8,10 +8,12 @@ import Collapse from '@material-ui/core/Collapse';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
-import { initVaultCreation, canSwitchStep, accessPriceChange, setVaultInput, setAccessPrice, submitVault, addImageClicked, addProfilePicture } from '../../actions/createVault';
+import { initVaultCreation, canSwitchStep, setVaultInput, setAccessPrice, submitVault, addImageClicked, addProfilePicture } from '../../actions/createVault';//accessPriceChange
 import queryString from 'query-string'
 import { hasAccess } from '../../actions/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
+import Typography from '@material-ui/core/Typography';
+import { isMobile } from 'react-device-detect';
 
 const Loading = require('react-loading-animation');
 
@@ -105,6 +107,9 @@ const styles = theme => ({
     },
     specialWidth: {
         width: '250px'
+    },
+    subtitleContainer: {
+        fontSize: '15px'
     }
 });
 
@@ -150,7 +155,6 @@ const mapStateToProps = state => ({
 
 class VaultCreation extends React.Component {
 
-    //check if the action ask for a redirection or init the vault if the user is loaded
     componentDidMount() {
         //check the user access to this route and init his datas
         if (this.props.user) {
@@ -174,7 +178,7 @@ class VaultCreation extends React.Component {
             phone, 
             vaultMaxAccessPrice, 
             accessPriceError, 
-            maxAccessPricePlaceholder, 
+           // maxAccessPricePlaceholder, 
             isAccessPriceSet, 
             firstNameError, 
             firstNameEmpty,
@@ -205,7 +209,7 @@ class VaultCreation extends React.Component {
 
         let snackbar;
         if (transactionHash && !transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+            snackbar = (<CustomizedSnackbars message={object} showSpinner={true} type='info'/>);
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
@@ -215,14 +219,19 @@ class VaultCreation extends React.Component {
         let canSubmit = (!firstNameError && !firstNameEmpty && !lastNameError && !lastNameEmpty && !titleError && !titleEmpty && !mailError && !phoneError);
 
         //Header display if the price is set
-        let stepHeader = (step === 0) ? 
-        <span>{(this.props.user.freelancerDatas) ? 'Update access price' : 'Set access price'}</span> :
-        <span> Price: {accessPrice > 1 ? accessPrice + ' tokens' : accessPrice + ' token'} </span>
+        let stepHeader = //(step === 0) &&
+        <div>
+            <span>Create your account</span>
+            <br />
+            {!isMobile &&
+                <span className={this.props.classes.subtitleContainer}>You will be charged with 10 Talao tokens to open your certified resume.</span>
+            }
+        </div>
 
         //Block for access price
         let accessPriceInputs = (step === 0) &&             
         <div className={this.props.classes.content}>
-            <TextField
+           {/* <TextField
                 autoFocus={true}
                 required
                 type="number"
@@ -233,12 +242,21 @@ class VaultCreation extends React.Component {
                 className={this.props.classes.specialWidth}
                 label="Access Price (Talao Token)"
                 id="accessPrice"
-            />
-            <div className={this.props.classes.wrapper}>
-                <Button onClick={() => this.props.dispatch(setAccessPrice(accessPrice, this.props.user))} className={!accessPriceError ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                    Next
-                </Button>
-            </div>
+           />*/}
+           {(this.props.user.talaoBalance > 10) ? 
+                <div className={this.props.classes.wrapper}>
+                    <Button style={{marginLeft: '20px'}} onClick={() => this.props.dispatch(setAccessPrice(accessPrice, this.props.user))} className={!accessPriceError ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                        Initiate my certified resume on blockchain
+                    </Button>
+                </div>
+            :
+                <div className={this.props.classes.wrapper}>
+                    <Typography style={{marginLeft: '20px'}} variant="subheading">You do not have 10 Talao tokens.</Typography>
+                    <Button style={{marginLeft: '20px'}} onClick={() => console.log('ok')} className={this.props.classes.certificatButton}>
+                        Buy Talao tokens
+                    </Button>
+                </div>
+           }
         </div>
 
         //Bloc for vault form
@@ -250,9 +268,12 @@ class VaultCreation extends React.Component {
                         <img src={(profilPicture) ? profilPicture : (this.props.user.freelancerDatas && this.props.user.freelancerDatas.pictureUrl) ? this.props.user.freelancerDatas.pictureUrl : defaultFreelancerPicture} 
                              onClick={() => this.props.dispatch(addImageClicked(this.fileInput))} 
                              className={this.props.classes.picture}
+                             onMouseEnter={this.handlePopoverOpen}
+                             onMouseLeave={this.handlePopoverClose}
+                             style={{ cursor: 'pointer' }} 
                              alt="Freelancer" />
                         <input onChange={(e) => this.props.dispatch(addProfilePicture(e.target))}
-                               style={{ display: 'none' }} 
+                               style={{ display: 'none', cursor: 'pointer' }} 
                                ref={fileInput => this.fileInput = fileInput} 
                                type="file" accept="image/*" />
                     </Grid>
@@ -309,6 +330,7 @@ class VaultCreation extends React.Component {
                             className={this.props.classes.textField}
                             label="Description"
                             id="description"
+                            helperText="Describe in a few words your skills and activities"
                         />
                     </Grid>
                     <Grid item lg={2}></Grid>
@@ -342,9 +364,9 @@ class VaultCreation extends React.Component {
                         />
                     </Grid>
                     <Grid item lg={7}></Grid>
-                    <Grid item lg={2} xs={12}>
-                        <Button onClick={() => canSubmit && this.props.dispatch(submitVault(user, accessPrice, firstName, lastName, title, description, phone, mail, pictureToUpload))} disabled={!canSubmit} className={canSubmit ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                            {(this.props.user.freelancerDatas) ? 'Update' : 'Create'}
+                    <Grid item lg={6} xs={12}>
+                        <Button style={{marginLeft: '20px'}} onClick={() => canSubmit && this.props.dispatch(submitVault(user, accessPrice, firstName, lastName, title, description, phone, mail, pictureToUpload))} disabled={!canSubmit} className={canSubmit ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
+                            {(this.props.user.freelancerDatas) ? 'Update my profile on blockchain' : 'Validate my profile on blockchain'}
                         </Button>
                     </Grid>
                 </form>
@@ -365,6 +387,7 @@ class VaultCreation extends React.Component {
                                     {stepHeader}
                                 </div>
                             </div>
+                            {isMobile && <span className={this.props.classes.subtitleContainer}>You will be charged with 10 Talao tokens to open your certified resume.</span>}
                         </div>
                     }
                     <Collapse in={step === 0} timeout="auto">
@@ -377,7 +400,7 @@ class VaultCreation extends React.Component {
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
                             <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice, accessPrice))} className={this.props.classes.timeContainer}>
-                                {(this.props.user.freelancerDatas) ? 'Update vault' : 'Create vault'}
+                                {(this.props.user.freelancerDatas) ? 'Update your profile' : 'Create your profile'}
                             </div>
                         </div>
                     </div>

@@ -63,43 +63,49 @@ export function fetchUser(address) {
             let user = new User(address);
 
             if (user.ethAddress) {
-            //check if the user is a freelancer
-            user.isFreelancer().then((resolve, reject) => {
-                //if error, log
-                if (reject) {
-                    dispatch(fetchUserError(reject))
-                }
-                //the user is a freelancer so we init his datas
-                else if (resolve !== false) {
-                    user.freelancerDatas = new Freelancer(resolve, user.ethAddress);
-                        user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
-                            if (reject) {
-                                dispatch(fetchUserError(reject))
-                            }
-                            //get all documents & competencies
-                            if (resolve) {
-                                user.freelancerDatas.getAllDocuments().then((resolve) => {
-                                    if (resolve) {      
-                                        //User is a freelancer                                                              
-                                        dispatch(fetchUserSuccess(user));
-                                        dispatch(resetGuard());
-                                    }
-                                })
-                            }
-                        });
-                } else {
-                    //User is a client with an ethAddress!
-                    dispatch(fetchUserSuccess(user));
-                    dispatch(resetGuard());
-                }
-            })
-            //catch any error incoming
-            .catch(error => dispatch(fetchUserError(error)));
-        } else {
-            //User is a client without an ethAddress!
-            dispatch(fetchUserSuccess(user));
-            dispatch(resetGuard());
-        }
+
+                //Get the balance of the user
+                user.tokenContract.methods.balanceOf(user.ethAddress).call().then(result => {
+                    user.talaoBalance = window.web3.utils.fromWei(result);
+                });
+
+                //check if the user is a freelancer
+                user.isFreelancer().then((resolve, reject) => {
+                    //if error, log
+                    if (reject) {
+                        dispatch(fetchUserError(reject))
+                    }
+                    //the user is a freelancer so we init his datas
+                    else if (resolve !== false) {
+                        user.freelancerDatas = new Freelancer(resolve, user.ethAddress);
+                            user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
+                                if (reject) {
+                                    dispatch(fetchUserError(reject))
+                                }
+                                //get all documents & competencies
+                                if (resolve) {
+                                    user.freelancerDatas.getAllDocuments().then((resolve) => {
+                                        if (resolve) {      
+                                            //User is a freelancer                                                              
+                                            dispatch(fetchUserSuccess(user));
+                                            dispatch(resetGuard());
+                                        }
+                                    })
+                                }
+                            });
+                    } else {
+                        //User is a client with an ethAddress!
+                        dispatch(fetchUserSuccess(user));
+                        dispatch(resetGuard());
+                    }
+                })
+                //catch any error incoming
+                .catch(error => dispatch(fetchUserError(error)));
+            } else {
+                //User is a client without an ethAddress!
+                dispatch(fetchUserSuccess(user));
+                dispatch(resetGuard());
+            }
     };
 }
 

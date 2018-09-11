@@ -115,7 +115,7 @@ class UnlockFreelancer extends React.Component {
 
     let snackbar;
     if (transactionHash && !transactionReceipt) {
-        snackbar = (<CustomizedSnackbars message={object + ' Transaction in progress...'} showSpinner={true} type='info'/>);
+        snackbar = (<CustomizedSnackbars message={object} showSpinner={true} type='info'/>);
     } else if (transactionError) {
         snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
@@ -133,7 +133,9 @@ class UnlockFreelancer extends React.Component {
           <div className={this.props.classes.container}>
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
-                <div className={this.props.classes.confidenceIndex}>{Math.round(freelancer.confidenceIndex * 10) / 10}</div>
+                <div className={this.props.classes.confidenceIndex}>{Math.round(freelancer.confidenceIndex * 10) / 10}
+                  <span style={{fontSize: '12px'}}>/5</span>
+                </div>
               </div>
               <img src={(freelancer.pictureUrl) ? freelancer.pictureUrl : defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
