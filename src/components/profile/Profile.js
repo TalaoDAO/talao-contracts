@@ -20,6 +20,7 @@ import compose from 'recompose/compose';
 import { expandProfil } from '../../actions/experience';
 import Grid from '@material-ui/core/Grid';
 import SimplePopover from '../buttons/simplePopover';
+import queryString from 'query-string';
 
 const styles = theme => ({
   container: {
@@ -150,7 +151,7 @@ class Profile extends React.Component {
                   </Typography>
                   <Grid style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
                       <Share />
-                      <SimplePopover ethAddress={this.props.freelancer.ethAddress}/>
+                      <SimplePopover ethAddress={this.props.freelancer.ethAddress} isWatching={queryString.extract(window.location.search) ? true : false}/>
                   </Grid>             
                 </CardContent>
               )

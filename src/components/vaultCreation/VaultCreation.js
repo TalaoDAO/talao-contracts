@@ -243,7 +243,7 @@ class VaultCreation extends React.Component {
                 label="Access Price (Talao Token)"
                 id="accessPrice"
            />*/}
-           {(this.props.user.talaoBalance > 10) ? 
+           {(this.props.user.talaoBalance >= 10) ? 
                 <div className={this.props.classes.wrapper}>
                     <Button style={{marginLeft: '20px'}} onClick={() => this.props.dispatch(setAccessPrice(accessPrice, this.props.user))} className={!accessPriceError ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                         Initiate my certified resume on blockchain

@@ -59,6 +59,7 @@ export function fetchUser(address) {
     return dispatch => {
         //Fetch freelancer datas begin
         dispatch(fetchUserBegin());
+
             //user initialisation
             let user = new User(address);
 
@@ -71,6 +72,7 @@ export function fetchUser(address) {
 
                 //check if the user is a freelancer
                 user.isFreelancer().then((resolve, reject) => {
+
                     //if error, log
                     if (reject) {
                         dispatch(fetchUserError(reject))
@@ -78,17 +80,21 @@ export function fetchUser(address) {
                     //the user is a freelancer so we init his datas
                     else if (resolve !== false) {
                         user.freelancerDatas = new Freelancer(resolve, user.ethAddress);
+
                             user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
                                 if (reject) {
                                     dispatch(fetchUserError(reject))
                                 }
+
                                 //get all documents & competencies
                                 if (resolve) {
-                                    user.freelancerDatas.getAllDocuments().then((resolve) => {
+                                    user.freelancerDatas.getAllDocuments().then(resolve => {
                                         if (resolve) {      
-                                            //User is a freelancer                                                              
-                                            dispatch(fetchUserSuccess(user));
-                                            dispatch(resetGuard());
+                                            //User is a freelancer
+                                            user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
+                                                dispatch(fetchUserSuccess(user));
+                                                dispatch(resetGuard());
+                                            });                                                       
                                         }
                                     })
                                 }
@@ -133,13 +139,13 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                         //get the access price
                         currentUser.talaoContract.methods.data(searchedFreelancerAddress).call().then(info => {
                             currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
+                            currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
+                                if (resolve) {      
+                                    //User is a freelancer                                                            
+                                    dispatch(fetchFreelancerSuccess(currentUser));
+                                }
+                            })
                         });
-                        currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
-                            if (resolve) {      
-                                //User is a freelancer                                                            
-                                dispatch(fetchFreelancerSuccess(currentUser));
-                            }
-                        })
                     }
                 });
             }

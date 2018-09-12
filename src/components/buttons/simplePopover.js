@@ -61,7 +61,7 @@ class SimplePopover extends React.Component {
               onClick={this.handleClick}
               className={this.props.classes.certificatButton}
             >
-              Copy the URL of your certified Resume
+              {this.props.isWatching ? 'Copy this certified profile Resume URL': 'Copy the URL of your certified Resume'}
             </Button>
           </CopyToClipboard>
           {this.state.copied && <Popover

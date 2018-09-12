@@ -150,8 +150,10 @@ export function addDocToFreelancer(user, experience) {
             experience.certificat = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(experience.docId);
             user.freelancerDatas.experiences.push(experience);
             user.freelancerDatas.getCompetencies().then(() => {
-                dispatch(addDocSuccess(user, success));
-                dispatch(fetchUserSuccess(user));
+                user.freelancerDatas.getGlobalConfidenceIndex().then(() => {
+                    dispatch(addDocSuccess(user, success));
+                    dispatch(fetchUserSuccess(user));
+                });
             });
         })
         .catch((error) => {
@@ -179,8 +181,10 @@ export function removeDocToFreelancer(user, experience) {
             if (index !== -1) {
                 user.freelancerDatas.experiences.splice(index, 1);
                 user.freelancerDatas.getCompetencies().then(() => {
-                    dispatch(removeDocSuccess(user, success));
-                    dispatch(fetchUserSuccess(user));
+                    user.freelancerDatas.getGlobalConfidenceIndex().then(() => {
+                        dispatch(removeDocSuccess(user, success));
+                        dispatch(fetchUserSuccess(user));
+                    });
                 });
             } else {
                 dispatch(removeDocError('No documents to delete.'));

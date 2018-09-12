@@ -126,7 +126,7 @@ class Freelancer {
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
         return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, jobDuration)
-                                        .send({from: window.account});
+                                        .send({from: window.account, gasPrice: '5000000000'});
     }
     
     removeDoc(experience) {
@@ -149,13 +149,38 @@ class Freelancer {
                 });
             });
             this.competencies = competencies;
-            let confidenceIndex = 0;
-            competencies.forEach((competencie) => {
-                confidenceIndex += competencie.confidenceIndex;
-            });
-            this.confidenceIndex = (confidenceIndex === 0) ? 0 : confidenceIndex / competencies.length;
-            this.competencies = competencies;
             resolve(true);
+        });
+    }
+
+    getGlobalConfidenceIndex() {
+        let totalDuration = 0;
+        let totalNotation = 0;
+        return new Promise(resolve => {
+            let requests = this.experiences.map((experience) => {
+                return new Promise((resolve) => {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', experience.certificat, true);
+                    xhr.responseType = 'json';
+                    xhr.onload = function(e) {
+                        if (this.status === 200) {
+                            let duration = parseInt(this.response.jobDuration, 10);
+                            let notation = 0
+                            for (var i = 1; i < 6; i++) {
+                                notation += parseInt(this.response["jobRating" + i], 10);
+                            }
+                            totalNotation += (notation / 5) * duration;
+                            totalDuration += duration;
+                            resolve(true);
+                        }
+                    };
+                    xhr.send();
+                });
+            })         
+            Promise.all(requests).then(() => {
+                this.confidenceIndex = (totalNotation > 0 && totalDuration > 0 ) ? Math.round((totalNotation / totalDuration) * 10) / 10 : 0;
+                resolve(true);
+            });
         });
     }
 }

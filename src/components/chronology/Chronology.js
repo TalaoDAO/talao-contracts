@@ -5,7 +5,7 @@ import ColorService from '../../services/ColorService';
 import { withStyles, CardContent, Grid } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
 import Profile from '../profile/Profile';
-import queryString from 'query-string'
+import queryString from 'query-string';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
