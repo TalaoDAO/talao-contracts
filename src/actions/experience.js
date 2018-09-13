@@ -133,7 +133,7 @@ export const expandProfil = expandProfil => ({
 
 export function addDocToFreelancer(user, experience) {
     return dispatch => {
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
         dispatch(addDocBegin(user, experience));   
         user.freelancerDatas.addDocument(experience)
         .once('transactionHash', (hash) => { 
@@ -164,7 +164,7 @@ export function addDocToFreelancer(user, experience) {
 
 export function removeDocToFreelancer(user, experience) {
     return dispatch => {
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
         dispatch(removeDocBegin(user, experience));
         user.freelancerDatas.removeDoc(experience)
         .once('transactionHash', (hash) => { 

@@ -43,6 +43,7 @@ export function createVaultClicked(history) {
 
 export function viewDatasClicked(history) {
     return dispatch => {
+        
         dispatch(changeMenu('/chronology'));
         history.push('/chronology');
     }

@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { createVaultClicked, setFreelancerAddress, searchFreelancerClicked, viewDatasClicked } from '../../actions/homepage';
 import { isMobile } from 'react-device-detect';
+import { removeResearch } from '../../actions/user';
 
 const Loading = require('react-loading-animation');
 
@@ -133,7 +134,14 @@ class Homepage extends React.Component {
                         }
                         </div>
                         <div className={this.props.classes.center}>
-                            <Button onClick={() => this.props.user.freelancerDatas ? this.props.dispatch(viewDatasClicked(this.props.history)) : this.props.dispatch(createVaultClicked(this.props.history))} className={this.props.classes.certificatButton} label="login">
+                            <Button onClick={() => { if (this.props.user.freelancerDatas) {
+                                                        let usr = this.props.user; 
+                                                        usr.searchedFreelancers = null; 
+                                                        this.props.dispatch(removeResearch(usr)); 
+                                                        this.props.dispatch(viewDatasClicked(this.props.history)) } else { 
+                                                        this.props.dispatch(createVaultClicked(this.props.history))}
+                                                        }
+                                                    } className={this.props.classes.certificatButton} label="login">
                                 <Link style={{ textDecoration: 'none', color: '#fff' }} to={(!this.props.user.freelancerDatas) ? "/register" : "/chronology"}>{(!this.props.user.freelancerDatas) ? 'Create Account' : 'View my data'}</Link>
                             </Button>
                         </div>

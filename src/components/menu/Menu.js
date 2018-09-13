@@ -6,7 +6,6 @@ import logoTalao from '../../images/logo-talao.png';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { changeMenuClicked } from '../../actions/menu';
-import { removeResearch } from '../../actions/user';
 
 const mapStateToProps = state => ({  
     currentMenu: state.menuReducer.selectedMenu
@@ -79,7 +78,7 @@ class Menu extends React.Component {
                         className={currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                         to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
                     >
-                        Experiences
+                        Work Experiences
                     </Link>
                 </Typography>
                 <Typography to="/" style={{clear: "both"}}>
@@ -88,7 +87,7 @@ class Menu extends React.Component {
                         className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                         to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress}
                     >
-                        Skills
+                        Skills Rating
                     </Link>
                 </Typography>
                 <Typography to="/" style={{clear: "both"}}>
@@ -106,7 +105,7 @@ class Menu extends React.Component {
                 className={currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                 to="/register"
             >
-                {this.props.user.freelancerDatas ? 'Update profile' : 'Create resume'}
+                {this.props.user.freelancerDatas ? 'Personnal Information' : 'Create resume'}
             </Link>
         </Typography>
 
@@ -122,20 +121,15 @@ class Menu extends React.Component {
                     <div>
                         <Typography to="/">
                             <Link 
-                                onClick={() => { let usr = this.props.user; 
-                                                usr.searchedFreelancers = null; 
-                                                this.props.dispatch(removeResearch(usr)); 
-                                                this.props.dispatch(changeMenuClicked('/homepage', true));
-                                                }
-                                        }
+                                onClick={() => { this.props.dispatch(changeMenuClicked('/homepage', true))}}
                                 className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                                 to="/homepage"
                             >
                                 Home page
                             </Link>
                         </Typography>
-                        {showFreelancerMenu}
                         {showCreateVaultMenu}
+                        {showFreelancerMenu}
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>

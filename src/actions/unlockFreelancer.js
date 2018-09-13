@@ -23,7 +23,7 @@ export function unlockFreelancerClicked(user, history) {
     return dispatch => {
         dispatch(transactionBegin("The certified resume is being unlocked....This transaction can last several seconds !"));
         dispatch(unlockBegin());   
-        user.talaoContract.methods.getVaultAccess(user.searchedFreelancers.ethAddress).send({from: user.ethAddress, gasPrice: '5000000000'})
+        user.talaoContract.methods.getVaultAccess(user.searchedFreelancers.ethAddress).send({from: user.ethAddress, gasPrice: process.env.REACT_APP_TRANSACTION_UNLOCK_FREE})
         .once('transactionHash', (hash) => { 
             dispatch(transactionHash(hash));
         })      

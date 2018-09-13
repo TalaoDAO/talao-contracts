@@ -214,7 +214,7 @@ export function setAccessPrice(accessPrice, user) {
         let tokens_wei = window.web3.utils.toWei(accessPrice.toString());
 
         //set the access price
-        user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress, gasPrice: '5000000000' }
+        user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress, gasPrice: process.env.REACT_APP_TRANSACTION_SET_PRICE }
         ).once('transactionHash', (hash) => { 
             dispatch(transactionHash(hash));
         })
@@ -237,7 +237,14 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
         dispatch(uploadFileBegin());
         let pictureUrl;
         FileService.uploadToIpfs(pictureToUpload).then(result => {
-            pictureUrl = (pictureToUpload) ? FileService.getBytes32FromIpfsHash(result) : '0x0000000000000000000000000000000000000000';
+            if (pictureToUpload) {
+                pictureUrl = FileService.getBytes32FromIpfsHash(result);
+            } else if (user.freelancerDatas && user.freelancerDatas.pictureUrl) {
+                let parts = user.freelancerDatas.pictureUrl.split("/");
+                pictureUrl = FileService.getBytes32FromIpfsHash(parts[parts.length - 1]); 
+            } else {
+                pictureUrl = '0x0000000000000000000000000000000000000000';
+            }
         }).then(() => {
             dispatch(uploadFileSuccess());
 
@@ -252,11 +259,11 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
     
             if (user.freelancerDatas) {
                 //Update the vault
-                dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
+                dispatch(transactionBegin("Your profile is being updated...this transaction can take several seconds !"));
                 user.freelancerContract.methods.UpdateFreelancerData(user.ethAddress, firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
                         from: user.ethAddress, 
-                        gasPrice: '5000000000'
+                        gasPrice: process.env.REACT_APP_TRANSACTION_UPDATE_VAULT
                     }).once('transactionHash', (hash) => { 
                         dispatch(transactionHash(hash));
                     })
@@ -273,11 +280,11 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     });
             } else {
                 //Create the vault
-                dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several seconds !"));
+                dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
                 user.vaultFactoryContract.methods.CreateVaultContract(accessPrice, firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
                         from: user.ethAddress, 
-                        gasPrice: '5000000000'
+                        gasPrice: process.env.REACT_APP_TRANSACTION_CREATE_VAULT
                     }).once('transactionHash', (hash) => { 
                         dispatch(transactionHash(hash));
                     })

@@ -126,11 +126,11 @@ class Freelancer {
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
         return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, jobDuration)
-                                        .send({from: window.account, gasPrice: '5000000000'});
+                                        .send({from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_ADD_DOC});
     }
     
     removeDoc(experience) {
-        return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account, gasPrice: '5000000000' });
+        return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_REMOVE_DOC});
     }
 
     getCompetencies() {

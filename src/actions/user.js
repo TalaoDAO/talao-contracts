@@ -141,8 +141,9 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                             currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
                             currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
                                 if (resolve) {      
-                                    //User is a freelancer                                                            
-                                    dispatch(fetchFreelancerSuccess(currentUser));
+                                    currentUser.searchedFreelancers.getGlobalConfidenceIndex().then(resolve => {
+                                        dispatch(fetchFreelancerSuccess(currentUser));
+                                    });                                                              
                                 }
                             })
                         });
