@@ -105,7 +105,7 @@ class Menu extends React.Component {
                 className={currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
                 to="/register"
             >
-                {this.props.user.freelancerDatas ? 'Personnal Information' : 'Create resume'}
+                {this.props.user.freelancerDatas ? 'Personal Information' : 'Create resume'}
             </Link>
         </Typography>
 

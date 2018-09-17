@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '@material-ui/core/Card';
 import { withStyles, CardContent } from '@material-ui/core';
 import { TextField, Grid } from '@material-ui/core';
-import Button from 'material-ui/Button';
+import Button from '@material-ui/core/Button';
 import { constants } from '../../constants';
 import Collapse from '@material-ui/core/Collapse';
 import { connect } from "react-redux";
@@ -224,7 +224,7 @@ class VaultCreation extends React.Component {
             <span>Create your account</span>
             <br />
             {!isMobile &&
-                <span className={this.props.classes.subtitleContainer}>You will be charged with 10 Talao tokens to open your certified resume.</span>
+                <span className={this.props.classes.subtitleContainer}>You will be charged with 5 euros in Talao tokens to open your certified resume.</span>
             }
         </div>
 
@@ -251,9 +251,9 @@ class VaultCreation extends React.Component {
                 </div>
             :
                 <div className={this.props.classes.wrapper}>
-                    <Typography style={{marginLeft: '20px'}} variant="subheading">You do not have 10 Talao tokens.</Typography>
+                    <Typography style={{marginLeft: '20px'}} variant="subheading">You have to load your wallet to open your certified resume.</Typography>
                     <Button style={{marginLeft: '20px'}} onClick={() => console.log('ok')} className={this.props.classes.certificatButton}>
-                        Buy Talao tokens
+                        Load my wallet
                     </Button>
                 </div>
            }
@@ -387,7 +387,7 @@ class VaultCreation extends React.Component {
                                     {stepHeader}
                                 </div>
                             </div>
-                            {isMobile && <span className={this.props.classes.subtitleContainer}>You will be charged with 10 Talao tokens to open your certified resume.</span>}
+                            {isMobile && <span className={this.props.classes.subtitleContainer}>You will be charged with 5 euros in Talao tokens to open your certified resume.</span>}
                         </div>
                     }
                     <Collapse in={step === 0} timeout="auto">

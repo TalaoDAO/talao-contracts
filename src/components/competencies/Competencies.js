@@ -1,7 +1,7 @@
 import React from 'react';
 import Competency from '../competency/Competency';
 import { withStyles } from '@material-ui/core/styles';
-import { Grid } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
 import Profile from '../profile/Profile';
 import queryString from 'query-string'
 import { connect } from "react-redux";
@@ -9,7 +9,7 @@ import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
 import { fetchFreelancer } from '../../actions/user';
 import CustomizedSnackbars from '../snackbars/snackbars';
-import Button from 'material-ui/Button';
+import Button from '@material-ui/core/Button';
 import { moveToNewExp } from '../../actions/experience';
 import Typography from "@material-ui/core/Typography";
 

@@ -245,18 +245,24 @@ export function detectCompetenciesFromCertification(event) {
         let reader = new FileReader();
         reader.onload = function (event) {
             content = event.target.result;
-            var jsonContent = JSON.parse(content);
-            Object.keys(jsonContent).forEach(key => {
-                if (key.startsWith("jobSkill")) {
-                    if (jsonContent[key] !== "") {
-                        //let number = key.substring(8);
-                        let competencyName = jsonContent[key];
-                        let rating = jsonContent["jobRating2"];// + number];
-                        competencies.push(new Competency(competencyName, rating, null, jsonContent.jobDuration)); 
+            try {
+                var jsonContent = JSON.parse(content);
+                Object.keys(jsonContent).forEach(key => {
+                    if (key.startsWith("jobSkill")) {
+                        if (jsonContent[key] !== "") {
+                            //let number = key.substring(8);
+                            let competencyName = jsonContent[key];
+                            let rating = jsonContent["jobRating2"];// + number];
+                            competencies.push(new Competency(competencyName, rating, null, jsonContent.jobDuration)); 
+                        }
                     }
-                }
-            });
-            dispatch(addCertificatSuccess(competencies, file, 80, certificat));
+                });
+                dispatch(addCertificatSuccess(competencies, file, 80, certificat));
+            } catch (e) {
+                let error = {};
+                error.message = 'Invalid JSON';
+                dispatch(transactionError(error));
+            }
         }
         reader.readAsText(file);
     }

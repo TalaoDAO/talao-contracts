@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from '@material-ui/core/Card';
 import { withStyles, CardContent } from '@material-ui/core';
-import Button from 'material-ui/Button';
+import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 
 const styles = theme => ({
@@ -45,8 +45,8 @@ const styles = theme => ({
 
 class ErrorPage extends React.Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.handleClickToHomepage.bind(this);
     }
 

@@ -6,7 +6,6 @@
     "@material-ui/core": "^1.4.1",
     "@material-ui/icons": "^1.1.0",
     "bs58": "^4.0.1",
-    "material-ui": "^1.0.0-beta.47",
     "npm": "^6.2.0",
     "react": "^16.4.1",
     "react-blockcerts": "^0.4.1",

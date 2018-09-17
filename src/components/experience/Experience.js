@@ -6,11 +6,11 @@ import CompetencyTag from '../competencyTag/CompetencyTag';
 import DateService from '../../services/DateService';
 import LineStyle from '@material-ui/icons/LineStyle';
 import Close from '@material-ui/icons/Close';
-import Button from 'material-ui/Button';
+import Button from '@material-ui/core/Button';
 import { Blockcerts } from 'react-blockcerts';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'
-import { Grid } from '../../../node_modules/material-ui';
+import Grid from '@material-ui/core/Grid';
 import { removeDocToFreelancer } from '../../actions/experience';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';

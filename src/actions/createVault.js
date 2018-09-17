@@ -270,6 +270,8 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     .once('receipt', (receipt) => { 
                         dispatch(transactionReceipt(receipt));
                     })
+                    .on('confirmation', (confNumber, receipt) => { 
+                    })
                     .on('error', (error) => { 
                         dispatch(transactionError(error));
                     }).then(() => {
@@ -290,6 +292,8 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     })
                     .once('receipt', (receipt) => { 
                         dispatch(transactionReceipt(receipt));
+                    })
+                    .on('confirmation', (confNumber, receipt) => { 
                     })
                     .on('error', (error) => { 
                         dispatch(transactionError(error));
