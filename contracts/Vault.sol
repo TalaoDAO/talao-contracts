@@ -7,13 +7,12 @@ contract Vault is Ownable {
 
     using SafeMath for uint;
 
-    // TODO Get data ?
-    uint NbOfValidDocument;
-    TalaoToken myToken;
-    Freelancer myFreelancer;
+    uint public NbOfValidDocument;
+    TalaoToken public myToken;
+    Freelancer public myFreelancer;
 
     //Used to parse all documents using index as relationship between this array and TalentsDocuments mapping
-    bytes32[] documentIndex;
+    bytes32[] public documentIndex;
 
     struct certifiedDocument {
         bytes32 title;
@@ -29,14 +28,14 @@ contract Vault is Ownable {
     }
 
     // TODO Infura gateway blockchain
-    
+
     //address is owner of certified document
     mapping(bytes32 => certifiedDocument) public talentsDocuments;
 
     enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved, keywordAdded }
 
     event VaultLog (
-        address indexed user, 
+        address indexed user,
         VaultLife happened,
         bytes32 documentId
     );
@@ -57,7 +56,7 @@ contract Vault is Ownable {
     accessibility : only for authorized user and owner of this contract
     */
     constructor(address token, address freelancer)
-        public 
+        public
     {
         myToken = TalaoToken(token);
         myFreelancer = Freelancer(freelancer);
@@ -65,7 +64,7 @@ contract Vault is Ownable {
 
     modifier allowance () { //require sur l'aggreement
         require(msg.sender!=address(0),"The sender must be initialized");
-        
+
         bool isPartner = myFreelancer.isPartner(owner, msg.sender);
         bool isVaultAccess = myToken.hasVaultAccess(msg.sender,owner);
         require(isPartner || isVaultAccess,"user has no vault access");
@@ -81,7 +80,7 @@ contract Vault is Ownable {
     )
         onlyOwner
         allowance
-        public 
+        public
         returns (bool)
     {
         require(documentId != 0 && keywords.length != 0 && startDate != 0, "document ID is not correct");
@@ -100,7 +99,7 @@ contract Vault is Ownable {
         talentsDocuments[documentId].startDate = startDate;
         talentsDocuments[documentId].endDate = endDate;
         talentsDocuments[documentId].duration = duration;
-        
+
         emit VaultDocAdded(documentId,title,description,startDate,endDate,ratings,keywords,duration);
         return true;
     }
@@ -109,9 +108,9 @@ contract Vault is Ownable {
     Remove existing document using document id
     accessibility : only for authorized user and owner of this contract
     */
-    function removeDocument (bytes32 documentId) 
-        onlyOwner 
-        allowance 
+    function removeDocument (bytes32 documentId)
+        onlyOwner
+        allowance
         public
     {
         require(documentId != 0, "document ID is not correct");
@@ -127,12 +126,12 @@ contract Vault is Ownable {
     get indication to know quickly if document removed or not
     accessibility : only for authorized user
     */
-    function getDocumentIsAlive(bytes32 documentId) 
-        onlyOwner 
-        allowance 
+    function getDocumentIsAlive(bytes32 documentId)
+        onlyOwner
+        allowance
         view
         public
-        returns(bool) 
+        returns(bool)
     {
         require(documentId != 0, "document ID is not correct");
         return(talentsDocuments[documentId].isAlive);
@@ -143,11 +142,11 @@ contract Vault is Ownable {
     using document Id provided by ethereum when a document is uploaded
     accessibility : only for authorized user
     */
-    function getCertifiedDocumentById (bytes32 dId) 
+    function getCertifiedDocumentById (bytes32 dId)
         allowance
         view
         public
-        returns (string desc, uint docType, uint startDate, uint endDate) 
+        returns (string desc, uint docType, uint startDate, uint endDate)
     {
         require(dId != 0 && talentsDocuments[dId].isAlive == true, "document ID is not correct");
         return (talentsDocuments[dId].description, talentsDocuments[dId].documentType,
@@ -169,8 +168,29 @@ contract Vault is Ownable {
         talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
     }
 
-    function () 
-        public 
+    function getFullDocument(bytes32 id)
+        allowance
+        view
+        public
+        returns (bytes32 title, string description, bytes32[] keywords,
+          uint[] ratings, bool isAlive, uint index, uint documentType, uint startDate,
+          uint endDate, uint duration)
+    {
+        certifiedDocument cd = talentsDocuments[id];
+        return (cd.title, cd.description, cd.keywords, cd.ratings, cd.isAlive, cd.index,
+                cd.documentType, cd.startDate, cd.endDate, cd.duration);
+    }
+
+    function getDocumentIndexes()
+        view
+        public
+        returns (bytes32[])
+    {
+        return documentIndex;
+    }
+
+    function ()
+        public
     {
         revert();
     }

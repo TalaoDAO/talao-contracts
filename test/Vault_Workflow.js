@@ -1,21 +1,31 @@
-const Talao = artifacts.require("./TalaoToken");
-const VaultFactory = artifacts.require("./VaultFactory");
-const Vault = artifacts.require("./Vault");
-const Freelancer = artifacts.require("./Freelancer");
+import EVMThrow from './helpers/EVMThrow';
+import revert from './helpers/revert';
+
+import latestTime from './helpers/latestTime';
+import { increaseTimeTo, duration } from './helpers/increaseTime';
+
+const should = require('chai')
+  .use(require('chai-as-promised'))
+  .should();
+
+const Talao = artifacts.require("TalaoToken");
+const VaultFactory = artifacts.require("VaultFactory");
+const Vault = artifacts.require("Vault");
+const Freelancer = artifacts.require("Freelancer");
+const ImportVault = artifacts.require("ImportVault");
 
 //Tests sur :
-// - Scoring (default & by keywords)
 // - Ajout du freelancer
 // - Liste de partenaires
 
 contract('VaultFactory', async (accounts) => {
-    let TalaoInstance, VaultFactoryInstance, VaultInstance, FreelancerInstance
+    let TalaoInstance, VaultFactoryInstance, VaultInstance, FreelancerInstance, ImportVaultInstance
     let TalaoAddress, VaultAddress;
-    //Freelancer and Partner address 
+    //Freelancer and Partner address
     //Must be different
     //Must not be the first address in Ganache as it is already used by default
-    let FreelancerAddress = "0xfc7b86670eFC68df0427A6E8a979bc1acBCA76B3";
-    let PartnerAddress = "0x4D3d9c29922bF527cb9927d5E245b6a60e8aC6C1";
+    let FreelancerAddress = accounts[1];
+    let PartnerAddress = accounts[2];
     let tryCatch = require("./exceptions.js").tryCatch;
     let errTypes = require("./exceptions.js").errTypes;
 
@@ -71,11 +81,11 @@ contract('VaultFactory', async (accounts) => {
             if (!error)
                 VaultInstance = Vault.at(result.args.vaultaddress);
         });
-        let VaultReceipt = await VaultFactoryInstance.CreateVaultContract({ from: FreelancerAddress });
+        let VaultReceipt = await VaultFactoryInstance.CreateVaultContract(0,0,0,0,0,0,0,0, { from: FreelancerAddress });
         VaultAddress = VaultReceipt.logs[0].address;
     });
     it("Should add information about Freelancer to Vault", async () => {
-        let FreelancerInfo = await FreelancerInstance.UpdateFreelancerData("0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "Description", { from: FreelancerAddress });
+        let FreelancerInfo = await FreelancerInstance.UpdateFreelancerData(0,0,"0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "Description", { from: FreelancerAddress });
         assert(FreelancerInfo, "should not be null");
     });
     it("Should refuse the partner", async () => {
@@ -92,33 +102,45 @@ contract('VaultFactory', async (accounts) => {
     });
     it("Should add document to Vault", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        let VaultDoc = await VaultInstance.addDocument("0x00aaff", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, { from: FreelancerAddress });
+        let VaultDoc = await VaultInstance.addDocument("0x00aaff", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, 0, { from: FreelancerAddress });
         //await VaultInstance.addDocument("0x00aaee", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [4, 5, 4], 2, 56, 57, { from: FreelancerAddress });
         //await VaultInstance.addDocument("0x00aadd", "0x00aaff", "0x00aaff", ["0x00", "0xbb"], [1, 0], 2, 56, 57, { from: FreelancerAddress });
         assert(VaultDoc, "should not be null");
     });
     it("Should not add document to Vault because keywords and ratings do not match", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        await tryCatch(VaultInstance.addDocument("0x00aaaa", "0x00aaff", "0x00aaff", ["0x00", "0xaa"], [4], 2, 56, 57, { from: FreelancerAddress }), errTypes.revert);
-    });
-    it("Should get the scoring of the Vault", async () => {
-        let Score = await VaultInstance.getScoring({ from: FreelancerAddress });
-        assert.equal(Score.c, 5, "numbers should be equals");
-    });
-    it("Should get the scoring of the Vault as a partner", async () => {
-        let Score2 = await VaultInstance.getScoring({ from: PartnerAddress });
-        assert.equal(Score2.c, 5, "numbers should be equals");
-    });
-    it("Should not get the scoring of the Vault with an unauthorized address", async () => {
-        await tryCatch(VaultInstance.getScoring(), errTypes.revert);
-    });
-    it("Should get the scoring for a specific keyword", async () => {
-        let ScoreWithKeyword = await VaultInstance.getScoringByKeyword("0x00", { from: FreelancerAddress });
-        assert.equal(ScoreWithKeyword.c, 100, "numbers should be equals");
+        await tryCatch(VaultInstance.addDocument("0x00aaaa", "0x00aaff", "0x00aaff", ["0x00", "0xaa"], [4], 2, 56, 57, 0, { from: FreelancerAddress }), errTypes.revert);
     });
     it("Should get the document", async () => {
         expect(() => {
             VaultInstance.getCertifiedDocumentById("0x00aaff", { from: FreelancerAddress });
         }).to.not.throw();
     });
+    it("Should get all the indexes", async () => {
+        let docs = await VaultInstance.getDocumentIndexes.call()
+        console.log(docs)
+    });
+    it("Should be able to get document", async () => {
+        let docs = await VaultInstance.getDocumentIndexes.call()
+        let doc = await VaultInstance.getFullDocument(docs[0], {from: PartnerAddress})
+        console.log(doc)
+        assert.isTrue(doc[4])
+        assert.equal(doc[8].toNumber(), 57)
+    });
+    it("Should create the ImportVault contract", async () => {
+        ImportVaultInstance = await ImportVault.new(VaultInstance.address)
+        assert(ImportVaultInstance, "should not be null");
+    });
+    it("Should allow a partner in order to import docs", async () => {
+        let Partner = await FreelancerInstance.listPartner(ImportVaultInstance.address, true, { from: FreelancerAddress });
+        assert(Partner, "should not be null");
+    });
+    it("Should import a document into a new vault", async () => {
+        let docs = await VaultInstance.getDocumentIndexes.call()
+        await ImportVaultInstance.importDocument(0, docs[0])
+        let doc = await VaultInstance.getFullDocument(docs[0], {from: PartnerAddress})
+        let new_doc = await ImportVaultInstance.getFullDocument.call(0)
+        assert.equal(doc.toString(), new_doc.toString())
+    });
+
 });
