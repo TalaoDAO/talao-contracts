@@ -1,4 +1,3 @@
-import HttpHeaderHelper from '../helpers/headerHelper';
 const apiGlobalRoute = process.env.REACT_APP_API_ADDRESS;
 
 class ExperienceService {
@@ -13,25 +12,35 @@ class ExperienceService {
 
 class Experience {
 
-    //Define the route /user
+    //Define the route /experience
     constructor() {
-        this.experienceRoute = apiGlobalRoute + 'user'
+        this.experienceRoute = apiGlobalRoute + 'experience'
         this.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           };
     }
 
-    async register(email, password, confirmedpassword) {
+    async add(experience) {
 
-        let response = await fetch(this.userRoute + '/register', {
+        let response = await fetch(this.experienceRoute + '/create', {
             method: 'POST',
             headers: this.headers,
             body: JSON.stringify({
-              email: email,
-              password: password,
-              confirmedpassword: confirmedpassword
+                experience
             })
+        });
+
+        let data = await response.json();
+        
+        return data;
+    }
+
+    async getAll() {
+
+        let response = await fetch(this.experienceRoute, {
+            method: 'GET',
+            headers: this.headers,
         });
 
         let data = await response.json();

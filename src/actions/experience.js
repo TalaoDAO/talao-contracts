@@ -1,32 +1,57 @@
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 
+import OrganizationService from '../api/organization';
 import Experience from '../models/Experience';
 import { fetchUserSuccess } from '../actions/user'
-import { TEXT_VALIDATOR_LENGTH } from '../actions/createVault';
 import Competency from '../models/Competency';
 import FileService from '../services/FileService';
 import { changeMenu } from './menu';
+import ExperienceService from '../api/experiences';
 
-export const ADD_DOC_BEGIN          = 'ADD_DOC_BEGIN';
-export const ADD_DOC_SUCCESS        = 'ADD_DOC_SUCCESS';
-export const ADD_DOC_ERROR          = 'ADD_DOC_ERROR';
-export const REMOVE_DOC_BEGIN       = 'REMOVE_DOC_BEGIN';
-export const REMOVE_DOC_SUCCESS     = 'REMOVE_DOC_SUCCESS';
-export const REMOVE_DOC_ERROR       = 'REMOVE_DOC_ERROR';
-export const CHANGE_FROM            = 'CHANGE_FROM';
-export const CHANGE_TO              = 'CHANGE_TO';
-export const CHANGE_DESCRIPTION_EXP = 'CHANGE_DESCRIPTION_EXP';
-export const CHANGE_TITLE_EXP       = 'CHANGE_TITLE_EXP';
-export const CHANGE_TYPE            = 'CHANGE_TYPE';
-export const NEW_EXPERIENCE_CLICKED = 'NEW_EXPERIENCE_CLICKED';
-export const ADD_CERTIFICAT_CLICKED = 'ADD_CERTIFICAT_CLICKED';
-export const ADD_CERTIFICAT_BEGIN   = 'ADD_CERTIFICAT_BEGIN';
-export const ADD_CERTIFICAT_SUCCESS = 'ADD_CERTIFICAT_SUCCESS';
-export const UPLOAD_SUCCESS         = 'UPLOAD_SUCCESS';
-export const UPLOAD_BEGIN           = 'UPLOAD_BEGIN';
-export const EXPAND_PROFIL          = 'EXPAND_PROFIL';
-export const UPLOAD_ERROR           = 'UPLOAD_ERROR';
-export const MOVE_TO_ADD_NEW_EXP    = 'MOVE_TO_ADD_NEW_EXP';
+export const GET_ORGANIZATIONS_BEGIN   = 'GET_ORGANIZATIONS_BEGIN';
+export const GET_ORGANIZATIONS_SUCCESS = 'GET_ORGANIZATIONS_SUCCESS';
+export const GET_ORGANIZATIONS_ERROR   = 'GET_ORGANIZATIONS_ERROR';
+export const SET_EXPERIENCE_FORM_INPUT = 'SET_EXPERIENCE_FORM_INPUT';
+
+export const ADD_DOC_BEGIN             = 'ADD_DOC_BEGIN';
+export const ADD_DOC_SUCCESS           = 'ADD_DOC_SUCCESS';
+export const ADD_DOC_ERROR             = 'ADD_DOC_ERROR';
+export const REMOVE_DOC_BEGIN          = 'REMOVE_DOC_BEGIN';
+export const REMOVE_DOC_SUCCESS        = 'REMOVE_DOC_SUCCESS';
+export const REMOVE_DOC_ERROR          = 'REMOVE_DOC_ERROR';
+export const NEW_EXPERIENCE_CLICKED    = 'NEW_EXPERIENCE_CLICKED';
+export const ADD_CERTIFICAT_CLICKED    = 'ADD_CERTIFICAT_CLICKED';
+export const ADD_CERTIFICAT_BEGIN      = 'ADD_CERTIFICAT_BEGIN';
+export const ADD_CERTIFICAT_SUCCESS    = 'ADD_CERTIFICAT_SUCCESS';
+export const UPLOAD_SUCCESS            = 'UPLOAD_SUCCESS';
+export const UPLOAD_BEGIN              = 'UPLOAD_BEGIN';
+export const EXPAND_PROFIL             = 'EXPAND_PROFIL';
+export const UPLOAD_ERROR              = 'UPLOAD_ERROR';
+export const MOVE_TO_ADD_NEW_EXP       = 'MOVE_TO_ADD_NEW_EXP';
+export const SET_SKILLS                = 'SET_SKILLS';
+export const SET_EXPERIENCE_BEGIN      = 'SET_EXPERIENCE_BEGIN';
+export const SET_EXPERIENCE_ERROR      = 'SET_EXPERIENCE_ERROR';
+export const SET_EXPERIENCE_SUCCESS    = 'SET_EXPERIENCE_SUCCESS';
+
+export const getOrganizationsBegin = () => ({
+    type: GET_ORGANIZATIONS_BEGIN
+  });
+
+export const getOrganizationsSuccess = (organizations) => ({
+    type: GET_ORGANIZATIONS_SUCCESS,
+    organizations
+});
+
+export const getOrganizationsError = (error) => ({
+    type: GET_ORGANIZATIONS_ERROR,
+    error
+});
+
+export const setExperienceFormInput = (property, value) => ({
+    type: SET_EXPERIENCE_FORM_INPUT,
+    property,
+    value
+});
 
 export const addCertificatSuccess = (competencies, formData, confidenceIndex, certificat) => ({
     type: ADD_CERTIFICAT_SUCCESS,
@@ -38,15 +63,15 @@ export const addCertificatSuccess = (competencies, formData, confidenceIndex, ce
 
 export const uploadFileSuccess = () => ({
     type: UPLOAD_SUCCESS
-})
+});
 
 export const uploadFileError = () => ({
     type: UPLOAD_ERROR
-})
+});
 
 export const uploadFileBegin = () => ({
     type: UPLOAD_BEGIN
-})
+});
 
 export const addCertificatBegin = () => ({
     type: ADD_CERTIFICAT_BEGIN
@@ -59,37 +84,6 @@ export const newExperience = (value) => ({
 
 export const addCertificat = () => ({
     type: ADD_CERTIFICAT_CLICKED
-});
-
-export const changeFrom = (from, errorEmpty, toBeforeFrom) => ({
-    type: CHANGE_FROM,
-    from,
-    errorEmpty,
-    toBeforeFrom
-});
-
-export const changeTo = (to, errorEmpty, toBeforeFrom) => ({
-    type: CHANGE_TO,
-    to,
-    errorEmpty,
-    toBeforeFrom
-});
-
-export const changeTitle = (title, error, errorEmpty) => ({
-    type: CHANGE_TITLE_EXP,
-    title,
-    error,
-    errorEmpty
-});
-
-export const changeType = (typeExp) => ({
-    type: CHANGE_TYPE,
-    typeExp
-});
-
-export const changeDescription = (description) => ({
-    type: CHANGE_DESCRIPTION_EXP,
-    description
 });
 
 export const addDocBegin = (user, experience) => ({
@@ -126,10 +120,96 @@ export const removeDocError = error => ({
     error
 });
 
+export const setSkills = skills => ({
+    type: SET_SKILLS,
+    skills
+});
+
 export const expandProfil = expandProfil => ({
     type: EXPAND_PROFIL,
     expandProfil
 })
+
+export const setExperienceBegin = () => ({
+    type: SET_EXPERIENCE_BEGIN
+  });
+
+export const setExperienceSuccess = (experience) => ({
+    type: SET_EXPERIENCE_SUCCESS,
+    experience
+});
+
+export const setExperienceError = (error) => ({
+    type: SET_EXPERIENCE_ERROR,
+    error
+});
+
+export function getOrganizations() {
+    return dispatch => {
+        dispatch(getOrganizationsBegin());
+        let organizationService = OrganizationService.getOrganizationService();
+
+        //Try to login
+        organizationService.getOrganizations().then(response => {
+            
+            //if the API send back an error
+            if (response.error) 
+                dispatch(getOrganizationsError(response.error));
+            else
+                // if the API send success
+                dispatch(getOrganizationsSuccess(response));
+        }).catch(error => {
+            // if an error is not handle
+            dispatch(getOrganizationsError(error));
+        });
+    };
+}
+
+export function setExperience(experience, user) {
+    return dispatch => {
+        dispatch(setExperienceBegin());
+        let experienceService = ExperienceService.getExperienceService();
+
+        //Try to login
+        experienceService.add(experience).then(response => {
+            
+            //if the API send back an error
+            if (response.error) 
+                dispatch(setExperienceError(response.error));
+            else {
+                // if the API send success
+                dispatch(setExperienceSuccess(response));
+                let competencies = [];
+                for (let index = 1; index <= 10; index++) {
+                    if(response['skill' + index]) {
+                        competencies.push(new Competency(response['skill' + index], 0));
+                    }
+                }
+                var experience = new Experience(
+                    null,
+                    response.job_title,
+                    response.job_description,
+                    new Date(response.date_start),
+                    new Date(response.date_end),
+                    competencies,
+                    null,
+                    null,
+                    null,
+                    null,
+                    'SAVED'
+                )
+                user.freelancerDatas.experiences.push(experience);
+                user.freelancerDatas.getCompetencies().then(() => {
+                        dispatch(fetchUserSuccess(user));
+                        dispatch({type:'RESET_EXPERIENCE_REDUCER'});
+                });
+            }
+        }).catch(error => {
+            // if an error is not handle
+            dispatch(setExperienceError(error));
+        });
+    };
+}
 
 export function addDocToFreelancer(user, experience) {
     return dispatch => {
@@ -196,20 +276,6 @@ export function removeDocToFreelancer(user, experience) {
     };
 }
 
-export function setNewExperienceInput(input, value, from) {
-    return dispatch => {
-        switch (input) 
-        {
-            case 'from': dispatch(changeFrom(from, isEmpty(from), isBefore(value, from))); break;
-            case 'to': dispatch(changeTo(value, isEmpty(value), isBefore(value, from))); break;
-            case 'title': dispatch(changeTitle(value, !isTextLimitRespected(value), isEmpty(value))); break;
-            case 'description': dispatch(changeDescription(value)); break;
-            case 'type': dispatch(changeType(value)); break;
-            default: break;
-        }
-    }
-}
-
 export function newExperienceClicked(value) {
     return dispatch => {
         dispatch(newExperience(value));
@@ -221,14 +287,6 @@ export function addCertificatClicked(fileInput) {
         fileInput.click();
         dispatch(addCertificat());
     }
-}
-
-export function isTextLimitRespected(text) {
-    return text.length < TEXT_VALIDATOR_LENGTH;
-}
-
-export function isEmpty(text) {
-    return text.length <= 0;
 }
 
 export function detectCompetenciesFromCertification(event) {
@@ -299,10 +357,6 @@ export function addDocument(formData, user, experience) {
             }
         }, err => dispatch(addDocError(err)));
     }
-}
-
-export function isBefore(to, from) {
-    return new Date(to) < new Date(from);
 }
 
 export function moveToNewExp(history) {

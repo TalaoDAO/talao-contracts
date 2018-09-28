@@ -1,16 +1,25 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import { Grid, TextField } from '@material-ui/core'; //Radio, FormControlLabel
+import { Grid, TextField } from '@material-ui/core';
+import { connect } from "react-redux";
+import { setSkills } from '../../actions/experience';
 
-const styles = theme => ({
-  /*  textField: {
-        margin: '10px 20px',
-        width: '-webkit-fill-available',
-        color: theme.palette.primary,
-    },*/
-});
+//map the redux store the the props component
+const mapStateToProps = state => ({
 
+  });
 class Skills extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            value: ''
+        }
+        this.handleSkillChange = this.handleSkillChange.bind(this);
+    }
+
+    handleSkillChange(newVal) {
+        this.setState({value: newVal});
+        this.props.dispatch(setSkills({['skill' + this.props.id]: newVal}));
+    }
 
     render() {
         return (
@@ -18,17 +27,16 @@ class Skills extends React.Component {
                 <TextField
                     required
                     type="text"
-                    //value={title}
-                    //error={titleError || titleEmpty}
-                    //helperText={(!titleError && !titleEmpty) ? '' : (titleError) ? helperTextTooLong : helperTextEmpty}
-                // onChange={(event) => this.props.dispatch(setNewExperienceInput('title', event.target.value))}
-                    className={this.props.classes.textField}
-                    label="Title"
-                    id={this.props.skill}
+                    value={this.state.value}
+                    error={this.state.value.length < 1}
+                    helperText={'This field can\'t be empty'}
+                    onChange={(event) => this.handleSkillChange(event.target.value)}
+                    style={{margin: '10px 20px', width: '-webkit-fill-available'}}
+                    label={"Skill " + this.props.id}
                 />
             </Grid>    
         );
     }
 }
 
-export default Skills;
+export default connect(mapStateToProps)(Skills);
