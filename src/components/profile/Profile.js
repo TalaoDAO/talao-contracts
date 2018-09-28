@@ -140,12 +140,16 @@ class Profile extends React.Component {
               const marginLeftIfMobile = matches ? '0px' : '130px';
               return (
                 <CardContent>
-                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <MailIcon />&nbsp;{this.props.freelancer.email}<br />
-                  </Typography>
-                  <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <PhoneIcon />&nbsp;{this.props.freelancer.phone}<br />
-                  </Typography>
+                  {this.props.showContact && 
+                  <div>
+                    <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                      <MailIcon />&nbsp;{this.props.freelancer.email}<br />
+                    </Typography>
+                    <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                      <PhoneIcon />&nbsp;{this.props.freelancer.phone}<br />
+                    </Typography>
+                  </div>
+                  }
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
                     <BlurOnIcon />&nbsp;{this.props.freelancer.ethereumAddress}
                   </Typography>

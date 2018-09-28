@@ -15,6 +15,7 @@ import { removeDocToFreelancer } from '../../actions/experience';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
+import talaoCertificateImage from '../../images/talaoCertificateImage';
 
 const Loading = require('react-loading-animation');
 const styles = theme => ({
@@ -182,7 +183,7 @@ class Experience extends React.Component {
                             </Button>
                         </Grid>
                         <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
-                            <Blockcerts url={this.props.value.certificat} />
+                            <Blockcerts url={this.props.value.certificat} key={this.props.value.certificat} image={talaoCertificateImage} color='#282828' color_bg='#edecec'/>}
                         </div>
                     </div>
                 </div>

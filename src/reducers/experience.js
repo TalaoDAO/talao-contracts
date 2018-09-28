@@ -43,7 +43,8 @@ import {
     certificat: null,
     competencies: [],
     uploadLoading: false,
-    expandProfil: false
+    expandProfil: false,
+    showTalaoButton: true
   };
   
   export default function experienceReducer(state = initialState, action) {
@@ -198,7 +199,8 @@ import {
                 formData: action.formData,
                 confidenceIndex: action.confidenceIndex,
                 certificat: action.certificat,
-                competencies: action.competencies
+                competencies: action.competencies,
+                showTalaoButton: false
             };
 
         case EXPAND_PROFIL:

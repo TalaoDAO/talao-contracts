@@ -103,7 +103,7 @@ const styles = theme => ({
         borderRight: '6px solid transparent',
         width: '150px',
         paddingBottom: '3px',
-    },
+    }
 });
 
 //map the redux store the the props component
@@ -125,7 +125,8 @@ const mapStateToProps = state => ({
     competencies: state.experienceReducer.competencies,
     confidenceIndex: state.experienceReducer.confidenceIndex,
     certificat: state.experienceReducer.certificat,
-    uploadLoading: state.experienceReducer.uploadLoading
+    uploadLoading: state.experienceReducer.uploadLoading,
+    showTalaoButton: state.experienceReducer.showTalaoButton
   });
 
 class NewExperience extends React.Component {
@@ -151,12 +152,16 @@ class NewExperience extends React.Component {
             competencies,
             formData,
             uploadLoading,     
+            showTalaoButton
         } = this.props;
 
         const competencyTags = competencies.map((competency, index) =>
             (<CompetencyTag value={competency} key={index} />)
         );
-
+        let showTalaoButt = showTalaoButton &&
+        <Button className={this.props.classes.certificatButton}>
+            I did not receive this certificate from Talao
+        </Button>
         return (
             <div>
                 <div>
@@ -308,9 +313,7 @@ class NewExperience extends React.Component {
                                 <Typography className={this.props.classes.textFieldNoExpand} variant="headline" component="p">
                                     Competencies
                                 </Typography>
-                                <Button /*onClick={() => todo}*/ className={this.props.classes.certificatButton}>
-                                    I did not receive this certificate from Talao
-                                </Button>
+                                {showTalaoButt}
                             </Grid>
                             <Grid item lg={8} xs={12}>
                                 <div className={this.props.classes.textField}>

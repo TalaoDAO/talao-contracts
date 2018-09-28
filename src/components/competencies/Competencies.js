@@ -142,7 +142,7 @@ class Competencies extends React.Component {
 
     //pick the current user or a searched freelancer
     let freelancer = (queryString.extract(window.location.search)) ? this.props.user.searchedFreelancers : this.props.user.freelancerDatas;
-
+    let showContact = (queryString.extract(window.location.search)) ? false : true;
     const oneCompetencyFocused = (this.props.match.params.competencyName);
     const competencies = freelancer.competencies
         // Compute confidence index of each competency
@@ -185,7 +185,7 @@ class Competencies extends React.Component {
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <Profile freelancer={freelancer}/>
+                    <Profile freelancer={freelancer} showContact={showContact}/>
                 </Grid>
                 <Grid item xs={12}>
                     <div className={this.props.classes.competenciesContainer}>

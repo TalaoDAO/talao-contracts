@@ -69,6 +69,7 @@ class Chronology extends React.Component {
 
         //pick the current user or a searched freelancer
         let freelancer = (queryString.extract(window.location.search)) ? this.props.user.searchedFreelancers : this.props.user.freelancerDatas;
+        let showContact = (queryString.extract(window.location.search)) ? false : true;
         let experiences = freelancer.experiences
         // Sort descending by date
         .sort((extendedExperienceA, extendedExperienceB) => {
@@ -105,7 +106,7 @@ class Chronology extends React.Component {
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
-                    <Profile freelancer={freelancer}/>
+                    <Profile freelancer={freelancer} showContact={showContact}/>
                 </Grid>
                 {!queryString.extract(window.location.search) &&
                     <Grid item xs={12}>

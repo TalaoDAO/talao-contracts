@@ -400,7 +400,7 @@ class VaultCreation extends React.Component {
                         <div className={this.props.classes.timeLine} >
                             <div className={this.props.classes.line} style={{ width: '25px' }}></div>
                             <div onClick={() => this.props.dispatch(canSwitchStep(1, accessPrice, vaultMaxAccessPrice, accessPrice))} className={this.props.classes.timeContainer}>
-                                {(this.props.user.freelancerDatas) ? 'Update your profile' : 'Create your profile'}
+                                {(this.props.user.freelancerDatas) ? 'Update your personal information' : 'Create your profile'}
                             </div>
                         </div>
                     </div>
