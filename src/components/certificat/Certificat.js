@@ -126,9 +126,10 @@ class Certificat extends React.Component {
     render() {
         this.state.skills.map((skill) => {
             return (
-                <Experience
-                    user={freelancer}
-                />
+                // <Experience
+                //     user={freelancer}
+                // />
+                null
             );
         });
         return (
@@ -200,7 +201,7 @@ class Certificat extends React.Component {
                                                     label="Title"
                                                     id="title"
                                                 />
-                                        </Grid>                           
+                                        </Grid>
                                         <Grid item lg={9} xs={12}>
                                             <FormControl className={this.props.classes.textField}>
                                                 <InputLabel
@@ -208,7 +209,7 @@ class Certificat extends React.Component {
                                                         root: this.props.classes.cssLabel,
                                                         focused: this.props.classes.cssFocused,
                                                     }} htmlFor="custom-css-input">Description</InputLabel>
-                                                <Input //value={description} 
+                                                <Input //value={description}
                                                     //onChange={(event) => this.props.dispatch(setNewExperienceInput('description', event.target.value))}
                                                     multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                             </FormControl>
@@ -247,7 +248,7 @@ class Certificat extends React.Component {
                             </div>
                         </CardContent>
                     </Card>
-                </Grid>      
+                </Grid>
             </Grid>
         );
     }

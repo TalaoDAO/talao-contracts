@@ -4,26 +4,37 @@ import "./Vault.sol";
 import "./Talao.sol";
 import "./Freelancer.sol";
 
+/**
+ * @title VaultFactory
+ * @dev This contract is a factory of Vault contracts.
+ * @author Slowsense, Talao, Blockchain Partner.
+ */
 contract VaultFactory is Ownable {
+
+    // Number of Vaults.
     uint nbVault;
+    // Talao token.
     TalaoToken myToken;
+    // Freelancer contract to store freelancers information.
     Freelancer myFreelancer;
 
-    //first address is Talent ethereum address 
-    //second address is Smart Contract vault address dedicated to this talent
-    mapping (address=>address) FreelanceVault;
+    // First address is the freelance Ethereum address.
+    // Second address is the freelance's Vault smart contract address.
+    mapping (address => address) FreelanceVault;
 
     enum VaultState { AccessDenied, AlreadyExist, Created }
-    event VaultCreation(address indexed talent, address vaultaddress, VaultState msg);
 
-    //address du smart contract token
-    constructor(address token, address freelancer) 
-        public 
+    // Talao token smart contract address.
+    constructor(address token, address freelancer)
+        public
     {
         myToken = TalaoToken(token);
         myFreelancer = Freelancer(freelancer);
     }
 
+    /**
+     * @dev Get total number of Vaults.
+     */
     function getNbVault()
         public
         view
@@ -32,6 +43,9 @@ contract VaultFactory is Ownable {
         return nbVault;
     }
 
+    /**
+     * @dev Getter to see if a freelance has a Vault.
+     */
     function HasVault (address freelance)
         public
         view
@@ -42,13 +56,13 @@ contract VaultFactory is Ownable {
         if(freeAdd != address(0)) {
             result = true;
         }
-        
+
         return result;
     }
 
-    /*
-        this method return vault adress
-    */
+    /**
+     * @dev Get the freelance's Vault address, if authorized.
+     */
     function GetVault(address freelance)
         public
         view
@@ -69,8 +83,9 @@ contract VaultFactory is Ownable {
         if (msg.sender != address(0)) {
             bool isAccess = myToken.hasVaultAccess(freelance, msg.sender);
             bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
+            bool isAdmin = (myFreelancer.getTalaoAdmin() == msg.sender);
 
-            if (isAccess || isPartner) {
+            if (isAccess || isPartner || isAdmin) {
                 return FreelanceVault[freelance];
             }
         }
@@ -90,14 +105,13 @@ contract VaultFactory is Ownable {
         require(isAccess == true,"sender hasn't access to vault");
 
         myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description,_pic);
-        
+
         //create vault
         Vault newVault = new Vault(myToken, myFreelancer);
-        
+
         FreelanceVault[msg.sender] = address(newVault);
         nbVault = SafeMath.add(nbVault,1);
         newVault.transferOwnership(msg.sender);
-        emit VaultCreation(msg.sender, newVault, VaultState.Created);
 
         return address(newVault);
     }
@@ -105,8 +119,8 @@ contract VaultFactory is Ownable {
     /**
      * Prevents accidental sending of ether to the factory
      */
-    function () 
-        public 
+    function ()
+        public
     {
         revert();
     }

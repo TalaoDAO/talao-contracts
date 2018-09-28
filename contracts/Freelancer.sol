@@ -5,7 +5,7 @@ import "./Talao.sol";
 contract Freelancer is Ownable {
 
     TalaoToken myToken;
-    
+
     struct Information {
         // public freelancer data
         bytes32 firstName;
@@ -54,7 +54,10 @@ contract Freelancer is Ownable {
         uint referral
     );
 
-    constructor(address token) 
+    // Address of the Talao Admin. He has the power to get for free the Vault adress of a freelance.
+    address TalaoAdmin;
+
+    constructor(address token)
         public
     {
         myToken = TalaoToken(token);
@@ -92,12 +95,12 @@ contract Freelancer is Ownable {
         require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive, "this freelance is inactive");
         delete FreelancerInformation[msg.sender];
     }
-    
+
     /**
      * Only Owner can set internal freelance data
      * Talao can suspend one freelance
     */
-    function setInternalData(bool _iskyc, uint8 _referral) 
+    function setInternalData(bool _iskyc, uint8 _referral)
         public
     {
         require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive,"this freelance is inactive" );
@@ -105,7 +108,7 @@ contract Freelancer is Ownable {
         FreelancerInformation[msg.sender].referral = _referral;
         emit FreelancerInternalData(msg.sender, _iskyc, _referral);
     }
-       
+
     function setInactive(address _freelancer)
         onlyOwner
         public
@@ -122,7 +125,7 @@ contract Freelancer is Ownable {
 
     /**
      * Freelance can whitelist a partner. Partner will have a free access to his Vault
-    */ 
+    */
     function listPartner(address _partner, bool IsListed)
         public
     {
@@ -135,5 +138,27 @@ contract Freelancer is Ownable {
         returns(bool)
     {
         return ListedPartner[_freelancer][_partner];
+    }
+
+    /**
+     * @dev Set the Talao Admin ethereum address.
+     * He has the power to get for free the Vault adress of a freelance.
+     */
+    function setTalaoAdmin(address _talaoadmin)
+        public
+        onlyOwner
+    {
+        TalaoAdmin = _talaoadmin;
+    }
+
+    /**
+     * @dev Get the Talao Admin ethereum address.
+     */
+    function getTalaoAdmin()
+        public
+        onlyOwner
+        returns (address)
+    {
+        return TalaoAdmin;
     }
 }
