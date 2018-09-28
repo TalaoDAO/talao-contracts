@@ -130,6 +130,15 @@ class Menu extends React.Component {
                         </Typography>
                         {showCreateVaultMenu}
                         {showFreelancerMenu}
+                        <Typography to="/">
+                            <Link 
+                                onClick={() => this.props.dispatch(changeMenuClicked('/certificat', true))}
+                                className={currentMenu === '/certificat' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                                to="/certificat"
+                            >
+                                Request certificate
+                            </Link>
+                        </Typography>
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>
