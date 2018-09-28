@@ -96,7 +96,18 @@ class Menu extends React.Component {
                     </Link>
                 </Typography>
             </div>  
-
+        let showDashboard = this.props.user.freelancerDatas &&
+        <div>
+            <Typography to="/" style={{clear: "both"}}>
+                <Link 
+                    onClick={() => this.props.dispatch(changeMenuClicked('/dashboard', true))}
+                    className={currentMenu === '/dashboard' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                    to="/dashboard"
+                >
+                    Dashboard
+                </Link>
+            </Typography>
+        </div>
         //if this is a client or a freelancer
         let showCreateVaultMenu = (this.props.user.ethAddress && !this.props.user.searchedFreelancers && currentMenu !== '/unlockfreelancer') &&
         <Typography to="/">
@@ -130,15 +141,7 @@ class Menu extends React.Component {
                         </Typography>
                         {showCreateVaultMenu}
                         {showFreelancerMenu}
-                        <Typography to="/">
-                            <Link 
-                                onClick={() => this.props.dispatch(changeMenuClicked('/certificat', true))}
-                                className={currentMenu === '/certificat' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
-                                to="/certificat"
-                            >
-                                Request certificate
-                            </Link>
-                        </Typography>
+                        {showDashboard}
                     </div>
                 </div>
                 <div className={this.props.classes.menus}>

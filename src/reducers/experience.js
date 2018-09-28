@@ -1,206 +1,126 @@
 import {
-    ADD_DOC_BEGIN,     
-    ADD_DOC_SUCCESS,   
-    ADD_DOC_ERROR,     
-    REMOVE_DOC_BEGIN,  
-    REMOVE_DOC_SUCCESS,
-    REMOVE_DOC_ERROR,
-    CHANGE_FROM,
-    CHANGE_TO,
-    CHANGE_DESCRIPTION_EXP,
-    CHANGE_TITLE_EXP,
-    CHANGE_TYPE,
-    NEW_EXPERIENCE_CLICKED,
-    ADD_CERTIFICAT_CLICKED,
-    ADD_CERTIFICAT_SUCCESS,
-    UPLOAD_SUCCESS,
-    UPLOAD_BEGIN,
+    ASYNC_CALL_BEGIN,
+    ASYNC_CALL_SUCCESS,
+    ASYNC_CALL_ERROR,
+    GET_ORGANIZATIONS,
+    SET_EXPERIENCE_FORM_INPUT,
+    SET_ORGANIZATION_FORM_INPUT,
     EXPAND_PROFIL,
-    UPLOAD_ERROR
+    NEW_EXPERIENCE_CLICKED
   } from '../actions/experience'
   
   const initialState = {
+    formData: {
+        date_start: '',
+        date_end: '',
+        job_title: '',
+        job_description: '',
+        job_duration: 0,
+        organizationId: 1,
+        contactLastName: '',
+        contactFirstName: '',
+        contactJobTitle: '',
+        finalClientCompany: '',
+        freelanceName: '',
+        freelanceEmail: '',
+        freelanceEthereumAddress: '',
+        partner_text: '',
+        skill1: '',
+        skill2: '',
+        skill3: '',
+        skill4: '',
+        skill5: '',
+        skill6: '', 
+        skill7: '',
+        skill8: '',
+        skill9: '',
+        skill10: '',
+        status: 1,
+        certificatAsked: false,
+        postedOnBlockchain: null
+    },
+    newOrganizationData: {
+        name: '',
+        responsible_first_name: '',
+        responsible_last_name: '',
+        responsible_job_title: '',
+        email: '',
+        phone: '',
+        createdByFree: null
+
+    },
     user: null,
-    experienceToDelete: null,
-    experienceToAdd: null,
-    to: '',
-    toEmpty: true,
-    toBeforeFrom: false,
-    from: '',
-    fromEmpty: true,
-    title: '',
-    titleError: false,
-    titleEmpty: true,
-    type: '4',
-    description: '',
     loading: false,
     success: null,
     error: null,
-    helperTextTooLong: 'Maximum length: 30 characters',
-    helperTextEmpty: 'This field is required',
     newExperience: false,
-    confidenceIndex: null,
-    certificat: null,
-    competencies: [],
-    uploadLoading: false,
     expandProfil: false,
-    showTalaoButton: true
+    organizations: []
   };
-  
+
   export default function experienceReducer(state = initialState, action) {
     switch(action.type) {
-  
-        case REMOVE_DOC_BEGIN:
-            return {
-                ...state,
-                user: action.user,
-                loading: true,
-                experienceToAdd: null,
-                experienceToDelete: action.experience,
-                success: null
-            };
 
-        case REMOVE_DOC_SUCCESS:
+        case 'RESET_EXPERIENCE_REDUCER': 
             return {
                 ...state,
-                loading: false,
-                user: action.user,
-                success: action.success
-            };
-  
-        case REMOVE_DOC_ERROR:
-            return {
-                ...state,
-                loading: false,
-                error: action.error,
-                uploadLoading: false
-            };
+                formData: initialState.formData,
+                newExperience: false
+        };
 
-        case ADD_DOC_BEGIN:
-            return {
-                ...state,
-                user: action.user,
-                loading: true,
-                experienceToAdd: action.experience,
-                experienceToDelete: null,
-                success: null
-            };
+        case 'RESET_ORGANIZATION_REDUCER': 
+        return {
+            ...state,
+            newOrganizationData: initialState.newOrganizationData,
+        };
 
-        case ADD_DOC_SUCCESS:
+        case ASYNC_CALL_BEGIN:
             return {
                 ...state,
-                loading: false,
-                user: action.user,
-                success: action.success
-            };
-  
-        case ADD_DOC_ERROR:
+                loading: true
+        };
+
+        case ASYNC_CALL_ERROR:
             return {
                 ...state,
                 loading: false,
                 error: action.error
-            };
+        };
 
-        case CHANGE_FROM:
+        case ASYNC_CALL_SUCCESS:
+        return {
+            ...state,
+            loading: false
+        };
+
+        case GET_ORGANIZATIONS:
             return {
                 ...state,
-                from: action.from,
-                fromEmpty: action.errorEmpty,
-                toBeforeFrom: action.toBeforeFrom
-            };   
+                organizations: action.organizations
+        };
 
-        case CHANGE_TO:
+        case SET_EXPERIENCE_FORM_INPUT: {
+            var newForm = state.formData;
+            newForm[action.property] = action.value;
             return {
                 ...state,
-                to: action.to,
-                toEmpty: action.errorEmpty,
-                toBeforeFrom: action.toBeforeFrom
-            };
+                formData: Object.assign({}, newForm)
+            }; 
+        }
 
-        case CHANGE_TITLE_EXP:
+        case SET_ORGANIZATION_FORM_INPUT: {
+            var newOrgaForm = state.newOrganizationData;
+            newOrgaForm[action.property] = action.value;
             return {
                 ...state,
-                title: action.title,
-                titleError: action.error,
-                titleEmpty: action.errorEmpty
-            };
-
-        case CHANGE_DESCRIPTION_EXP:
-            return {
-                ...state,
-                description: action.description
-            };
-
-        case CHANGE_TYPE:
-            return {
-                ...state,
-                type: action.typeExp
-            };
+                newOrganizationData: Object.assign({}, newOrgaForm)
+            }; 
+        }
 
         case NEW_EXPERIENCE_CLICKED:
             return {
                 ...state,
-                newExperience: action.value,
-                to: '',
-                toEmpty: true,
-                from: '',
-                fromEmpty: true,
-                title: '',
-                titleError: false,
-                titleEmpty: true,
-                type: '4',
-                description: '',
-                formData: null,
-                confidenceIndex: null,
-                certificat: null,
-                competencies: []
-            };
-
-        case ADD_CERTIFICAT_CLICKED:
-            return {
-                ...state
-            };
-
-        case UPLOAD_SUCCESS:
-            return {
-                ...state,
-                newExperience: false,
-                to: '',
-                toEmpty: true,
-                from: '',
-                fromEmpty: true,
-                title: '',
-                titleError: false,
-                titleEmpty: true,
-                type: '4',
-                description: '',
-                formData: null,
-                confidenceIndex: null,
-                certificat: null,
-                competencies: [],
-                uploadLoading: false
-            };
-
-        case UPLOAD_BEGIN:
-            return {
-                ...state,
-                uploadLoading: true
-            };
-
-        case UPLOAD_ERROR:
-            return {
-                ...state,
-                uploadLoading: false
-            };
-
-        case ADD_CERTIFICAT_SUCCESS:
-            return {
-                ...state,
-                formData: action.formData,
-                confidenceIndex: action.confidenceIndex,
-                certificat: action.certificat,
-                competencies: action.competencies,
-                showTalaoButton: false
+                newExperience: action.value
             };
 
         case EXPAND_PROFIL:

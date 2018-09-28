@@ -9,7 +9,6 @@ import ErrorPage from './components/errorBoundaries/ErrorPage';
 // If the browser has injected Web3.JS
 if (window.web3) {
     window.web3 = new Web3(window.web3.currentProvider);
-    console.log('yes')
 } else {
     window.web3 = new Web3('https://ropsten.infura.io/v3/d151b6d373a147b5a83163a89f3156c2');
 }

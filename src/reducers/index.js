@@ -6,6 +6,7 @@ import experienceReducer from './experience';
 import guardReducer from './guard';
 import homepageReducer from './homepage';
 import menuReducer from './menu'
+import dashboardReducer from './dashboard'
 
 const appReducer = combineReducers({
     userReducer,
@@ -14,7 +15,8 @@ const appReducer = combineReducers({
     experienceReducer,
     guardReducer,
     homepageReducer,
-    menuReducer
+    menuReducer,
+    dashboardReducer
 });
 
 export const rootReducer = (state, action) => {

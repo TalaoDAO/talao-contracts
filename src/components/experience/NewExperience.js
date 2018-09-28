@@ -1,16 +1,15 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core';
 import { constants } from '../../constants';
-import { Grid, FormControl, Input, InputLabel, TextField, InputAdornment, Typography } from '@material-ui/core'; //Radio, FormControlLabel
+import { Grid, FormControl, Input, InputLabel, TextField, InputAdornment, Radio, FormControlLabel, MenuItem, Select } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import LineStyle from '@material-ui/icons/LineStyle';
 import Icon from '@material-ui/core/Icon';
 import blue from '@material-ui/core/colors/blue';
-import CompetencyTag from '../competencyTag/CompetencyTag';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import Experience from '../../models/Experience';
-import { setNewExperienceInput, addDocument, newExperienceClicked, addCertificatClicked, detectCompetenciesFromCertification } from '../../actions/experience';
+import Skills from '../skills/Skills';
+import { setExperienceFormInput, setOrganizationFormInput, newExperienceClicked, fetchExperience } from '../../actions/experience';
+import { TEXT_VALIDATOR_LENGTH } from '../../actions/createVault';
 
 const styles = theme => ({
     root: {
@@ -58,7 +57,7 @@ const styles = theme => ({
     },
     card: {
         transition: 'all .4s ease',
-        paddingBottom: '15px',
+        padding: '15px',
     },
     indicator: {
         display: 'inline-block',
@@ -103,69 +102,160 @@ const styles = theme => ({
         borderRight: '6px solid transparent',
         width: '150px',
         paddingBottom: '3px',
+    },
+    selectEmpty: {
+        marginTop: theme.spacing.unit * 2
     }
 });
 
 //map the redux store the the props component
 const mapStateToProps = state => ({
-    to: state.experienceReducer.to,
-    toEmpty: state.experienceReducer.toEmpty,
-    toBeforeFrom: state.experienceReducer.toBeforeFrom,
-    from: state.experienceReducer.from,
-    fromEmpty: state.experienceReducer.fromEmpty,
-    title: state.experienceReducer.title,
-    titleError: state.experienceReducer.titleError,
-    titleEmpty: state.experienceReducer.titleEmpty,
-    type: state.experienceReducer.type,
-    description: state.experienceReducer.description,
-    helperTextTooLong: state.experienceReducer.helperTextTooLong,
-    helperTextEmpty: state.experienceReducer.helperTextEmpty,
+    user: state.userReducer.user,
     newExperience: state.experienceReducer.newExperience,
     formData: state.experienceReducer.formData,
-    competencies: state.experienceReducer.competencies,
-    confidenceIndex: state.experienceReducer.confidenceIndex,
-    certificat: state.experienceReducer.certificat,
-    uploadLoading: state.experienceReducer.uploadLoading,
-    showTalaoButton: state.experienceReducer.showTalaoButton
+    newOrganizationData: state.experienceReducer.newOrganizationData,
+    organizations: state.experienceReducer.organizations,
   });
 
 class NewExperience extends React.Component {
 
-    render() {
+    constructor(props) {
+        super(props);
+        this.state = {
+            radioValue: 'false',
+            alreadyHaveCert: false,
+            skills: [{}],
+            selectedCompanyName: '',
+            selectedCompany: null
+        }
+        this.handleAddSkills = this.handleAddSkills.bind(this);
+        this.handleRemoveSkills = this.handleRemoveSkills.bind(this);
+        this.haveCertificate = this.haveCertificate.bind(this);
+        this.handleChooseCompany = this.handleChooseCompany.bind(this);
+        this.saveExperience = this.saveExperience.bind(this);
+    }
 
+    isBefore(to, from) {
+        return new Date(to) < new Date(from);
+    }
+
+    isOverTextLimit(text) {
+        return text.length > TEXT_VALIDATOR_LENGTH;
+    }
+
+    isEmpty(text) {
+        return text.length <= 0;
+    }
+
+    haveCertificate(newVal) {
+        this.setState({alreadyHaveCert: (newVal === 'true') ? true : false, 
+                       radioValue: newVal});
+    }
+
+    handleAddSkills() {
+        if (this.state.skills.length < 10) {
+            let s = this.state.skills;
+            s.push(s.length - 1);
+            this.setState({skills: s});
+        }
+    }
+
+    handleRemoveSkills() {
+        if (this.state.skills.length > 1) {
+            let s = this.state.skills;
+            s.splice(s.length - 1);
+            this.setState({skills: s});
+            let idToDelete = s.length + 1;
+            this.props.dispatch(setExperienceFormInput(['skill' + idToDelete], ''));
+        }
+    }
+
+    handleChooseCompany(newVal) {
+        this.setState({selectedCompanyName: newVal});
+        if (newVal === 'CompanyNotInTheList') {
+            this.setState({selectedCompany: null});
+            this.props.dispatch(setExperienceFormInput('contactFirstName', ''));
+            this.props.dispatch(setExperienceFormInput('contactLastName', ''));
+            this.props.dispatch(setExperienceFormInput('contactJobTitle', ''));
+            this.props.dispatch(setExperienceFormInput('finalClientCompany', ''));
+        } else {
+            this.props.dispatch({type: 'RESET_ORGANIZATION_REDUCER'});
+            this.setState({selectedCompany: this.props.organizations.find(x => x.name === newVal)}, () => {
+                this.props.dispatch(setExperienceFormInput('organizationId', this.state.selectedCompany.id));
+                this.props.dispatch(setExperienceFormInput('contactFirstName', this.state.selectedCompany.is_partner ? '' : this.state.selectedCompany.responsible_first_name));
+                this.props.dispatch(setExperienceFormInput('contactLastName', this.state.selectedCompany.is_partner ? '' : this.state.selectedCompany.responsible_last_name));
+                this.props.dispatch(setExperienceFormInput('contactJobTitle', this.state.selectedCompany.is_partner ? '' : this.state.selectedCompany.responsible_job_title));
+                this.props.dispatch(setExperienceFormInput('finalClientCompany', ''));
+                this.props.dispatch(setExperienceFormInput('partner_text', ''));
+            });
+        }
+    }
+
+    allSkillFill() {
+        for(let i = 1; i < this.state.skills.length + 1; i++) {
+            if (this.isEmpty(this.props.formData['skill' + i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    canSubmit() {
+        return !this.isEmpty(this.props.formData.date_start) &&
+               !this.isEmpty(this.props.formData.date_end) &&
+               !this.isEmpty(this.props.formData.job_title) &&
+               !this.isEmpty(this.props.formData.job_duration) &&
+               !this.isOverTextLimit(this.props.formData.job_title) &&  
+               !this.isEmpty(this.props.formData.job_description) && 
+               this.state.selectedCompanyName && 
+               this.allSkillFill() &&
+               (this.state.selectedCompanyName !== 'CompanyNotInTheList' ?                
+               !this.isEmpty(this.props.formData.contactLastName) &&
+               !this.isEmpty(this.props.formData.contactFirstName) &&
+               !this.isEmpty(this.props.formData.contactJobTitle) &&
+               (this.state.selectedCompany.is_partner ? !this.isEmpty(this.props.formData.finalClientCompany) : true) : 
+               !this.isEmpty(this.props.newOrganizationData.name) &&                                                                          
+               !this.isEmpty(this.props.newOrganizationData.responsible_first_name) &&
+               !this.isEmpty(this.props.newOrganizationData.responsible_last_name) && 
+               !this.isEmpty(this.props.newOrganizationData.responsible_job_title) &&
+               !this.isEmpty(this.props.newOrganizationData.email))
+    }
+
+    saveExperience() {
+        if (this.state.selectedCompany && this.state.selectedCompany.is_partner)
+            this.props.dispatch(setExperienceFormInput('partner_text', 'I hereby certify that ' + 
+                                                 this.props.user.freelancerDatas.firstName + ' ' + 
+                                                 this.props.user.freelancerDatas.lastName + ' worked with ' + 
+                                                 this.props.formData.contactFirstName + ' ' + this.props.formData.contactLastName + ', ' +
+                                                 this.props.formData.contactJobTitle + ' at '  + this.state.selectedCompanyName));
+        if (this.state.selectedCompanyName === 'CompanyNotInTheList') 
+            this.props.dispatch(fetchExperience(this.props.formData, this.props.newOrganizationData, this.props.user));
+        else 
+            this.props.dispatch(fetchExperience(this.props.formData, null, this.props.user));
+        this.setState({skills: [{}], selectedCompanyName: '', selectedCompany: null})
+    }
+
+    render() {
         const { 
-            to,
-            toEmpty,
-            toBeforeFrom,
-            from, 
-            fromEmpty,
-            type,
-            title, 
-            description, 
-            titleError, 
-            titleEmpty,
-            helperTextTooLong,
-            helperTextEmpty,
-            newExperience,
-            certificat,
-            confidenceIndex,
-            competencies,
             formData,
-            uploadLoading,     
-            showTalaoButton
+            newExperience,
+            organizations,
+            newOrganizationData,
+            user
         } = this.props;
 
-        const competencyTags = competencies.map((competency, index) =>
-            (<CompetencyTag value={competency} key={index} />)
-        );
-        let showTalaoButt = showTalaoButton &&
-        <Button className={this.props.classes.certificatButton}>
-            I did not receive this certificate from Talao
-        </Button>
+        let skills = this.state.skills.map((skill, index) => {
+            return ( <Skills key={index+1} id={index+1}/> );
+        });
+
+        let companys = (organizations) && organizations.map(organization => {
+            return ( <MenuItem key={organization.id} value={organization.name}>{organization.name}</MenuItem> );
+        });
+
         return (
             <div>
                 <div>
-                <div onClick={() => this.props.dispatch(newExperienceClicked(!newExperience))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
+                <div onClick={() => this.props.dispatch(newExperienceClicked(!newExperience, user))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
                         <span style={{ display: !newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>+</span>
                         <span style={{ display: newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>-</span>
                     </div>
@@ -179,15 +269,45 @@ class NewExperience extends React.Component {
                 <div className={this.props.classes.content} style={{ display: newExperience ? 'inline-block' : 'none' }}>
                     <Grid container spacing={40}>
                         <form className={this.props.classes.container} noValidate autoComplete="off">
+                        <Grid item lg={12} xs={12} className={this.props.classes.textField}>
+                                <FormControl>
+                                    <FormControlLabel control={
+                                        <Radio
+                                            checked={this.state.radioValue === 'false'}
+                                            onChange={() => this.haveCertificate('false')}
+                                            value={this.state.radioValue}
+                                            name="radio-button-demo"
+                                            aria-label="C"
+                                            classes={{
+                                                root: this.props.classes.root,
+                                                checked: this.props.classes.checked
+                                            }}
+                                        />} label="I don't have a certificate" />
+                                </FormControl>
+                                <FormControl>
+                                    <FormControlLabel control={
+                                        <Radio
+                                            checked={this.state.radioValue === 'true'}
+                                            onChange={() => this.haveCertificate('true')}
+                                            value={this.state.radioValue}
+                                            name="radio-button-demo"
+                                            aria-label="C"
+                                            classes={{
+                                                root: this.props.classes.root,
+                                                checked: this.props.classes.checked
+                                            }}
+                                        />} label="I have a certificate" />
+                                </FormControl>
+                            </Grid>
                             <Grid item lg={3} xs={12}>
                                 <TextField
                                     id="from"
                                     label="From"
                                     type="date"
-                                    value={from}
-                                    onChange={(event) => this.props.dispatch(setNewExperienceInput('from', to, event.target.value))}
+                                    value={(formData) && formData.date_start}
+                                    onChange={(event) => this.props.dispatch(setExperienceFormInput('date_start', event.target.value))}
                                     required
-                                    error={fromEmpty}
+                                    error={this.isEmpty(formData.date_start)}
                                     className={this.props.classes.textField}
                                     InputProps={{
                                         startAdornment: (
@@ -208,9 +328,9 @@ class NewExperience extends React.Component {
                                     id="to"
                                     label="To"
                                     type="date"
-                                    value={to}
-                                    error={toEmpty || toBeforeFrom}
-                                    onChange={(event) => this.props.dispatch(setNewExperienceInput('to', event.target.value, from))}
+                                    value={formData.date_end}
+                                    error={this.isEmpty(formData.date_end) || this.isBefore(formData.date_end, formData.date_start)}
+                                    onChange={(event) => this.props.dispatch(setExperienceFormInput('date_end', event.target.value))}
                                     required
                                     className={this.props.classes.textField}
                                     InputProps={{
@@ -227,118 +347,224 @@ class NewExperience extends React.Component {
                                     }}
                                 />
                             </Grid>
-                            <Grid item lg={6}></Grid>
+                            <Grid item lg={3} xs={12}>
+                                    <TextField
+                                        required
+                                        type="number"
+                                        value={formData.job_duration}
+                                        error={this.isEmpty(formData.job_duration)}
+                                        helperText={this.isEmpty(formData.job_duration) ? 'This field is required' : ''}
+                                        onChange={(event) => this.props.dispatch(setExperienceFormInput('job_duration', event.target.value))}
+                                        className={this.props.classes.textField}
+                                        label="Job duration"
+                                        id="jobDuration"
+                                    />
+                            </Grid>
+                            <Grid item lg={12}></Grid>
                             <Grid item lg={6} xs={12}>
                                     <TextField
                                         required
                                         type="text"
-                                        value={title}
-                                        error={titleError || titleEmpty}
-                                        helperText={(!titleError && !titleEmpty) ? '' : (titleError) ? helperTextTooLong : helperTextEmpty}
-                                        onChange={(event) => this.props.dispatch(setNewExperienceInput('title', event.target.value))}
+                                        value={formData.job_title}
+                                        error={this.isOverTextLimit(formData.job_title) || this.isEmpty(formData.job_title)}
+                                        helperText={(!this.isOverTextLimit(formData.job_title) && !this.isEmpty(formData.job_title)) ? '' : (this.isEmpty(formData.job_title)) ? 'This field is required' : 'Maximum length: 30 characters'}
+                                        onChange={(event) => this.props.dispatch(setExperienceFormInput('job_title', event.target.value))}
                                         className={this.props.classes.textField}
                                         label="Title"
                                         id="title"
                                     />
                             </Grid>
-                            {/*<Grid item lg={6} xs={12} className={this.props.classes.textField}>
-                                <FormControl>
-                                    <FormControlLabel control={
-                                        <Radio
-                                            checked={type === '4'}
-                                            onChange={() => this.props.dispatch(setNewExperienceInput('type', '4'))}
-                                            value="4"
-                                            name="radio-button-demo"
-                                            aria-label="C"
-                                            classes={{
-                                                root: this.props.classes.root,
-                                                checked: this.props.classes.checked
-                                            }}
-                                        />} label="Job" />
-                                </FormControl>
-                                <FormControl>
-                                    <FormControlLabel control={
-                                        <Radio
-                                            checked={type === '2'}
-                                            onChange={() => this.props.dispatch(setNewExperienceInput('type', '2'))}
-                                            value="2"
-                                            name="radio-button-demo"
-                                            aria-label="C"
-                                            classes={{
-                                                root: this.props.classes.root,
-                                                checked: this.props.classes.checked
-                                            }}
-                                        />} label="Education" />
-                                </FormControl>
-                                <FormControl>
-                                    <FormControlLabel control={
-                                        <Radio
-                                            checked={type === '3'}
-                                            onChange={() => this.props.dispatch(setNewExperienceInput('type', '3'))}
-                                            value="3"
-                                            name="radio-button-demo"
-                                            aria-label="C"
-                                            classes={{
-                                                root: this.props.classes.root,
-                                                checked: this.props.classes.checked
-                                            }}
-                                        />} label="Certification" />
-                                </FormControl>
-                            </Grid>*/}
                             <Grid item lg={9} xs={12}>
                                 <FormControl className={this.props.classes.textField}>
                                     <InputLabel
+                                        required
+                                        error={this.isEmpty(formData.job_description)}
                                         FormLabelClasses={{
                                             root: this.props.classes.cssLabel,
                                             focused: this.props.classes.cssFocused,
                                         }} htmlFor="custom-css-input">Description</InputLabel>
-                                    <Input value={description} 
-                                           onChange={(event) => this.props.dispatch(setNewExperienceInput('description', event.target.value))}
+                                    <Input required
+                                           error={this.isEmpty(formData.job_description)}
+                                           value={formData.job_description}            
+                                           onChange={(event) => this.props.dispatch(setExperienceFormInput('job_description', event.target.value))}
                                            multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
                                 </FormControl>
                             </Grid>
-                            <Grid item lg={3}></Grid>
                             <Grid item lg={6} xs={12}>
-                                <Button onClick={() => this.props.dispatch(addCertificatClicked(this.fileInput))} className={this.props.classes.certificatButton}>
-                                    <LineStyle />
-                                    Add the certificate issued by my customer
-                                </Button>
-                                <input onChange={(e) => this.props.dispatch(detectCompetenciesFromCertification(e.target))} 
-                                       style={{ display: 'none' }} 
-                                       ref={fileInput => this.fileInput = fileInput} 
-                                       type="file" accept="application/json" />
+                                <FormControl className={this.props.classes.textField}>
+                                    <InputLabel required error={!this.state.selectedCompanyName} 
+                                                shrink={(this.state.selectedCompanyName) ? true : false} 
+                                                htmlFor="company-required">Company</InputLabel>
+                                    <Select
+                                        required
+                                        error={!this.state.selectedCompanyName} 
+                                        value={(this.state.selectedCompanyName) ? this.state.selectedCompanyName : ''}
+                                        onChange={(event) => {this.handleChooseCompany(event.target.value)}}
+                                        name="company"
+                                        inputProps={{
+                                        id: 'company-required',
+                                        }}
+                                        className={this.props.classes.selectEmpty}
+                                    >   
+                                        <MenuItem key={0} value={'CompanyNotInTheList'}>{'My company is not in the list'}</MenuItem>                            
+                                        { companys }
+                                    </Select>
+                                </FormControl>
                             </Grid>
-                            <Grid item lg={3}></Grid>
-                            <Grid container direction="row" justify="flex-start" alignItems="center">
-                                <Typography className={this.props.classes.textFieldNoExpand} variant="headline" component="p">
-                                    Competencies
-                                </Typography>
-                                {showTalaoButt}
+                            <Grid item lg={6} xs={12} />
+                            <Grid item lg={6} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: (this.state.selectedCompany && 
+                                                       this.state.selectedCompany.is_partner) ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={formData.finalClientCompany}
+                                    error={this.isEmpty(formData.finalClientCompany)}
+                                    helperText={!this.isEmpty(formData.finalClientCompany) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setExperienceFormInput('finalClientCompany', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Final client company"
+                                    id="finalClientCompany"
+                                />
                             </Grid>
-                            <Grid item lg={8} xs={12}>
-                                <div className={this.props.classes.textField}>
-                                    {competencyTags}
-                                </div>
+                            <Grid item lg={6} xs={12} />
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={formData.contactLastName}
+                                    error={this.isEmpty(formData.contactLastName)}
+                                    helperText={!this.isEmpty(formData.contactLastName) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setExperienceFormInput('contactLastName', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Last name"
+                                    id="contactLastName"
+                                />
                             </Grid>
-                            <Grid item lg={4}></Grid>
-                            <Grid item lg={2} xs={12}>
-                                <Button onClick={() => this.props.dispatch(
-                                addDocument(formData,
-                                this.props.user,
-                                new Experience(
-                                    '',
-                                    title,
-                                    description,
-                                    new Date(from),
-                                    new Date(to),
-                                    competencies,
-                                    certificat,
-                                    confidenceIndex,
-                                    type,
-                                    competencies[0].jobDuration)))}  
-                                    className={competencies.length > 0 && !toBeforeFrom && !titleEmpty && !titleError && !toEmpty && !fromEmpty && !uploadLoading ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
-                                    Submit
-                                </Button>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={formData.contactFirstName}
+                                    error={this.isEmpty(formData.contactFirstName)}
+                                    helperText={!this.isEmpty(formData.contactFirstName) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setExperienceFormInput('contactFirstName', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="First name"
+                                    id="contactFirstName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={formData.contactJobTitle}
+                                    error={this.isEmpty(formData.contactJobTitle)}
+                                    helperText={!this.isEmpty(formData.contactJobTitle) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setExperienceFormInput('contactJobTitle', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Job title"
+                                    id="contactJobTitle"
+                                />
+                            </Grid>
+
+
+
+                            <Grid item lg={12} xs={12} />
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.name}
+                                    error={this.isEmpty(newOrganizationData.name)}
+                                    helperText={!this.isEmpty(newOrganizationData.name) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('name', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Company name"
+                                    id="companyName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.responsible_first_name}
+                                    error={this.isEmpty(newOrganizationData.responsible_first_name)}
+                                    helperText={!this.isEmpty(newOrganizationData.responsible_first_name) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_first_name', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Responsible first name"
+                                    id="responsibleFirstName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.responsible_last_name}
+                                    error={this.isEmpty(newOrganizationData.responsible_last_name)}
+                                    helperText={!this.isEmpty(newOrganizationData.responsible_last_name) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_last_name', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Responsible last name"
+                                    id="responsibleLastName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12} />
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.responsible_job_title}
+                                    error={this.isEmpty(newOrganizationData.responsible_job_title)}
+                                    helperText={!this.isEmpty(newOrganizationData.responsible_job_title) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_job_title', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Responsible job title"
+                                    id="responsibleJobTitle"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.email}
+                                    error={this.isEmpty(newOrganizationData.email)}
+                                    helperText={!this.isEmpty(newOrganizationData.email) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('email', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Company email"
+                                    id="companyEmail"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.phone}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('phone', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Company phone"
+                                    id="companyPhone"
+                                />
+                            </Grid>
+                            <Grid item lg={12} xs={12} />
+                            <Grid item lg={6} xs={12}>
+                                <Button className={this.props.classes.certificatButton} onClick={() => this.handleAddSkills()}>Add skills</Button>
+                                <Button className={this.props.classes.certificatButton} onClick={() => this.handleRemoveSkills()}>Remove skills</Button>
+                            </Grid>
+                            <Grid item lg={6} xs={12} />
+                                {skills}
+                            <Grid item lg={12} xs={12}>
+                                <Button className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} onClick={() => this.saveExperience()}>Save</Button>
                             </Grid>
                         </form>
                     </Grid>

@@ -1,7 +1,7 @@
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 import { fetchUser } from '../actions/user'
 import FileService from '../services/FileService';
-import { uploadFileBegin, uploadFileSuccess } from '../actions/experience';
+import { asyncCallBegin, asyncCallSuccess } from '../actions/experience';
 
 export const CREATE_VAULT_BEGIN       = 'CREATE_VAULT_BEGIN';
 export const INIT_VAULT_DEPOSIT       = 'INIT_VAULT_DEPOSIT';
@@ -234,7 +234,7 @@ export function setAccessPrice(accessPrice, user) {
 export function submitVault(user, accessPrice, fName, lName, titl, description, pho, mail, pictureToUpload) {
     return dispatch => {
 
-        dispatch(uploadFileBegin());
+        dispatch(asyncCallBegin());
         let pictureUrl;
         FileService.uploadToIpfs(pictureToUpload).then(result => {
             if (pictureToUpload) {
@@ -246,7 +246,7 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                 pictureUrl = '0x0000000000000000000000000000000000000000';
             }
         }).then(() => {
-            dispatch(uploadFileSuccess());
+            dispatch(asyncCallSuccess());
 
             dispatch(submitVaultBegin());
 
@@ -292,8 +292,6 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
                     })
                     .once('receipt', (receipt) => {
                         dispatch(transactionReceipt(receipt));
-                    })
-                    .on('confirmation', (confNumber, receipt) => {
                     })
                     .on('error', (error) => {
                         dispatch(transactionError(error));
