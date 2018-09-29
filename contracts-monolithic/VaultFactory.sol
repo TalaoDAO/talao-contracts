@@ -1742,6 +1742,18 @@ contract Freelancer is Ownable {
         TalaoAdmin = _talaoadmin;
     }
 
+    function isTalaoAdmin(address _user)
+        public
+        view
+        returns (bool)
+    {
+        bool isAdmin;
+        if (TalaoAdmin == _user) {
+          isAdmin = true;
+        }
+        return isAdmin;
+    }
+
     /**
      * @dev Get the Talao Admin ethereum address.
      */
@@ -2030,7 +2042,7 @@ contract VaultFactory is Ownable {
         if (msg.sender != address(0)) {
             bool isAccess = myToken.hasVaultAccess(freelance, msg.sender);
             bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
-            bool isAdmin = (myFreelancer.getTalaoAdmin() == msg.sender);
+            bool isAdmin = myFreelancer.isTalaoAdmin(msg.sender);
 
             if (isAccess || isPartner || isAdmin) {
                 return FreelanceVault[freelance];
