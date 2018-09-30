@@ -21,11 +21,12 @@ const ImportVault = artifacts.require("ImportVault");
 contract('VaultFactory', async (accounts) => {
     let TalaoInstance, VaultFactoryInstance, VaultInstance, FreelancerInstance, ImportVaultInstance
     let TalaoAddress, VaultAddress;
-    //Freelancer and Partner address
+    // Freelancer, Partner and TalaoAdmin address.
     //Must be different
     //Must not be the first address in Ganache as it is already used by default
     let FreelancerAddress = accounts[1];
     let PartnerAddress = accounts[2];
+    let TalaoAdminAddress = accounts[3];
     let tryCatch = require("./exceptions.js").tryCatch;
     let errTypes = require("./exceptions.js").errTypes;
 
@@ -68,6 +69,7 @@ contract('VaultFactory', async (accounts) => {
         await TalaoInstance.createVaultAccess(5, { from: FreelancerAddress });
     });
     it("Should create the freelancer", async () => {
+        // TODO: this makes FreelancerAddress the owner of the contract. It should be accounts[0]...
         FreelancerInstance = await Freelancer.new(TalaoInstance.address, { from: FreelancerAddress });
         assert(FreelancerInstance, "should not be null");
     });
@@ -76,17 +78,27 @@ contract('VaultFactory', async (accounts) => {
         assert(VaultFactoryInstance, "should not be null");
     });
     it("Should create a new Vault", async () => {
-        var VaultCreation = VaultFactoryInstance.VaultCreation();
-        VaultCreation.watch(function (error, result) {
-            if (!error)
-                VaultInstance = Vault.at(result.args.vaultaddress);
-        });
+        // TODO: same as L72
         let VaultReceipt = await VaultFactoryInstance.CreateVaultContract(0,0,0,0,0,0,0,0, { from: FreelancerAddress });
         VaultAddress = VaultReceipt.logs[0].address;
     });
     it("Should add information about Freelancer to Vault", async () => {
         let FreelancerInfo = await FreelancerInstance.UpdateFreelancerData(0,0,"0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "0x00aaff", "Description", { from: FreelancerAddress });
         assert(FreelancerInfo, "should not be null");
+    });
+    it("Should not allow non set TalaoAdmin address to get the Vault address", async () => {
+        let VaultAddressNull = await VaultFactoryInstance.GetVault(FreelancerAddress, { from: TalaoAdminAddress });
+        assert.equal(VaultAddressNull, '0x0000000000000000000000000000000000000000', "should be equal");
+    });
+    it("Should set the TalaoAdmin address", async () => {
+        // TODO: @see L72
+        await FreelancerInstance.setTalaoAdmin(TalaoAdminAddress, { from: FreelancerAddress });
+        let isTalaoAdmin = await FreelancerInstance.isTalaoAdmin(TalaoAdminAddress);
+        assert.equal(isTalaoAdmin, true, "should be true");
+    });
+    it("Should allow TalaoAdmin to get the Vault address", async () => {
+        let VaultAddress2 = await VaultFactoryInstance.GetVault(FreelancerAddress, { from: TalaoAdminAddress });
+        assert.equal(VaultAddress2, VaultAddress, "should be equal");
     });
     it("Should refuse the partner", async () => {
         let isPartner = await FreelancerInstance.isPartner(FreelancerAddress, PartnerAddress);

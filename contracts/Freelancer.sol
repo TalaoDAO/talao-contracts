@@ -145,8 +145,8 @@ contract Freelancer is Ownable {
      * He has the power to get for free the Vault adress of a freelance.
      */
     function setTalaoAdmin(address _talaoadmin)
-        public
         onlyOwner
+        public
     {
         TalaoAdmin = _talaoadmin;
     }
@@ -167,8 +167,8 @@ contract Freelancer is Ownable {
      * @dev Get the Talao Admin ethereum address.
      */
     function getTalaoAdmin()
-        public
         onlyOwner
+        public
         returns (address)
     {
         return TalaoAdmin;
