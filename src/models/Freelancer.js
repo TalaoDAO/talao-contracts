@@ -26,7 +26,7 @@ class Freelancer {
         this.experiences = [];
         this.competencies = [];
     }
-    
+
     getFreelanceData() {
         return new Promise((resolve, reject) => {
             this.freelancerContract.methods.FreelancerInformation(this.ethAddress).call().then(element => {
@@ -111,7 +111,7 @@ class Freelancer {
             });
         })
     }
-    
+
     addDocument(experience) {
         var docId = FileService.getBytes32FromIpfsHash(experience.docId);
         var title = window.web3.utils.fromAscii(experience.title);
@@ -125,10 +125,10 @@ class Freelancer {
         var documentType = parseInt(experience.type, 10);
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
-        return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, jobDuration)
+        return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, docId)
                                         .send({from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_ADD_DOC});
     }
-    
+
     removeDoc(experience) {
         return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_REMOVE_DOC});
     }
@@ -176,7 +176,7 @@ class Freelancer {
                     };
                     xhr.send();
                 });
-            })         
+            })
             Promise.all(requests).then(() => {
                 this.confidenceIndex = (totalNotation > 0 && totalDuration > 0 ) ? Math.round((totalNotation / totalDuration) * 10) / 10 : 0;
                 resolve(true);

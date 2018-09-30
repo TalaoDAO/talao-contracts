@@ -17,7 +17,7 @@ contract ImportVault is Ownable {
     function importDocument(uint newIndex, bytes32 docId) {
       (bytes32 title, string memory description, bytes32[] memory keywords,
       uint[] memory ratings, bool isAlive, uint index, uint documentType, uint startDate,
-      uint endDate, uint duration) = previousVault.getFullDocument(docId);
+      uint endDate, bytes32 _ipfsHash) = previousVault.getFullDocument(docId);
       Vault.certifiedDocument id = importedDocs[newIndex];
       id.title = title;
       id.description = description;
@@ -28,7 +28,7 @@ contract ImportVault is Ownable {
       id.documentType = documentType;
       id.startDate = startDate;
       id.endDate = endDate;
-      id.duration = duration;
+      id.ipfsHash = _ipfsHash;
     }
 
     function getFullDocument(uint id)
@@ -36,10 +36,10 @@ contract ImportVault is Ownable {
         public
         returns (bytes32 title, string description, bytes32[] keywords,
           uint[] ratings, bool isAlive, uint index, uint documentType, uint startDate,
-          uint endDate, uint duration)
+          uint endDate, bytes32 ipfsHash)
     {
         Vault.certifiedDocument cd = importedDocs[id];
         return (cd.title, cd.description, cd.keywords, cd.ratings, cd.isAlive, cd.index,
-                cd.documentType, cd.startDate, cd.endDate, cd.duration);
+                cd.documentType, cd.startDate, cd.endDate, cd.ipfsHash);
     }
 }

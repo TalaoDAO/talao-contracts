@@ -111,7 +111,7 @@ contract('VaultFactory', async (accounts) => {
     });
     it("Should add document to Vault", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        let VaultDoc = await VaultInstance.addDocument("0x00aaff", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, 0, { from: FreelancerAddress });
+        let VaultDoc = await VaultInstance.addDocument("0x01", "0x74657374", "description", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
         //await VaultInstance.addDocument("0x00aaee", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [4, 5, 4], 2, 56, 57, { from: FreelancerAddress });
         //await VaultInstance.addDocument("0x00aadd", "0x00aaff", "0x00aaff", ["0x00", "0xbb"], [1, 0], 2, 56, 57, { from: FreelancerAddress });
         assert(VaultDoc, "should not be null");
@@ -122,19 +122,27 @@ contract('VaultFactory', async (accounts) => {
     });
     it("Should get the document", async () => {
         expect(() => {
-            VaultInstance.getCertifiedDocumentById("0x00aaff", { from: FreelancerAddress });
+            VaultInstance.getCertifiedDocumentById("0x01", { from: FreelancerAddress });
         }).to.not.throw();
     });
     it("Should get all the indexes", async () => {
         let docs = await VaultInstance.getDocumentIndexes.call()
-        console.log(docs)
     });
     it("Should be able to get document", async () => {
         let docs = await VaultInstance.getDocumentIndexes.call()
         let doc = await VaultInstance.getFullDocument(docs[0], {from: PartnerAddress})
-        console.log(doc)
         assert.isTrue(doc[4])
         assert.equal(doc[8].toNumber(), 57)
+    });
+    it("Freelance should be able to edit document", async () => {
+        await VaultInstance.editDocument("0x01", 2, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", "0x74657374", "description2", ["0x00", "0xaa", "0xff"], [5, 4, 3], 1539475200000, 1540425600000, { from: FreelancerAddress });
+        let DocEditedByFreelance = await VaultInstance.getCertifiedDocumentById("0x01", { from: FreelancerAddress });
+        assert.equal(DocEditedByFreelance[0], "description2");
+    });
+    it("A freelance's partner should be able to edit document", async () => {
+        await VaultInstance.editDocument("0x01", 2, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", "0x74657374", "description3", ["0x00", "0xaa", "0xff"], [5, 4, 3], 1539475200000, 1540425600000, { from: FreelancerAddress });
+        let DocEditedByPartner = await VaultInstance.getCertifiedDocumentById("0x01", { from: PartnerAddress });
+        assert.equal(DocEditedByPartner[0], "description3");
     });
     it("Should create the ImportVault contract", async () => {
         ImportVaultInstance = await ImportVault.new(VaultInstance.address)

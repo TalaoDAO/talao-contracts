@@ -1777,10 +1777,10 @@ contract Vault is Ownable {
     Freelancer public myFreelancer;
 
     //Used to parse all documents using index as relationship between this array and TalentsDocuments mapping
-    bytes32[] public documentIndex;
+    bytes32[] documentIndex;
 
     struct certifiedDocument {
-        bytes32 title;
+        bytes32 title; // TODO: string instead, to allow longer titles?
         string description; //description of document
         bytes32[] keywords; //list of keywords associated to the current certified document
         uint[] ratings;
@@ -1789,7 +1789,7 @@ contract Vault is Ownable {
         uint documentType; //ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4
         uint startDate;
         uint endDate;
-        uint duration;
+        bytes32 ipfsHash; // IPFS hash of the IPFS uploaded attached file, if any (applies to Blockcerts certificates at least).
     }
 
     // TODO Infura gateway blockchain
@@ -1813,7 +1813,7 @@ contract Vault is Ownable {
         uint endDate,
         uint[] ratings,
         bytes32[] keywords,
-        uint duration
+        bytes32 ipfsHash
     );
 
     /*
@@ -1836,12 +1836,23 @@ contract Vault is Ownable {
         _;
     }
 
+    modifier allowOwnerAndPartner () {
+        require(msg.sender != address(0), 'Sender can not be empty.');
+        bool isOwner;
+        if (owner == msg.sender) {
+          isOwner = true;
+        }
+        bool isPartner = myFreelancer.isPartner(owner, msg.sender);
+        require(isOwner || isPartner, 'Sender must be the freelance or one of his partners.');
+        _;
+    }
+
     /*
     add new certification document to Talent Vault
     accessibility : only for authorized user and owner of this contract
     */
     function addDocument(
-        bytes32 documentId, bytes32 title, string description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, uint duration
+        bytes32 documentId, bytes32 title, string description, bytes32[] keywords, uint[] ratings, uint documentType, uint startDate, uint endDate, bytes32 _ipfsHash
     )
         onlyOwner
         allowance
@@ -1851,11 +1862,11 @@ contract Vault is Ownable {
         require(documentId != 0 && keywords.length != 0 && startDate != 0, "document ID is not correct");
         require(keywords.length == ratings.length, "Error on keywords and ratings tab");
         require(!talentsDocuments[documentId].isAlive, "document already exists");
+
         SafeMath.add(NbOfValidDocument,1);
 
         talentsDocuments[documentId].keywords = keywords;
         talentsDocuments[documentId].ratings = ratings;
-
         talentsDocuments[documentId].title = title;
         talentsDocuments[documentId].description = description;
         talentsDocuments[documentId].isAlive = true;
@@ -1863,9 +1874,9 @@ contract Vault is Ownable {
         talentsDocuments[documentId].documentType = documentType;
         talentsDocuments[documentId].startDate = startDate;
         talentsDocuments[documentId].endDate = endDate;
-        talentsDocuments[documentId].duration = duration;
+        talentsDocuments[documentId].ipfsHash = _ipfsHash;
 
-        emit VaultDocAdded(documentId,title,description,startDate,endDate,ratings,keywords,duration);
+        emit VaultDocAdded(documentId,title,description,startDate,endDate,ratings,keywords, _ipfsHash);
         return true;
     }
 
@@ -1880,11 +1891,48 @@ contract Vault is Ownable {
     {
         require(documentId != 0, "document ID is not correct");
 
-        NbOfValidDocument--;
-        delete talentsDocuments[documentId]; //set isValid to false
-        assert(talentsDocuments[documentId].isAlive==false);
+        SafeMath.sub(NbOfValidDocument, 1);
+        delete talentsDocuments[documentId]; // Set isValid to false.
+        assert(talentsDocuments[documentId].isAlive == false);
         emit VaultLog(msg.sender, VaultLife.DocumentRemoved, documentId);
-        //}
+    }
+
+    /**
+     * @dev Edit a Vault document.
+     * @param _id The document ID to edit.
+     */
+    function editDocument(
+        bytes32 _id,
+        uint _type,
+        bytes32 _ipfsHash,
+        bytes32 _title,
+        string _description,
+        bytes32[] _keywords,
+        uint[] _ratings,
+        uint _startDate,
+        uint _endDate
+    )
+        allowOwnerAndPartner
+        public
+    {
+        require(_id != 0, 'Id can not be empty');
+        require(talentsDocuments[_id].isAlive, 'This document never existed or was deleted. It can not be edited.');
+        require(_title != 0, 'Title can not be empty.');
+        require(bytes(_description).length > 0, 'Description can not be empty.');
+        require(_keywords.length > 0, 'Keywords can not be empty.');
+        require(_ratings.length > 0, 'Ratings can not be empty.');
+        require(_startDate > 0, 'Start date can not be empty.');
+        require(_endDate > 0, 'End date can not be empty.');
+        require(_keywords.length == _ratings.length, 'Keywords and ratings must be in same quantity.');
+
+        talentsDocuments[_id].documentType = _type;
+        talentsDocuments[_id].ipfsHash = _ipfsHash;
+        talentsDocuments[_id].title = _title;
+        talentsDocuments[_id].description = _description;
+        talentsDocuments[_id].keywords = _keywords;
+        talentsDocuments[_id].ratings = _ratings;
+        talentsDocuments[_id].startDate = _startDate;
+        talentsDocuments[_id].endDate = _endDate;
     }
 
     /*
@@ -1926,11 +1974,11 @@ contract Vault is Ownable {
         allowance
         view
         public
-        returns (bytes32 docId, string desc, uint docType, uint startDate, uint endDate)
+        returns (bytes32 docId, string desc, uint docType, uint startDate, uint endDate, bytes32 ifpsHash)
     {
         bytes32 dId = documentIndex[index];
         return (dId, talentsDocuments[dId].description, talentsDocuments[dId].documentType,
-        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate);
+        talentsDocuments[dId].startDate, talentsDocuments[dId].endDate, talentsDocuments[dId].ipfsHash);
     }
 
     function getFullDocument(bytes32 id)
@@ -1939,11 +1987,11 @@ contract Vault is Ownable {
         public
         returns (bytes32 title, string description, bytes32[] keywords,
           uint[] ratings, bool isAlive, uint index, uint documentType, uint startDate,
-          uint endDate, uint duration)
+          uint endDate, bytes32 ipfsHash)
     {
         certifiedDocument cd = talentsDocuments[id];
         return (cd.title, cd.description, cd.keywords, cd.ratings, cd.isAlive, cd.index,
-                cd.documentType, cd.startDate, cd.endDate, cd.duration);
+                cd.documentType, cd.startDate, cd.endDate, cd.ipfsHash);
     }
 
     function getDocumentIndexes()
