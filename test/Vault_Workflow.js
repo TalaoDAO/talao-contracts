@@ -20,7 +20,7 @@ const ImportVault = artifacts.require("ImportVault");
 
 contract('VaultFactory', async (accounts) => {
     let TalaoInstance, VaultFactoryInstance, VaultInstance, FreelancerInstance, ImportVaultInstance
-    let TalaoAddress, VaultAddress;
+    let TalaoOwnerAddress, VaultAddress;
     // Freelancer, Partner and TalaoAdmin address.
     //Must be different
     //Must not be the first address in Ganache as it is already used by default
@@ -31,15 +31,15 @@ contract('VaultFactory', async (accounts) => {
     let errTypes = require("./exceptions.js").errTypes;
 
     it("Should get the address of Truffle", async () => {
-        TalaoAddress = accounts[0]; //First account, usually the first address in Ganache, used by default in truffle tests
-        assert(TalaoAddress, "should not be null");
+        TalaoOwnerAddress = accounts[0]; //First account, usually the first address in Ganache, used by default in truffle tests
+        assert(TalaoOwnerAddress, "should not be null");
     });
     it("Should create the TalaoToken", async () => {
         TalaoInstance = await Talao.deployed();
         assert(TalaoInstance, "should not be null");
     });
     it("Should mint", async () => {
-        let IsMinted = await TalaoInstance.mint(TalaoAddress, 150000000000000000000);
+        let IsMinted = await TalaoInstance.mint(TalaoOwnerAddress, 150000000000000000000);
         assert(IsMinted, "should me minted");
     });
     it("Should stop minting", async () => {
@@ -50,11 +50,11 @@ contract('VaultFactory', async (accounts) => {
         await TalaoInstance.setVaultDeposit(10);
     });
     it("Should get balance of Talao", async () => {
-        let balance = await TalaoInstance.balanceOf(TalaoAddress);
+        let balance = await TalaoInstance.balanceOf(TalaoOwnerAddress);
         assert.equal(balance.c, 1500000, "should be equals");
     });
     it("Should transfer", async () => {
-        let IsTransferDone = await TalaoInstance.transfer(FreelancerAddress, 20, { from: TalaoAddress });
+        let IsTransferDone = await TalaoInstance.transfer(FreelancerAddress, 20, { from: TalaoOwnerAddress });
         assert(IsTransferDone, "should have transfered");
     });
     it("Should get balance of user", async () => {
@@ -69,16 +69,14 @@ contract('VaultFactory', async (accounts) => {
         await TalaoInstance.createVaultAccess(5, { from: FreelancerAddress });
     });
     it("Should create the freelancer", async () => {
-        // TODO: this makes FreelancerAddress the owner of the contract. It should be accounts[0]...
-        FreelancerInstance = await Freelancer.new(TalaoInstance.address, { from: FreelancerAddress });
+        FreelancerInstance = await Freelancer.new(TalaoInstance.address, { from: TalaoOwnerAddress });
         assert(FreelancerInstance, "should not be null");
     });
     it("Should create the VaultFactory", async () => {
-        VaultFactoryInstance = await VaultFactory.new(TalaoInstance.address, FreelancerInstance.address);
+        VaultFactoryInstance = await VaultFactory.new(TalaoInstance.address, FreelancerInstance.address, { from: TalaoOwnerAddress });
         assert(VaultFactoryInstance, "should not be null");
     });
     it("Should create a new Vault", async () => {
-        // TODO: same as L72
         let VaultReceipt = await VaultFactoryInstance.CreateVaultContract(0,0,0,0,0,0,0,0, { from: FreelancerAddress });
         VaultAddress = VaultReceipt.logs[0].address;
     });
@@ -91,8 +89,7 @@ contract('VaultFactory', async (accounts) => {
         assert.equal(VaultAddressNull, '0x0000000000000000000000000000000000000000', "should be equal");
     });
     it("Should set the TalaoAdmin address", async () => {
-        // TODO: @see L72
-        await FreelancerInstance.setTalaoAdmin(TalaoAdminAddress, { from: FreelancerAddress });
+        await FreelancerInstance.setTalaoAdmin(TalaoAdminAddress, { from: TalaoOwnerAddress });
         let isTalaoAdmin = await FreelancerInstance.isTalaoAdmin(TalaoAdminAddress);
         assert.equal(isTalaoAdmin, true, "should be true");
     });
