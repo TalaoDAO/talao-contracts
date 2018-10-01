@@ -93,6 +93,10 @@ contract('VaultFactory', async (accounts) => {
         let isTalaoAdmin = await FreelancerInstance.isTalaoAdmin(TalaoAdminAddress);
         assert.equal(isTalaoAdmin, true, "should be true");
     });
+    it("Should get the TalaoAdmin address ,when called by owner.", async () => {
+        let GetTalaoAdmin = await FreelancerInstance.getTalaoAdmin({ from: TalaoOwnerAddress });
+        assert.equal(GetTalaoAdmin, TalaoAdminAddress, "should be equal");
+    });
     it("Should allow TalaoAdmin to get the Vault address", async () => {
         let VaultAddress2 = await VaultFactoryInstance.GetVault(FreelancerAddress, { from: TalaoAdminAddress });
         assert.equal(VaultAddress2, VaultAddress, "should be equal");

@@ -169,6 +169,7 @@ contract Freelancer is Ownable {
     function getTalaoAdmin()
         onlyOwner
         public
+        constant
         returns (address)
     {
         return TalaoAdmin;
