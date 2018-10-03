@@ -95,14 +95,8 @@ contract Vault is Ownable {
     modifier allowVaultAccessAndPartners () {
         // Sender must be set.
         require (msg.sender != address(0), 'The Sender must be set.');
-        // Is the Sender a partner?
-        bool isPartner = myFreelancer.isPartner(owner, msg.sender);
-        // Does the Sender have Vault access in the token?
-        // Everyone if Vault price is 0.
-        // Otherwise Talent + Clients who have bought Vault access.
-        bool hasVaultAccess = myToken.hasVaultAccess (msg.sender, owner);
         // Accept only users who have access to the Vault in the token + Partners.
-        require(isPartner || hasVaultAccess, 'Sender has no Vault access.');
+        require(myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess (msg.sender, owner), 'Sender has no Vault access.');
         _;
     }
 
