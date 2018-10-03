@@ -112,15 +112,8 @@ contract Vault is Ownable {
     modifier allowOwnerAndPartner () {
         // Sender must be set.
         require (msg.sender != address(0), 'The Sender must be set.');
-        // Is the Sender the Talent?
-        bool isOwner;
-        if (owner == msg.sender) {
-          isOwner = true;
-        }
-        // Is the Sender a Partner?
-        bool isPartner = myFreelancer.isPartner(owner, msg.sender);
         // Give access only to Talent and his Partners.
-        require(isOwner || isPartner, 'Sender must be the Talent or one of his Partners.');
+        require(owner == msg.sender || myFreelancer.isPartner(owner, msg.sender), 'Sender must be the Talent or one of his Partners.');
         _;
     }
 
@@ -157,17 +150,18 @@ contract Vault is Ownable {
         NbOfValidDocument = NbOfValidDocument.add(1);
 
         // Write document data.
-        talentsDocuments[documentsCounter].title = title;
-        talentsDocuments[documentsCounter].description = description;
-        talentsDocuments[documentsCounter].startDate = startDate;
-        talentsDocuments[documentsCounter].endDate = endDate;
-        talentsDocuments[documentsCounter].duration = duration;
-        talentsDocuments[documentsCounter].keywords = keywords;
-        talentsDocuments[documentsCounter].ratings = ratings;
-        talentsDocuments[documentsCounter].documentType = documentType;
-        talentsDocuments[documentsCounter].ipfs = _ipfs;
-        talentsDocuments[documentsCounter].isAlive = true;
-        talentsDocuments[documentsCounter].index = documentIndex.push(documentsCounter).sub(1);
+        certifiedDocument cd = talentsDocuments[documentsCounter];
+        cd.title = title;
+        cd.description = description;
+        cd.startDate = startDate;
+        cd.endDate = endDate;
+        cd.duration = duration;
+        cd.keywords = keywords;
+        cd.ratings = ratings;
+        cd.documentType = documentType;
+        cd.ipfs = _ipfs;
+        cd.isAlive = true;
+        cd.index = documentIndex.push(documentsCounter).sub(1);
 
         // Emit event.
         emit VaultDocAdded(
