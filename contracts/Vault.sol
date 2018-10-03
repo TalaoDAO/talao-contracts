@@ -73,6 +73,7 @@ contract Vault is Ownable {
         uint startDate,
         uint endDate,
         uint[] ratings,
+        bytes32[] keywords,
         uint duration,
         uint docType,
         bytes32 ipfs
@@ -176,6 +177,7 @@ contract Vault is Ownable {
             startDate,
             endDate,
             ratings,
+            keywords,
             duration,
             documentType,
             _ipfs
