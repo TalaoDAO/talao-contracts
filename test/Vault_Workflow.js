@@ -14,10 +14,6 @@ const Vault = artifacts.require("Vault");
 const Freelancer = artifacts.require("Freelancer");
 const ImportVault = artifacts.require("ImportVault");
 
-//Tests sur :
-// - Ajout du freelancer
-// - Liste de partenaires
-
 contract('VaultFactory', async (accounts) => {
     let TalaoInstance, VaultFactoryInstance, VaultInstance, FreelancerInstance, ImportVaultInstance
     let TalaoOwnerAddress, VaultAddress;
@@ -26,6 +22,7 @@ contract('VaultFactory', async (accounts) => {
     //Must not be the first address in Ganache as it is already used by default
     let FreelancerAddress = accounts[1];
     let PartnerAddress = accounts[2];
+    // TalaoAdmin is not the Owner, it's another user (typically, the Issuer's backend).
     let TalaoAdminAddress = accounts[3];
     let tryCatch = require("./exceptions.js").tryCatch;
     let errTypes = require("./exceptions.js").errTypes;
@@ -115,18 +112,13 @@ contract('VaultFactory', async (accounts) => {
     });
     it("Should add document to Vault", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        let VaultDoc = await VaultInstance.addDocument("0x01", "0x74657374", "description", ["0x00", "0xaa", "0xff"], [5, 4, 3], 2, 56, 57, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
-        //await VaultInstance.addDocument("0x00aaee", "0x00aaff", "0x00aaff", ["0x00", "0xaa", "0xff"], [4, 5, 4], 2, 56, 57, { from: FreelancerAddress });
-        //await VaultInstance.addDocument("0x00aadd", "0x00aaff", "0x00aaff", ["0x00", "0xbb"], [1, 0], 2, 56, 57, { from: FreelancerAddress });
-        assert(VaultDoc, "should not be null");
-    });
-    it("Should not add document to Vault because keywords and ratings do not match", async () => {
-        if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        await tryCatch(VaultInstance.addDocument("0x00aaaa", "0x00aaff", "0x00aaff", ["0x00", "0xaa"], [4], 2, 56, 57, 0, { from: FreelancerAddress }), errTypes.revert);
+        const doc1receipt = await VaultInstance.addDocument("0x74657374", "description", ["0x00", "0xaa", "0xff"], [5, 4, 3], 4, 1538575228, 1538575229, 8, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
+        const doc1id = doc1receipt.logs[0].args.documentId.toNumber();
+        assert.equal(doc1id, 1, "should be equal.");
     });
     it("Should get the document", async () => {
         expect(() => {
-            VaultInstance.getCertifiedDocumentById("0x01", { from: FreelancerAddress });
+            VaultInstance.getCertifiedDocumentById(1, { from: FreelancerAddress });
         }).to.not.throw();
     });
     it("Should get all the indexes", async () => {
@@ -136,17 +128,23 @@ contract('VaultFactory', async (accounts) => {
         let docs = await VaultInstance.getDocumentIndexes.call()
         let doc = await VaultInstance.getFullDocument(docs[0], {from: PartnerAddress})
         assert.isTrue(doc[4])
-        assert.equal(doc[8].toNumber(), 57)
+        assert.equal(doc[8].toNumber(), 1538575229)
     });
-    it("Freelance should be able to edit document", async () => {
-        await VaultInstance.editDocument("0x01", 2, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", "0x74657374", "description2", ["0x00", "0xaa", "0xff"], [5, 4, 3], 1539475200000, 1540425600000, { from: FreelancerAddress });
-        let DocEditedByFreelance = await VaultInstance.getCertifiedDocumentById("0x01", { from: FreelancerAddress });
-        assert.equal(DocEditedByFreelance[0], "description2");
+    it("Freelance should be able to add a document without IPFS file, and then add an IPFS file to the document", async () => {
+        const doc2receipt = await VaultInstance.addDocument("0x74657374", "description2", ["0x00", "0xaa", "0xff"], [5, 4, 3], 4, 1538575228, 1538575229, 8, "0x0", { from: FreelancerAddress });
+        const doc2id = doc2receipt.logs[0].args.documentId.toNumber();
+        assert.equal(doc2id, 2, "should be equal.");
+        await VaultInstance.addIpfs(doc2id, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
+        const doc2ipfs = await VaultInstance.getIpfs(doc2id, { from: FreelancerAddress });
+        assert.equal(doc2ipfs, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838");
     });
-    it("A freelance's partner should be able to edit document", async () => {
-        await VaultInstance.editDocument("0x01", 2, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", "0x74657374", "description3", ["0x00", "0xaa", "0xff"], [5, 4, 3], 1539475200000, 1540425600000, { from: FreelancerAddress });
-        let DocEditedByPartner = await VaultInstance.getCertifiedDocumentById("0x01", { from: PartnerAddress });
-        assert.equal(DocEditedByPartner[0], "description3");
+    it("Freelance should be able to add a document without IPFS file, and Partner should be able to add an IPFS file", async () => {
+        const doc3receipt = await VaultInstance.addDocument("0x74657374", "description3", ["0x00", "0xaa", "0xff"], [5, 4, 3], 4, 1538575228, 1538575229, 8, "0x0", { from: FreelancerAddress });
+        const doc3id = doc3receipt.logs[0].args.documentId.toNumber();
+        assert.equal(doc3id, 3, "should be equal.");
+        await VaultInstance.addIpfs(doc3id, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: PartnerAddress });
+        const doc3ipfs = await VaultInstance.getIpfs(doc3id, { from: PartnerAddress });
+        assert.equal(doc3ipfs, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838");
     });
     it("Should create the ImportVault contract", async () => {
         ImportVaultInstance = await ImportVault.new(VaultInstance.address)

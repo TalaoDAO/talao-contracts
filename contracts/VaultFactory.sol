@@ -1,8 +1,8 @@
 pragma solidity ^0.4.23;
 
-import "./Vault.sol";
-import "./Talao.sol";
-import "./Freelancer.sol";
+import './Vault.sol';
+import './Talao.sol';
+import './Freelancer.sol';
 
 /**
  * @title VaultFactory
@@ -10,6 +10,9 @@ import "./Freelancer.sol";
  * @author Slowsense, Talao, Blockchain Partner.
  */
 contract VaultFactory is Ownable {
+
+    // SafeMath to avoid overflows.
+    using SafeMath for uint;
 
     // Number of Vaults.
     uint nbVault;
@@ -81,11 +84,11 @@ contract VaultFactory is Ownable {
         }
 
         if (msg.sender != address(0)) {
-            bool isAccess = myToken.hasVaultAccess(freelance, msg.sender);
-            bool isPartner = myFreelancer.isPartner(freelance,msg.sender);
+            bool hasAccess = myToken.hasVaultAccess(freelance, msg.sender);
+            bool isPartner = myFreelancer.isPartner(freelance, msg.sender);
             bool isAdmin = myFreelancer.isTalaoAdmin(msg.sender);
 
-            if (isAccess || isPartner || isAdmin) {
+            if (hasAccess || isPartner || isAdmin) {
                 return FreelanceVault[freelance];
             }
         }
@@ -101,8 +104,8 @@ contract VaultFactory is Ownable {
         public
         returns(address)
     {
-        bool isAccess = myToken.hasVaultAccess(msg.sender,msg.sender);
-        require(isAccess == true,"sender hasn't access to vault");
+        bool hasAccess = myToken.hasVaultAccess(msg.sender,msg.sender);
+        require(hasAccess, 'Sender has no access to Vault.');
 
         myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description,_pic);
 
@@ -110,7 +113,7 @@ contract VaultFactory is Ownable {
         Vault newVault = new Vault(myToken, myFreelancer);
 
         FreelanceVault[msg.sender] = address(newVault);
-        nbVault = SafeMath.add(nbVault,1);
+        nbVault = nbVault.add(1);
         newVault.transferOwnership(msg.sender);
 
         return address(newVault);
