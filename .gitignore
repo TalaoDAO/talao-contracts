@@ -25,3 +25,5 @@ yarn-error.log*
 /src/assets/fonts/akkmono.*
 /src/assets/fonts/akkmonoe.*
 
+# Secrets
+/secret.js

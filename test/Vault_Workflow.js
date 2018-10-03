@@ -146,6 +146,11 @@ contract('VaultFactory', async (accounts) => {
         const doc3ipfs = await VaultInstance.getIpfs(doc3id, { from: PartnerAddress });
         assert.equal(doc3ipfs, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838");
     });
+    it("Freelance should be able to add a huge document, all params maxed out", async () => {
+        const doc4receipt = await VaultInstance.addDocument("0x4d7920617765736f6d6520646576", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel lorem libero. Aliquam ut mauris quam. Nullam consequat congue mi quis pretium. Curabitur at nunc facilisis quam rhoncus volutpat non ut dui. Donec lacinia ultricies est eget efficitur. Phasellus interdum est quis condimentum fringilla. Donec at tincidunt lorem, mollis suscipit metus. Nunc nunc nibh, viverra ac enim in, tempus hendrerit purus. Quisque non velit ullamcorper, dictum mauris vitae, condimentum erat. Proin imperdiet feugiat est vel consequat.", ["0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576"], [5, 4, 3, 5, 4], 4, 1538575228, 1538575229, 8, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
+        const doc4id = doc4receipt.logs[0].args.documentId.toNumber();
+        assert.equal(doc4id, 4, "should be equal.");
+    });
     it("Should create the ImportVault contract", async () => {
         ImportVaultInstance = await ImportVault.new(VaultInstance.address)
         assert(ImportVaultInstance, "should not be null");

@@ -1,3 +1,10 @@
+// Comment those lines if you do not want to deploy with Truffle + Infura on Ropsten.
+// To use it you must npm install truffle-hdwallet-provider
+const secret = require('./secret');
+const mnemonic = secret.mnemonic();
+const infuraApiKey = secret.infuraApiKey();
+const HDWalletProvider = require('truffle-hdwallet-provider');
+
 require('babel-register');
 require('babel-polyfill');
 
@@ -20,5 +27,11 @@ module.exports = {
       port: 8545,
       network_id: "*" // matching any id
     },
+    ropsten: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/" + infuraApiKey, 5)
+      },
+      network_id: 3
+    }
   }
 };
