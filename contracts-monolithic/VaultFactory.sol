@@ -2224,7 +2224,7 @@ contract VaultFactory is Ownable {
     /**
      * @dev Getter to see if a freelance has a Vault.
      */
-    function HasVault (address _freelance)
+    function hasVault (address _freelance)
         public
         view
         returns (bool)

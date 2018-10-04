@@ -29,14 +29,14 @@ class Freelancer {
 
     getFreelanceData() {
         return new Promise((resolve, reject) => {
-            this.freelancerContract.methods.FreelancerInformation(this.ethAddress).call().then(element => {
-                this.firstName = window.web3.utils.hexToAscii(element.firstName).replace(/\u0000/g, '');
-                this.lastName = window.web3.utils.hexToAscii(element.lastName).replace(/\u0000/g, '');
+            this.freelancerContract.methods.Freelancers(this.ethAddress).call().then(element => {
+                this.firstName = window.web3.utils.hexToAscii(element.firstname).replace(/\u0000/g, '');
+                this.lastName = window.web3.utils.hexToAscii(element.lastname).replace(/\u0000/g, '');
                 this.title = window.web3.utils.hexToAscii(element.title).replace(/\u0000/g, '');
                 this.description = element.description;
                 this.pictureUrl = (element.picture === '0x0000000000000000000000000000000000000000000000000000000000000000') ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(element.picture);
                 this.email = window.web3.utils.hexToAscii(element.email).replace(/\u0000/g, '');
-                this.phone = window.web3.utils.hexToAscii(element.mobilePhone).replace(/\u0000/g, '');
+                this.phone = window.web3.utils.hexToAscii(element.mobile).replace(/\u0000/g, '');
                 this.ethereumAddress = this.ethAddress;
                 this.confidenceIndex = 0;
                 resolve(true);
@@ -48,13 +48,13 @@ class Freelancer {
 
     getDocumentByEvent(event, cb) {
             var docId = event['documentId'].toString();
-            this.getDocumentIsAlive(docId).then((isAlive) => {
+            this.isDocPublished(docId).then((isAlive) => {
                 if (isAlive) {
                     let title = window.web3.utils.hexToAscii(event['title']).replace(/\u0000/g, '');
                     if (this.experiences.some(e => e.title === title)) return;
                     var description = window.web3.utils.hexToAscii(event['description']).replace(/\u0000/g, '');
-                    let startDate = parseInt(event['startDate'], 10);
-                    let endDate = parseInt(event['endDate'], 10);
+                    let startDate = parseInt(event['start'], 10);
+                    let endDate = parseInt(event['end'], 10);
                     let ratings = event['ratings'];
                     //let isNumber = event['ratings'][0] === parseInt(event['ratings'][0], 10).toString();
                     let keywords = event['keywords'];
@@ -69,6 +69,7 @@ class Freelancer {
                             )
                         );
                     }
+                    // TODO: getDocIpfs(uint _id)
                     let url = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(docId);
                     var newExp = new Experience(
                         docId,
@@ -96,12 +97,12 @@ class Freelancer {
     }
 
     getDocumentIsAlive(docId) {
-        return this.vaultContract.methods.getDocumentIsAlive(docId).call({ from: this.ethAddress });
+        return this.vaultContract.methods.isDocPublished(docId).call({ from: this.ethAddress });
     }
 
     getAllDocuments() {
         return new Promise((resolve) => {
-            this.vaultContract.getPastEvents('VaultDocAdded', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
+            this.vaultContract.getPastEvents('NewDocument', {}, { fromBlock: 0, toBlock: 'latest' }).then(events => {
                 let requests = events.map((event) => {
                     return new Promise((resolve) => {
                         this.getDocumentByEvent(event['returnValues'], resolve);
@@ -125,12 +126,12 @@ class Freelancer {
         var documentType = parseInt(experience.type, 10);
         var startDate = experience.from.getTime();
         var endDate = experience.to.getTime();
-        return this.vaultContract.methods.addDocument(docId, title, description, keywords, ratings, documentType, startDate, endDate, docId)
+        return this.vaultContract.methods.createDoc(title, description, startDate, endDate, jobDuration, keywords, ratings, documentType, docId)
                                         .send({from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_ADD_DOC});
     }
 
     removeDoc(experience) {
-        return this.vaultContract.methods.removeDocument(experience.docId).send({ from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_REMOVE_DOC});
+        return this.vaultContract.methods.deleteDoc(experience.docId).send({ from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_REMOVE_DOC});
     }
 
     getCompetencies() {

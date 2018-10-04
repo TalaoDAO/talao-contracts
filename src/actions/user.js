@@ -88,14 +88,14 @@ export function fetchUser(address) {
                                     //get all documents & competencies
                                     if (resolve) {
                                         user.freelancerDatas.getAllDocuments().then(resolve => {
-                                            if (resolve) {      
+                                            if (resolve) {
                                                 //User is a freelancer
                                                 user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
                                                     if (resolve) {
                                                         dispatch(fetchUserSuccess(user));
                                                         dispatch(resetGuard());
                                                     }
-                                                });                                                       
+                                                });
                                             }
                                         })
                                     }
@@ -142,10 +142,10 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                         currentUser.talaoContract.methods.data(searchedFreelancerAddress).call().then(info => {
                             currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
                             currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
-                                if (resolve) {      
+                                if (resolve) {
                                     currentUser.searchedFreelancers.getGlobalConfidenceIndex().then(resolve => {
                                         dispatch(fetchFreelancerSuccess(currentUser));
-                                    });                                                              
+                                    });
                                 }
                             })
                         });
