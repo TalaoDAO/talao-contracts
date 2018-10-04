@@ -92,7 +92,7 @@ contract Vault is Ownable {
     /**
      * Modifier for functions to allow only users who have access to the Vault in the token + Partners.
      */
-    modifier allowVaultAccessAndPartners () {
+    modifier onlyVaultReaders () {
         // Sender must be set.
         require (msg.sender != address(0), 'The Sender must be set.');
         // Accept only users who have access to the Vault in the token + Partners.
@@ -125,7 +125,7 @@ contract Vault is Ownable {
         uint duration,
         bytes32 _ipfs
     )
-        allowOwnerAndPartner
+        onlyOwner
         public
         returns (uint)
     {
@@ -178,7 +178,7 @@ contract Vault is Ownable {
      * @dev Remove a document.
      */
     function removeDocument (uint documentId)
-        allowOwnerAndPartner
+        onlyOwner
         public
     {
         // Validate parameter.
@@ -208,7 +208,7 @@ contract Vault is Ownable {
         uint _id,
         bytes32 _ipfs
     )
-        allowOwnerAndPartner
+        onlyOwner
         public
     {
         // Validate parameters.
@@ -227,7 +227,7 @@ contract Vault is Ownable {
      * @param documentId uint Document ID.
      */
     function getDocumentIsAlive(uint documentId)
-        allowVaultAccessAndPartners
+        onlyVaultReaders
         view
         public
         returns(bool)
@@ -241,7 +241,7 @@ contract Vault is Ownable {
      * @param dId uint Document ID.
      */
     function getCertifiedDocumentById (uint dId)
-        allowVaultAccessAndPartners
+        onlyVaultReaders
         view
         public
         returns (string desc, uint docType, uint startDate, uint endDate)
@@ -262,7 +262,7 @@ contract Vault is Ownable {
      * @param id uint Document ID.
      */
     function getFullDocument(uint id)
-        allowVaultAccessAndPartners
+        onlyVaultReaders
         view
         public
         returns (
@@ -298,7 +298,7 @@ contract Vault is Ownable {
      * @param _id uint Document ID.
      */
     function getIpfs(uint _id)
-        allowVaultAccessAndPartners
+        onlyVaultReaders
         view
         public
         returns(bytes32 ipfs)
@@ -313,7 +313,7 @@ contract Vault is Ownable {
      * @param index uint Document ID.
      */
     function getCertifiedDocumentsByIndex (uint index)
-        allowVaultAccessAndPartners
+        onlyVaultReaders
         view
         public
         returns (uint docId, string desc, uint docType, uint startDate, uint endDate, bytes32 ifpsHash)
