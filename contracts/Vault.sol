@@ -1,5 +1,3 @@
-// TODO: really allow Partner to add & remove documents ?
-
 pragma solidity ^0.4.23;
 
 import './Talao.sol';
@@ -24,69 +22,59 @@ contract Vault is Ownable {
     // Documents counter.
     uint documentsCounter;
     // Number of valid (= "published") documents in this Vault.
-    uint public NbOfValidDocument;
+    uint public publishedDocumentsNb;
     // Used to parse all documents using index as relationship between this array and TalentsDocuments mapping.
     uint[] documentIndex;
     // Document struct.
-    struct certifiedDocument {
+    struct Document {
         // Title.
         bytes32 title;
         // Description.
         string description;
         // Timestamp of start.
-        uint startDate;
+        uint start;
         // Timestamp of end.
-        uint endDate;
+        uint end;
         // Duration in days.
         uint duration;
         // Array of keywords.
         bytes32[] keywords;
         // Array of ratings.
         uint[] ratings;
-        // Type: ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4.
-        uint documentType;
+        // Type: DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4, 5 = ID
+        uint doctype;
         // IPFS hash of the attached file, if any.
         bytes32 ipfs;
         // True if "published", false if "unpublished".
-        bool isAlive;
-        // Index used in relationship between tabindex and mapping unordered object. TODO: = ?
+        bool published;
+        // Position in index.
         uint index;
     }
-    // Mapping: documentId => certifiedDocument.
-    mapping(uint => certifiedDocument) public talentsDocuments;
-
-    // Vault life enum.
-    enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved, keywordAdded }
-
-    // Event: important Vault events. TODO: what is usefull?
-    event VaultLog (
-        address indexed user,
-        VaultLife happened,
-        uint documentId
-    );
+    // Mapping: documentId => Document.
+    mapping(uint => Document) public Documents;
 
     // Event: new document added.
-    event VaultDocAdded (
-        uint documentId,
+    event NewDocument (
+        uint id,
         bytes32 title,
         string description,
-        uint startDate,
-        uint endDate,
-        uint[] ratings,
-        bytes32[] keywords,
+        uint start,
+        uint end,
         uint duration,
-        uint docType,
+        bytes32[] keywords,
+        uint[] ratings,
+        uint doctype,
         bytes32 ipfs
     );
 
     /**
      * Constructor.
      */
-    constructor(address token, address freelancer)
+    constructor(address _token, address _freelancer)
         public
     {
-        myToken = TalaoToken(token);
-        myFreelancer = Freelancer(freelancer);
+        myToken = TalaoToken(_token);
+        myFreelancer = Freelancer(_freelancer);
     }
 
     /**
@@ -94,80 +82,64 @@ contract Vault is Ownable {
      */
     modifier onlyVaultReaders () {
         // Sender must be set.
-        require (msg.sender != address(0), 'The Sender must be set.');
+        require (msg.sender != address(0), 'Sender must be set.');
         // Accept only users who have access to the Vault in the token + Partners.
         require(myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess (msg.sender, owner), 'Sender has no Vault access.');
         _;
     }
 
     /**
-     * Modifier for functions to allow only Talent and his Partners.
+     * @dev Create a document.
      */
-    modifier allowOwnerAndPartner () {
-        // Sender must be set.
-        require (msg.sender != address(0), 'The Sender must be set.');
-        // Give access only to Talent and his Partners.
-        require(owner == msg.sender || myFreelancer.isPartner(owner, msg.sender), 'Sender must be the Talent or one of his Partners.');
-        _;
-    }
-
-    /**
-     * @dev Add a document.
-     */
-    function addDocument(
-        bytes32 title,
-        string description,
-        bytes32[] keywords,
-        uint[] ratings,
-        uint documentType,
-        uint startDate,
-        uint endDate,
-        uint duration,
+    function createDoc(
+        bytes32 _title,
+        string _description,
+        uint _start,
+        uint _end,
+        uint _duration,
+        bytes32[] _keywords,
+        uint[] _ratings,
+        uint _doctype,
         bytes32 _ipfs
     )
-        onlyOwner
         public
+        onlyOwner
         returns (uint)
     {
         // Validate parameters.
-        require(title != 0, 'Title can not be empty.');
-        require(bytes(description).length > 0, 'Description can not be empty.');
-        require(keywords.length > 0, 'Keywords can not be empty.');
-        require(ratings.length > 0, 'Ratings can not be empty.');
-        require(startDate > 0, 'Start date must be > 0.');
-        require(endDate > 0, 'End date must be > 0.');
-        require(duration > 0, 'Duration must be > 0.');
+        require(_title != 0, 'Title can not be empty.');
+        require(_doctype > 0, 'Type must be > 0.');
 
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
         // Increment number of valid documents.
-        NbOfValidDocument = NbOfValidDocument.add(1);
+        publishedDocumentsNb = publishedDocumentsNb.add(1);
 
         // Write document data.
-        certifiedDocument cd = talentsDocuments[documentsCounter];
-        cd.title = title;
-        cd.description = description;
-        cd.startDate = startDate;
-        cd.endDate = endDate;
-        cd.duration = duration;
-        cd.keywords = keywords;
-        cd.ratings = ratings;
-        cd.documentType = documentType;
-        cd.ipfs = _ipfs;
-        cd.isAlive = true;
-        cd.index = documentIndex.push(documentsCounter).sub(1);
+        Document storage doc = Documents[documentsCounter];
+        doc.title = _title;
+        doc.description = _description;
+        doc.start = _start;
+        doc.end = _end;
+        doc.duration = _duration;
+        doc.keywords = _keywords;
+        doc.ratings = _ratings;
+        doc.doctype = _doctype;
+        doc.ipfs = _ipfs;
+        doc.published = true;
+        doc.index = documentIndex.push(documentsCounter).sub(1);
 
         // Emit event.
-        emit VaultDocAdded(
+        emit NewDocument(
             documentsCounter,
-            title,
-            description,
-            startDate,
-            endDate,
-            ratings,
-            keywords,
-            duration,
-            documentType,
+            _title,
+            _description,
+            _start,
+            _end,
+            _duration,
+            _keywords,
+            _ratings,
+            _doctype,
             _ipfs
         );
 
@@ -177,119 +149,96 @@ contract Vault is Ownable {
     /**
      * @dev Remove a document.
      */
-    function removeDocument (uint documentId)
-        onlyOwner
+    function deleteDoc (uint _id)
         public
+        onlyOwner
     {
         // Validate parameter.
-        require (documentId > 0, 'documentId must be > 0.');
+        require (_id > 0, 'Document ID must be > 0.');
         // Only published documents can be removed.
-        require (talentsDocuments[documentId].isAlive, 'Only published documents can be removed.');
+        require (Documents[_id].published, 'Only published documents can be removed.');
 
         // Remove document data.
-        delete talentsDocuments[documentId];
-        // Check that among all document data, isAlive is now false (the default value).
-        assert(!talentsDocuments[documentId].isAlive);
+        delete Documents[_id];
+        // Check that among all document data, published is now false (the default value).
+        assert(!Documents[_id].published);
         // Remove document from index.
-        delete documentIndex[documentId];
+        delete documentIndex[_id];
         // Document removal successfull, decrement number of published documents in Vault.
-        NbOfValidDocument = NbOfValidDocument.sub(1);
-
-        // Emit event. //TODO: usefull?
-        emit VaultLog (msg.sender, VaultLife.DocumentRemoved, documentId);
+        publishedDocumentsNb = publishedDocumentsNb.sub(1);
     }
 
     /**
-     * @dev Add an IPFS hash of an IPFS uploaded file, to attach it.
+     * @dev Set an IPFS hash of an IPFS uploaded file, to attach it.
      * @param _id uint Document ID.
      * @param _ipfs bytes32 IPFS hash of the file.
      */
-    function addIpfs(
+    function addDocIpfs(
         uint _id,
         bytes32 _ipfs
     )
-        onlyOwner
         public
+        onlyOwner
     {
         // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
          //TODO: better IPFS hash validation.
         require(_ipfs != 0, 'IPFS hash can not be empty.');
         // IPFS files can be attached only to published documents.
-        require (talentsDocuments[_id].isAlive, 'IPFS files can be attached only to published documents.');
+        require (Documents[_id].published, 'IPFS files can be attached only to published documents.');
 
         // Write data.
-        talentsDocuments[_id].ipfs = _ipfs;
+        Documents[_id].ipfs = _ipfs;
     }
 
     /**
      * @dev See if document is published.
-     * @param documentId uint Document ID.
+     * @param _id uint Document ID.
      */
-    function getDocumentIsAlive(uint documentId)
-        onlyVaultReaders
+    function isDocPublished(uint _id)
         view
         public
+        onlyVaultReaders
         returns(bool)
     {
-        require(documentId > 0, 'Document ID must be > 0');
-        return (talentsDocuments[documentId].isAlive);
+        require(_id > 0, 'Document ID must be > 0');
+        return (Documents[_id].published);
     }
 
     /**
      * @dev Document getter.
-     * @param dId uint Document ID.
+     * @param _id uint Document ID.
      */
-    function getCertifiedDocumentById (uint dId)
-        onlyVaultReaders
+    function getDoc(uint _id)
         view
         public
-        returns (string desc, uint docType, uint startDate, uint endDate)
-    {
-        require(dId > 0, 'Document ID must be > 0.');
-        require(talentsDocuments[dId].isAlive, 'Document does not exist.');
-
-        return (
-            talentsDocuments[dId].description,
-            talentsDocuments[dId].documentType,
-            talentsDocuments[dId].startDate,
-            talentsDocuments[dId].endDate
-        );
-    }
-
-    /**
-     * @dev Get full document.
-     * @param id uint Document ID.
-     */
-    function getFullDocument(uint id)
         onlyVaultReaders
-        view
-        public
         returns (
             bytes32 title,
             string description,
+            uint start,
+            uint end,
+            uint duration,
             bytes32[] keywords,
             uint[] ratings,
-            bool isAlive,
-            uint index,
-            uint documentType,
-            uint startDate,
-            uint endDate,
+            uint doctype,
             bytes32 ipfs
         )
     {
-        certifiedDocument cd = talentsDocuments[id];
+        require(_id > 0, 'Document ID must be > 0.');
+        require(Documents[_id].published, 'Document does not exist.');
+
+        Document storage doc = Documents[_id];
         return (
-            cd.title,
-            cd.description,
-            cd.keywords,
-            cd.ratings,
-            cd.isAlive,
-            cd.index,
-            cd.documentType,
-            cd.startDate,
-            cd.endDate,
-            cd.ipfs
+            doc.title,
+            doc.description,
+            doc.start,
+            doc.end,
+            doc.duration,
+            doc.keywords,
+            doc.ratings,
+            doc.doctype,
+            doc.ipfs
         );
     }
 
@@ -297,44 +246,59 @@ contract Vault is Ownable {
      * @dev Get hash of IPFS attached file, if any.
      * @param _id uint Document ID.
      */
-    function getIpfs(uint _id)
-        onlyVaultReaders
+    function getDocIpfs(uint _id)
         view
         public
+        onlyVaultReaders
         returns(bytes32 ipfs)
     {
         require(_id > 0, 'Document ID must be > 0');
-        require(talentsDocuments[_id].isAlive, 'Document does not exist.');
-        return (talentsDocuments[_id].ipfs);
+        require(Documents[_id].published, 'Document does not exist.');
+        return (Documents[_id].ipfs);
     }
 
     /**
-     * @dev Get all documents in index.
-     * @param index uint Document ID.
+     * @dev Get document by index.
+     * @param _index uint Document index.
      */
-    function getCertifiedDocumentsByIndex (uint index)
-        onlyVaultReaders
+    function getDocByIndex (uint _index)
         view
         public
-        returns (uint docId, string desc, uint docType, uint startDate, uint endDate, bytes32 ifpsHash)
+        onlyVaultReaders
+        returns (
+            bytes32 title,
+            string description,
+            uint start,
+            uint end,
+            uint duration,
+            bytes32[] keywords,
+            uint[] ratings,
+            uint doctype,
+            bytes32 ipfs
+        )
     {
-        uint dId = documentIndex[index];
+        uint id = documentIndex[_index];
+        Document storage doc = Documents[id];
         return (
-          dId,
-          talentsDocuments[dId].description,
-          talentsDocuments[dId].documentType,
-          talentsDocuments[dId].startDate,
-          talentsDocuments[dId].endDate,
-          talentsDocuments[dId].ipfs
+            doc.title,
+            doc.description,
+            doc.start,
+            doc.end,
+            doc.duration,
+            doc.keywords,
+            doc.ratings,
+            doc.doctype,
+            doc.ipfs
         );
     }
 
     /**
      * @dev Get documents index.
      */
-    function getDocumentIndexes()
+    function getDocumentsIndex()
         view
         public
+        onlyVaultReaders
         returns (uint[])
     {
         return documentIndex;

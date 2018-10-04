@@ -1,45 +1,74 @@
 pragma solidity ^0.4.23;
 
-import "./Talao.sol";
-import "./Vault.sol";
-import "./Freelancer.sol";
+import './Talao.sol';
+import './Vault.sol';
+import './Freelancer.sol';
 
+/**
+ * @title ImportVault.
+ * @dev Import a Talent's Vault.
+ * @author SlowSense, Talao, Blockchain Partners.
+ */
 contract ImportVault is Ownable {
 
     Vault public previousVault;
 
-    mapping(uint=>Vault.certifiedDocument) public importedDocs;
+    mapping (uint => Vault.Document) public importedDocuments;
 
     constructor(address _v) public {
-      previousVault = Vault(_v);
+        previousVault = Vault(_v);
     }
 
-    function importDocument(uint newIndex, uint docId) {
-      (bytes32 title, string memory description, bytes32[] memory keywords,
-      uint[] memory ratings, bool isAlive, uint index, uint documentType, uint startDate,
-      uint endDate, bytes32 _ipfs) = previousVault.getFullDocument(docId);
-      Vault.certifiedDocument id = importedDocs[newIndex];
-      id.title = title;
-      id.description = description;
-      id.ratings = ratings;
-      id.keywords = keywords;
-      id.isAlive = isAlive;
-      id.index = index;
-      id.documentType = documentType;
-      id.startDate = startDate;
-      id.endDate = endDate;
-      id.ipfs = _ipfs;
+    /**
+     * @dev Import a document.
+     */
+    function importDoc(uint _newIndex, uint _id)
+        public
+    {
+        (bytes32 title, string memory description, uint start, uint end, uint duration, bytes32[] memory keywords, uint[] memory ratings, uint doctype, bytes32 ipfs) = previousVault.getDoc(_id);
+        Vault.Document storage doc = importedDocuments[_newIndex];
+        doc.title = title;
+        doc.description = description;
+        doc.start = start;
+        doc.end = end;
+        doc.duration = duration;
+        doc.keywords = keywords;
+        doc.ratings = ratings;
+        doc.doctype = doctype;
+        doc.ipfs = ipfs;
+        doc.published = true;
+        doc.index = _newIndex;
     }
 
-    function getFullDocument(uint id)
+    /**
+     * @dev Get an imported document
+     */
+    function getImportedDoc(uint _id)
         view
         public
-        returns (bytes32 title, string description, bytes32[] keywords,
-          uint[] ratings, bool isAlive, uint index, uint documentType, uint startDate,
-          uint endDate, bytes32 ipfs)
+        returns (
+            bytes32 title,
+            string description,
+            uint start,
+            uint end,
+            uint duration,
+            bytes32[] keywords,
+            uint[] ratings,
+            uint doctype,
+            bytes32 ipfs
+        )
     {
-        Vault.certifiedDocument cd = importedDocs[id];
-        return (cd.title, cd.description, cd.keywords, cd.ratings, cd.isAlive, cd.index,
-                cd.documentType, cd.startDate, cd.endDate, cd.ipfs);
+        Vault.Document storage doc = importedDocuments[_id];
+        return (
+            doc.title,
+            doc.description,
+            doc.start,
+            doc.end,
+            doc.duration,
+            doc.keywords,
+            doc.ratings,
+            doc.doctype,
+            doc.ipfs
+        );
     }
 }

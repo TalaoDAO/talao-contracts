@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-// TalaoToken, Freelancer, Vault, VaultFactory all in 1
+// TalaoToken, Freelancer, Vault, VaultFactory all in 1.
 
 
 
@@ -1593,182 +1593,284 @@ contract TalaoCrowdsale is ProgressiveIndividualCappedCrowdsale {
 
 
 
+/**
+ * @title Freelancer.
+ * @dev Talao Freelancers.
+ * @author SlowSense, Talao, Blockchain Partners.
+ */
 contract Freelancer is Ownable {
 
     TalaoToken myToken;
 
-    struct Information {
-        // public freelancer data
-        bytes32 firstName;
-        bytes32 lastName;
-        bytes32 mobilePhone;
+    /*
+     * Inactive = Freelance does not exist or has deleted his data.
+     * Active = Freelance is active.
+     * Suspended = Talao suspended this account.
+     */
+    enum FreelancerState { Inactive, Active, Suspended }
+
+    // Struct of a Freelancer information.
+    struct FreelancerInformation {
+        bytes32 firstname;
+        bytes32 lastname;
+        bytes32 mobile;
         bytes32 email;
         bytes32 title;
         string description;
         bytes32 picture;
         FreelancerState state;
-
-        bool isUserKYC;
-        // this is the origin of the freelance for future use
+        // This is the origin of the freelance for future use.
+        bool iskyc;
         uint8 referral;
-        uint256 subscriptionDate;
+        uint subscription;
 
     }
+    // Mapping of Freelancers Ethereum addresses => Freelancer information. TODO: put in private and use getFreelancer?
+    mapping (address => FreelancerInformation) public Freelancers;
 
-    // mapping between Vault Ethereum address and Confidence Index
-    mapping(address => Information) public FreelancerInformation;
+    // Mapping of Freelancers Ethereum addresses => mapping of Partners Ethereum addresses => bool (Partners of each Freelancer).
+    mapping (address => mapping (address => bool)) public Partners;
 
-    //whitelisted address of partners to get a free access to vault
-    mapping(address => mapping(address=>bool)) public ListedPartner;
+    // Address of the Talao Bot. He can get the Vault addresses of the Freelancers, but not the Vaults content.
+    address TalaoBot;
 
-    /*
-     * Innactive = Freelance has desactited his data
-     * Active = Freelance data are accessible
-     * Suspended = Another one person has deactvited data for this freelancer
-     */
-    enum FreelancerState { Inactive, Active, Suspended }
-
+    // TODO: Keep those events???
     event FreelancerUpdateData (
         address indexed freelancer,
         bytes32 firstname,
         bytes32 lastname,
-        bytes32 phone,
+        bytes32 mobile,
         bytes32 email,
         bytes32 title,
         string description,
         bytes32 picture
     );
-
+    // TODO: Especially that one.
     event FreelancerInternalData (
         address indexed freelancer,
-        bool IsKYC,
+        bool iskyc,
         uint referral
     );
 
-    // Address of the Talao Admin. He has the power to get for free the Vault adress of a freelance.
-    address TalaoAdmin;
-
-    constructor(address token)
+    constructor(address _token)
         public
     {
-        myToken = TalaoToken(token);
+        myToken = TalaoToken(_token);
     }
 
     /**
-     * Freelance subscribes/updates his data
+     * @dev Get Freelancer data.
     */
-    function UpdateFreelancerData(address _faddress,bytes32 _firstname,bytes32 _lastname,bytes32 _phone,bytes32 _email,bytes32 _title,string _desc, bytes32 _picture)
+    function getFreelancer(address _freelancer)
         public
+        view
+        returns (
+          bytes32 firstname,
+          bytes32 lastname,
+          bytes32 mobile,
+          bytes32 email,
+          bytes32 title,
+          string description,
+          bytes32 picture,
+          bool isactive,
+          bool iskyc,
+          uint8 referral,
+          uint subscription
+        )
     {
-        require(FreelancerInformation[_faddress].state != FreelancerState.Suspended,"Freelancer is suspended");
-        if (FreelancerInformation[_faddress].state == FreelancerState.Inactive)
-        {
-            FreelancerInformation[_faddress].subscriptionDate = now;
+        FreelancerInformation storage thisFreelancer = Freelancers[_freelancer];
+
+        // Not for inactive Freelancers.
+        require (thisFreelancer.state != FreelancerState.Inactive, 'Inactive Freelancer have no information to get.');
+
+        bool active;
+        if (thisFreelancer.state == FreelancerState.Active) {
+          active = true;
         }
-        FreelancerInformation[_faddress].firstName = _firstname;
-        FreelancerInformation[_faddress].lastName = _lastname;
-        FreelancerInformation[_faddress].mobilePhone = _phone;
-        FreelancerInformation[_faddress].email = _email;
-        FreelancerInformation[_faddress].title = _title;
-        FreelancerInformation[_faddress].description = _desc;
-        FreelancerInformation[_faddress].picture = _picture;
 
-        emit FreelancerUpdateData(_faddress, _firstname, _lastname, _phone, _email, _title, _desc, _picture);
+        return (
+            thisFreelancer.firstname,
+            thisFreelancer.lastname,
+            thisFreelancer.mobile,
+            thisFreelancer.email,
+            thisFreelancer.title,
+            thisFreelancer.description,
+            thisFreelancer.picture,
+            active,
+            thisFreelancer.iskyc,
+            thisFreelancer.referral,
+            thisFreelancer.subscription
+        );
     }
 
     /**
-     * General Data Protection Regulation
-     * Freelancer unsubscribes
+     * @dev Getter to see if an address is a Partner.
      */
-    function unsubscribe()
-        public
-    {
-        require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive, "this freelance is inactive");
-        delete FreelancerInformation[msg.sender];
-    }
-
-    /**
-     * Only Owner can set internal freelance data
-     * Talao can suspend one freelance
-    */
-    function setInternalData(bool _iskyc, uint8 _referral)
-        public
-    {
-        require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive,"this freelance is inactive" );
-        FreelancerInformation[msg.sender].isUserKYC = _iskyc;
-        FreelancerInformation[msg.sender].referral = _referral;
-        emit FreelancerInternalData(msg.sender, _iskyc, _referral);
-    }
-
-    function setInactive(address _freelancer)
-        onlyOwner
-        public
-    {
-        FreelancerInformation[_freelancer].state = FreelancerState.Inactive;
-    }
-
-    function setActive(address _freelancer)
-        onlyOwner
-        public
-    {
-        FreelancerInformation[_freelancer].state = FreelancerState.Active;
-    }
-
-    /**
-     * Freelance can whitelist a partner. Partner will have a free access to his Vault
-    */
-    function listPartner(address _partner, bool IsListed)
-        public
-    {
-        ListedPartner[msg.sender][_partner] = IsListed;
-    }
-
     function isPartner(address _freelancer, address _partner)
         public
         view
         returns(bool)
     {
-        return ListedPartner[_freelancer][_partner];
+        return Partners[_freelancer][_partner];
     }
 
     /**
-     * @dev Set the Talao Admin ethereum address.
-     * He has the power to get for free the Vault adress of a freelance.
+     * @dev Is an address the Talao Bot?
      */
-    function setTalaoAdmin(address _talaoadmin)
-        onlyOwner
-        public
-    {
-        TalaoAdmin = _talaoadmin;
-    }
-
-    function isTalaoAdmin(address _user)
+    function isTalaoBot(address _address)
         public
         view
         returns (bool)
     {
-        bool isAdmin;
-        if (TalaoAdmin == _user) {
-          isAdmin = true;
+        if (TalaoBot == _address) {
+            return true;
         }
-        return isAdmin;
+        return false;
     }
 
     /**
-     * @dev Get the Talao Admin ethereum address.
-     */
-    function getTalaoAdmin()
-        onlyOwner
+     * @dev Freelance subscribes/updates his data.
+    */
+    function setFreelancer(
+        address _freelancer,
+        bytes32 _firstname,
+        bytes32 _lastname,
+        bytes32 _mobile,
+        bytes32 _email,
+        bytes32 _title,
+        string _description,
+        bytes32 _picture
+    )
         public
+    {
+        FreelancerInformation storage thisFreelancer = Freelancers[_freelancer];
+        // Not for suspended Freelancers.
+        require(thisFreelancer.state != FreelancerState.Suspended, 'Impossible, this Freelancer was suspended.');
+
+        // Set Freelancer data.
+        // New or returning Freelancer.
+        if (thisFreelancer.state == FreelancerState.Inactive) {
+            thisFreelancer.subscription = now;
+        }
+        // All.
+        thisFreelancer.firstname = _firstname;
+        thisFreelancer.lastname = _lastname;
+        thisFreelancer.mobile = _mobile;
+        thisFreelancer.email = _email;
+        thisFreelancer.title = _title;
+        thisFreelancer.description = _description;
+        thisFreelancer.picture = _picture;
+
+        // Emit event.
+        // TODO: GDPR => delete?
+        emit FreelancerUpdateData(
+            _freelancer,
+            _firstname,
+            _lastname,
+            _mobile,
+            _email,
+            _title,
+            _description,
+            _picture
+        );
+    }
+
+    /**
+     * @dev General Data Protection Regulation : Freelancer unsubscribes.
+     */
+    function unsubscribe()
+        public
+    {
+        // Inactive Freelancers never existed or already unsubscribed.
+        require(Freelancers[msg.sender].state != FreelancerState.Inactive, 'Freelancer is already inactive.');
+
+        // Remove data.
+        delete Freelancers[msg.sender];
+    }
+
+    /**
+     * @dev Freelancer can add or remove a Partner. Partner will have a free access to his Vault.
+     */
+    function setPartner(address _partner, bool _ispartner)
+        public
+    {
+        Partners[msg.sender][_partner] = _ispartner;
+    }
+
+    /**
+     * @dev Only Owner can set internal freelance data. //TODO??? Owner of Freelancer?
+     */
+    function setInternalData(bool _iskyc, uint8 _referral)
+        public
+    {
+        require (Freelancers[msg.sender].state != FreelancerState.Inactive, 'Impossible, this Freelance is inactive.');
+
+        Freelancers[msg.sender].iskyc = _iskyc;
+        Freelancers[msg.sender].referral = _referral;
+        emit FreelancerInternalData(msg.sender, _iskyc, _referral);
+    }
+
+    /**
+     * @dev Owner can activate Freelancer.
+     */
+    function setActive(address _freelancer)
+        public
+        onlyOwner
+    {
+        Freelancers[_freelancer].state = FreelancerState.Active;
+    }
+
+    /**
+     * @dev Owner can deactivate Freelancer.//TODO: does not delete data!
+     */
+    function setInactive(address _freelancer)
+        public
+        onlyOwner
+    {
+        Freelancers[_freelancer].state = FreelancerState.Inactive;
+    }
+
+    /**
+     * @dev Owner can suspend Freelancer.
+     */
+    function setSuspended(address _freelancer)
+        public
+        onlyOwner
+    {
+        Freelancers[_freelancer].state = FreelancerState.Suspended;
+    }
+
+    /**
+     * @dev Get the Talao Bot address.
+     */
+    function getTalaoBot()
+        public
+        onlyOwner
         constant
         returns (address)
     {
-        return TalaoAdmin;
+        return TalaoBot;
+    }
+
+    /**
+     * @dev Set the Talao Bot Ethereum address.
+     * He can get the Vault addresses of the Freelancers, but not the Vaults content.
+     */
+    function setTalaoBot(address _talaobot)
+        public
+        onlyOwner
+    {
+        TalaoBot = _talaobot;
     }
 }
 
 
 
+/**
+ * @title Vault.
+ * @dev A Talent's Vault.
+ * @author SlowSense, Talao, Blockchain Partners.
+ */
 contract Vault is Ownable {
 
     // SafeMath to avoid overflows.
@@ -1783,156 +1885,124 @@ contract Vault is Ownable {
     // Documents counter.
     uint documentsCounter;
     // Number of valid (= "published") documents in this Vault.
-    uint public NbOfValidDocument;
+    uint public publishedDocumentsNb;
     // Used to parse all documents using index as relationship between this array and TalentsDocuments mapping.
     uint[] documentIndex;
     // Document struct.
-    struct certifiedDocument {
+    struct Document {
         // Title.
         bytes32 title;
         // Description.
         string description;
         // Timestamp of start.
-        uint startDate;
+        uint start;
         // Timestamp of end.
-        uint endDate;
+        uint end;
         // Duration in days.
         uint duration;
         // Array of keywords.
         bytes32[] keywords;
         // Array of ratings.
         uint[] ratings;
-        // Type: ID = 0, DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4.
-        uint documentType;
+        // Type: DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4, 5 = ID
+        uint doctype;
         // IPFS hash of the attached file, if any.
         bytes32 ipfs;
         // True if "published", false if "unpublished".
-        bool isAlive;
-        // Index used in relationship between tabindex and mapping unordered object. TODO: = ?
+        bool published;
+        // Position in index.
         uint index;
     }
-    // Mapping: documentId => certifiedDocument.
-    mapping(uint => certifiedDocument) public talentsDocuments;
-
-    // Vault life enum.
-    enum VaultLife { AccessDenied, DocumentAdded, DocumentRemoved, keywordAdded }
-
-    // Event: important Vault events. TODO: what is usefull?
-    event VaultLog (
-        address indexed user,
-        VaultLife happened,
-        uint documentId
-    );
+    // Mapping: documentId => Document.
+    mapping(uint => Document) public Documents;
 
     // Event: new document added.
-    event VaultDocAdded (
-        uint documentId,
+    event NewDocument (
+        uint id,
         bytes32 title,
         string description,
-        uint startDate,
-        uint endDate,
-        uint[] ratings,
-        bytes32[] keywords,
+        uint start,
+        uint end,
         uint duration,
-        uint docType,
+        bytes32[] keywords,
+        uint[] ratings,
+        uint doctype,
         bytes32 ipfs
     );
 
     /**
      * Constructor.
      */
-    constructor(address token, address freelancer)
+    constructor(address _token, address _freelancer)
         public
     {
-        myToken = TalaoToken(token);
-        myFreelancer = Freelancer(freelancer);
+        myToken = TalaoToken(_token);
+        myFreelancer = Freelancer(_freelancer);
     }
 
     /**
      * Modifier for functions to allow only users who have access to the Vault in the token + Partners.
      */
-    modifier allowVaultAccessAndPartners () {
+    modifier onlyVaultReaders () {
         // Sender must be set.
-        require (msg.sender != address(0), 'The Sender must be set.');
-        // Is the Sender a partner?
-        bool isPartner = myFreelancer.isPartner(owner, msg.sender);
-        // Does the Sender have Vault access in the token?
-        // Everyone if Vault price is 0.
-        // Otherwise Talent + Clients who have bought Vault access.
-        bool hasVaultAccess = myToken.hasVaultAccess (msg.sender, owner);
+        require (msg.sender != address(0), 'Sender must be set.');
         // Accept only users who have access to the Vault in the token + Partners.
-        require(isPartner || hasVaultAccess, 'Sender has no Vault access.');
+        require(myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess (msg.sender, owner), 'Sender has no Vault access.');
         _;
     }
 
     /**
-     * Modifier for functions to allow only Talent and his Partners.
+     * @dev Create a document.
      */
-    modifier allowOwnerAndPartner () {
-        // Sender must be set.
-        require (msg.sender != address(0), 'The Sender must be set.');
-        // Give access only to Talent and his Partners.
-        require(owner == msg.sender || myFreelancer.isPartner(owner, msg.sender), 'Sender must be the Talent or one of his Partners.');
-        _;
-    }
-
-    /**
-     * @dev Add a document.
-     */
-    function addDocument(
-        bytes32 title,
-        string description,
-        bytes32[] keywords,
-        uint[] ratings,
-        uint documentType,
-        uint startDate,
-        uint endDate,
-        uint duration,
+    function createDoc(
+        bytes32 _title,
+        string _description,
+        uint _start,
+        uint _end,
+        uint _duration,
+        bytes32[] _keywords,
+        uint[] _ratings,
+        uint _doctype,
         bytes32 _ipfs
     )
-        allowOwnerAndPartner
         public
+        onlyOwner
         returns (uint)
     {
         // Validate parameters.
-        require(title != 0, 'Title can not be empty.');
-        require(bytes(description).length > 0, 'Description can not be empty.');
-        require(keywords.length > 0, 'Keywords can not be empty.');
-        require(ratings.length > 0, 'Ratings can not be empty.');
-        require(startDate > 0, 'Start date must be > 0.');
-        require(endDate > 0, 'End date must be > 0.');
-        require(duration > 0, 'Duration must be > 0.');
+        require(_title != 0, 'Title can not be empty.');
+        require(_doctype > 0, 'Type must be > 0.');
 
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
         // Increment number of valid documents.
-        NbOfValidDocument = NbOfValidDocument.add(1);
+        publishedDocumentsNb = publishedDocumentsNb.add(1);
 
         // Write document data.
-        certifiedDocument cd = talentsDocuments[documentsCounter];
-        cd.title = title;
-        cd.description = description;
-        cd.startDate = startDate;
-        cd.endDate = endDate;
-        cd.duration = duration;
-        cd.keywords = keywords;
-        cd.ratings = ratings;
-        cd.documentType = documentType;
-        cd.ipfs = _ipfs;
-        cd.isAlive = true;
-        cd.index = documentIndex.push(documentsCounter).sub(1);
+        Document storage doc = Documents[documentsCounter];
+        doc.title = _title;
+        doc.description = _description;
+        doc.start = _start;
+        doc.end = _end;
+        doc.duration = _duration;
+        doc.keywords = _keywords;
+        doc.ratings = _ratings;
+        doc.doctype = _doctype;
+        doc.ipfs = _ipfs;
+        doc.published = true;
+        doc.index = documentIndex.push(documentsCounter).sub(1);
 
         // Emit event.
-        emit VaultDocAdded(
+        emit NewDocument(
             documentsCounter,
-            title,
-            description,
-            startDate,
-            endDate,
-            ratings,
-            keywords,
-            duration,
-            documentType,
+            _title,
+            _description,
+            _start,
+            _end,
+            _duration,
+            _keywords,
+            _ratings,
+            _doctype,
             _ipfs
         );
 
@@ -1942,119 +2012,96 @@ contract Vault is Ownable {
     /**
      * @dev Remove a document.
      */
-    function removeDocument (uint documentId)
-        allowOwnerAndPartner
+    function deleteDoc (uint _id)
         public
+        onlyOwner
     {
         // Validate parameter.
-        require (documentId > 0, 'documentId must be > 0.');
+        require (_id > 0, 'Document ID must be > 0.');
         // Only published documents can be removed.
-        require (talentsDocuments[documentId].isAlive, 'Only published documents can be removed.');
+        require (Documents[_id].published, 'Only published documents can be removed.');
 
         // Remove document data.
-        delete talentsDocuments[documentId];
-        // Check that among all document data, isAlive is now false (the default value).
-        assert(!talentsDocuments[documentId].isAlive);
+        delete Documents[_id];
+        // Check that among all document data, published is now false (the default value).
+        assert(!Documents[_id].published);
         // Remove document from index.
-        delete documentIndex[documentId];
+        delete documentIndex[_id];
         // Document removal successfull, decrement number of published documents in Vault.
-        NbOfValidDocument = NbOfValidDocument.sub(1);
-
-        // Emit event. //TODO: usefull?
-        emit VaultLog (msg.sender, VaultLife.DocumentRemoved, documentId);
+        publishedDocumentsNb = publishedDocumentsNb.sub(1);
     }
 
     /**
-     * @dev Add an IPFS hash of an IPFS uploaded file, to attach it.
+     * @dev Set an IPFS hash of an IPFS uploaded file, to attach it.
      * @param _id uint Document ID.
      * @param _ipfs bytes32 IPFS hash of the file.
      */
-    function addIpfs(
+    function addDocIpfs(
         uint _id,
         bytes32 _ipfs
     )
-        allowOwnerAndPartner
         public
+        onlyOwner
     {
         // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
          //TODO: better IPFS hash validation.
         require(_ipfs != 0, 'IPFS hash can not be empty.');
         // IPFS files can be attached only to published documents.
-        require (talentsDocuments[_id].isAlive, 'IPFS files can be attached only to published documents.');
+        require (Documents[_id].published, 'IPFS files can be attached only to published documents.');
 
         // Write data.
-        talentsDocuments[_id].ipfs = _ipfs;
+        Documents[_id].ipfs = _ipfs;
     }
 
     /**
      * @dev See if document is published.
-     * @param documentId uint Document ID.
+     * @param _id uint Document ID.
      */
-    function getDocumentIsAlive(uint documentId)
-        allowVaultAccessAndPartners
+    function isDocPublished(uint _id)
         view
         public
+        onlyVaultReaders
         returns(bool)
     {
-        require(documentId > 0, 'Document ID must be > 0');
-        return (talentsDocuments[documentId].isAlive);
+        require(_id > 0, 'Document ID must be > 0');
+        return (Documents[_id].published);
     }
 
     /**
      * @dev Document getter.
-     * @param dId uint Document ID.
+     * @param _id uint Document ID.
      */
-    function getCertifiedDocumentById (uint dId)
-        allowVaultAccessAndPartners
+    function getDoc(uint _id)
         view
         public
-        returns (string desc, uint docType, uint startDate, uint endDate)
-    {
-        require(dId > 0, 'Document ID must be > 0.');
-        require(talentsDocuments[dId].isAlive, 'Document does not exist.');
-
-        return (
-            talentsDocuments[dId].description,
-            talentsDocuments[dId].documentType,
-            talentsDocuments[dId].startDate,
-            talentsDocuments[dId].endDate
-        );
-    }
-
-    /**
-     * @dev Get full document.
-     * @param id uint Document ID.
-     */
-    function getFullDocument(uint id)
-        allowVaultAccessAndPartners
-        view
-        public
+        onlyVaultReaders
         returns (
             bytes32 title,
             string description,
+            uint start,
+            uint end,
+            uint duration,
             bytes32[] keywords,
             uint[] ratings,
-            bool isAlive,
-            uint index,
-            uint documentType,
-            uint startDate,
-            uint endDate,
+            uint doctype,
             bytes32 ipfs
         )
     {
-        certifiedDocument cd = talentsDocuments[id];
+        require(_id > 0, 'Document ID must be > 0.');
+        require(Documents[_id].published, 'Document does not exist.');
+
+        Document storage doc = Documents[_id];
         return (
-            cd.title,
-            cd.description,
-            cd.keywords,
-            cd.ratings,
-            cd.isAlive,
-            cd.index,
-            cd.documentType,
-            cd.startDate,
-            cd.endDate,
-            cd.ipfs
+            doc.title,
+            doc.description,
+            doc.start,
+            doc.end,
+            doc.duration,
+            doc.keywords,
+            doc.ratings,
+            doc.doctype,
+            doc.ipfs
         );
     }
 
@@ -2062,44 +2109,59 @@ contract Vault is Ownable {
      * @dev Get hash of IPFS attached file, if any.
      * @param _id uint Document ID.
      */
-    function getIpfs(uint _id)
-        allowVaultAccessAndPartners
+    function getDocIpfs(uint _id)
         view
         public
+        onlyVaultReaders
         returns(bytes32 ipfs)
     {
         require(_id > 0, 'Document ID must be > 0');
-        require(talentsDocuments[_id].isAlive, 'Document does not exist.');
-        return (talentsDocuments[_id].ipfs);
+        require(Documents[_id].published, 'Document does not exist.');
+        return (Documents[_id].ipfs);
     }
 
     /**
-     * @dev Get all documents in index.
-     * @param index uint Document ID.
+     * @dev Get document by index.
+     * @param _index uint Document index.
      */
-    function getCertifiedDocumentsByIndex (uint index)
-        allowVaultAccessAndPartners
+    function getDocByIndex (uint _index)
         view
         public
-        returns (uint docId, string desc, uint docType, uint startDate, uint endDate, bytes32 ifpsHash)
+        onlyVaultReaders
+        returns (
+            bytes32 title,
+            string description,
+            uint start,
+            uint end,
+            uint duration,
+            bytes32[] keywords,
+            uint[] ratings,
+            uint doctype,
+            bytes32 ipfs
+        )
     {
-        uint dId = documentIndex[index];
+        uint id = documentIndex[_index];
+        Document storage doc = Documents[id];
         return (
-          dId,
-          talentsDocuments[dId].description,
-          talentsDocuments[dId].documentType,
-          talentsDocuments[dId].startDate,
-          talentsDocuments[dId].endDate,
-          talentsDocuments[dId].ipfs
+            doc.title,
+            doc.description,
+            doc.start,
+            doc.end,
+            doc.duration,
+            doc.keywords,
+            doc.ratings,
+            doc.doctype,
+            doc.ipfs
         );
     }
 
     /**
      * @dev Get documents index.
      */
-    function getDocumentIndexes()
+    function getDocumentsIndex()
         view
         public
+        onlyVaultReaders
         returns (uint[])
     {
         return documentIndex;
@@ -2128,7 +2190,7 @@ contract VaultFactory is Ownable {
     using SafeMath for uint;
 
     // Number of Vaults.
-    uint nbVault;
+    uint vaultsNb;
     // Talao token.
     TalaoToken myToken;
     // Freelancer contract to store freelancers information.
@@ -2136,40 +2198,40 @@ contract VaultFactory is Ownable {
 
     // First address is the freelance Ethereum address.
     // Second address is the freelance's Vault smart contract address.
-    mapping (address => address) FreelanceVault;
+    mapping (address => address) FreelancesVaults;
 
     enum VaultState { AccessDenied, AlreadyExist, Created }
 
     // Talao token smart contract address.
-    constructor(address token, address freelancer)
+    constructor(address _token, address _freelancer)
         public
     {
-        myToken = TalaoToken(token);
-        myFreelancer = Freelancer(freelancer);
+        myToken = TalaoToken(_token);
+        myFreelancer = Freelancer(_freelancer);
     }
 
     /**
      * @dev Get total number of Vaults.
      */
-    function getNbVault()
+    function getNbVaults()
         public
         view
         returns(uint)
     {
-        return nbVault;
+        return vaultsNb;
     }
 
     /**
      * @dev Getter to see if a freelance has a Vault.
      */
-    function HasVault (address freelance)
+    function HasVault (address _freelance)
         public
         view
-    returns (bool)
+        returns (bool)
     {
-        bool result = false;
-        address freeAdd = FreelanceVault[freelance];
-        if(freeAdd != address(0)) {
+        bool result;
+        address freelanceVault = FreelancesVaults[_freelance];
+        if(freelanceVault != address(0)) {
             result = true;
         }
 
@@ -2179,30 +2241,30 @@ contract VaultFactory is Ownable {
     /**
      * @dev Get the freelance's Vault address, if authorized.
      */
-    function GetVault(address freelance)
+    function getVault(address freelance)
         public
         view
-    returns(address)
+        returns (address)
     {
-        //tupple used for data
+        // Tupple used for data.
         uint256 accessPrice;
         address appointedAgent;
         uint sharingPlan;
         uint256 userDeposit;
 
-        (accessPrice, appointedAgent,sharingPlan,userDeposit) = myToken.data(freelance);
+        (accessPrice, appointedAgent, sharingPlan, userDeposit) = myToken.data(freelance);
 
         if (accessPrice <= 0) {
-            return FreelanceVault[freelance];
+            return FreelancesVaults[freelance];
         }
 
         if (msg.sender != address(0)) {
             bool hasAccess = myToken.hasVaultAccess(freelance, msg.sender);
             bool isPartner = myFreelancer.isPartner(freelance, msg.sender);
-            bool isAdmin = myFreelancer.isTalaoAdmin(msg.sender);
+            bool isTalaoBot = myFreelancer.isTalaoBot(msg.sender);
 
-            if (hasAccess || isPartner || isAdmin) {
-                return FreelanceVault[freelance];
+            if (hasAccess || isPartner || isTalaoBot) {
+                return FreelancesVaults[freelance];
             }
         }
 
@@ -2210,24 +2272,34 @@ contract VaultFactory is Ownable {
     }
 
     /**
-     * Talent can call this method to create a new Vault contract
-     *  with the maker being the owner of this new vault
+     * @dev Talent can call this method to create a new Vault contract with the maker being the owner of this new Vault.
      */
-    function CreateVaultContract (uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description, bytes32 _pic)
+    function createVaultContract (
+        uint256 _price,
+        bytes32 _firstname,
+        bytes32 _lastname,
+        bytes32 _mobile,
+        bytes32 _email,
+        bytes32 _title,
+        string _description,
+        bytes32 _picture
+    )
         public
-        returns(address)
+        returns (address)
     {
-        bool hasAccess = myToken.hasVaultAccess(msg.sender,msg.sender);
-        require(hasAccess, 'Sender has no access to Vault.');
+        // Sender must have access to his Vault in the Token.
+        require(myToken.hasVaultAccess(msg.sender, msg.sender), 'Sender has no access to Vault.');
 
-        myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description,_pic);
-
-        //create vault
+        // Set Freelancer information.
+        myFreelancer.setFreelancer(msg.sender, _firstname, _lastname, _mobile, _email, _title, _description, _picture);
+        // Create Vault.
         Vault newVault = new Vault(myToken, myFreelancer);
-
-        FreelanceVault[msg.sender] = address(newVault);
-        nbVault = nbVault.add(1);
+        // Index Vault.
+        FreelancesVaults[msg.sender] = address(newVault);
+        // Transfer Vault to Freelancer.
         newVault.transferOwnership(msg.sender);
+        // Increment total number of Vaults.
+        vaultsNb = vaultsNb.add(1);
 
         return address(newVault);
     }

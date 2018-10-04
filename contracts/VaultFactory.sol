@@ -15,7 +15,7 @@ contract VaultFactory is Ownable {
     using SafeMath for uint;
 
     // Number of Vaults.
-    uint nbVault;
+    uint vaultsNb;
     // Talao token.
     TalaoToken myToken;
     // Freelancer contract to store freelancers information.
@@ -23,40 +23,40 @@ contract VaultFactory is Ownable {
 
     // First address is the freelance Ethereum address.
     // Second address is the freelance's Vault smart contract address.
-    mapping (address => address) FreelanceVault;
+    mapping (address => address) FreelancesVaults;
 
     enum VaultState { AccessDenied, AlreadyExist, Created }
 
     // Talao token smart contract address.
-    constructor(address token, address freelancer)
+    constructor(address _token, address _freelancer)
         public
     {
-        myToken = TalaoToken(token);
-        myFreelancer = Freelancer(freelancer);
+        myToken = TalaoToken(_token);
+        myFreelancer = Freelancer(_freelancer);
     }
 
     /**
      * @dev Get total number of Vaults.
      */
-    function getNbVault()
+    function getNbVaults()
         public
         view
         returns(uint)
     {
-        return nbVault;
+        return vaultsNb;
     }
 
     /**
      * @dev Getter to see if a freelance has a Vault.
      */
-    function HasVault (address freelance)
+    function HasVault (address _freelance)
         public
         view
-    returns (bool)
+        returns (bool)
     {
-        bool result = false;
-        address freeAdd = FreelanceVault[freelance];
-        if(freeAdd != address(0)) {
+        bool result;
+        address freelanceVault = FreelancesVaults[_freelance];
+        if(freelanceVault != address(0)) {
             result = true;
         }
 
@@ -66,30 +66,30 @@ contract VaultFactory is Ownable {
     /**
      * @dev Get the freelance's Vault address, if authorized.
      */
-    function GetVault(address freelance)
+    function getVault(address freelance)
         public
         view
-    returns(address)
+        returns (address)
     {
-        //tupple used for data
+        // Tupple used for data.
         uint256 accessPrice;
         address appointedAgent;
         uint sharingPlan;
         uint256 userDeposit;
 
-        (accessPrice, appointedAgent,sharingPlan,userDeposit) = myToken.data(freelance);
+        (accessPrice, appointedAgent, sharingPlan, userDeposit) = myToken.data(freelance);
 
         if (accessPrice <= 0) {
-            return FreelanceVault[freelance];
+            return FreelancesVaults[freelance];
         }
 
         if (msg.sender != address(0)) {
             bool hasAccess = myToken.hasVaultAccess(freelance, msg.sender);
             bool isPartner = myFreelancer.isPartner(freelance, msg.sender);
-            bool isAdmin = myFreelancer.isTalaoAdmin(msg.sender);
+            bool isTalaoBot = myFreelancer.isTalaoBot(msg.sender);
 
-            if (hasAccess || isPartner || isAdmin) {
-                return FreelanceVault[freelance];
+            if (hasAccess || isPartner || isTalaoBot) {
+                return FreelancesVaults[freelance];
             }
         }
 
@@ -97,24 +97,34 @@ contract VaultFactory is Ownable {
     }
 
     /**
-     * Talent can call this method to create a new Vault contract
-     *  with the maker being the owner of this new vault
+     * @dev Talent can call this method to create a new Vault contract with the maker being the owner of this new Vault.
      */
-    function CreateVaultContract (uint256 _price, bytes32 _firstname, bytes32 _lastname, bytes32 _phone, bytes32 _email, bytes32 _title, string _description, bytes32 _pic)
+    function createVaultContract (
+        uint256 _price,
+        bytes32 _firstname,
+        bytes32 _lastname,
+        bytes32 _mobile,
+        bytes32 _email,
+        bytes32 _title,
+        string _description,
+        bytes32 _picture
+    )
         public
-        returns(address)
+        returns (address)
     {
-        bool hasAccess = myToken.hasVaultAccess(msg.sender,msg.sender);
-        require(hasAccess, 'Sender has no access to Vault.');
+        // Sender must have access to his Vault in the Token.
+        require(myToken.hasVaultAccess(msg.sender, msg.sender), 'Sender has no access to Vault.');
 
-        myFreelancer.UpdateFreelancerData(msg.sender,_firstname,_lastname,_phone,_email,_title,_description,_pic);
-
-        //create vault
+        // Set Freelancer information.
+        myFreelancer.setFreelancer(msg.sender, _firstname, _lastname, _mobile, _email, _title, _description, _picture);
+        // Create Vault.
         Vault newVault = new Vault(myToken, myFreelancer);
-
-        FreelanceVault[msg.sender] = address(newVault);
-        nbVault = nbVault.add(1);
+        // Index Vault.
+        FreelancesVaults[msg.sender] = address(newVault);
+        // Transfer Vault to Freelancer.
         newVault.transferOwnership(msg.sender);
+        // Increment total number of Vaults.
+        vaultsNb = vaultsNb.add(1);
 
         return address(newVault);
     }

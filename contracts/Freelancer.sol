@@ -1,177 +1,274 @@
 pragma solidity ^0.4.23;
 
-import "./Talao.sol";
+import './Talao.sol';
 
+/**
+ * @title Freelancer.
+ * @dev Talao Freelancers.
+ * @author SlowSense, Talao, Blockchain Partners.
+ */
 contract Freelancer is Ownable {
 
     TalaoToken myToken;
 
-    struct Information {
-        // public freelancer data
-        bytes32 firstName;
-        bytes32 lastName;
-        bytes32 mobilePhone;
+    /*
+     * Inactive = Freelance does not exist or has deleted his data.
+     * Active = Freelance is active.
+     * Suspended = Talao suspended this account.
+     */
+    enum FreelancerState { Inactive, Active, Suspended }
+
+    // Struct of a Freelancer information.
+    struct FreelancerInformation {
+        bytes32 firstname;
+        bytes32 lastname;
+        bytes32 mobile;
         bytes32 email;
         bytes32 title;
         string description;
         bytes32 picture;
         FreelancerState state;
-
-        bool isUserKYC;
-        // this is the origin of the freelance for future use
+        // This is the origin of the freelance for future use.
+        bool iskyc;
         uint8 referral;
-        uint256 subscriptionDate;
+        uint subscription;
 
     }
+    // Mapping of Freelancers Ethereum addresses => Freelancer information. TODO: put in private and use getFreelancer?
+    mapping (address => FreelancerInformation) public Freelancers;
 
-    // mapping between Vault Ethereum address and Confidence Index
-    mapping(address => Information) public FreelancerInformation;
+    // Mapping of Freelancers Ethereum addresses => mapping of Partners Ethereum addresses => bool (Partners of each Freelancer).
+    mapping (address => mapping (address => bool)) public Partners;
 
-    //whitelisted address of partners to get a free access to vault
-    mapping(address => mapping(address=>bool)) public ListedPartner;
+    // Address of the Talao Bot. He can get the Vault addresses of the Freelancers, but not the Vaults content.
+    address TalaoBot;
 
-    /*
-     * Innactive = Freelance has desactited his data
-     * Active = Freelance data are accessible
-     * Suspended = Another one person has deactvited data for this freelancer
-     */
-    enum FreelancerState { Inactive, Active, Suspended }
-
+    // TODO: Keep those events???
     event FreelancerUpdateData (
         address indexed freelancer,
         bytes32 firstname,
         bytes32 lastname,
-        bytes32 phone,
+        bytes32 mobile,
         bytes32 email,
         bytes32 title,
         string description,
         bytes32 picture
     );
-
+    // TODO: Especially that one.
     event FreelancerInternalData (
         address indexed freelancer,
-        bool IsKYC,
+        bool iskyc,
         uint referral
     );
 
-    // Address of the Talao Admin. He has the power to get for free the Vault adress of a freelance.
-    address TalaoAdmin;
-
-    constructor(address token)
+    constructor(address _token)
         public
     {
-        myToken = TalaoToken(token);
+        myToken = TalaoToken(_token);
     }
 
     /**
-     * Freelance subscribes/updates his data
+     * @dev Get Freelancer data.
     */
-    function UpdateFreelancerData(address _faddress,bytes32 _firstname,bytes32 _lastname,bytes32 _phone,bytes32 _email,bytes32 _title,string _desc, bytes32 _picture)
+    function getFreelancer(address _freelancer)
         public
+        view
+        returns (
+          bytes32 firstname,
+          bytes32 lastname,
+          bytes32 mobile,
+          bytes32 email,
+          bytes32 title,
+          string description,
+          bytes32 picture,
+          bool isactive,
+          bool iskyc,
+          uint8 referral,
+          uint subscription
+        )
     {
-        require(FreelancerInformation[_faddress].state != FreelancerState.Suspended,"Freelancer is suspended");
-        if (FreelancerInformation[_faddress].state == FreelancerState.Inactive)
-        {
-            FreelancerInformation[_faddress].subscriptionDate = now;
+        FreelancerInformation storage thisFreelancer = Freelancers[_freelancer];
+
+        // Not for inactive Freelancers.
+        require (thisFreelancer.state != FreelancerState.Inactive, 'Inactive Freelancer have no information to get.');
+
+        bool active;
+        if (thisFreelancer.state == FreelancerState.Active) {
+          active = true;
         }
-        FreelancerInformation[_faddress].firstName = _firstname;
-        FreelancerInformation[_faddress].lastName = _lastname;
-        FreelancerInformation[_faddress].mobilePhone = _phone;
-        FreelancerInformation[_faddress].email = _email;
-        FreelancerInformation[_faddress].title = _title;
-        FreelancerInformation[_faddress].description = _desc;
-        FreelancerInformation[_faddress].picture = _picture;
 
-        emit FreelancerUpdateData(_faddress, _firstname, _lastname, _phone, _email, _title, _desc, _picture);
+        return (
+            thisFreelancer.firstname,
+            thisFreelancer.lastname,
+            thisFreelancer.mobile,
+            thisFreelancer.email,
+            thisFreelancer.title,
+            thisFreelancer.description,
+            thisFreelancer.picture,
+            active,
+            thisFreelancer.iskyc,
+            thisFreelancer.referral,
+            thisFreelancer.subscription
+        );
     }
 
     /**
-     * General Data Protection Regulation
-     * Freelancer unsubscribes
+     * @dev Getter to see if an address is a Partner.
      */
-    function unsubscribe()
-        public
-    {
-        require(FreelancerInformation[msg.sender].state != FreelancerState.Inactive, "this freelance is inactive");
-        delete FreelancerInformation[msg.sender];
-    }
-
-    /**
-     * Only Owner can set internal freelance data
-     * Talao can suspend one freelance
-    */
-    function setInternalData(bool _iskyc, uint8 _referral)
-        public
-    {
-        require (FreelancerInformation[msg.sender].state != FreelancerState.Inactive,"this freelance is inactive" );
-        FreelancerInformation[msg.sender].isUserKYC = _iskyc;
-        FreelancerInformation[msg.sender].referral = _referral;
-        emit FreelancerInternalData(msg.sender, _iskyc, _referral);
-    }
-
-    function setInactive(address _freelancer)
-        onlyOwner
-        public
-    {
-        FreelancerInformation[_freelancer].state = FreelancerState.Inactive;
-    }
-
-    function setActive(address _freelancer)
-        onlyOwner
-        public
-    {
-        FreelancerInformation[_freelancer].state = FreelancerState.Active;
-    }
-
-    /**
-     * Freelance can whitelist a partner. Partner will have a free access to his Vault
-    */
-    function listPartner(address _partner, bool IsListed)
-        public
-    {
-        ListedPartner[msg.sender][_partner] = IsListed;
-    }
-
     function isPartner(address _freelancer, address _partner)
         public
         view
         returns(bool)
     {
-        return ListedPartner[_freelancer][_partner];
+        return Partners[_freelancer][_partner];
     }
 
     /**
-     * @dev Set the Talao Admin ethereum address.
-     * He has the power to get for free the Vault adress of a freelance.
+     * @dev Is an address the Talao Bot?
      */
-    function setTalaoAdmin(address _talaoadmin)
-        onlyOwner
-        public
-    {
-        TalaoAdmin = _talaoadmin;
-    }
-
-    function isTalaoAdmin(address _user)
+    function isTalaoBot(address _address)
         public
         view
         returns (bool)
     {
-        bool isAdmin;
-        if (TalaoAdmin == _user) {
-          isAdmin = true;
+        if (TalaoBot == _address) {
+            return true;
         }
-        return isAdmin;
+        return false;
     }
 
     /**
-     * @dev Get the Talao Admin ethereum address.
-     */
-    function getTalaoAdmin()
-        onlyOwner
+     * @dev Freelance subscribes/updates his data.
+    */
+    function setFreelancer(
+        address _freelancer,
+        bytes32 _firstname,
+        bytes32 _lastname,
+        bytes32 _mobile,
+        bytes32 _email,
+        bytes32 _title,
+        string _description,
+        bytes32 _picture
+    )
         public
+    {
+        FreelancerInformation storage thisFreelancer = Freelancers[_freelancer];
+        // Not for suspended Freelancers.
+        require(thisFreelancer.state != FreelancerState.Suspended, 'Impossible, this Freelancer was suspended.');
+
+        // Set Freelancer data.
+        // New or returning Freelancer.
+        if (thisFreelancer.state == FreelancerState.Inactive) {
+            thisFreelancer.subscription = now;
+        }
+        // All.
+        thisFreelancer.firstname = _firstname;
+        thisFreelancer.lastname = _lastname;
+        thisFreelancer.mobile = _mobile;
+        thisFreelancer.email = _email;
+        thisFreelancer.title = _title;
+        thisFreelancer.description = _description;
+        thisFreelancer.picture = _picture;
+
+        // Emit event.
+        // TODO: GDPR => delete?
+        emit FreelancerUpdateData(
+            _freelancer,
+            _firstname,
+            _lastname,
+            _mobile,
+            _email,
+            _title,
+            _description,
+            _picture
+        );
+    }
+
+    /**
+     * @dev General Data Protection Regulation : Freelancer unsubscribes.
+     */
+    function unsubscribe()
+        public
+    {
+        // Inactive Freelancers never existed or already unsubscribed.
+        require(Freelancers[msg.sender].state != FreelancerState.Inactive, 'Freelancer is already inactive.');
+
+        // Remove data.
+        delete Freelancers[msg.sender];
+    }
+
+    /**
+     * @dev Freelancer can add or remove a Partner. Partner will have a free access to his Vault.
+     */
+    function setPartner(address _partner, bool _ispartner)
+        public
+    {
+        Partners[msg.sender][_partner] = _ispartner;
+    }
+
+    /**
+     * @dev Only Owner can set internal freelance data. //TODO??? Owner of Freelancer?
+     */
+    function setInternalData(bool _iskyc, uint8 _referral)
+        public
+    {
+        require (Freelancers[msg.sender].state != FreelancerState.Inactive, 'Impossible, this Freelance is inactive.');
+
+        Freelancers[msg.sender].iskyc = _iskyc;
+        Freelancers[msg.sender].referral = _referral;
+        emit FreelancerInternalData(msg.sender, _iskyc, _referral);
+    }
+
+    /**
+     * @dev Owner can activate Freelancer.
+     */
+    function setActive(address _freelancer)
+        public
+        onlyOwner
+    {
+        Freelancers[_freelancer].state = FreelancerState.Active;
+    }
+
+    /**
+     * @dev Owner can deactivate Freelancer.//TODO: does not delete data!
+     */
+    function setInactive(address _freelancer)
+        public
+        onlyOwner
+    {
+        Freelancers[_freelancer].state = FreelancerState.Inactive;
+    }
+
+    /**
+     * @dev Owner can suspend Freelancer.
+     */
+    function setSuspended(address _freelancer)
+        public
+        onlyOwner
+    {
+        Freelancers[_freelancer].state = FreelancerState.Suspended;
+    }
+
+    /**
+     * @dev Get the Talao Bot address.
+     */
+    function getTalaoBot()
+        public
+        onlyOwner
         constant
         returns (address)
     {
-        return TalaoAdmin;
+        return TalaoBot;
+    }
+
+    /**
+     * @dev Set the Talao Bot Ethereum address.
+     * He can get the Vault addresses of the Freelancers, but not the Vaults content.
+     */
+    function setTalaoBot(address _talaobot)
+        public
+        onlyOwner
+    {
+        TalaoBot = _talaobot;
     }
 }
