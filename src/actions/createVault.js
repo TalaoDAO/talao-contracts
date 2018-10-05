@@ -283,7 +283,7 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
             } else {
                 //Create the vault
                 dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-                user.vaultFactoryContract.methods.createVaultContract(accessPrice, firstName, lastname, phone, email, title, desc, pictureUrl).send(
+                user.vaultFactoryContract.methods.createVaultContract(firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
                         from: user.ethAddress,
                         gasPrice: process.env.REACT_APP_TRANSACTION_CREATE_VAULT
