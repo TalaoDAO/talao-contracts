@@ -3,7 +3,6 @@ pragma solidity ^0.4.23;
 // TalaoToken, Freelancer, Vault, VaultFactory all in 1.
 
 
-
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
@@ -1818,7 +1817,6 @@ contract Freelancer is Ownable {
 }
 
 
-
 /**
  * @title Vault.
  * @dev A Talent's Vault.
@@ -1868,18 +1866,9 @@ contract Vault is Ownable {
     mapping(uint => Document) public Documents;
 
     // Event: new document added.
-    // TODO: see with PH we can change the frontend to remove events.
+    // Just because we need to get the document ID after the transaction, in the frontend.
     event NewDocument (
-        uint id,
-        bytes32 title,
-        string description,
-        uint start,
-        uint end,
-        uint duration,
-        bytes32[] keywords,
-        uint[] ratings,
-        uint doctype,
-        bytes32 ipfs
+        uint id
     );
 
     /**
@@ -2068,16 +2057,7 @@ contract Vault is Ownable {
         // Emit event.
         // TODO: see with PH we can change the frontend to remove events.
         emit NewDocument(
-            documentsCounter,
-            _title,
-            _description,
-            _start,
-            _end,
-            _duration,
-            _keywords,
-            _ratings,
-            _doctype,
-            _ipfs
+            documentsCounter
         );
 
         return documentsCounter;
@@ -2149,7 +2129,6 @@ contract Vault is Ownable {
         revert();
     }
 }
-
 
 
 /**
