@@ -241,7 +241,6 @@ contract Vault is Ownable {
         doc.index = documentIndex.push(documentsCounter).sub(1);
 
         // Emit event.
-        // TODO: see with PH we can change the frontend to remove events.
         emit NewDocument(
             documentsCounter
         );
