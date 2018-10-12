@@ -129,6 +129,21 @@ import {
                 expandProfil: action.expandProfil
             };
 
+        case SET_SKILLS:
+            return {
+                ...state,
+                skill1: (!action.skills.skill1) ? state.skill1 : (action.skills.skill1 === '#del') ? null : action.skills.skill1,
+                skill2: (!action.skills.skill2) ? state.skill2 : (action.skills.skill2 === '#del') ? null : action.skills.skill2,
+                skill3: (!action.skills.skill3) ? state.skill3 : (action.skills.skill3 === '#del') ? null : action.skills.skill3,
+                skill4: (!action.skills.skill4) ? state.skill4 : (action.skills.skill4 === '#del') ? null : action.skills.skill4,
+                skill5: (!action.skills.skill5) ? state.skill5 : (action.skills.skill5 === '#del') ? null : action.skills.skill5,
+                skill6: (!action.skills.skill6) ? state.skill6 : (action.skills.skill6 === '#del') ? null : action.skills.skill6,
+                skill7: (!action.skills.skill7) ? state.skill7 : (action.skills.skill7 === '#del') ? null : action.skills.skill7,
+                skill8: (!action.skills.skill8) ? state.skill8 : (action.skills.skill8 === '#del') ? null : action.skills.skill8,
+                skill9: (!action.skills.skill9) ? state.skill9 : (action.skills.skill9 === '#del') ? null : action.skills.skill9,
+                skill10: (!action.skills.skill10) ? state.skill10 : (action.skills.skill10 === '#del') ? null : action.skills.skill10
+        };
+
         default:
             return state;
         }

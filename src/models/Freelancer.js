@@ -28,7 +28,7 @@ class Freelancer {
         this.experiences = [];
         this.competencies = [];
     }
-
+    
     getFreelanceData() {
         return new Promise((resolve, reject) => {
             this.freelancerContract.methods.Freelancers(this.ethAddress).call().then(element => {
