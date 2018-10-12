@@ -49,11 +49,6 @@ export const newExperience = (value) => ({
     value
 });
 
-export const setSkills = skills => ({
-    type: SET_SKILLS,
-    skills
-});
-
 export const expandProfil = expandProfil => ({
     type: EXPAND_PROFIL,
     expandProfil
