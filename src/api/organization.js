@@ -32,6 +32,33 @@ class Organization {
         
         return data;
     }
+
+    async add(organization) {
+
+        let response = await fetch(this.organizationRoute + '/create', {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify({
+                organization
+            })
+        });
+
+        let data = await response.json();
+        
+        return data;
+    }
+
+    async getAllFromEth(ethaddress) {
+
+        let response = await fetch(this.organizationRoute + '/frometh/' + ethaddress, {
+            method: 'GET',
+            headers: this.headers
+        });
+
+        let data = await response.json();
+        
+        return data;
+    }
 }
 
 export default OrganizationService;

@@ -28,11 +28,7 @@ contract Freelancer is Ownable {
         string description;
         bytes32 picture;
         FreelancerState state;
-        // This is the origin of the freelance for future use.
-        bool iskyc;
-        uint8 referral;
         uint subscription;
-
     }
     // Mapping of Freelancers Ethereum addresses => Freelancer information. TODO: put in private and use getFreelancer?
     mapping (address => FreelancerInformation) public Freelancers;
@@ -42,24 +38,6 @@ contract Freelancer is Ownable {
 
     // Address of the Talao Bot. He can get the Vault addresses of the Freelancers, but not the Vaults content.
     address TalaoBot;
-
-    // TODO: Keep those events???
-    event FreelancerUpdateData (
-        address indexed freelancer,
-        bytes32 firstname,
-        bytes32 lastname,
-        bytes32 mobile,
-        bytes32 email,
-        bytes32 title,
-        string description,
-        bytes32 picture
-    );
-    // TODO: Especially that one.
-    event FreelancerInternalData (
-        address indexed freelancer,
-        bool iskyc,
-        uint referral
-    );
 
     constructor(address _token)
         public
@@ -82,12 +60,10 @@ contract Freelancer is Ownable {
           string description,
           bytes32 picture,
           bool isactive,
-          bool iskyc,
-          uint8 referral,
           uint subscription
         )
     {
-        FreelancerInformation storage thisFreelancer = Freelancers[_freelancer];
+        FreelancerInformation memory thisFreelancer = Freelancers[_freelancer];
 
         // Not for inactive Freelancers.
         require (thisFreelancer.state != FreelancerState.Inactive, 'Inactive Freelancer have no information to get.');
@@ -106,10 +82,22 @@ contract Freelancer is Ownable {
             thisFreelancer.description,
             thisFreelancer.picture,
             active,
-            thisFreelancer.iskyc,
-            thisFreelancer.referral,
             thisFreelancer.subscription
         );
+    }
+
+    /**
+     * @dev Getter to see if Freelancer is active.
+     */
+    function isActive(address _freelancer)
+        public
+        view
+        returns(bool)
+    {
+      if (Freelancers[_freelancer].state == FreelancerState.Active) {
+          return true;
+      }
+      return false;
     }
 
     /**
@@ -168,20 +156,8 @@ contract Freelancer is Ownable {
         thisFreelancer.email = _email;
         thisFreelancer.title = _title;
         thisFreelancer.description = _description;
+        thisFreelancer.state = FreelancerState.Active;
         thisFreelancer.picture = _picture;
-
-        // Emit event.
-        // TODO: GDPR => delete?
-        emit FreelancerUpdateData(
-            _freelancer,
-            _firstname,
-            _lastname,
-            _mobile,
-            _email,
-            _title,
-            _description,
-            _picture
-        );
     }
 
     /**
@@ -207,19 +183,6 @@ contract Freelancer is Ownable {
     }
 
     /**
-     * @dev Only Owner can set internal freelance data. //TODO??? Owner of Freelancer?
-     */
-    function setInternalData(bool _iskyc, uint8 _referral)
-        public
-    {
-        require (Freelancers[msg.sender].state != FreelancerState.Inactive, 'Impossible, this Freelance is inactive.');
-
-        Freelancers[msg.sender].iskyc = _iskyc;
-        Freelancers[msg.sender].referral = _referral;
-        emit FreelancerInternalData(msg.sender, _iskyc, _referral);
-    }
-
-    /**
      * @dev Owner can activate Freelancer.
      */
     function setActive(address _freelancer)
@@ -227,16 +190,6 @@ contract Freelancer is Ownable {
         onlyOwner
     {
         Freelancers[_freelancer].state = FreelancerState.Active;
-    }
-
-    /**
-     * @dev Owner can deactivate Freelancer.//TODO: does not delete data!
-     */
-    function setInactive(address _freelancer)
-        public
-        onlyOwner
-    {
-        Freelancers[_freelancer].state = FreelancerState.Inactive;
     }
 
     /**

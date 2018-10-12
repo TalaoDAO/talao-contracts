@@ -1,7 +1,7 @@
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
 import { fetchUser } from '../actions/user'
 import FileService from '../services/FileService';
-import { uploadFileBegin, uploadFileSuccess } from '../actions/experience';
+import { asyncCallBegin, asyncCallSuccess } from '../actions/experience';
 
 export const CREATE_VAULT_BEGIN       = 'CREATE_VAULT_BEGIN';
 export const INIT_VAULT_DEPOSIT       = 'INIT_VAULT_DEPOSIT';
@@ -151,7 +151,7 @@ export function addProfilePicture(event) {
         reader.onload = function (event) {
             dispatch(addProfilPictureSuccess(event.target.result, profilePicture));
         }
-        reader.readAsDataURL(profilePicture); 
+        reader.readAsDataURL(profilePicture);
     }
 };
 
@@ -215,17 +215,17 @@ export function setAccessPrice(accessPrice, user) {
 
         //set the access price
         user.tokenContract.methods.createVaultAccess(tokens_wei).send({ from: user.ethAddress, gasPrice: process.env.REACT_APP_TRANSACTION_SET_PRICE }
-        ).once('transactionHash', (hash) => { 
+        ).once('transactionHash', (hash) => {
             dispatch(transactionHash(hash));
         })
-        .once('receipt', (receipt) => { 
+        .once('receipt', (receipt) => {
             dispatch(transactionReceipt(receipt));
         })
-        .on('error', (error) => { 
+        .on('error', (error) => {
             dispatch(transactionError(error));
         }).then(() => {
             dispatch(setAccessPriceSuccess());
-        }).catch((err) => { 
+        }).catch((err) => {
             dispatch(setAccessPriceError(err));
         });
     }
@@ -234,73 +234,71 @@ export function setAccessPrice(accessPrice, user) {
 export function submitVault(user, accessPrice, fName, lName, titl, description, pho, mail, pictureToUpload) {
     return dispatch => {
 
-        dispatch(uploadFileBegin());
+        dispatch(asyncCallBegin());
         let pictureUrl;
         FileService.uploadToIpfs(pictureToUpload).then(result => {
             if (pictureToUpload) {
                 pictureUrl = FileService.getBytes32FromIpfsHash(result);
             } else if (user.freelancerDatas && user.freelancerDatas.pictureUrl) {
                 let parts = user.freelancerDatas.pictureUrl.split("/");
-                pictureUrl = FileService.getBytes32FromIpfsHash(parts[parts.length - 1]); 
+                pictureUrl = FileService.getBytes32FromIpfsHash(parts[parts.length - 1]);
             } else {
                 pictureUrl = '0x0000000000000000000000000000000000000000';
             }
         }).then(() => {
-            dispatch(uploadFileSuccess());
+            dispatch(asyncCallSuccess());
 
             dispatch(submitVaultBegin());
-    
+
             let firstName = window.web3.utils.fromAscii(fName);
             let lastname = window.web3.utils.fromAscii(lName);
             let phone = window.web3.utils.fromAscii(pho);
             let email = window.web3.utils.fromAscii(mail);
             let title = window.web3.utils.fromAscii(titl);
             let desc = description;
-    
+
             if (user.freelancerDatas) {
                 //Update the vault
                 dispatch(transactionBegin("Your profile is being updated...this transaction can take several seconds !"));
-                user.freelancerContract.methods.UpdateFreelancerData(user.ethAddress, firstName, lastname, phone, email, title, desc, pictureUrl).send(
+                user.freelancerContract.methods.setFreelancer(user.ethAddress, firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
-                        from: user.ethAddress, 
+                        from: user.ethAddress,
                         gasPrice: process.env.REACT_APP_TRANSACTION_UPDATE_VAULT
-                    }).once('transactionHash', (hash) => { 
+                    }).once('transactionHash', (hash) => {
                         dispatch(transactionHash(hash));
                     })
-                    .once('receipt', (receipt) => { 
+                    .once('receipt', (receipt) => {
                         dispatch(transactionReceipt(receipt));
                     })
-                    .on('confirmation', (confNumber, receipt) => { 
+                    .on('confirmation', (confNumber, receipt) => {
                     })
-                    .on('error', (error) => { 
+                    .on('error', (error) => {
                         dispatch(transactionError(error));
                     }).then(() => {
                         dispatch(submitVaultSuccess());
                         dispatch(fetchUser(user.ethAddress));
-                    }).catch((err) => { 
+                    }).catch((err) => {
                         dispatch(submitVaultError(err));
                     });
             } else {
                 //Create the vault
                 dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-                user.vaultFactoryContract.methods.CreateVaultContract(accessPrice, firstName, lastname, phone, email, title, desc, pictureUrl).send(
+                user.vaultFactoryContract.methods.createVaultContract(firstName, lastname, phone, email, title, desc, pictureUrl).send(
                     {
-                        from: user.ethAddress, 
+                        from: user.ethAddress,
                         gasPrice: process.env.REACT_APP_TRANSACTION_CREATE_VAULT
-                    }).once('transactionHash', (hash) => { 
+                    }).once('transactionHash', (hash) => {
                         dispatch(transactionHash(hash));
                     })
-                    .once('receipt', (receipt) => { 
+                    .once('receipt', (receipt) => {
                         dispatch(transactionReceipt(receipt));
                     })
-                    .on('confirmation', (confNumber, receipt) => { 
-                    })
-                    .on('error', (error) => { 
+                    .on('error', (error) => {
                         dispatch(transactionError(error));
                     }).then(() => {
                         dispatch(submitVaultSuccess());
                         dispatch(fetchUser(user.ethAddress));
-                    }).catch((err) => { 
+                    }).catch((err) => {
                         dispatch(submitVaultError(err));
                     });
             }
@@ -310,7 +308,7 @@ export function submitVault(user, accessPrice, fName, lName, titl, description, 
 
 export function setVaultInput(input, value) {
     return dispatch => {
-        switch (input) 
+        switch (input)
         {
             case 'firstName': dispatch(changeFirstName(value, !isTextLimitRespected(value), isEmpty(value))); break;
             case 'lastName': dispatch(changeLastName(value, !isTextLimitRespected(value), isEmpty(value))); break;

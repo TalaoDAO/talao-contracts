@@ -15,7 +15,7 @@ contract VaultFactory is Ownable {
     using SafeMath for uint;
 
     // Number of Vaults.
-    uint vaultsNb;
+    uint public vaultsNb;
     // Talao token.
     TalaoToken myToken;
     // Freelancer contract to store freelancers information.
@@ -36,20 +36,9 @@ contract VaultFactory is Ownable {
     }
 
     /**
-     * @dev Get total number of Vaults.
-     */
-    function getNbVaults()
-        public
-        view
-        returns(uint)
-    {
-        return vaultsNb;
-    }
-
-    /**
      * @dev Getter to see if a freelance has a Vault.
      */
-    function HasVault (address _freelance)
+    function hasVault (address _freelance)
         public
         view
         returns (bool)
@@ -100,7 +89,6 @@ contract VaultFactory is Ownable {
      * @dev Talent can call this method to create a new Vault contract with the maker being the owner of this new Vault.
      */
     function createVaultContract (
-        uint256 _price,
         bytes32 _firstname,
         bytes32 _lastname,
         bytes32 _mobile,

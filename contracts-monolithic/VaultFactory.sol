@@ -1619,11 +1619,7 @@ contract Freelancer is Ownable {
         string description;
         bytes32 picture;
         FreelancerState state;
-        // This is the origin of the freelance for future use.
-        bool iskyc;
-        uint8 referral;
         uint subscription;
-
     }
     // Mapping of Freelancers Ethereum addresses => Freelancer information. TODO: put in private and use getFreelancer?
     mapping (address => FreelancerInformation) public Freelancers;
@@ -1633,24 +1629,6 @@ contract Freelancer is Ownable {
 
     // Address of the Talao Bot. He can get the Vault addresses of the Freelancers, but not the Vaults content.
     address TalaoBot;
-
-    // TODO: Keep those events???
-    event FreelancerUpdateData (
-        address indexed freelancer,
-        bytes32 firstname,
-        bytes32 lastname,
-        bytes32 mobile,
-        bytes32 email,
-        bytes32 title,
-        string description,
-        bytes32 picture
-    );
-    // TODO: Especially that one.
-    event FreelancerInternalData (
-        address indexed freelancer,
-        bool iskyc,
-        uint referral
-    );
 
     constructor(address _token)
         public
@@ -1673,12 +1651,10 @@ contract Freelancer is Ownable {
           string description,
           bytes32 picture,
           bool isactive,
-          bool iskyc,
-          uint8 referral,
           uint subscription
         )
     {
-        FreelancerInformation storage thisFreelancer = Freelancers[_freelancer];
+        FreelancerInformation memory thisFreelancer = Freelancers[_freelancer];
 
         // Not for inactive Freelancers.
         require (thisFreelancer.state != FreelancerState.Inactive, 'Inactive Freelancer have no information to get.');
@@ -1697,10 +1673,22 @@ contract Freelancer is Ownable {
             thisFreelancer.description,
             thisFreelancer.picture,
             active,
-            thisFreelancer.iskyc,
-            thisFreelancer.referral,
             thisFreelancer.subscription
         );
+    }
+
+    /**
+     * @dev Getter to see if Freelancer is active.
+     */
+    function isActive(address _freelancer)
+        public
+        view
+        returns(bool)
+    {
+      if (Freelancers[_freelancer].state == FreelancerState.Active) {
+          return true;
+      }
+      return false;
     }
 
     /**
@@ -1759,20 +1747,8 @@ contract Freelancer is Ownable {
         thisFreelancer.email = _email;
         thisFreelancer.title = _title;
         thisFreelancer.description = _description;
+        thisFreelancer.state = FreelancerState.Active;
         thisFreelancer.picture = _picture;
-
-        // Emit event.
-        // TODO: GDPR => delete?
-        emit FreelancerUpdateData(
-            _freelancer,
-            _firstname,
-            _lastname,
-            _mobile,
-            _email,
-            _title,
-            _description,
-            _picture
-        );
     }
 
     /**
@@ -1798,19 +1774,6 @@ contract Freelancer is Ownable {
     }
 
     /**
-     * @dev Only Owner can set internal freelance data. //TODO??? Owner of Freelancer?
-     */
-    function setInternalData(bool _iskyc, uint8 _referral)
-        public
-    {
-        require (Freelancers[msg.sender].state != FreelancerState.Inactive, 'Impossible, this Freelance is inactive.');
-
-        Freelancers[msg.sender].iskyc = _iskyc;
-        Freelancers[msg.sender].referral = _referral;
-        emit FreelancerInternalData(msg.sender, _iskyc, _referral);
-    }
-
-    /**
      * @dev Owner can activate Freelancer.
      */
     function setActive(address _freelancer)
@@ -1818,16 +1781,6 @@ contract Freelancer is Ownable {
         onlyOwner
     {
         Freelancers[_freelancer].state = FreelancerState.Active;
-    }
-
-    /**
-     * @dev Owner can deactivate Freelancer.//TODO: does not delete data!
-     */
-    function setInactive(address _freelancer)
-        public
-        onlyOwner
-    {
-        Freelancers[_freelancer].state = FreelancerState.Inactive;
     }
 
     /**
@@ -1884,8 +1837,6 @@ contract Vault is Ownable {
 
     // Documents counter.
     uint documentsCounter;
-    // Number of valid (= "published") documents in this Vault.
-    uint public publishedDocumentsNb;
     // Used to parse all documents using index as relationship between this array and TalentsDocuments mapping.
     uint[] documentIndex;
     // Document struct.
@@ -1917,6 +1868,7 @@ contract Vault is Ownable {
     mapping(uint => Document) public Documents;
 
     // Event: new document added.
+    // TODO: see with PH we can change the frontend to remove events.
     event NewDocument (
         uint id,
         bytes32 title,
@@ -1941,6 +1893,15 @@ contract Vault is Ownable {
     }
 
     /**
+     * Modifier for functions to allow only active Freelancers.
+     */
+    modifier onlyActiveFreelancer () {
+        // Accept only active Freelancers.
+        require(myFreelancer.isActive(msg.sender), 'Sender is not active.');
+        _;
+    }
+
+    /**
      * Modifier for functions to allow only users who have access to the Vault in the token + Partners.
      */
     modifier onlyVaultReaders () {
@@ -1949,109 +1910,6 @@ contract Vault is Ownable {
         // Accept only users who have access to the Vault in the token + Partners.
         require(myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess (msg.sender, owner), 'Sender has no Vault access.');
         _;
-    }
-
-    /**
-     * @dev Create a document.
-     */
-    function createDoc(
-        bytes32 _title,
-        string _description,
-        uint _start,
-        uint _end,
-        uint _duration,
-        bytes32[] _keywords,
-        uint[] _ratings,
-        uint _doctype,
-        bytes32 _ipfs
-    )
-        public
-        onlyOwner
-        returns (uint)
-    {
-        // Validate parameters.
-        require(_title != 0, 'Title can not be empty.');
-        require(_doctype > 0, 'Type must be > 0.');
-
-        // Increment documents counter.
-        documentsCounter = documentsCounter.add(1);
-        // Increment number of valid documents.
-        publishedDocumentsNb = publishedDocumentsNb.add(1);
-
-        // Write document data.
-        Document storage doc = Documents[documentsCounter];
-        doc.title = _title;
-        doc.description = _description;
-        doc.start = _start;
-        doc.end = _end;
-        doc.duration = _duration;
-        doc.keywords = _keywords;
-        doc.ratings = _ratings;
-        doc.doctype = _doctype;
-        doc.ipfs = _ipfs;
-        doc.published = true;
-        doc.index = documentIndex.push(documentsCounter).sub(1);
-
-        // Emit event.
-        emit NewDocument(
-            documentsCounter,
-            _title,
-            _description,
-            _start,
-            _end,
-            _duration,
-            _keywords,
-            _ratings,
-            _doctype,
-            _ipfs
-        );
-
-        return documentsCounter;
-    }
-
-    /**
-     * @dev Remove a document.
-     */
-    function deleteDoc (uint _id)
-        public
-        onlyOwner
-    {
-        // Validate parameter.
-        require (_id > 0, 'Document ID must be > 0.');
-        // Only published documents can be removed.
-        require (Documents[_id].published, 'Only published documents can be removed.');
-
-        // Remove document data.
-        delete Documents[_id];
-        // Check that among all document data, published is now false (the default value).
-        assert(!Documents[_id].published);
-        // Remove document from index.
-        delete documentIndex[_id];
-        // Document removal successfull, decrement number of published documents in Vault.
-        publishedDocumentsNb = publishedDocumentsNb.sub(1);
-    }
-
-    /**
-     * @dev Set an IPFS hash of an IPFS uploaded file, to attach it.
-     * @param _id uint Document ID.
-     * @param _ipfs bytes32 IPFS hash of the file.
-     */
-    function addDocIpfs(
-        uint _id,
-        bytes32 _ipfs
-    )
-        public
-        onlyOwner
-    {
-        // Validate parameters.
-        require(_id > 0, 'Document ID must be > 0.');
-         //TODO: better IPFS hash validation.
-        require(_ipfs != 0, 'IPFS hash can not be empty.');
-        // IPFS files can be attached only to published documents.
-        require (Documents[_id].published, 'IPFS files can be attached only to published documents.');
-
-        // Write data.
-        Documents[_id].ipfs = _ipfs;
     }
 
     /**
@@ -2091,7 +1949,7 @@ contract Vault is Ownable {
         require(_id > 0, 'Document ID must be > 0.');
         require(Documents[_id].published, 'Document does not exist.');
 
-        Document storage doc = Documents[_id];
+        Document memory doc = Documents[_id];
         return (
             doc.title,
             doc.description,
@@ -2121,6 +1979,18 @@ contract Vault is Ownable {
     }
 
     /**
+     * @dev Get all published documents.
+     */
+    function getDocs()
+        view
+        public
+        onlyVaultReaders
+        returns (uint[])
+    {
+        return documentIndex;
+    }
+
+    /**
      * @dev Get document by index.
      * @param _index uint Document index.
      */
@@ -2141,7 +2011,7 @@ contract Vault is Ownable {
         )
     {
         uint id = documentIndex[_index];
-        Document storage doc = Documents[id];
+        Document memory doc = Documents[id];
         return (
             doc.title,
             doc.description,
@@ -2156,15 +2026,118 @@ contract Vault is Ownable {
     }
 
     /**
-     * @dev Get documents index.
+     * @dev Create a document.
      */
-    function getDocumentsIndex()
-        view
+    function createDoc(
+        bytes32 _title,
+        string _description,
+        uint _start,
+        uint _end,
+        uint _duration,
+        bytes32[] _keywords,
+        uint[] _ratings,
+        uint _doctype,
+        bytes32 _ipfs
+    )
         public
-        onlyVaultReaders
-        returns (uint[])
+        onlyOwner
+        onlyActiveFreelancer
+        returns (uint)
     {
-        return documentIndex;
+        // Validate parameters.
+        require(_title != 0, 'Title can not be empty.');
+        require(_doctype > 0, 'Type must be > 0.');
+
+        // Increment documents counter.
+        documentsCounter = documentsCounter.add(1);
+
+        // Write document data.
+        Document storage doc = Documents[documentsCounter];
+        doc.title = _title;
+        doc.description = _description;
+        doc.start = _start;
+        doc.end = _end;
+        doc.duration = _duration;
+        doc.keywords = _keywords;
+        doc.ratings = _ratings;
+        doc.doctype = _doctype;
+        doc.ipfs = _ipfs;
+        doc.published = true;
+        doc.index = documentIndex.push(documentsCounter).sub(1);
+
+        // Emit event.
+        // TODO: see with PH we can change the frontend to remove events.
+        emit NewDocument(
+            documentsCounter,
+            _title,
+            _description,
+            _start,
+            _end,
+            _duration,
+            _keywords,
+            _ratings,
+            _doctype,
+            _ipfs
+        );
+
+        return documentsCounter;
+    }
+
+    /**
+     * @dev Set an IPFS hash of an IPFS uploaded file, to attach it.
+     * @param _id uint Document ID.
+     * @param _ipfs bytes32 IPFS hash of the file.
+     */
+    function addDocIpfs(
+        uint _id,
+        bytes32 _ipfs
+    )
+        public
+        onlyOwner
+        onlyActiveFreelancer
+    {
+        // Validate parameters.
+        require(_id > 0, 'Document ID must be > 0.');
+         //TODO: better IPFS hash validation.
+        require(_ipfs != 0, 'IPFS hash can not be empty.');
+        // IPFS files can be attached only to published documents.
+        require (Documents[_id].published, 'IPFS files can be attached only to published documents.');
+
+        // Write data.
+        Documents[_id].ipfs = _ipfs;
+    }
+
+    /**
+     * @dev Remove a document.
+     */
+    function deleteDoc (uint _id)
+        public
+        onlyOwner
+        onlyActiveFreelancer
+    {
+        // Validate parameter.
+        require (_id > 0, 'Document ID must be > 0.');
+        // Only published documents can be removed.
+        require (Documents[_id].published, 'Only published documents can be removed.');
+
+        /**
+         * Remove document from index.
+         * It can not maintain order because it would probably cost too much to update all the documents.
+         * So ordering has to be done in the frontend, which is easy, you just have to order by increasing ID.
+         * I'm not sure the index in the Document struct is usefull anyways...
+         */
+        // If the removed document is not the last in the index,
+        if (Documents[_id].index < (documentIndex.length - 1)) {
+          // Then replace it in the index by the last document in the index.
+          documentIndex[Documents[_id].index] = documentIndex[(documentIndex.length - 1)];
+          // Update document that was moved from last position.
+          Documents[documentIndex[Documents[_id].index]].index = documentIndex[Documents[_id].index];
+        }
+        // Remove last element from index.
+        documentIndex.length --;
+
+        // Remove document data.
+        delete Documents[_id];
     }
 
     /**
@@ -2190,7 +2163,7 @@ contract VaultFactory is Ownable {
     using SafeMath for uint;
 
     // Number of Vaults.
-    uint vaultsNb;
+    uint public vaultsNb;
     // Talao token.
     TalaoToken myToken;
     // Freelancer contract to store freelancers information.
@@ -2211,20 +2184,9 @@ contract VaultFactory is Ownable {
     }
 
     /**
-     * @dev Get total number of Vaults.
-     */
-    function getNbVaults()
-        public
-        view
-        returns(uint)
-    {
-        return vaultsNb;
-    }
-
-    /**
      * @dev Getter to see if a freelance has a Vault.
      */
-    function HasVault (address _freelance)
+    function hasVault (address _freelance)
         public
         view
         returns (bool)
@@ -2275,7 +2237,6 @@ contract VaultFactory is Ownable {
      * @dev Talent can call this method to create a new Vault contract with the maker being the owner of this new Vault.
      */
     function createVaultContract (
-        uint256 _price,
         bytes32 _firstname,
         bytes32 _lastname,
         bytes32 _mobile,

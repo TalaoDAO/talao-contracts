@@ -40,7 +40,7 @@ class Experience {
 
         let response = await fetch(this.experienceRoute, {
             method: 'GET',
-            headers: this.headers,
+            headers: this.headers
         });
 
         let data = await response.json();
@@ -48,6 +48,44 @@ class Experience {
         return data;
     }
 
+    async getAllFromEth(ethaddress) {
+
+        let response = await fetch(this.experienceRoute + '/frometh/' + ethaddress, {
+            method: 'GET',
+            headers: this.headers
+        });
+
+        let data = await response.json();
+        
+        return data;
+    }
+
+    async delete(id) {
+
+        let response = await fetch(this.experienceRoute + '/delete/' + id, {
+            method: 'DELETE',
+            headers: this.headers
+        });
+
+        let data = await response.json();
+        
+        return data;
+    }
+
+    async update(id, experience) {
+
+        let response = await fetch(this.experienceRoute + '/update/' + id, {
+            method: 'PUT',
+            headers: this.headers,
+            body: JSON.stringify({
+                experience
+            })
+        });
+
+        let data = await response.json();
+        
+        return data;
+    }
 }
 
 export default ExperienceService;

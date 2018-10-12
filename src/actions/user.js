@@ -84,20 +84,32 @@ export function fetchUser(address) {
                                     if (reject) {
                                         dispatch(fetchUserError(reject))
                                     }
-
-                                    //get all documents & competencies
                                     if (resolve) {
-                                        user.freelancerDatas.getAllDocuments().then(resolve => {
-                                            if (resolve) {      
-                                                //User is a freelancer
-                                                user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
+                                        //get docs from the backend
+                                        user.freelancerDatas.getAllDraftDocumentsFromBackend().then(resolve => {
+                                            if (resolve) {
+                                                //get docs from blockchain
+                                                user.freelancerDatas.getAllDocsId().then(resolve => {
                                                     if (resolve) {
-                                                        dispatch(fetchUserSuccess(user));
-                                                        dispatch(resetGuard());
+                                                        user.freelancerDatas.getAllDocuments(resolve).then(resolve => {
+                                                            if (resolve) {
+                                                                //User is a freelancer
+                                                                user.freelancerDatas.getCompetencies().then(resolve => {
+                                                                    if (resolve) {
+                                                                        user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
+                                                                            if (resolve) {
+                                                                                dispatch(fetchUserSuccess(user));
+                                                                                dispatch(resetGuard());
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
                                                     }
-                                                });                                                       
+                                                });
                                             }
-                                        })
+                                        });
                                     }
                                 });
                         } else {
@@ -142,10 +154,8 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                         currentUser.talaoContract.methods.data(searchedFreelancerAddress).call().then(info => {
                             currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
                             currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
-                                if (resolve) {      
-                                    currentUser.searchedFreelancers.getGlobalConfidenceIndex().then(resolve => {
-                                        dispatch(fetchFreelancerSuccess(currentUser));
-                                    });                                                              
+                                if (resolve) {
+                                    dispatch(fetchFreelancerSuccess(currentUser));
                                 }
                             })
                         });

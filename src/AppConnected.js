@@ -42,7 +42,7 @@ const styles = theme =>
       position: 'fixed',
       bottom: '0pt',
       left: '0pt',
-    },
+    }
   });
 
 const mapStateToProps = state => ({
@@ -144,6 +144,14 @@ class AppConnected extends React.Component {
         />
       );
     }
+    const MyDashboardComponent = (props) => {
+      return (
+        <Dashboard
+          user={user}
+          {...props}
+        />
+      );
+    }
     return (
       <Router>
         <MuiThemeProvider theme={theme}>
@@ -163,7 +171,7 @@ class AppConnected extends React.Component {
                       <Route exact path="/homepage" component={MyHomePageComponent} />
                       <Route exact path="/competencies" component={MyCompetenciesComponent} />
                       <Route exact path="/unlockfreelancer" component={MyUnlockFreelancerComponent}/>
-                      <Route exact path="/dashboard" component={Dashboard}/>
+                      <Route exact path="/dashboard" component={MyDashboardComponent}/>
                       <Route path="/competencies/:competencyName" component={MyCompetenciesComponent} />
                       <Redirect from="/" to='/homepage' />
                     </Switch>

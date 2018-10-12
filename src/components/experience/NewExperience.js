@@ -8,7 +8,7 @@ import blue from '@material-ui/core/colors/blue';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import Skills from '../skills/Skills';
-import { setExperienceFormInput, newExperienceClicked, getOrganizations, setSkills } from '../../actions/experience';
+import { setExperienceFormInput, setOrganizationFormInput, newExperienceClicked, fetchExperience } from '../../actions/experience';
 import { TEXT_VALIDATOR_LENGTH } from '../../actions/createVault';
 
 const styles = theme => ({
@@ -113,6 +113,7 @@ const mapStateToProps = state => ({
     user: state.userReducer.user,
     newExperience: state.experienceReducer.newExperience,
     formData: state.experienceReducer.formData,
+    newOrganizationData: state.experienceReducer.newOrganizationData,
     organizations: state.experienceReducer.organizations,
   });
 
@@ -165,74 +166,96 @@ class NewExperience extends React.Component {
             s.splice(s.length - 1);
             this.setState({skills: s});
             let idToDelete = s.length + 1;
-            this.props.dispatch(setSkills({['skill' + idToDelete]: '#del'}));
+            this.props.dispatch(setExperienceFormInput(['skill' + idToDelete], ''));
         }
     }
 
     handleChooseCompany(newVal) {
         this.setState({selectedCompanyName: newVal});
-        this.setState({selectedCompany: this.props.organizations.find(x => x.name === newVal)}, () => {
-            this.props.dispatch(setExperienceFormInput('companyId', this.state.selectedCompany.id));
-            this.props.dispatch(setExperienceFormInput('contactFirstName', this.state.selectedCompany.responsible_first_name));
-            this.props.dispatch(setExperienceFormInput('contactLastName', this.state.selectedCompany.responsible_last_name));
-            this.props.dispatch(setExperienceFormInput('contactJobTitle', this.state.selectedCompany.responsible_job_title));
-        });
-        if (newVal === 'CompanyNotInTheList')
-            return;
+        if (newVal === 'CompanyNotInTheList') {
+            this.setState({selectedCompany: null});
+            this.props.dispatch(setExperienceFormInput('contactFirstName', ''));
+            this.props.dispatch(setExperienceFormInput('contactLastName', ''));
+            this.props.dispatch(setExperienceFormInput('contactJobTitle', ''));
+            this.props.dispatch(setExperienceFormInput('finalClientCompany', ''));
+        } else {
+            this.props.dispatch({type: 'RESET_ORGANIZATION_REDUCER'});
+            this.setState({selectedCompany: this.props.organizations.find(x => x.name === newVal)}, () => {
+                this.props.dispatch(setExperienceFormInput('organizationId', this.state.selectedCompany.id));
+                this.props.dispatch(setExperienceFormInput('contactFirstName', this.state.selectedCompany.is_partner ? '' : this.state.selectedCompany.responsible_first_name));
+                this.props.dispatch(setExperienceFormInput('contactLastName', this.state.selectedCompany.is_partner ? '' : this.state.selectedCompany.responsible_last_name));
+                this.props.dispatch(setExperienceFormInput('contactJobTitle', this.state.selectedCompany.is_partner ? '' : this.state.selectedCompany.responsible_job_title));
+                this.props.dispatch(setExperienceFormInput('finalClientCompany', ''));
+                this.props.dispatch(setExperienceFormInput('partner_text', ''));
+            });
+        }
+    }
+
+    allSkillFill() {
+        for(let i = 1; i < this.state.skills.length + 1; i++) {
+            if (this.isEmpty(this.props.formData['skill' + i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    canSubmit() {
+        return !this.isEmpty(this.props.formData.date_start) &&
+               !this.isEmpty(this.props.formData.date_end) &&
+               !this.isEmpty(this.props.formData.job_title) &&
+               !this.isEmpty(this.props.formData.job_duration) &&
+               !this.isOverTextLimit(this.props.formData.job_title) &&  
+               !this.isEmpty(this.props.formData.job_description) && 
+               this.state.selectedCompanyName && 
+               this.allSkillFill() &&
+               (this.state.selectedCompanyName !== 'CompanyNotInTheList' ?                
+               !this.isEmpty(this.props.formData.contactLastName) &&
+               !this.isEmpty(this.props.formData.contactFirstName) &&
+               !this.isEmpty(this.props.formData.contactJobTitle) &&
+               (this.state.selectedCompany.is_partner ? !this.isEmpty(this.props.formData.finalClientCompany) : true) : 
+               !this.isEmpty(this.props.newOrganizationData.name) &&                                                                          
+               !this.isEmpty(this.props.newOrganizationData.responsible_first_name) &&
+               !this.isEmpty(this.props.newOrganizationData.responsible_last_name) && 
+               !this.isEmpty(this.props.newOrganizationData.responsible_job_title) &&
+               !this.isEmpty(this.props.newOrganizationData.email))
     }
 
     saveExperience() {
-      /* let experience = {
-           job_description: this.props.description,
-           job_title: this.props.title,
-           date_start: this.props.from,
-           date_end: this.props.to,
-           freelanceName: this.props.user.freelancerDatas.firstName + ' ' + this.props.user.freelancerDatas.lastName,
-           freelanceEthereumAddress: this.props.user.freelancerDatas.ethAddress,
-           freelanceEmail: this.props.user.freelancerDatas.email,
-           skill1: this.props.skill1,
-           skill2: this.props.skill2,
-           skill3: this.props.skill3,
-           skill4: this.props.skill4,
-           skill5: this.props.skill5,
-           skill6: this.props.skill6,
-           skill7: this.props.skill7,
-           skill8: this.props.skill8,
-           skill9: this.props.skill9,
-           skill10: this.props.skill10,
-           status: 1,
-           organizationId: this.state.selectedCompany.id
-       }
-       this.props.dispatch(setExperience(experience, this.props.user));*/
-    }
-
-    componentDidMount() {
-        this.props.dispatch(getOrganizations());
+        if (this.state.selectedCompany && this.state.selectedCompany.is_partner)
+            this.props.dispatch(setExperienceFormInput('partner_text', 'I hereby certify that ' + 
+                                                 this.props.user.freelancerDatas.firstName + ' ' + 
+                                                 this.props.user.freelancerDatas.lastName + ' worked with ' + 
+                                                 this.props.formData.contactFirstName + ' ' + this.props.formData.contactLastName + ', ' +
+                                                 this.props.formData.contactJobTitle + ' at '  + this.state.selectedCompanyName));
+        if (this.state.selectedCompanyName === 'CompanyNotInTheList') 
+            this.props.dispatch(fetchExperience(this.props.formData, this.props.newOrganizationData, this.props.user));
+        else 
+            this.props.dispatch(fetchExperience(this.props.formData, null, this.props.user));
+        this.setState({skills: [{}], selectedCompanyName: '', selectedCompany: null})
     }
 
     render() {
         const { 
             formData,
             newExperience,
-            organizations
+            organizations,
+            newOrganizationData,
+            user
         } = this.props;
 
         let skills = this.state.skills.map((skill, index) => {
-            return (
-                <Skills key={index+1} id={index+1}/>
-            );
+            return ( <Skills key={index+1} id={index+1}/> );
         });
 
-        let companys = organizations.map(organization => {
-            return (
-                <MenuItem key={organization.id} value={organization.name}>{organization.name}</MenuItem>
-            );
+        let companys = (organizations) && organizations.map(organization => {
+            return ( <MenuItem key={organization.id} value={organization.name}>{organization.name}</MenuItem> );
         });
 
         return (
             <div>
                 <div>
-                <div onClick={() => this.props.dispatch(newExperienceClicked(!newExperience))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
+                <div onClick={() => this.props.dispatch(newExperienceClicked(!newExperience, user))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
                         <span style={{ display: !newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>+</span>
                         <span style={{ display: newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>-</span>
                     </div>
@@ -281,7 +304,7 @@ class NewExperience extends React.Component {
                                     id="from"
                                     label="From"
                                     type="date"
-                                    value={formData.date_start}
+                                    value={(formData) && formData.date_start}
                                     onChange={(event) => this.props.dispatch(setExperienceFormInput('date_start', event.target.value))}
                                     required
                                     error={this.isEmpty(formData.date_start)}
@@ -324,7 +347,20 @@ class NewExperience extends React.Component {
                                     }}
                                 />
                             </Grid>
-                            <Grid item lg={6}></Grid>
+                            <Grid item lg={3} xs={12}>
+                                    <TextField
+                                        required
+                                        type="number"
+                                        value={formData.job_duration}
+                                        error={this.isEmpty(formData.job_duration)}
+                                        helperText={this.isEmpty(formData.job_duration) ? 'This field is required' : ''}
+                                        onChange={(event) => this.props.dispatch(setExperienceFormInput('job_duration', event.target.value))}
+                                        className={this.props.classes.textField}
+                                        label="Job duration"
+                                        id="jobDuration"
+                                    />
+                            </Grid>
+                            <Grid item lg={12}></Grid>
                             <Grid item lg={6} xs={12}>
                                     <TextField
                                         required
@@ -379,7 +415,8 @@ class NewExperience extends React.Component {
                             <Grid item lg={6} xs={12}>
                                 <TextField
                                     required
-                                    style={{ display: (this.state.selectedCompany && this.state.selectedCompany.is_partner) ? 'flex' : 'none'}}
+                                    style={{ display: (this.state.selectedCompany && 
+                                                       this.state.selectedCompany.is_partner) ? 'flex' : 'none'}}
                                     type="text"
                                     value={formData.finalClientCompany}
                                     error={this.isEmpty(formData.finalClientCompany)}
@@ -394,6 +431,7 @@ class NewExperience extends React.Component {
                             <Grid item lg={3} xs={12}>
                                 <TextField
                                     required
+                                    style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
                                     type="text"
                                     value={formData.contactLastName}
                                     error={this.isEmpty(formData.contactLastName)}
@@ -407,6 +445,7 @@ class NewExperience extends React.Component {
                             <Grid item lg={3} xs={12}>
                                 <TextField
                                     required
+                                    style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
                                     type="text"
                                     value={formData.contactFirstName}
                                     error={this.isEmpty(formData.contactFirstName)}
@@ -420,6 +459,7 @@ class NewExperience extends React.Component {
                             <Grid item lg={3} xs={12}>
                                 <TextField
                                     required
+                                    style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
                                     type="text"
                                     value={formData.contactJobTitle}
                                     error={this.isEmpty(formData.contactJobTitle)}
@@ -430,6 +470,92 @@ class NewExperience extends React.Component {
                                     id="contactJobTitle"
                                 />
                             </Grid>
+
+
+
+                            <Grid item lg={12} xs={12} />
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.name}
+                                    error={this.isEmpty(newOrganizationData.name)}
+                                    helperText={!this.isEmpty(newOrganizationData.name) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('name', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Company name"
+                                    id="companyName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.responsible_first_name}
+                                    error={this.isEmpty(newOrganizationData.responsible_first_name)}
+                                    helperText={!this.isEmpty(newOrganizationData.responsible_first_name) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_first_name', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Responsible first name"
+                                    id="responsibleFirstName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.responsible_last_name}
+                                    error={this.isEmpty(newOrganizationData.responsible_last_name)}
+                                    helperText={!this.isEmpty(newOrganizationData.responsible_last_name) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_last_name', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Responsible last name"
+                                    id="responsibleLastName"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12} />
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.responsible_job_title}
+                                    error={this.isEmpty(newOrganizationData.responsible_job_title)}
+                                    helperText={!this.isEmpty(newOrganizationData.responsible_job_title) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_job_title', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Responsible job title"
+                                    id="responsibleJobTitle"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    required
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.email}
+                                    error={this.isEmpty(newOrganizationData.email)}
+                                    helperText={!this.isEmpty(newOrganizationData.email) ? '' : 'This field is required.'}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('email', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Company email"
+                                    id="companyEmail"
+                                />
+                            </Grid>
+                            <Grid item lg={3} xs={12}>
+                                <TextField
+                                    style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
+                                    type="text"
+                                    value={newOrganizationData.phone}
+                                    onChange={(event) => this.props.dispatch(setOrganizationFormInput('phone', event.target.value))}
+                                    className={this.props.classes.textField}
+                                    label="Company phone"
+                                    id="companyPhone"
+                                />
+                            </Grid>
                             <Grid item lg={12} xs={12} />
                             <Grid item lg={6} xs={12}>
                                 <Button className={this.props.classes.certificatButton} onClick={() => this.handleAddSkills()}>Add skills</Button>
@@ -438,7 +564,7 @@ class NewExperience extends React.Component {
                             <Grid item lg={6} xs={12} />
                                 {skills}
                             <Grid item lg={12} xs={12}>
-                                <Button className={this.props.classes.certificatButton} onClick={() => this.saveExperience()}>Save</Button>
+                                <Button className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} onClick={() => this.saveExperience()}>Save</Button>
                             </Grid>
                         </form>
                     </Grid>

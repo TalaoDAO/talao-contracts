@@ -1,123 +1,52 @@
-import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions'
-
-import OrganizationService from '../api/organization';
 import Experience from '../models/Experience';
 import { fetchUserSuccess } from '../actions/user'
 import Competency from '../models/Competency';
-import FileService from '../services/FileService';
 import { changeMenu } from './menu';
 import ExperienceService from '../api/experiences';
+import OrganizationService from '../api/organization';
+import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions';
+import FileService from '../services/FileService';
 
-export const GET_ORGANIZATIONS_BEGIN   = 'GET_ORGANIZATIONS_BEGIN';
-export const GET_ORGANIZATIONS_SUCCESS = 'GET_ORGANIZATIONS_SUCCESS';
-export const GET_ORGANIZATIONS_ERROR   = 'GET_ORGANIZATIONS_ERROR';
-export const SET_EXPERIENCE_FORM_INPUT = 'SET_EXPERIENCE_FORM_INPUT';
+export const ASYNC_CALL_BEGIN            = 'ASYNC_CALL_BEGIN';
+export const ASYNC_CALL_SUCCESS          = 'ASYNC_CALL_SUCCESS';
+export const ASYNC_CALL_ERROR            = 'ASYNC_CALL_ERROR';
+export const GET_ORGANIZATIONS           = 'GET_ORGANIZATIONS';
+export const SET_EXPERIENCE_FORM_INPUT   = 'SET_EXPERIENCE_FORM_INPUT';
+export const SET_ORGANIZATION_FORM_INPUT = 'SET_ORGANIZATION_FORM_INPUT';
+export const EXPAND_PROFIL               = 'EXPAND_PROFIL';
+export const NEW_EXPERIENCE_CLICKED      = 'NEW_EXPERIENCE_CLICKED';
 
-export const ADD_DOC_BEGIN             = 'ADD_DOC_BEGIN';
-export const ADD_DOC_SUCCESS           = 'ADD_DOC_SUCCESS';
-export const ADD_DOC_ERROR             = 'ADD_DOC_ERROR';
-export const REMOVE_DOC_BEGIN          = 'REMOVE_DOC_BEGIN';
-export const REMOVE_DOC_SUCCESS        = 'REMOVE_DOC_SUCCESS';
-export const REMOVE_DOC_ERROR          = 'REMOVE_DOC_ERROR';
-export const NEW_EXPERIENCE_CLICKED    = 'NEW_EXPERIENCE_CLICKED';
-export const ADD_CERTIFICAT_CLICKED    = 'ADD_CERTIFICAT_CLICKED';
-export const ADD_CERTIFICAT_BEGIN      = 'ADD_CERTIFICAT_BEGIN';
-export const ADD_CERTIFICAT_SUCCESS    = 'ADD_CERTIFICAT_SUCCESS';
-export const UPLOAD_SUCCESS            = 'UPLOAD_SUCCESS';
-export const UPLOAD_BEGIN              = 'UPLOAD_BEGIN';
-export const EXPAND_PROFIL             = 'EXPAND_PROFIL';
-export const UPLOAD_ERROR              = 'UPLOAD_ERROR';
-export const MOVE_TO_ADD_NEW_EXP       = 'MOVE_TO_ADD_NEW_EXP';
-export const SET_SKILLS                = 'SET_SKILLS';
-export const SET_EXPERIENCE_BEGIN      = 'SET_EXPERIENCE_BEGIN';
-export const SET_EXPERIENCE_ERROR      = 'SET_EXPERIENCE_ERROR';
-export const SET_EXPERIENCE_SUCCESS    = 'SET_EXPERIENCE_SUCCESS';
-
-export const getOrganizationsBegin = () => ({
-    type: GET_ORGANIZATIONS_BEGIN
+//API STATE
+export const asyncCallBegin = () => ({
+    type: ASYNC_CALL_BEGIN
   });
 
-export const getOrganizationsSuccess = (organizations) => ({
-    type: GET_ORGANIZATIONS_SUCCESS,
-    organizations
+export const asyncCallSuccess = (success) => ({
+    type: ASYNC_CALL_SUCCESS,
+    success
 });
 
-export const getOrganizationsError = (error) => ({
-    type: GET_ORGANIZATIONS_ERROR,
+export const asyncCallError = (error) => ({
+    type: ASYNC_CALL_ERROR,
     error
 });
 
+//FORM INPUT
 export const setExperienceFormInput = (property, value) => ({
     type: SET_EXPERIENCE_FORM_INPUT,
     property,
     value
 });
 
-export const addCertificatSuccess = (competencies, formData, confidenceIndex, certificat) => ({
-    type: ADD_CERTIFICAT_SUCCESS,
-    competencies: competencies,
-    formData: formData,
-    confidenceIndex: confidenceIndex,
-    certificat: certificat
-});
-
-export const uploadFileSuccess = () => ({
-    type: UPLOAD_SUCCESS
-});
-
-export const uploadFileError = () => ({
-    type: UPLOAD_ERROR
-});
-
-export const uploadFileBegin = () => ({
-    type: UPLOAD_BEGIN
-});
-
-export const addCertificatBegin = () => ({
-    type: ADD_CERTIFICAT_BEGIN
+export const setOrganizationFormInput = (property, value) => ({
+    type: SET_ORGANIZATION_FORM_INPUT,
+    property,
+    value
 });
 
 export const newExperience = (value) => ({
     type: NEW_EXPERIENCE_CLICKED,
     value
-});
-
-export const addCertificat = () => ({
-    type: ADD_CERTIFICAT_CLICKED
-});
-
-export const addDocBegin = (user, experience) => ({
-    type: ADD_DOC_BEGIN,
-    user,
-    experience
-  });
-
-export const addDocSuccess = (user, success) => ({
-    type: ADD_DOC_SUCCESS,
-    user,
-    success
-});
-
-export const addDocError = error => ({
-    type: ADD_DOC_ERROR,
-    error
-});
-
-export const removeDocBegin = (user, experience) => ({
-    type: REMOVE_DOC_BEGIN,
-    user,
-    experience
-  });
-
-export const removeDocSuccess = (user, success) => ({
-    type: REMOVE_DOC_SUCCESS,
-    user,
-    success
-});
-
-export const removeDocError = error => ({
-    type: REMOVE_DOC_ERROR,
-    error
 });
 
 export const setSkills = skills => ({
@@ -128,234 +57,140 @@ export const setSkills = skills => ({
 export const expandProfil = expandProfil => ({
     type: EXPAND_PROFIL,
     expandProfil
-})
-
-export const setExperienceBegin = () => ({
-    type: SET_EXPERIENCE_BEGIN
-  });
-
-export const setExperienceSuccess = (experience) => ({
-    type: SET_EXPERIENCE_SUCCESS,
-    experience
 });
 
-export const setExperienceError = (error) => ({
-    type: SET_EXPERIENCE_ERROR,
-    error
+//API CALL
+export const getOrganizations = (organizations) => ({
+    type: GET_ORGANIZATIONS,
+    organizations
 });
 
-export function getOrganizations() {
+export function fetchOrganizations() {
     return dispatch => {
-        dispatch(getOrganizationsBegin());
+        dispatch(asyncCallBegin());
         let organizationService = OrganizationService.getOrganizationService();
-
-        //Try to login
-        organizationService.getOrganizations().then(response => {
-            
+        organizationService.getOrganizations().then(response => {       
             //if the API send back an error
             if (response.error) 
-                dispatch(getOrganizationsError(response.error));
-            else
-                // if the API send success
-                dispatch(getOrganizationsSuccess(response));
-        }).catch(error => {
-            // if an error is not handle
-            dispatch(getOrganizationsError(error));
-        });
-    };
-}
-
-export function setExperience(experience, user) {
-    return dispatch => {
-        dispatch(setExperienceBegin());
-        let experienceService = ExperienceService.getExperienceService();
-
-        //Try to login
-        experienceService.add(experience).then(response => {
-            
-            //if the API send back an error
-            if (response.error) 
-                dispatch(setExperienceError(response.error));
+                dispatch(asyncCallError(response.error));
             else {
                 // if the API send success
-                dispatch(setExperienceSuccess(response));
-                let competencies = [];
-                for (let index = 1; index <= 10; index++) {
-                    if(response['skill' + index]) {
-                        competencies.push(new Competency(response['skill' + index], 0));
-                    }
-                }
-                var experience = new Experience(
-                    null,
-                    response.job_title,
-                    response.job_description,
-                    new Date(response.date_start),
-                    new Date(response.date_end),
-                    competencies,
-                    null,
-                    null,
-                    null,
-                    null,
-                    'SAVED'
-                )
-                user.freelancerDatas.experiences.push(experience);
-                user.freelancerDatas.getCompetencies().then(() => {
-                        dispatch(fetchUserSuccess(user));
-                        dispatch({type:'RESET_EXPERIENCE_REDUCER'});
-                });
+                dispatch(asyncCallSuccess());
+
+                dispatch(getOrganizations(response));
             }
         }).catch(error => {
             // if an error is not handle
-            dispatch(setExperienceError(error));
+            dispatch(asyncCallError(error));
         });
     };
 }
 
-export function addDocToFreelancer(user, experience) {
+export function removeExpFromBackend(exp, user) {
     return dispatch => {
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-        dispatch(addDocBegin(user, experience));   
-        user.freelancerDatas.addDocument(experience)
-        .once('transactionHash', (hash) => { 
-            dispatch(transactionHash(hash));
-        })      
-        .once('receipt', (receipt) => { 
-            dispatch(transactionReceipt(receipt));
-        })
-        .on('error', (error) => { 
-            dispatch(transactionError(error));
-        })
-        .then((success) => {
-            experience.docId = FileService.getBytes32FromIpfsHash(experience.docId);
-            experience.certificat = "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(experience.docId);
-            user.freelancerDatas.experiences.push(experience);
-            user.freelancerDatas.getCompetencies().then(() => {
-                user.freelancerDatas.getGlobalConfidenceIndex().then(() => {
-                    dispatch(addDocSuccess(user, success));
-                    dispatch(fetchUserSuccess(user));
-                });
-            });
-        })
-        .catch((error) => {
-            dispatch(addDocError(error));
-        });
-    };
-}
-
-export function removeDocToFreelancer(user, experience) {
-    return dispatch => {
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-        dispatch(removeDocBegin(user, experience));
-        user.freelancerDatas.removeDoc(experience)
-        .once('transactionHash', (hash) => { 
-            dispatch(transactionHash(hash));
-        })
-        .once('receipt', (receipt) => { 
-            dispatch(transactionReceipt(receipt));
-        })
-        .on('error', (error) => { 
-            dispatch(transactionError(error));
-        })
-        .then((success) => {
-            var index = user.freelancerDatas.experiences.indexOf(experience);
-            if (index !== -1) {
-                user.freelancerDatas.experiences.splice(index, 1);
-                user.freelancerDatas.getCompetencies().then(() => {
-                    user.freelancerDatas.getGlobalConfidenceIndex().then(() => {
-                        dispatch(removeDocSuccess(user, success));
-                        dispatch(fetchUserSuccess(user));
-                    });
-                });
-            } else {
-                dispatch(removeDocError('No documents to delete.'));
+        dispatch(asyncCallBegin());
+        let experienceService = ExperienceService.getExperienceService();
+        experienceService.delete(exp.idBack).then(response => {       
+            if (response.error) 
+                dispatch(asyncCallError(response.error));
+            else {
+                let itemToRemove = user.freelancerDatas.experiences.findIndex(x => x.idBack === exp.idBack && !x.idBlockchain && x.certificatAsked === false);
+                user.freelancerDatas.experiences.splice(itemToRemove, 1);
+                dispatch(fetchUserSuccess(user));
+                dispatch(asyncCallSuccess());
             }
-        })
-        .catch((error) => {
-            dispatch(removeDocError(error));
+        }).catch(() => {
+            dispatch(asyncCallError());
         });
     };
 }
 
-export function newExperienceClicked(value) {
+export function fetchExperience(experience, organization, user) {
     return dispatch => {
-        dispatch(newExperience(value));
-    }
-}
+        dispatch(asyncCallBegin());
+        let experienceService = ExperienceService.getExperienceService();
+        let organizationService = OrganizationService.getOrganizationService();
 
-export function addCertificatClicked(fileInput) {
-    return dispatch => {
-        fileInput.click();
-        dispatch(addCertificat());
-    }
-}
+        experienceService.add(experience).then(response => {
+            if (response.error) 
+                dispatch(asyncCallError(response.error));
+            else {
 
-export function detectCompetenciesFromCertification(event) {
-    return dispatch => {
-        dispatch(addCertificatBegin());
-        let file = event.files[0];
-        event.value = null;
-        if (typeof file === 'undefined')
-            return;
+                //Set the success & reset the state
+                dispatch(asyncCallSuccess());
 
-        let competencies = [];
-        let certificat = file.name;
-        let content;
-        let reader = new FileReader();
-        reader.onload = function (event) {
-            content = event.target.result;
-            try {
-                var jsonContent = JSON.parse(content);
-                Object.keys(jsonContent).forEach(key => {
-                    if (key.startsWith("jobSkill")) {
-                        if (jsonContent[key] !== "") {
-                            //let number = key.substring(8);
-                            let competencyName = jsonContent[key];
-                            let rating = jsonContent["jobRating2"];// + number];
-                            competencies.push(new Competency(competencyName, rating, null, jsonContent.jobDuration)); 
-                        }
+                //Add the new experience to the user
+                let competencies = [];
+                for (let i = 1; i <= 10; i++) {
+                    if (experience['skill' + i]) {
+                        competencies.push(new Competency(experience['skill' + i], 0, null, 0));
                     }
-                });
-                dispatch(addCertificatSuccess(competencies, file, 80, certificat));
-            } catch (e) {
-                let error = {};
-                error.message = 'Invalid JSON';
-                dispatch(transactionError(error));
+                }
+                user.freelancerDatas.addExperience(
+                    new Experience(experience.job_title, 
+                                   experience.job_description, 
+                                   new Date(experience.date_start),
+                                   new Date(experience.date_end), 
+                                   competencies, null, 0, 
+                                   experience.job_duration, 
+                                   experience.certificatAsked, 
+                                   experience.postedOnBlockchain,
+                                   response.id));
+                dispatch(fetchUserSuccess(user));
+
+                //reset the state
+                dispatch({type:'RESET_EXPERIENCE_REDUCER'});
+                
+                //Add the organization if the user ask for it
+                if (organization) {
+                    organization.createdByFree = experience.freelanceEthereumAddress;
+                    organizationService.add(organization).then(response => {
+                        if (response.error) 
+                            dispatch(asyncCallError(response.error));
+                    }).catch(() => {
+                        dispatch(asyncCallError('Failed to create the organization'));
+                    });
+                }
             }
-        }
-        reader.readAsText(file);
-    }
+        }).catch(error => {
+            // if an error is not handle
+            dispatch(asyncCallError(error));
+        });
+    };
 }
 
-export function addDocument(formData, user, experience) {
+export function askForCertificate(experienceId, user) {
     return dispatch => {
-        dispatch(uploadFileBegin());
-        FileService.uploadToIpfs(formData).then(result => {
-            //Check if the doc is already uploaded
-            let alreadyUploded = false;
-            user.freelancerDatas.experiences.forEach(experience => {
-                if (FileService.getIpfsHashFromBytes32(experience.docId) === result) {
-                    alreadyUploded = true;
-                    dispatch(transactionError(new Error('You have already upload this file.')));
-                    dispatch(uploadFileError());
-                }
-            });  
-            if (!alreadyUploded) {
-                let newExperienceToAdd = new Experience(
-                    result,
-                    experience.title,
-                    experience.description,
-                    new Date(experience.from),
-                    new Date(experience.to),
-                    experience.competencies,
-                    experience.certificat,
-                    experience.confidenceIndex,
-                    experience.type,
-                    experience.jobDuration
-                );
-                dispatch(uploadFileSuccess());
-                dispatch(addDocToFreelancer(user, newExperienceToAdd));
+
+        dispatch(asyncCallBegin());
+
+        let experience = { certificatAsked: true };
+        let experienceService = ExperienceService.getExperienceService();
+        experienceService.update(experienceId, experience).then(response => {
+            if (response.error) 
+                dispatch(asyncCallError(response.error));
+            else {
+                dispatch(asyncCallSuccess());
+                let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experienceId && x.certificatAsked === false);
+                user.freelancerDatas.experiences[index].certificatAsked = true;
+                dispatch(fetchUserSuccess(user))
             }
-        }, err => dispatch(addDocError(err)));
+        }).catch(error => {
+            // if an error is not handle
+            dispatch(asyncCallError(error));
+        });
+    };
+}
+
+export function newExperienceClicked(value, user) {
+    return dispatch => {
+        if(value) {
+            dispatch(setExperienceFormInput('freelanceName', user.freelancerDatas.firstName + ' ' + user.freelancerDatas.lastName));
+            dispatch(setExperienceFormInput('freelanceEmail', user.freelancerDatas.email));
+            dispatch(setExperienceFormInput('freelanceEthereumAddress', user.freelancerDatas.ethAddress));
+            dispatch(fetchOrganizations());
+        }
+        dispatch(newExperience(value));
     }
 }
 
@@ -365,4 +200,250 @@ export function moveToNewExp(history) {
         dispatch(changeMenu('/chronology', false));
         history.push('/chronology');
     }
+}
+
+export function addCertificat(certToAdd, experience, user) {
+    return dispatch => {
+        let file = certToAdd.files[0];
+        if (typeof file === 'undefined')
+            return;
+
+        let reader = new FileReader();
+        reader.onload = function (event) {
+            try {
+                //Upload the file
+                FileService.uploadToIpfs(file).then(result => {
+                    //Check if the doc is already uploaded
+                    let alreadyUploded = false;
+                    user.freelancerDatas.experiences.forEach(experience => {
+                        if (experience.postedOnBlockchain === 1 && FileService.getIpfsHashFromBytes32(experience.docId) === result) {
+                            alreadyUploded = true;
+                            dispatch(transactionError(new Error('You have already upload this file.')));
+                            dispatch(asyncCallError(new Error('You have already upload this file.')));
+                        }
+                    });
+                    if (!alreadyUploded) {
+                        //Parse the JSON
+                        var json = JSON.parse(event.target.result);
+
+                        //Parse the skills and ratings
+                        let keywords = [], ratings = [];
+                        for (let i = 1; i <= 10; i++) {
+                            if (json['jobSkill' + i]) {
+                                keywords.push(window.web3.utils.fromAscii(json['jobSkill' + i]));
+                            }
+                            if (i <= 6 && json['jobRating' + i]) {
+                                ratings.push(json['jobRating' + i]);
+                            }
+                        }
+
+                        //Submit to blockchain
+                        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+                        user.freelancerDatas.addDocument(
+                            window.web3.utils.fromAscii(json.jobTitle),
+                            window.web3.utils.fromAscii(json.jobDescription),
+                            new Date(json.jobStart).getTime(),
+                            new Date(json.jobEnd).getTime(),
+                            json.jobDuration,
+                            keywords,
+                            ratings,
+                            4,
+                            FileService.getBytes32FromIpfsHash(result)  
+                        ).once('transactionHash', (hash) => { 
+                            dispatch(transactionHash(hash));
+                        })      
+                        .once('receipt', (receipt) => { 
+                            dispatch(transactionReceipt(receipt));
+                        })
+                        .on('error', (error) => { 
+                            dispatch(transactionError(error));
+                        })
+                        .then(value => {
+
+                            //get the id from the event
+                            let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
+
+                            //remove the exp get from the backend
+                            let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.postedOnBlockchain);
+
+                            //Build the new experience
+                            let competencies = [];
+                            for (let i = 1; i <= 10; i++) {
+                                if (json['jobSkill' + i]) {
+                                    competencies.push(new Competency(json['jobSkill' + i], ratings[1], null, json.jobDuration));
+                                }
+                            }
+                            let experienceToAdd = new Experience(json.jobTitle, json.jobDescription, new Date(json.jobStart), 
+                            new Date(json.jobEnd), competencies, "https://gateway.ipfs.io/ipfs/" + result, ratings, json.jobDuration,
+                            experience.certificatAsked, idFromBlockchain, experience.idBack);
+
+                            //remove the experience fetch from the back
+                            user.freelancerDatas.experiences.splice(index, 1);
+
+                            //Add the one build on blockchain
+                            user.freelancerDatas.experiences.push(experienceToAdd);
+
+                            //Refresh the competencies & update the user
+                            user.freelancerDatas.getCompetencies().then(resolve => {
+                                if (resolve) {
+                                    user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
+                                        if (resolve) {
+                                            dispatch(fetchUserSuccess(user));
+                                        }
+                                    });
+                                }
+                            });
+
+                            //Delete the experience
+                            let experienceService = ExperienceService.getExperienceService();
+                            experienceService.delete(experience.idBack).then(response => {
+                                if (response.error) 
+                                    dispatch(asyncCallError(response.error));
+                                else 
+                                    dispatch(asyncCallSuccess());                            
+                            }).catch(error => {
+                                // if an error is not handle
+                                dispatch(asyncCallError(error));
+                            });
+                        })
+                        .catch((error) => {
+                            dispatch(asyncCallError(error));
+                        });
+                    }
+                }, err => dispatch(asyncCallError(err)));
+            } catch (e) {
+                let error = {};
+                error.message = 'Invalid JSON';
+                dispatch(transactionError(error));
+            }
+        }
+        reader.readAsText(file);
+    };
+}
+
+export function postExperience(experience, user) {
+    return dispatch => {
+        //Submit to blockchain
+        let keywords = [];
+        for (let i = 0; i < experience.competencies.length; i++) {
+            keywords.push(window.web3.utils.fromAscii(experience.competencies[i].name));
+        }
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+        user.freelancerDatas.addDocument(
+            window.web3.utils.fromAscii(experience.title),
+            window.web3.utils.fromAscii(experience.description),
+            new Date(experience.from).getTime(),
+            new Date(experience.to).getTime(),
+            experience.jobDuration,
+            keywords,
+            [],
+            4,
+            window.web3.utils.fromAscii('') 
+        ).once('transactionHash', (hash) => { 
+            dispatch(transactionHash(hash));
+        })      
+        .once('receipt', (receipt) => { 
+            dispatch(transactionReceipt(receipt));
+        })
+        .on('error', (error) => { 
+            dispatch(transactionError(error));
+        })
+        .then(value => {
+            //get the id from the event
+            let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
+
+            //complete the exp with blockchain infos
+            let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.idBlockchain);
+            user.freelancerDatas.experiences[index].idBlockchain = idFromBlockchain;
+
+            //Set the flag on the back
+            let experienceModified = { idBlockchain: idFromBlockchain };
+            let experienceService = ExperienceService.getExperienceService();
+            experienceService.update(experience.idBack, experienceModified).then(response => {
+                if (response.error) 
+                    dispatch(asyncCallError(response.error));
+                else {
+                    dispatch(asyncCallSuccess());  
+                    dispatch(fetchUserSuccess(user)); 
+                }                         
+            }).catch(error => {
+                // if an error is not handle
+                dispatch(asyncCallError(error));
+            });
+        })
+        .catch((error) => {
+            dispatch(asyncCallError(error));
+        });
+    };
+}
+
+export function unPostExperience(experience, user) {
+    return dispatch => {
+        
+        //Submit to blockchain
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+        user.freelancerDatas.removeDocument(
+            experience.idBlockchain
+        ).once('transactionHash', (hash) => { 
+            dispatch(transactionHash(hash));
+        })      
+        .once('receipt', (receipt) => { 
+            dispatch(transactionReceipt(receipt));
+        })
+        .on('error', (error) => { 
+            dispatch(transactionError(error));
+        })
+        .then(() => {
+            //remove the blockchain exp and replace it by the back one
+            let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && x.idBlockchain === experience.idBlockchain);
+            user.freelancerDatas.experiences[index].idBlockchain = null;
+
+            //Set the flag on the back
+            let experienceModified = { idBlockchain: null };
+            let experienceService = ExperienceService.getExperienceService();
+            experienceService.update(experience.idBack, experienceModified).then(response => {
+                if (response.error) 
+                    dispatch(asyncCallError(response.error));
+                else {
+                    dispatch(asyncCallSuccess());  
+                    dispatch(fetchUserSuccess(user)); 
+                }                         
+            }).catch(error => {
+                // if an error is not handle
+                dispatch(asyncCallError(error));
+            });
+        })
+        .catch((error) => {
+            dispatch(asyncCallError(error));
+        });
+    };
+}
+
+export function removeBlockchainExp(experience, user) {
+    return dispatch => {
+        
+        //Submit to blockchain
+        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+        user.freelancerDatas.removeDocument(
+            experience.idBlockchain
+        ).once('transactionHash', (hash) => { 
+            dispatch(transactionHash(hash));
+        })      
+        .once('receipt', (receipt) => { 
+            dispatch(transactionReceipt(receipt));
+        })
+        .on('error', (error) => { 
+            dispatch(transactionError(error));
+        })
+        .then(() => {
+            //remove the blockchain exp and replace it by the back one
+            let index = user.freelancerDatas.experiences.findIndex(x => x.idBlockchain === experience.idBlockchain);
+            user.freelancerDatas.experiences.splice(index, 1);
+            dispatch(asyncCallSuccess());  
+            dispatch(fetchUserSuccess(user)); 
+        })
+        .catch((error) => {
+            dispatch(asyncCallError(error));
+        });
+    };
 }

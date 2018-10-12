@@ -1,23 +1,12 @@
 import {
-    GET_ORGANIZATIONS_BEGIN,
-    GET_ORGANIZATIONS_SUCCESS,
-    GET_ORGANIZATIONS_ERROR,
+    ASYNC_CALL_BEGIN,
+    ASYNC_CALL_SUCCESS,
+    ASYNC_CALL_ERROR,
+    GET_ORGANIZATIONS,
     SET_EXPERIENCE_FORM_INPUT,
-
-    ADD_DOC_BEGIN,     
-    ADD_DOC_SUCCESS,   
-    ADD_DOC_ERROR,     
-    REMOVE_DOC_BEGIN,  
-    REMOVE_DOC_SUCCESS,
-    REMOVE_DOC_ERROR,
-    NEW_EXPERIENCE_CLICKED,
-    ADD_CERTIFICAT_CLICKED,
-    ADD_CERTIFICAT_SUCCESS,
-    UPLOAD_SUCCESS,
-    UPLOAD_BEGIN,
+    SET_ORGANIZATION_FORM_INPUT,
     EXPAND_PROFIL,
-    UPLOAD_ERROR,
-    SET_SKILLS
+    NEW_EXPERIENCE_CLICKED
   } from '../actions/experience'
   
   const initialState = {
@@ -27,7 +16,7 @@ import {
         job_title: '',
         job_description: '',
         job_duration: 0,
-        companyId: 0,
+        organizationId: 1,
         contactLastName: '',
         contactFirstName: '',
         contactJobTitle: '',
@@ -45,20 +34,26 @@ import {
         skill7: '',
         skill8: '',
         skill9: '',
-        skill10:'',
-        status: 1
+        skill10: '',
+        status: 1,
+        certificatAsked: false,
+        postedOnBlockchain: null
+    },
+    newOrganizationData: {
+        name: '',
+        responsible_first_name: '',
+        responsible_last_name: '',
+        responsible_job_title: '',
+        email: '',
+        phone: '',
+        createdByFree: null
+
     },
     user: null,
-    experienceToDelete: null,
-    experienceToAdd: null,
     loading: false,
     success: null,
     error: null,
     newExperience: false,
-    confidenceIndex: null,
-    certificat: null,
-    competencies: [],
-    uploadLoading: false,
     expandProfil: false,
     organizations: []
   };
@@ -68,27 +63,40 @@ import {
 
         case 'RESET_EXPERIENCE_REDUCER': 
             return {
-                state: initialState
+                ...state,
+                formData: initialState.formData,
+                newExperience: false
         };
 
-        case GET_ORGANIZATIONS_BEGIN:
+        case 'RESET_ORGANIZATION_REDUCER': 
+        return {
+            ...state,
+            newOrganizationData: initialState.newOrganizationData,
+        };
+
+        case ASYNC_CALL_BEGIN:
             return {
                 ...state,
                 loading: true
         };
 
-        case GET_ORGANIZATIONS_SUCCESS:
-            return {
-                ...state,
-                loading: false,
-                organizations: action.organizations
-        };
-
-        case GET_ORGANIZATIONS_ERROR:
+        case ASYNC_CALL_ERROR:
             return {
                 ...state,
                 loading: false,
                 error: action.error
+        };
+
+        case ASYNC_CALL_SUCCESS:
+        return {
+            ...state,
+            loading: false
+        };
+
+        case GET_ORGANIZATIONS:
+            return {
+                ...state,
+                organizations: action.organizations
         };
 
         case SET_EXPERIENCE_FORM_INPUT: {
@@ -99,120 +107,20 @@ import {
                 formData: Object.assign({}, newForm)
             }; 
         }
-        case REMOVE_DOC_BEGIN:
-            return {
-                ...state,
-                user: action.user,
-                loading: true,
-                experienceToAdd: null,
-                experienceToDelete: action.experience,
-                success: null
-            };
 
-        case REMOVE_DOC_SUCCESS:
+        case SET_ORGANIZATION_FORM_INPUT: {
+            var newOrgaForm = state.newOrganizationData;
+            newOrgaForm[action.property] = action.value;
             return {
                 ...state,
-                loading: false,
-                user: action.user,
-                success: action.success
-            };
-  
-        case REMOVE_DOC_ERROR:
-            return {
-                ...state,
-                loading: false,
-                error: action.error,
-                uploadLoading: false
-            };
-
-        case ADD_DOC_BEGIN:
-            return {
-                ...state,
-                user: action.user,
-                loading: true,
-                experienceToAdd: action.experience,
-                experienceToDelete: null,
-                success: null
-            };
-
-        case ADD_DOC_SUCCESS:
-            return {
-                ...state,
-                loading: false,
-                user: action.user,
-                success: action.success
-            };
-  
-        case ADD_DOC_ERROR:
-            return {
-                ...state,
-                loading: false,
-                error: action.error
-            };
+                newOrganizationData: Object.assign({}, newOrgaForm)
+            }; 
+        }
 
         case NEW_EXPERIENCE_CLICKED:
             return {
                 ...state,
-                newExperience: action.value,
-                to: '',
-                toEmpty: true,
-                from: '',
-                fromEmpty: true,
-                title: '',
-                titleError: false,
-                titleEmpty: true,
-                type: '4',
-                description: '',
-                confidenceIndex: null,
-                certificat: null,
-                competencies: []
-            };
-
-        case ADD_CERTIFICAT_CLICKED:
-            return {
-                ...state
-            };
-
-        case UPLOAD_SUCCESS:
-            return {
-                ...state,
-                newExperience: false,
-                to: '',
-                toEmpty: true,
-                from: '',
-                fromEmpty: true,
-                title: '',
-                titleError: false,
-                titleEmpty: true,
-                type: '4',
-                description: '',
-                formData: null,
-                confidenceIndex: null,
-                certificat: null,
-                competencies: [],
-                uploadLoading: false
-            };
-
-        case UPLOAD_BEGIN:
-            return {
-                ...state,
-                uploadLoading: true
-            };
-
-        case UPLOAD_ERROR:
-            return {
-                ...state,
-                uploadLoading: false
-            };
-
-        case ADD_CERTIFICAT_SUCCESS:
-            return {
-                ...state,
-                formData: action.formData,
-                confidenceIndex: action.confidenceIndex,
-                certificat: action.certificat,
-                competencies: action.competencies,
-                showTalaoButton: false
+                newExperience: action.value
             };
 
         case EXPAND_PROFIL:
