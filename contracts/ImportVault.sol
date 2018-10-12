@@ -22,11 +22,12 @@ contract ImportVault is Ownable {
     /**
      * @dev Import a document.
      */
-    function importDoc(uint _newIndex, uint _id)
+    function importDoc(uint _newId, uint _newIndex, uint _id)
         public
     {
-        (bytes32 title, string memory description, uint start, uint end, uint duration, bytes32[] memory keywords, uint[] memory ratings, uint doctype, bytes32 ipfs) = previousVault.getDoc(_id);
-        Vault.Document storage doc = importedDocuments[_newIndex];
+        (bytes32 title, string memory description, uint start, uint end, uint duration, bytes32[] memory keywords, uint[] memory ratings, bytes32 ipfs) = previousVault.getDoc(_id);
+        uint _doctype = previousVault.getDocType(_id);
+        Vault.Document storage doc = importedDocuments[_newId];
         doc.title = title;
         doc.description = description;
         doc.start = start;
@@ -34,7 +35,7 @@ contract ImportVault is Ownable {
         doc.duration = duration;
         doc.keywords = keywords;
         doc.ratings = ratings;
-        doc.doctype = doctype;
+        doc.doctype = _doctype;
         doc.ipfs = ipfs;
         doc.published = true;
         doc.index = _newIndex;

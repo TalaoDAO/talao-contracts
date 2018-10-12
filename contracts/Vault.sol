@@ -52,18 +52,9 @@ contract Vault is Ownable {
     mapping(uint => Document) public Documents;
 
     // Event: new document added.
-    // TODO: see with PH we can change the frontend to remove events.
+    // Just because we need to get the document ID after the transaction, in the frontend.
     event NewDocument (
-        uint id,
-        bytes32 title,
-        string description,
-        uint start,
-        uint end,
-        uint duration,
-        bytes32[] keywords,
-        uint[] ratings,
-        uint doctype,
-        bytes32 ipfs
+        uint id
     );
 
     /**
@@ -88,11 +79,13 @@ contract Vault is Ownable {
     /**
      * Modifier for functions to allow only users who have access to the Vault in the token + Partners.
      */
-    modifier onlyVaultReaders () {
+    modifier onlyVaultReaders() {
         // Sender must be set.
         require (msg.sender != address(0), 'Sender must be set.');
+        // See if Vault price = 0 to allow anyone in that case.
+        (uint accessPrice, address appointedAgent, uint sharingPlan, uint userDeposit) = myToken.data(owner);
         // Accept only users who have access to the Vault in the token + Partners.
-        require(myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess (msg.sender, owner), 'Sender has no Vault access.');
+        require(accessPrice == 0 || myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess(msg.sender, owner), 'Sender has no Vault access.');
         _;
     }
 
@@ -126,8 +119,7 @@ contract Vault is Ownable {
             uint duration,
             bytes32[] keywords,
             uint[] ratings,
-            uint doctype,
-            bytes32 ipfs
+            bytes32 ifps
         )
     {
         require(_id > 0, 'Document ID must be > 0.');
@@ -142,13 +134,30 @@ contract Vault is Ownable {
             doc.duration,
             doc.keywords,
             doc.ratings,
-            doc.doctype,
             doc.ipfs
         );
     }
 
     /**
+     * @dev Get doctype.
+     * This had to be separated from getDoc because of > 16 variables in total.
+     * @param _id uint Document ID.
+     */
+    function getDocType(uint _id)
+        view
+        public
+        onlyVaultReaders
+        returns(uint doctype)
+    {
+        require(_id > 0, 'Document ID must be > 0');
+        require(Documents[_id].published, 'Document does not exist.');
+
+        return (Documents[_id].doctype);
+    }
+
+    /**
      * @dev Get hash of IPFS attached file, if any.
+     * Should not be necessary any more since we are not primarly reading Events anymore.
      * @param _id uint Document ID.
      */
     function getDocIpfs(uint _id)
@@ -159,6 +168,7 @@ contract Vault is Ownable {
     {
         require(_id > 0, 'Document ID must be > 0');
         require(Documents[_id].published, 'Document does not exist.');
+        
         return (Documents[_id].ipfs);
     }
 
@@ -172,41 +182,6 @@ contract Vault is Ownable {
         returns (uint[])
     {
         return documentIndex;
-    }
-
-    /**
-     * @dev Get document by index.
-     * @param _index uint Document index.
-     */
-    function getDocByIndex (uint _index)
-        view
-        public
-        onlyVaultReaders
-        returns (
-            bytes32 title,
-            string description,
-            uint start,
-            uint end,
-            uint duration,
-            bytes32[] keywords,
-            uint[] ratings,
-            uint doctype,
-            bytes32 ipfs
-        )
-    {
-        uint id = documentIndex[_index];
-        Document memory doc = Documents[id];
-        return (
-            doc.title,
-            doc.description,
-            doc.start,
-            doc.end,
-            doc.duration,
-            doc.keywords,
-            doc.ratings,
-            doc.doctype,
-            doc.ipfs
-        );
     }
 
     /**
@@ -250,18 +225,8 @@ contract Vault is Ownable {
         doc.index = documentIndex.push(documentsCounter).sub(1);
 
         // Emit event.
-        // TODO: see with PH we can change the frontend to remove events.
         emit NewDocument(
-            documentsCounter,
-            _title,
-            _description,
-            _start,
-            _end,
-            _duration,
-            _keywords,
-            _ratings,
-            _doctype,
-            _ipfs
+            documentsCounter
         );
 
         return documentsCounter;
