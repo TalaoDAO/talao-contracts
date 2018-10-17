@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 import './Vault.sol';
 import './Talao.sol';
@@ -7,7 +7,7 @@ import './Freelancer.sol';
 /**
  * @title VaultFactory
  * @dev This contract is a factory of Vault contracts.
- * @author Slowsense, Talao, Blockchain Partner.
+ * @author Talao, Slowsense, Blockchain Partner.
  */
 contract VaultFactory is Ownable {
 
@@ -41,15 +41,12 @@ contract VaultFactory is Ownable {
     function hasVault (address _freelance)
         public
         view
-        returns (bool)
+        returns (bool hasvault)
     {
-        bool result;
         address freelanceVault = FreelancesVaults[_freelance];
         if(freelanceVault != address(0)) {
-            result = true;
+            hasvault = true;
         }
-
-        return result;
     }
 
     /**

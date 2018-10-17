@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 import './Talao.sol';
 import './Freelancer.sol';
@@ -97,10 +97,11 @@ contract Vault is Ownable {
         view
         public
         onlyVaultReaders
-        returns(bool)
+        returns(bool isPublished)
     {
         require(_id > 0, 'Document ID must be > 0');
-        return (Documents[_id].published);
+
+        isPublished = Documents[_id].published;
     }
 
     /**
@@ -119,23 +120,22 @@ contract Vault is Ownable {
             uint duration,
             bytes32[] keywords,
             uint[] ratings,
-            bytes32 ifps
+            bytes32 ipfs
         )
     {
         require(_id > 0, 'Document ID must be > 0.');
         require(Documents[_id].published, 'Document does not exist.');
 
         Document memory doc = Documents[_id];
-        return (
-            doc.title,
-            doc.description,
-            doc.start,
-            doc.end,
-            doc.duration,
-            doc.keywords,
-            doc.ratings,
-            doc.ipfs
-        );
+
+        title = doc.title;
+        description = doc.description;
+        start = doc.start;
+        end = doc.end;
+        duration = doc.duration;
+        keywords = doc.keywords;
+        ratings = doc.ratings;
+        ipfs = doc.ipfs;
     }
 
     /**
@@ -152,7 +152,7 @@ contract Vault is Ownable {
         require(_id > 0, 'Document ID must be > 0');
         require(Documents[_id].published, 'Document does not exist.');
 
-        return (Documents[_id].doctype);
+        doctype = Documents[_id].doctype;
     }
 
     /**
@@ -169,7 +169,7 @@ contract Vault is Ownable {
         require(_id > 0, 'Document ID must be > 0');
         require(Documents[_id].published, 'Document does not exist.');
 
-        return (Documents[_id].ipfs);
+        ipfs = Documents[_id].ipfs;
     }
 
     /**

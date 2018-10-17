@@ -73,13 +73,9 @@ class Freelancer {
                             idBack = this.experiencesFromBack[index].idBack;
                             certificatAsked = this.experiencesFromBack[index].certificatAsked;
                         }
-                        // console.log(data)
-                        // console.log(data.ipfs)
-                        // console.log(data['ipfs'])
-                        // console.log(data[7])
                         let experienceToAdd = new Experience(title, description, new Date(startDate), new Date(endDate), competencies,
-                        this.noHashIpfs(data[7]) ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(data[7]),
-                        this.noHashIpfs(data[7]) ? null : ratings, jobDuration, certificatAsked, parseInt(docId, 10), idBack);
+                        this.noHashIpfs(data['ipfs']) ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(data[7]),
+                        this.noHashIpfs(data['ipfs']) ? null : ratings, jobDuration, certificatAsked, parseInt(docId, 10), idBack);
                          this.addExperience(experienceToAdd);
                     }).then(() => {
                         cb();

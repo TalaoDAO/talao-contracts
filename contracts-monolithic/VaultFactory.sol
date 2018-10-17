@@ -1591,11 +1591,10 @@ contract TalaoCrowdsale is ProgressiveIndividualCappedCrowdsale {
 }
 
 
-
 /**
  * @title Freelancer.
  * @dev Talao Freelancers.
- * @author SlowSense, Talao, Blockchain Partners.
+ * @author Talao, SlowSense, Blockchain Partners.
  */
 contract Freelancer is Ownable {
 
@@ -1649,7 +1648,7 @@ contract Freelancer is Ownable {
           bytes32 title,
           string description,
           bytes32 picture,
-          bool isactive,
+          bool active,
           uint subscription
         )
     {
@@ -1658,22 +1657,17 @@ contract Freelancer is Ownable {
         // Not for inactive Freelancers.
         require (thisFreelancer.state != FreelancerState.Inactive, 'Inactive Freelancer have no information to get.');
 
-        bool active;
+        firstname = thisFreelancer.firstname;
+        lastname = thisFreelancer.lastname;
+        mobile = thisFreelancer.mobile;
+        email = thisFreelancer.email;
+        title = thisFreelancer.title;
+        description = thisFreelancer.description;
+        picture = thisFreelancer.picture;
         if (thisFreelancer.state == FreelancerState.Active) {
           active = true;
         }
-
-        return (
-            thisFreelancer.firstname,
-            thisFreelancer.lastname,
-            thisFreelancer.mobile,
-            thisFreelancer.email,
-            thisFreelancer.title,
-            thisFreelancer.description,
-            thisFreelancer.picture,
-            active,
-            thisFreelancer.subscription
-        );
+        subscription = thisFreelancer.subscription;
     }
 
     /**
@@ -1682,12 +1676,11 @@ contract Freelancer is Ownable {
     function isActive(address _freelancer)
         public
         view
-        returns(bool)
+        returns (bool active)
     {
       if (Freelancers[_freelancer].state == FreelancerState.Active) {
-          return true;
+          active = true;
       }
-      return false;
     }
 
     /**
@@ -1696,9 +1689,9 @@ contract Freelancer is Ownable {
     function isPartner(address _freelancer, address _partner)
         public
         view
-        returns(bool)
+        returns (bool partner)
     {
-        return Partners[_freelancer][_partner];
+        partner = Partners[_freelancer][_partner];
     }
 
     /**
@@ -1707,12 +1700,11 @@ contract Freelancer is Ownable {
     function isTalaoBot(address _address)
         public
         view
-        returns (bool)
+        returns (bool talaoBot)
     {
         if (TalaoBot == _address) {
-            return true;
+            talaoBot = true;
         }
-        return false;
     }
 
     /**
@@ -1798,7 +1790,7 @@ contract Freelancer is Ownable {
     function getTalaoBot()
         public
         onlyOwner
-        constant
+        view
         returns (address)
     {
         return TalaoBot;
@@ -1911,10 +1903,11 @@ contract Vault is Ownable {
         view
         public
         onlyVaultReaders
-        returns(bool)
+        returns(bool isPublished)
     {
         require(_id > 0, 'Document ID must be > 0');
-        return (Documents[_id].published);
+
+        isPublished = Documents[_id].published;
     }
 
     /**
@@ -1933,23 +1926,22 @@ contract Vault is Ownable {
             uint duration,
             bytes32[] keywords,
             uint[] ratings,
-            bytes32 ifps
+            bytes32 ipfs
         )
     {
         require(_id > 0, 'Document ID must be > 0.');
         require(Documents[_id].published, 'Document does not exist.');
 
         Document memory doc = Documents[_id];
-        return (
-            doc.title,
-            doc.description,
-            doc.start,
-            doc.end,
-            doc.duration,
-            doc.keywords,
-            doc.ratings,
-            doc.ipfs
-        );
+
+        title = doc.title;
+        description = doc.description;
+        start = doc.start;
+        end = doc.end;
+        duration = doc.duration;
+        keywords = doc.keywords;
+        ratings = doc.ratings;
+        ipfs = doc.ipfs;
     }
 
     /**
@@ -1966,7 +1958,7 @@ contract Vault is Ownable {
         require(_id > 0, 'Document ID must be > 0');
         require(Documents[_id].published, 'Document does not exist.');
 
-        return (Documents[_id].doctype);
+        doctype = Documents[_id].doctype;
     }
 
     /**
@@ -1983,7 +1975,7 @@ contract Vault is Ownable {
         require(_id > 0, 'Document ID must be > 0');
         require(Documents[_id].published, 'Document does not exist.');
 
-        return (Documents[_id].ipfs);
+        ipfs = Documents[_id].ipfs;
     }
 
     /**
@@ -2117,7 +2109,7 @@ contract Vault is Ownable {
 /**
  * @title VaultFactory
  * @dev This contract is a factory of Vault contracts.
- * @author Slowsense, Talao, Blockchain Partner.
+ * @author Talao, Slowsense, Blockchain Partner.
  */
 contract VaultFactory is Ownable {
 
@@ -2151,15 +2143,12 @@ contract VaultFactory is Ownable {
     function hasVault (address _freelance)
         public
         view
-        returns (bool)
+        returns (bool hasvault)
     {
-        bool result;
         address freelanceVault = FreelancesVaults[_freelance];
         if(freelanceVault != address(0)) {
-            result = true;
+            hasvault = true;
         }
-
-        return result;
     }
 
     /**

@@ -1,11 +1,11 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import './Talao.sol';
 
 /**
  * @title Freelancer.
  * @dev Talao Freelancers.
- * @author SlowSense, Talao, Blockchain Partners.
+ * @author Talao, SlowSense, Blockchain Partners.
  */
 contract Freelancer is Ownable {
 
@@ -59,7 +59,7 @@ contract Freelancer is Ownable {
           bytes32 title,
           string description,
           bytes32 picture,
-          bool isactive,
+          bool active,
           uint subscription
         )
     {
@@ -68,22 +68,17 @@ contract Freelancer is Ownable {
         // Not for inactive Freelancers.
         require (thisFreelancer.state != FreelancerState.Inactive, 'Inactive Freelancer have no information to get.');
 
-        bool active;
+        firstname = thisFreelancer.firstname;
+        lastname = thisFreelancer.lastname;
+        mobile = thisFreelancer.mobile;
+        email = thisFreelancer.email;
+        title = thisFreelancer.title;
+        description = thisFreelancer.description;
+        picture = thisFreelancer.picture;
         if (thisFreelancer.state == FreelancerState.Active) {
           active = true;
         }
-
-        return (
-            thisFreelancer.firstname,
-            thisFreelancer.lastname,
-            thisFreelancer.mobile,
-            thisFreelancer.email,
-            thisFreelancer.title,
-            thisFreelancer.description,
-            thisFreelancer.picture,
-            active,
-            thisFreelancer.subscription
-        );
+        subscription = thisFreelancer.subscription;
     }
 
     /**
@@ -92,12 +87,11 @@ contract Freelancer is Ownable {
     function isActive(address _freelancer)
         public
         view
-        returns(bool)
+        returns (bool active)
     {
       if (Freelancers[_freelancer].state == FreelancerState.Active) {
-          return true;
+          active = true;
       }
-      return false;
     }
 
     /**
@@ -106,9 +100,9 @@ contract Freelancer is Ownable {
     function isPartner(address _freelancer, address _partner)
         public
         view
-        returns(bool)
+        returns (bool partner)
     {
-        return Partners[_freelancer][_partner];
+        partner = Partners[_freelancer][_partner];
     }
 
     /**
@@ -117,12 +111,11 @@ contract Freelancer is Ownable {
     function isTalaoBot(address _address)
         public
         view
-        returns (bool)
+        returns (bool talaoBot)
     {
         if (TalaoBot == _address) {
-            return true;
+            talaoBot = true;
         }
-        return false;
     }
 
     /**
@@ -208,7 +201,7 @@ contract Freelancer is Ownable {
     function getTalaoBot()
         public
         onlyOwner
-        constant
+        view
         returns (address)
     {
         return TalaoBot;

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 import './Talao.sol';
 import './Vault.sol';
@@ -60,16 +60,15 @@ contract ImportVault is Ownable {
         )
     {
         Vault.Document storage doc = importedDocuments[_id];
-        return (
-            doc.title,
-            doc.description,
-            doc.start,
-            doc.end,
-            doc.duration,
-            doc.keywords,
-            doc.ratings,
-            doc.doctype,
-            doc.ipfs
-        );
+
+        title = doc.title;
+        description = doc.description;
+        start = doc.start;
+        end = doc.end;
+        duration = doc.duration;
+        keywords = doc.keywords;
+        ratings = doc.ratings;
+        doctype = doc.doctype;
+        ipfs = doc.ipfs;
     }
 }
