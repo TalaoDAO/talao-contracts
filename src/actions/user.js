@@ -153,10 +153,12 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                         //get the access price
                         currentUser.talaoContract.methods.data(searchedFreelancerAddress).call().then(info => {
                             currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
-                            currentUser.searchedFreelancers.getAllDocuments().then((resolve) => {
-                                if (resolve) {
-                                    dispatch(fetchFreelancerSuccess(currentUser));
-                                }
+                            currentUser.searchedFreelancers.getAllDocsId().then(docsId => {
+                              currentUser.searchedFreelancers.getAllDocuments(docsId).then((resolve) => {
+                                  if (resolve) {
+                                      dispatch(fetchFreelancerSuccess(currentUser));
+                                  }
+                              })
                             })
                         });
                     }

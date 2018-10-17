@@ -28,7 +28,7 @@ class Freelancer {
         this.experiences = [];
         this.competencies = [];
     }
-    
+
     getFreelanceData() {
         return new Promise((resolve, reject) => {
             this.freelancerContract.methods.Freelancers(this.ethAddress).call().then(element => {
@@ -53,17 +53,17 @@ class Freelancer {
             this.getDocumentIsAlive(docId).then((isAlive) => {
                 if (isAlive) {
                     //Get the data of the doc
-                    this.vaultContract.methods.getDoc(docId).call({from : this.ethAddress}).then(data => { 
+                    this.vaultContract.methods.getDoc(docId).call({from : this.ethAddress}).then(data => {
                         let title = window.web3.utils.hexToAscii(data['title']).replace(/\u0000/g, '');
                         var description = window.web3.utils.hexToAscii(data['description']).replace(/\u0000/g, '');
                         let startDate = parseInt(data['start'], 10);
                         let endDate = parseInt(data['end'], 10);
-                        let ratings = this.noHashIpfs(data['ipfs']) ? [] : data['ratings'];
+                        let ratings = this.noHashIpfs(data[7]) ? [] : data['ratings'];
                         let keywords = data['keywords'];
                         let jobDuration = data['duration'] ? data['duration'] : 1;
                         let competencies = [];
                         for (let index = 0; index < keywords.length; index++) {
-                            competencies.push(new Competency(window.web3.utils.hexToAscii(keywords[index].replace(/\u0000/g, '')), this.noHashIpfs(data['ipfs']) ? 0 : ratings[1], null, jobDuration));
+                            competencies.push(new Competency(window.web3.utils.hexToAscii(keywords[index].replace(/\u0000/g, '')), this.noHashIpfs(data[7]) ? 0 : ratings[1], null, jobDuration));
                         }
                         //complete the exp with blockchain infos
                         let index = this.experiencesFromBack.findIndex(x => x.idBlockchain === parseInt(docId, 10));
@@ -73,9 +73,13 @@ class Freelancer {
                             idBack = this.experiencesFromBack[index].idBack;
                             certificatAsked = this.experiencesFromBack[index].certificatAsked;
                         }
-                        let experienceToAdd = new Experience(title, description, new Date(startDate), new Date(endDate), competencies, 
-                        this.noHashIpfs(data['ipfs']) ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(data['ipfs']), 
-                        this.noHashIpfs(data['ipfs']) ? null : ratings, jobDuration, certificatAsked, parseInt(docId, 10), idBack);
+                        // console.log(data)
+                        // console.log(data.ipfs)
+                        // console.log(data['ipfs'])
+                        // console.log(data[7])
+                        let experienceToAdd = new Experience(title, description, new Date(startDate), new Date(endDate), competencies,
+                        this.noHashIpfs(data[7]) ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(data[7]),
+                        this.noHashIpfs(data[7]) ? null : ratings, jobDuration, certificatAsked, parseInt(docId, 10), idBack);
                          this.addExperience(experienceToAdd);
                     }).then(() => {
                         cb();
@@ -109,13 +113,13 @@ class Freelancer {
     getAllDocsId() {
             return this.vaultContract.methods.getDocs().call({from : this.ethAddress});
     }
-    
+
     getAllDraftDocumentsFromBackend() {
         return new Promise((resolve) => {
             let experienceService = ExperienceService.getExperienceService();
-            experienceService.getAllFromEth(this.ethAddress).then(response => {       
+            experienceService.getAllFromEth(this.ethAddress).then(response => {
                 //if the API send back an error
-                if (response.error) 
+                if (response.error)
                     resolve(false);
                 else if (response.length === 0) {
                     resolve(true);
@@ -128,11 +132,11 @@ class Freelancer {
                             }
                         }
                         if (!exp.idBlockchain)
-                            this.addExperience(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id));                     
+                            this.addExperience(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id));
                         //Save the full list for data management...
                         this.experiencesFromBack.push(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id));
-                        
-                        if (index + 1 === response.length) 
+
+                        if (index + 1 === response.length)
                         resolve(true);
                     });
                 }

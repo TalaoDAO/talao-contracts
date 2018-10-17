@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.25;
 
 import './Talao.sol';
 import './Freelancer.sol';
@@ -168,7 +168,7 @@ contract Vault is Ownable {
     {
         require(_id > 0, 'Document ID must be > 0');
         require(Documents[_id].published, 'Document does not exist.');
-        
+
         return (Documents[_id].ipfs);
     }
 

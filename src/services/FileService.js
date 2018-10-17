@@ -7,7 +7,7 @@ class FileService {
     static uploadToIpfs(formData) {
         let form_data = new FormData();
         form_data.append("data", formData);
-        
+
         return new Promise((resolve, reject) => {
             (async () => {
                 const rawResponse = await fetch(IPFSADD, {

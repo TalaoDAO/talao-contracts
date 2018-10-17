@@ -26,24 +26,24 @@ export function hasAccess(location, params, user, history) {
     return dispatch => {
 
         dispatch(guardBegin());
-        
+
         let redirectTo = null;
         //No parameters in the url
         if (!params) {
-            switch (location.toLowerCase()) 
+            switch (location.toLowerCase())
             {
                 case 'chronology':
                 case 'competencies':
                     if (!user.freelancerDatas)
                         redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');
                     break;
-                case 'unlockfreelancer': 
+                case 'unlockfreelancer':
                     redirectTo = guardHasError(dispatch, 'Invalid parameters.', '/homepage');
                     break;
-                case 'register': 
+                case 'register':
                     if (!user.ethAddress)
                         redirectTo = guardHasError(dispatch, 'Please log in to an account with a wallet before creating a vault.', '/homepage');
-                break; 
+                break;
                 default: redirectTo = '/homepage';
             }
             //if no redirection, the user is authorize
@@ -64,17 +64,17 @@ export function hasAccess(location, params, user, history) {
             let userHasAccess = (!resolve || resolve === '0x0000000000000000000000000000000000000000') ? false : true;
             //the client doesn't have a wallet
             if (!user.ethAddress) {
-                switch (location.toLowerCase()) 
+                switch (location.toLowerCase())
                 {
                     case 'chronology':
                     case 'competencies':
                         //if the vault is free : authorize
                         if (!userHasAccess)
-                            redirectTo = guardHasError(dispatch, 'This vault is not free ! Please log in to unlock this freelancer', '/homepage');         
+                            redirectTo = guardHasError(dispatch, 'This vault is not free ! Please log in to unlock this freelancer', '/homepage');
                         break;
-                    case 'unlockfreelancer': 
+                    case 'unlockfreelancer':
                     case 'register':
-                        redirectTo = guardHasError(dispatch, 'Please log in to an account with a wallet.', '/homepage');  
+                        redirectTo = guardHasError(dispatch, 'Please log in to an account with a wallet.', '/homepage');
                         break;
                     default: redirectTo = '/homepage';
                 }
@@ -85,11 +85,11 @@ export function hasAccess(location, params, user, history) {
             } else {
                 //The user is looking for himself
                 if (user.ethAddress.toLowerCase() === params.toLowerCase()) {
-                    switch (location.toLowerCase()) 
+                    switch (location.toLowerCase())
                     {
                         case 'chronology':
                             if (!user.freelancerDatas) {
-                                redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');  
+                                redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');
                             } else {
                                 dispatch(guardValid());
                                 //force the url redirection to remove the url params
@@ -99,7 +99,7 @@ export function hasAccess(location, params, user, history) {
                             break;
                         case 'competencies':
                             if (!user.freelancerDatas) {
-                                redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');  
+                                redirectTo = guardHasError(dispatch, 'Please create your vault first.', '/homepage');
                             } else {
                                 //force the url redirection to remove the url params
                                 dispatch(guardValid());
@@ -108,9 +108,9 @@ export function hasAccess(location, params, user, history) {
                             }
                             break;
                         case 'unlockfreelancer':
-                            redirectTo = guardHasError(dispatch, 'You can\'t unlock yourself.', '/homepage');  
+                            redirectTo = guardHasError(dispatch, 'You can\'t unlock yourself.', '/homepage');
                             break
-                        case 'register': 
+                        case 'register':
                             break;
                         default: redirectTo = '/homepage';
                     }
@@ -119,12 +119,12 @@ export function hasAccess(location, params, user, history) {
 
                 //The user is a client looking for a freelancer
                 } else {
-                    switch (location.toLowerCase()) 
+                    switch (location.toLowerCase())
                     {
                         case 'chronology':
                         case 'competencies':
                             if (!hasVault) {
-                                redirectTo = guardHasError(dispatch, 'This freelancer doesn\'t have a vault.', '/homepage');         
+                                redirectTo = guardHasError(dispatch, 'This freelancer doesn\'t have a vault.', '/homepage');
                             } else if (!userHasAccess) {
                                 //Access needed, so redirect to unlockfreelancer
                                 redirectTo = '/unlockfreelancer?' + params;
@@ -133,7 +133,7 @@ export function hasAccess(location, params, user, history) {
                             break;
                         case 'unlockfreelancer':
                             if (!hasVault) {
-                                redirectTo = guardHasError(dispatch, 'This freelancer doesn\'t have a vault.', '/homepage');      
+                                redirectTo = guardHasError(dispatch, 'This freelancer doesn\'t have a vault.', '/homepage');
                             } else if (userHasAccess) {
                                 //The user has access, so redirect him directly on the chronology of the searchedfreelancer
                                 redirectTo = '/chronology?' + params;
@@ -141,7 +141,7 @@ export function hasAccess(location, params, user, history) {
                             }
                             break
                         case 'register':
-                            redirectTo = guardHasError(dispatch, 'You can\'t edit this vault.', '/homepage');      
+                            redirectTo = guardHasError(dispatch, 'You can\'t edit this vault.', '/homepage');
                             break;
                         default: redirectTo = '/homepage';
                     }
@@ -160,9 +160,9 @@ export function guardHasError(dispatch, message, redirection) {
 
 export function userHasAccessToFreelancer(user, freelancer) {
     return new Promise((resolve, reject) => {
-        user.vaultFactoryContract.methods.HasVault(freelancer).call().then(hasVault => {
+        user.vaultFactoryContract.methods.hasVault(freelancer).call().then(hasVault => {
             if (hasVault) {
-                user.vaultFactoryContract.methods.GetVault(freelancer).call({from: user.ethAddress}).then(vaultAddress => {
+                user.vaultFactoryContract.methods.getVault(freelancer).call({from: user.ethAddress}).then(vaultAddress => {
                     resolve(vaultAddress);
                 });
             } else {
