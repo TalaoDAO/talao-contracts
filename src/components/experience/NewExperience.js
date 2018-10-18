@@ -254,7 +254,6 @@ class NewExperience extends React.Component {
         let companys = (organizations) && organizations.map(organization => {
             return ( <MenuItem key={organization.id} value={organization.name}>{organization.name}</MenuItem> );
         });
-
         return (
             <div>
                 <div>

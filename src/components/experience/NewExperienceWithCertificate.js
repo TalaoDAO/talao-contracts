@@ -7,7 +7,7 @@ import { Blockcerts } from 'react-blockcerts';
 
 import { withStyles } from '@material-ui/core/styles';
 import { Button, Paper, Typography } from '@material-ui/core';
-import { Check, CloudUpload, Send } from '@material-ui/icons';
+import { CloudUpload } from '@material-ui/icons';
 import PropTypes from 'prop-types';
 import talaoCertificateImage from '../../images/talaoCertificateImage';
 
@@ -88,7 +88,6 @@ class NewExperienceWithCertificate extends Component {
   render() {
     const { classes, user } = this.props;
     const { file, signedCertificate } = this.state;
-    const finalizedCertificateId = true;
     return (
       <div className={classes.root}>
         <div className={classes.section}>
@@ -104,9 +103,13 @@ class NewExperienceWithCertificate extends Component {
                 <Button
                   size="large"
                   className={this.props.classes.postButton}
-                  onClick={() => this.props.dispatch(addExperienceWithCertificate(file, user))}
+                  onClick={() => {
+                      this.props.dispatch(addExperienceWithCertificate(file, user));
+                      this.props.dispatch({type:'RESET_EXPERIENCE_REDUCER'});
+                    }
+                  }
                 >
-                  <CloudUpload className={classes.leftIcon}/>Post this certified experience
+                  <CloudUpload className={classes.leftIcon} />Post this certified experience
                 </Button>
               </div>
             :
