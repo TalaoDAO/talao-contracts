@@ -10,6 +10,8 @@ const lightAccent2Color = '#00c07b';
 const lightAccent3Color = '#8290cc';
 const lightAccent4Color = '#f2f2f2';
 const lightGreyColor = '#f2f2f2';
+const whiteColor = '#ffffff';
+const blackColor = '#3b3838';
 
 var constants = {
     colors: {
@@ -24,12 +26,12 @@ var constants = {
         lightAccent2: lightAccent2Color,
         lightAccent3: lightAccent3Color,
         lightAccent4: lightAccent4Color,
-        lightGrey: lightGreyColor, 
+        lightGrey: lightGreyColor,
         textAccent1: '#000',
         textAccent2: '#fff',
         textAccent3: '#fff',
         textAccent4: '#000',
-        textGrey: lightGreyColor, 
+        textGrey: lightGreyColor,
     },
     fontSize: {
         small: '80%',
@@ -49,6 +51,12 @@ var constants = {
             },
             background: {
                 default: lightGreyColor,
+            },
+            white: {
+              main: whiteColor,
+            },
+            black: {
+              main: blackColor,
             },
         },
         overrides: {

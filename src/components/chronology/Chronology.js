@@ -22,16 +22,16 @@ const styles = {
 }
 
 const mapStateToProps = state => ({
-    loadingGuard: state.guardReducer.loading,   
+    loadingGuard: state.guardReducer.loading,
     guardCheck: state.guardReducer.guardCheck,
     transactionError: state.transactionReducer.transactionError,
-    transactionHash: state.transactionReducer.transactionHash, 
+    transactionHash: state.transactionReducer.transactionHash,
     transactionReceipt: state.transactionReducer.transactionReceipt,
     object: state.transactionReducer.object
   });
-  
+
 class Chronology extends React.Component {
-    
+
     componentDidMount() {
         //The user is initialize and the guard is not check
         if (this.props.user && !this.props.guardCheck) {
@@ -77,7 +77,7 @@ class Chronology extends React.Component {
         })
 
         // Generate components
-        .map((extendedExperience) => {
+        .map((extendedExperience, index) => {
             const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
             const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
             const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
@@ -86,7 +86,7 @@ class Chronology extends React.Component {
                     user={freelancer}
                     isClient={(queryString.extract(window.location.search)) ? true : false}
                     value={extendedExperience}
-                    key={extendedExperience.title}
+                    key={index}
                     color={backgroundColorString}
                     lightColor={backgroundLightColorString}
                     textColor={textColorString}
@@ -96,13 +96,13 @@ class Chronology extends React.Component {
 
         const MyNewExperienceComponent = (props) => {
             return (
-            <NewExperience 
+            <NewExperience
                 user={this.props.user}
                 {...props}
             />
             );
         }
-        
+
         return (
             <Grid container spacing={24}>
                 <Grid item xs={12}>
