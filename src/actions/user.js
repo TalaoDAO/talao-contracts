@@ -91,7 +91,6 @@ export function fetchUser(address) {
                                                 //get docs from blockchain
                                                 user.freelancerDatas.getAllDocsId().then(resolve => {
                                                     if (resolve) {
-                                                        console.log(resolve)
                                                         user.freelancerDatas.getAllDocuments(resolve).then(resolve => {
                                                             if (resolve) {
                                                                 //User is a freelancer
