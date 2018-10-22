@@ -62,7 +62,6 @@ class Freelancer {
     }
 
     getDoc(_id, _callback) {
-      console.log(_id)
       // Get the data of the doc.
       this.vaultContract.methods.getDoc(_id).call({from : this.ethAddress}).then(async data => {
         let title = window.web3.utils.hexToAscii(data['title']).replace(/\u0000/g, '');
