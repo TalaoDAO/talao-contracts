@@ -197,125 +197,6 @@ export function moveToNewExp(history) {
     }
 }
 
-export function addCertificat(certToAdd, experience, user) {
-    return dispatch => {
-        let file = certToAdd.files[0];
-        if (typeof file === 'undefined')
-            return;
-
-        let reader = new FileReader();
-        reader.onload = function (event) {
-            try {
-                //Upload the file
-                FileService.uploadToIpfs(file).then(result => {
-                    //Check if the doc is already uploaded
-                    let alreadyUploaded = false;
-                    user.freelancerDatas.experiences.forEach(experience => {
-                        if (experience.postedOnBlockchain === 1 && FileService.getIpfsHashFromBytes32(experience.docId) === result) {
-                            alreadyUploaded = true;
-                            dispatch(transactionError(new Error('You have already upload this file.')));
-                            dispatch(asyncCallError(new Error('You have already upload this file.')));
-                        }
-                    });
-                    if (!alreadyUploaded) {
-                        //Parse the JSON
-                        var json = JSON.parse(event.target.result);
-
-                        //Parse the skills and ratings
-                        let keywords = [], ratings = [];
-                        for (let i = 1; i <= 10; i++) {
-                            if (json['jobSkill' + i]) {
-                                keywords.push(window.web3.utils.fromAscii(json['jobSkill' + i]));
-                            }
-                            if (i <= 6 && json['jobRating' + i]) {
-                                ratings.push(json['jobRating' + i]);
-                            }
-                        }
-
-                        //Submit to blockchain
-                        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-                        user.freelancerDatas.addDocument(
-                            window.web3.utils.fromAscii(json.jobTitle),
-                            window.web3.utils.fromAscii(json.jobDescription),
-                            new Date(json.jobStart).getTime(),
-                            new Date(json.jobEnd).getTime(),
-                            json.jobDuration,
-                            keywords,
-                            ratings,
-                            4,
-                            FileService.getBytes32FromIpfsHash(result)
-                        ).once('transactionHash', (hash) => {
-                            dispatch(transactionHash(hash));
-                        })
-                        .once('receipt', (receipt) => {
-                            dispatch(transactionReceipt(receipt));
-                        })
-                        .on('error', (error) => {
-                            dispatch(transactionError(error));
-                        })
-                        .then(value => {
-
-                            //get the id from the event
-                            let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
-
-                            //remove the exp get from the backend
-                            let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.postedOnBlockchain);
-
-                            //Build the new experience
-                            let competencies = [];
-                            for (let i = 1; i <= 10; i++) {
-                                if (json['jobSkill' + i]) {
-                                    competencies.push(new Competency(json['jobSkill' + i], ratings[1], null, json.jobDuration));
-                                }
-                            }
-                            let experienceToAdd = new Experience(json.jobTitle, json.jobDescription, new Date(json.jobStart),
-                            new Date(json.jobEnd), competencies, "https://gateway.ipfs.io/ipfs/" + result, ratings, json.jobDuration,
-                            experience.certificatAsked, idFromBlockchain, experience.idBack);
-
-                            //remove the experience fetch from the back
-                            user.freelancerDatas.experiences.splice(index, 1);
-
-                            //Add the one build on blockchain
-                            user.freelancerDatas.experiences.push(experienceToAdd);
-
-                            //Refresh the competencies & update the user
-                            user.freelancerDatas.getCompetencies().then(resolve => {
-                                if (resolve) {
-                                    user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
-                                        if (resolve) {
-                                            dispatch(fetchUserSuccess(user));
-                                        }
-                                    });
-                                }
-                            });
-
-                            //Delete the experience
-                            let experienceService = ExperienceService.getExperienceService();
-                            experienceService.delete(experience.idBack).then(response => {
-                                if (response.error)
-                                    dispatch(asyncCallError(response.error));
-                                else
-                                    dispatch(asyncCallSuccess());
-                            }).catch(error => {
-                                // if an error is not handle
-                                dispatch(asyncCallError(error));
-                            });
-                        })
-                        .catch((error) => {
-                            dispatch(asyncCallError(error));
-                        });
-                    }
-                }, err => dispatch(asyncCallError(err)));
-            } catch (e) {
-                let error = {};
-                error.message = 'Invalid JSON';
-                dispatch(transactionError(error));
-            }
-        }
-        reader.readAsText(file);
-    };
-}
-
 export function postExperience(experience, user) {
     return dispatch => {
         //Submit to blockchain
@@ -331,7 +212,6 @@ export function postExperience(experience, user) {
             new Date(experience.to).getTime(),
             experience.jobDuration,
             keywords,
-            [],
             4,
             window.web3.utils.fromAscii('')
         ).once('transactionHash', (hash) => {
@@ -443,7 +323,258 @@ export function removeBlockchainExp(experience, user) {
     };
 }
 
-export function addExperienceWithCertificate(file, user) {
+export function postOnBlockchainExperienceWithCertificate(file, user) {
+  return dispatch => {
+    if (typeof file === 'undefined') {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      try {
+        // Upload the file.
+        FileService.uploadToIpfs(file).then(result => {
+          // Check if the file is already uploaded.
+          let alreadyUploaded = false;
+          user.freelancerDatas.experiences.forEach(experience => {
+            if (experience.postedOnBlockchain === 1 && FileService.getIpfsHashFromBytes32(experience.docId) === result) {
+              alreadyUploaded = true;
+              dispatch(transactionError(new Error('You have already uploaded this certificate.')));
+              dispatch(asyncCallError(new Error('You have already uploaded this certificate.')));
+            }
+          });
+          if (!alreadyUploaded) {
+            // Parse the JSON.
+            const json = JSON.parse(event.target.result);
+            // Parse the skills.
+            let keywords = [];
+            for (let i = 1; i <= 10; i++) {
+              if (json['jobSkill' + i]) {
+                keywords.push(window.web3.utils.fromAscii(json['jobSkill' + i]));
+              }
+            }
+            // Parse ratings.
+            const ratings = [
+              json.jobRating1,
+              json.jobRating2,
+              json.jobRating3,
+              json.jobRating4,
+              json.jobRating5
+            ];
+            // Submit to blockchain.
+            dispatch(transactionBegin('Close your computer, take a coffee...this transaction can last several minutes !'));
+            user.freelancerDatas.addDocument(
+              window.web3.utils.fromAscii(json.jobTitle),
+              window.web3.utils.fromAscii(json.jobDescription),
+              new Date(json.jobStart).getTime(),
+              new Date(json.jobEnd).getTime(),
+              json.jobDuration,
+              keywords,
+              4,
+              FileService.getBytes32FromIpfsHash(result)
+            ).once('transactionHash', (hash) => {
+              dispatch(transactionHash(hash));
+            })
+            .once('receipt', (receipt) => {
+              dispatch(transactionReceipt(receipt));
+            })
+            .on('error', (error) => {
+              dispatch(transactionError(error));
+            })
+            .then(value => {
+              // Get the blockchain Document id from the event.
+              let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
+              // Build competencies.
+              let competencies = [];
+              // Rating of each competency is determined by answer to question 2.
+              const competencyRating = json.jobRating2;
+              for (let i = 1; i <= 10; i++) {
+                if (json['jobSkill' + i]) {
+                  competencies.push(
+                    new Competency(
+                      json['jobSkill' + i],
+                      competencyRating,
+                      null,
+                      json.jobDuration
+                    )
+                  );
+                }
+              }
+              // Build experience.
+              let experienceToAdd = new Experience(
+                json.jobTitle,
+                json.jobDescription,
+                new Date(json.jobStart),
+                new Date(json.jobEnd),
+                competencies,
+                'https://gateway.ipfs.io/ipfs/' + result,
+                ratings,
+                json.jobDuration,
+                null,
+                idFromBlockchain,
+                null
+              );
+              // Add it to the others.
+              user.freelancerDatas.experiences.push(experienceToAdd);
+              // Refresh the competencies & update the user.
+              user.freelancerDatas.getCompetencies().then(resolve => {
+                if (resolve) {
+                  user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
+                    if (resolve) {
+                      dispatch(fetchUserSuccess(user));
+                    }
+                  });
+                }
+              });
+            })
+            .catch((error) => {
+              dispatch(asyncCallError(error));
+            });
+          }
+        }, err => dispatch(asyncCallError(err)));
+      } catch (e) {
+        let error = {};
+        error.message = 'Invalid JSON';
+        dispatch(transactionError(error));
+      }
+    }
+    reader.readAsText(file);
+  };
+}
+
+export function addCertificateToExperienceDraftAndPostOnBlockchain(file, experience, user) {
+  return dispatch => {
+    if (typeof file === 'undefined') {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      try {
+        // Upload the file.
+        FileService.uploadToIpfs(file).then(result => {
+          // Check if the file is already uploaded.
+          let alreadyUploaded = false;
+          user.freelancerDatas.experiences.forEach(experience => {
+            if (experience.postedOnBlockchain === 1 && FileService.getIpfsHashFromBytes32(experience.docId) === result) {
+              alreadyUploaded = true;
+              dispatch(transactionError(new Error('You have already uploaded this certificate.')));
+              dispatch(asyncCallError(new Error('You have already uploaded this certificate.')));
+            }
+          });
+          if (!alreadyUploaded) {
+            // Parse the JSON.
+            const json = JSON.parse(event.target.result);
+            // Parse the skills.
+            let keywords = [];
+            for (let i = 1; i <= 10; i++) {
+              if (json['jobSkill' + i]) {
+                keywords.push(window.web3.utils.fromAscii(json['jobSkill' + i]));
+              }
+            }
+            // Parse ratings.
+            const ratings = [
+              json.jobRating1,
+              json.jobRating2,
+              json.jobRating3,
+              json.jobRating4,
+              json.jobRating5
+            ];
+            // Submit to blockchain.
+            dispatch(transactionBegin('Close your computer, take a coffee...this transaction can last several minutes !'));
+            user.freelancerDatas.addDocument(
+              window.web3.utils.fromAscii(json.jobTitle),
+              window.web3.utils.fromAscii(json.jobDescription),
+              new Date(json.jobStart).getTime(),
+              new Date(json.jobEnd).getTime(),
+              json.jobDuration,
+              keywords,
+              4,
+              FileService.getBytes32FromIpfsHash(result)
+            ).once('transactionHash', (hash) => {
+              dispatch(transactionHash(hash));
+            })
+            .once('receipt', (receipt) => {
+              dispatch(transactionReceipt(receipt));
+            })
+            .on('error', (error) => {
+              dispatch(transactionError(error));
+            })
+            .then(value => {
+              // Get the blockchain Document id from the event.
+              let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
+              // Remove the Experience fetched from the backend.
+              const index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.postedOnBlockchain);
+              user.freelancerDatas.experiences.splice(index, 1);
+              // Remove the Experience from the backend.
+              const experienceService = ExperienceService.getExperienceService();
+              experienceService.delete(experience.idBack).then(response => {
+                if (response.error) {
+                  dispatch(asyncCallError(response.error));
+                }
+                else {
+                  dispatch(asyncCallSuccess());
+                }
+              }).catch(error => {
+                dispatch(asyncCallError(error));
+              });
+              // Build competencies.
+              let competencies = [];
+              // Rating of each competency is determined by answer to question 2.
+              const competencyRating = json.jobRating2;
+              for (let i = 1; i <= 10; i++) {
+                if (json['jobSkill' + i]) {
+                  competencies.push(
+                    new Competency(
+                      json['jobSkill' + i],
+                      competencyRating,
+                      null,
+                      json.jobDuration
+                    )
+                  );
+                }
+              }
+              // Build experience.
+              let experienceToAdd = new Experience(
+                json.jobTitle,
+                json.jobDescription,
+                new Date(json.jobStart),
+                new Date(json.jobEnd),
+                competencies,
+                'https://gateway.ipfs.io/ipfs/' + result,
+                ratings,
+                json.jobDuration,
+                null,
+                idFromBlockchain,
+                null
+              );
+              // Add it to the others.
+              user.freelancerDatas.experiences.push(experienceToAdd);
+              // Refresh the competencies & update the user.
+              user.freelancerDatas.getCompetencies().then(resolve => {
+                if (resolve) {
+                  user.freelancerDatas.getGlobalConfidenceIndex().then(resolve => {
+                    if (resolve) {
+                      dispatch(fetchUserSuccess(user));
+                    }
+                  });
+                }
+              });
+            })
+            .catch((error) => {
+              dispatch(asyncCallError(error));
+            });
+          }
+        }, err => dispatch(asyncCallError(err)));
+      } catch (e) {
+        let error = {};
+        error.message = 'Invalid JSON';
+        dispatch(transactionError(error));
+      }
+    }
+    reader.readAsText(file);
+  };
+}
+
+export function addCertificateToPostedExperienceOnBlockchain(file, experience, user) {
   return dispatch => {
     if (typeof file === 'undefined') {
       return;
@@ -477,15 +608,8 @@ export function addExperienceWithCertificate(file, user) {
             }
             // Submit to blockchain.
             dispatch(transactionBegin('Close your computer, take a coffee...this transaction can last several minutes !'));
-            user.freelancerDatas.addDocument(
-              window.web3.utils.fromAscii(json.jobTitle),
-              window.web3.utils.fromAscii(json.jobDescription),
-              new Date(json.jobStart).getTime(),
-              new Date(json.jobEnd).getTime(),
-              json.jobDuration,
-              keywords,
-              ratings,
-              4,
+            user.freelancerDatas.setDocIpfs(
+              experience.idBlockchain,
               FileService.getBytes32FromIpfsHash(result)
             ).once('transactionHash', (hash) => {
               dispatch(transactionHash(hash));
@@ -497,6 +621,8 @@ export function addExperienceWithCertificate(file, user) {
               dispatch(transactionError(error));
             })
             .then(value => {
+              // Remove the Experience get from the backend.
+              let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.postedOnBlockchain);
               // Build the new experience.
               let competencies = [];
               for (let i = 1; i <= 10; i++) {
@@ -513,10 +639,12 @@ export function addExperienceWithCertificate(file, user) {
                 'https://gateway.ipfs.io/ipfs/' + result,
                 ratings,
                 json.jobDuration,
-                null,
-                null,
-                null
+                experience.certificatAsked,
+                experience.idBlockchain,
+                experience.idBack
               );
+              // Remove the Experience fetch from the back.
+              user.freelancerDatas.experiences.splice(index, 1);
               // Add it to the others.
               user.freelancerDatas.experiences.push(experienceToAdd);
               // Refresh the competencies & update the user.

@@ -64,7 +64,7 @@ class Chronology extends React.Component {
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+            snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time='3000' />);
         }
 
         //pick the current user or a searched freelancer

@@ -141,7 +141,7 @@ const mapStateToProps = state => ({
     helperTextTooLong: state.createVaultReducer.helperTextTooLong,
     helperIncorrectMail: state.createVaultReducer.helperIncorrectMail,
     helperIncorrectPhoneNumber: state.createVaultReducer.helperIncorrectPhoneNumber,
-    helperTextEmpty: state.createVaultReducer.helperTextEmpty, 
+    helperTextEmpty: state.createVaultReducer.helperTextEmpty,
     transactionError: state.transactionReducer.transactionError,
     transactionReceipt: state.transactionReducer.transactionReceipt,
     object: state.transactionReducer.object,
@@ -166,33 +166,33 @@ class VaultCreation extends React.Component {
     }
 
     render() {
-        const { 
+        const {
             user,
-            step, 
-            accessPrice, 
-            firstName, 
-            lastName, 
-            title, 
-            description, 
-            mail, 
-            phone, 
-            vaultMaxAccessPrice, 
-            accessPriceError, 
-           // maxAccessPricePlaceholder, 
-            isAccessPriceSet, 
-            firstNameError, 
+            step,
+            accessPrice,
+            firstName,
+            lastName,
+            title,
+            description,
+            mail,
+            phone,
+            vaultMaxAccessPrice,
+            accessPriceError,
+           // maxAccessPricePlaceholder,
+            isAccessPriceSet,
+            firstNameError,
             firstNameEmpty,
-            lastNameError, 
+            lastNameError,
             lastNameEmpty,
-            titleError, 
+            titleError,
             titleEmpty,
-            phoneError, 
+            phoneError,
             mailError,
             helperTextTooLong,
             helperIncorrectMail,
             helperIncorrectPhoneNumber,
             helperTextEmpty,
-            transactionError, 
+            transactionError,
             transactionReceipt,
             transactionHash,
             object,
@@ -213,7 +213,7 @@ class VaultCreation extends React.Component {
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+            snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time='3000' />);
         }
 
         let canSubmit = (!firstNameError && !firstNameEmpty && !lastNameError && !lastNameEmpty && !titleError && !titleEmpty && !mailError && !phoneError);
@@ -229,7 +229,7 @@ class VaultCreation extends React.Component {
         </div>
 
         //Block for access price
-        let accessPriceInputs = (step === 0) &&             
+        let accessPriceInputs = (step === 0) &&
         <div className={this.props.classes.content}>
            {/* <TextField
                 autoFocus={true}
@@ -243,7 +243,7 @@ class VaultCreation extends React.Component {
                 label="Access Price (Talao Token)"
                 id="accessPrice"
            />*/}
-           {(this.props.user.talaoBalance > 10) ? 
+           {(this.props.user.talaoBalance > 10) ?
                 <div className={this.props.classes.wrapper}>
                     <Button style={{marginLeft: '20px'}} onClick={() => this.props.dispatch(setAccessPrice(accessPrice, this.props.user))} className={!accessPriceError ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                         Initiate my certified resume on blockchain
@@ -265,16 +265,16 @@ class VaultCreation extends React.Component {
             <Grid container spacing={40}>
                 <form className={this.props.classes.container} noValidate autoComplete="off">
                     <Grid item lg={2} xs={12}>
-                        <img src={(profilPicture) ? profilPicture : (this.props.user.freelancerDatas && this.props.user.freelancerDatas.pictureUrl) ? this.props.user.freelancerDatas.pictureUrl : defaultFreelancerPicture} 
-                             onClick={() => this.props.dispatch(addImageClicked(this.fileInput))} 
+                        <img src={(profilPicture) ? profilPicture : (this.props.user.freelancerDatas && this.props.user.freelancerDatas.pictureUrl) ? this.props.user.freelancerDatas.pictureUrl : defaultFreelancerPicture}
+                             onClick={() => this.props.dispatch(addImageClicked(this.fileInput))}
                              className={this.props.classes.picture}
                              onMouseEnter={this.handlePopoverOpen}
                              onMouseLeave={this.handlePopoverClose}
-                             style={{ cursor: 'pointer' }} 
+                             style={{ cursor: 'pointer' }}
                              alt="Freelancer" />
                         <input onChange={(e) => this.props.dispatch(addProfilePicture(e.target))}
-                               style={{ display: 'none', cursor: 'pointer' }} 
-                               ref={fileInput => this.fileInput = fileInput} 
+                               style={{ display: 'none', cursor: 'pointer' }}
+                               ref={fileInput => this.fileInput = fileInput}
                                type="file" accept="image/*" />
                     </Grid>
                     <Grid item lg={3} xs={12}>
@@ -376,7 +376,7 @@ class VaultCreation extends React.Component {
         return (
             <Card className={this.props.classes.card}>
                 <CardContent>
-                    {!this.props.user.freelancerDatas && 
+                    {!this.props.user.freelancerDatas &&
                         <div>
                             <div onClick={() => this.props.dispatch(canSwitchStep(0, accessPrice, vaultMaxAccessPrice))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["accent2"], color: constants.colors["textAccent2"] }}>
                                 <span style={{ fontSize: '25px' }}>1</span>

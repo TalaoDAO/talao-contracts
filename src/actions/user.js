@@ -91,6 +91,7 @@ export function fetchUser(address) {
                                                 //get docs from blockchain
                                                 user.freelancerDatas.getAllDocsId().then(resolve => {
                                                     if (resolve) {
+                                                        console.log(resolve)
                                                         user.freelancerDatas.getAllDocuments(resolve).then(resolve => {
                                                             if (resolve) {
                                                                 //User is a freelancer
@@ -153,7 +154,9 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                         //get the access price
                         currentUser.talaoContract.methods.data(searchedFreelancerAddress).call().then(info => {
                             currentUser.searchedFreelancers.accessPrice = window.web3.utils.fromWei(info.accessPrice);
+                            // Get documents index.
                             currentUser.searchedFreelancers.getAllDocsId().then(docsId => {
+                              // Get all documents.
                               currentUser.searchedFreelancers.getAllDocuments(docsId).then((resolve) => {
                                   if (resolve) {
                                       dispatch(fetchFreelancerSuccess(currentUser));

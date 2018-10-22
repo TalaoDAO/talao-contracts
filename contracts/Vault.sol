@@ -37,8 +37,6 @@ contract Vault is Ownable {
         uint duration;
         // Array of keywords.
         bytes32[] keywords;
-        // Array of ratings.
-        uint[] ratings;
         // Type: DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4, 5 = ID
         uint doctype;
         // IPFS hash of the attached file, if any.
@@ -119,57 +117,26 @@ contract Vault is Ownable {
             uint end,
             uint duration,
             bytes32[] keywords,
-            uint[] ratings,
+            uint doctype,
             bytes32 ipfs
         )
     {
+        // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
-        require(Documents[_id].published, 'Document does not exist.');
 
+        // Validate doc state.
         Document memory doc = Documents[_id];
+        require(doc.published, 'Document does not exist.');
 
+        // Return data.
         title = doc.title;
         description = doc.description;
         start = doc.start;
         end = doc.end;
         duration = doc.duration;
         keywords = doc.keywords;
-        ratings = doc.ratings;
+        doctype = doc.doctype;
         ipfs = doc.ipfs;
-    }
-
-    /**
-     * @dev Get doctype.
-     * This had to be separated from getDoc because of > 16 variables in total.
-     * @param _id uint Document ID.
-     */
-    function getDocType(uint _id)
-        view
-        public
-        onlyVaultReaders
-        returns(uint doctype)
-    {
-        require(_id > 0, 'Document ID must be > 0');
-        require(Documents[_id].published, 'Document does not exist.');
-
-        doctype = Documents[_id].doctype;
-    }
-
-    /**
-     * @dev Get hash of IPFS attached file, if any.
-     * Should not be necessary any more since we are not primarly reading Events anymore.
-     * @param _id uint Document ID.
-     */
-    function getDocIpfs(uint _id)
-        view
-        public
-        onlyVaultReaders
-        returns(bytes32 ipfs)
-    {
-        require(_id > 0, 'Document ID must be > 0');
-        require(Documents[_id].published, 'Document does not exist.');
-
-        ipfs = Documents[_id].ipfs;
     }
 
     /**
@@ -194,7 +161,6 @@ contract Vault is Ownable {
         uint _end,
         uint _duration,
         bytes32[] _keywords,
-        uint[] _ratings,
         uint _doctype,
         bytes32 _ipfs
     )
@@ -218,7 +184,6 @@ contract Vault is Ownable {
         doc.end = _end;
         doc.duration = _duration;
         doc.keywords = _keywords;
-        doc.ratings = _ratings;
         doc.doctype = _doctype;
         doc.ipfs = _ipfs;
         doc.published = true;
@@ -237,7 +202,7 @@ contract Vault is Ownable {
      * @param _id uint Document ID.
      * @param _ipfs bytes32 IPFS hash of the file.
      */
-    function addDocIpfs(
+    function setDocIpfs(
         uint _id,
         bytes32 _ipfs
     )
@@ -247,13 +212,14 @@ contract Vault is Ownable {
     {
         // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
-         //TODO: better IPFS hash validation.
         require(_ipfs != 0, 'IPFS hash can not be empty.');
-        // IPFS files can be attached only to published documents.
-        require (Documents[_id].published, 'IPFS files can be attached only to published documents.');
+
+        // Validate doc state.
+        Document storage doc = Documents[_id];
+        require (doc.published, 'IPFS files can be attached only to published documents.');
 
         // Write data.
-        Documents[_id].ipfs = _ipfs;
+        doc.ipfs = _ipfs;
     }
 
     /**
@@ -266,27 +232,29 @@ contract Vault is Ownable {
     {
         // Validate parameter.
         require (_id > 0, 'Document ID must be > 0.');
-        // Only published documents can be removed.
-        require (Documents[_id].published, 'Only published documents can be removed.');
+
+        // Validate state.
+        Document storage docToDelete = Documents[_id];
+        require (docToDelete.published, 'Only published documents can be removed.');
 
         /**
          * Remove document from index.
-         * It can not maintain order because it would probably cost too much to update all the documents.
-         * So ordering has to be done in the frontend, which is easy, you just have to order by increasing ID.
-         * I'm not sure the index in the Document struct is usefull anyways...
          */
+
         // If the removed document is not the last in the index,
-        if (Documents[_id].index < (documentIndex.length - 1)) {
-          // Then replace it in the index by the last document in the index.
-          documentIndex[Documents[_id].index] = documentIndex[(documentIndex.length - 1)];
-          // Update document that was moved from last position.
-          Documents[documentIndex[Documents[_id].index]].index = documentIndex[Documents[_id].index];
+        if (docToDelete.index < (documentIndex.length - 1)) {
+          // Find the last document of the index.
+          uint lastDocId = documentIndex[(documentIndex.length - 1)];
+          Document storage lastDoc = Documents[lastDocId];
+          // Move it in the index in place of the document to delete.
+          documentIndex[docToDelete.index] = lastDocId;
+          // Update this document that was moved from last position.
+          lastDoc.index = docToDelete.index;
         }
         // Remove last element from index.
         documentIndex.length --;
-
-        // Remove document data.
-        delete Documents[_id];
+        // Unpublish document.
+        docToDelete.published = false;
     }
 
     /**

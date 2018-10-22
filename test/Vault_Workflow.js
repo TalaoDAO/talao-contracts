@@ -151,7 +151,7 @@ contract('VaultFactory', async (accounts) => {
      */
     it("Should add document to Vault", async () => {
         if(VaultInstance == null) VaultInstance = Vault.at(VaultAddress);
-        const doc1receipt = await VaultInstance.createDoc("0x74657374", "Description doc 1", 1538575228, 1538575229, 8, ["0x00", "0xaa", "0xff"], [5, 4, 3], 4, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
+        const doc1receipt = await VaultInstance.createDoc("0x74657374", "Description doc 1", 1538575228, 1538575229, 8, ["0x00", "0xaa", "0xff"], 4, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
         const doc1id = doc1receipt.logs[0].args.id.toNumber();
         assert.equal(doc1id, 1, "should be equal.");
     });
@@ -159,19 +159,15 @@ contract('VaultFactory', async (accounts) => {
         const doc1 = await VaultInstance.getDoc.call(1, { from: FreelancerAddress });
         assert.equal(doc1[1], "Description doc 1");
     });
-    it("Should get the document type", async () => {
-        const doc1Type = await VaultInstance.getDocType.call(1, { from: FreelancerAddress });
-        assert.equal(doc1Type, 4);
-    });
     it("Freelance should be able to add a document without IPFS file", async () => {
-        const doc2receipt = await VaultInstance.createDoc("0x74657374", "Description doc 2", 1538575228, 1538575229, 8, ["0x00", "0xaa", "0xff"], [5, 4, 3], 4, "0x0", { from: FreelancerAddress });
+        const doc2receipt = await VaultInstance.createDoc("0x74657374", "Description doc 2", 1538575228, 1538575229, 8, ["0x00", "0xaa", "0xff"], 4, "0x0", { from: FreelancerAddress });
         const doc2id = doc2receipt.logs[0].args.id.toNumber();
         assert.equal(doc2id, 2, "should be equal.");
     });
-    it("Freelance should be able to add an IPFS file to the previous document", async () => {
-        await VaultInstance.addDocIpfs(2, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
-        const doc2ipfs = await VaultInstance.getDocIpfs.call(2, { from: FreelancerAddress });
-        assert.equal(doc2ipfs, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838");
+    it("Freelance should be able to set an IPFS file for the previous document", async () => {
+        await VaultInstance.setDocIpfs(2, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
+        const doc2ipfs = await VaultInstance.getDoc.call(2, { from: FreelancerAddress });
+        assert.equal(doc2ipfs[7].toString(), "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838");
     });
     it("Freelancer should be able to get the index of all the published documents IDs", async () => {
         const index = await VaultInstance.getDocs.call({ from: FreelancerAddress });
@@ -179,7 +175,7 @@ contract('VaultFactory', async (accounts) => {
         assert.equal(index[1].toNumber(), 2, 'Second document should have ID = 2.');
     });
     it("Freelance should be able to add a huge document, all params maxed out", async () => {
-        const doc3receipt = await VaultInstance.createDoc("0x4d7920617765736f6d6520646576", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel lorem libero. Aliquam ut mauris quam. Nullam consequat congue mi quis pretium. Curabitur at nunc facilisis quam rhoncus volutpat non ut dui. Donec lacinia ultricies est eget efficitur. Phasellus interdum est quis condimentum fringilla. Donec at tincidunt lorem, mollis suscipit metus. Nunc nunc nibh, viverra ac enim in, tempus hendrerit purus. Quisque non velit ullamcorper, dictum mauris vitae, condimentum erat. Proin imperdiet feugiat est vel consequat.", 1538575228, 1538575229, 8, ["0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576"], [5, 4, 3, 5, 4], 4,  "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
+        const doc3receipt = await VaultInstance.createDoc("0x4d7920617765736f6d6520646576", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel lorem libero. Aliquam ut mauris quam. Nullam consequat congue mi quis pretium. Curabitur at nunc facilisis quam rhoncus volutpat non ut dui. Donec lacinia ultricies est eget efficitur. Phasellus interdum est quis condimentum fringilla. Donec at tincidunt lorem, mollis suscipit metus. Nunc nunc nibh, viverra ac enim in, tempus hendrerit purus. Quisque non velit ullamcorper, dictum mauris vitae, condimentum erat. Proin imperdiet feugiat est vel consequat.", 1538575228, 1538575229, 8, ["0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576", "0x4d7920617765736f6d6520646576"], 4,  "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: FreelancerAddress });
         const doc3id = doc3receipt.logs[0].args.id.toNumber();
         assert.equal(doc3id, 3, "should be equal.");
     });
@@ -231,7 +227,7 @@ contract('VaultFactory', async (accounts) => {
     });
     it('Freelancer 2 should be able add a document to his Vault', async () => {
         if(VaultInstance2 == null) VaultInstance2 = Vault.at(vaultAddress2);
-        const f2Doc1receipt = await VaultInstance2.createDoc("0x74657374", "Freelancer 2 doc 1", 1538575228, 1538575229, 8, ["0x00", "0xaa", "0xff"], [5, 4, 3], 4, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: Freelancer2 });
+        const f2Doc1receipt = await VaultInstance2.createDoc("0x74657374", "Freelancer 2 doc 1", 1538575228, 1538575229, 8, ["0x00", "0xaa", "0xff"], 4, "0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838", { from: Freelancer2 });
         const f2Doc1Id = f2Doc1receipt.logs[0].args.id.toNumber();
         assert.equal(f2Doc1Id, 1);
     });
@@ -256,12 +252,8 @@ contract('VaultFactory', async (accounts) => {
         const newIndex = await VaultInstance.getDocs.call({ from: PartnerAddress });
         await ImportVaultInstance.importDoc(1, 0, indexOfDocsToImport[0].toNumber(), { from: PartnerAddress });
         let originalDoc = await VaultInstance.getDoc.call(indexOfDocsToImport[0], {from: PartnerAddress});
-        let originalDocType = await VaultInstance.getDocType.call(indexOfDocsToImport[0], {from: PartnerAddress});
         let newDoc = await ImportVaultInstance.getImportedDoc.call(1, { from: PartnerAddress });
-        // doctype is not in the getDoc(), so we can not compare directly the original and the imported doc...
-        assert.equal(originalDocType, 4);
-        assert.equal(originalDoc.toString(), '0x7465737400000000000000000000000000000000000000000000000000000000,Description doc 1,1538575228,1538575229,8,0x0000000000000000000000000000000000000000000000000000000000000000,0xaa00000000000000000000000000000000000000000000000000000000000000,0xff00000000000000000000000000000000000000000000000000000000000000,5,4,3,0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838');
-        assert.equal(newDoc.toString(), '0x7465737400000000000000000000000000000000000000000000000000000000,Description doc 1,1538575228,1538575229,8,0x0000000000000000000000000000000000000000000000000000000000000000,0xaa00000000000000000000000000000000000000000000000000000000000000,0xff00000000000000000000000000000000000000000000000000000000000000,5,4,3,4,0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838');
+        assert.equal(originalDoc.toString(), newDoc.toString());
     });
 
 });

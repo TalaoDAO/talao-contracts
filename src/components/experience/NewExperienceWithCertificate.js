@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import compose from 'recompose/compose';
 import { connect } from 'react-redux';
-import { addExperienceWithCertificate } from '../../actions/experience';
+import { postOnBlockchainExperienceWithCertificate } from '../../actions/experience';
 import Dropzone from 'react-dropzone';
 import { Blockcerts } from 'react-blockcerts';
 
@@ -104,7 +104,7 @@ class NewExperienceWithCertificate extends Component {
                   size="large"
                   className={this.props.classes.postButton}
                   onClick={() => {
-                      this.props.dispatch(addExperienceWithCertificate(file, user));
+                      this.props.dispatch(postOnBlockchainExperienceWithCertificate(file, user));
                       this.props.dispatch({type:'RESET_EXPERIENCE_REDUCER'});
                     }
                   }

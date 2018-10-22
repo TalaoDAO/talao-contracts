@@ -12,9 +12,16 @@ import Button from '@material-ui/core/Button';
 import { Blockcerts } from 'react-blockcerts';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'
-import Grid from '@material-ui/core/Grid';
 //import { removeDocToFreelancer } from '../../actions/experience';
-import { removeExpFromBackend, askForCertificate, addCertificat, postExperience, unPostExperience, removeBlockchainExp } from '../../actions/experience';
+import {
+  removeExpFromBackend,
+  askForCertificate,
+  addCertificateToPostedExperienceOnBlockchain,
+  addCertificateToExperienceDraftAndPostOnBlockchain,
+  postExperience,
+  unPostExperience,
+  removeBlockchainExp
+} from '../../actions/experience';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
@@ -70,21 +77,38 @@ const styles = theme => ({
     description: {
         marginTop: '15px',
     },
+    certificateButtons: {
+      marginTop: theme.spacing.unit * 2,
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+    },
     certificatButton: {
-        margin: '20px 0px',
+      marginRight: theme.spacing.unit * 2,
+      color: theme.palette.white.main,
+      backgroundColor: theme.palette.black.main,
+      '&:hover': {
         backgroundColor: '#3b3838',
-        color: '#ffffff',
-        '&:hover': {
-            backgroundColor: '#3b3838'
-        }
+      },
     },
     removeButton: {
-        margin: '20px 0px',
-        backgroundColor: '#FF3C47',
-        color: '#ffffff',
-        '&:hover': {
-            backgroundColor: '#FF3C47'
-        }
+      marginRight: theme.spacing.unit * 2,
+      backgroundColor: '#FF3C47',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: '#FF3C47'
+      }
+    },
+    viewCertificate: {
+      marginTop: theme.spacing.unit * 2,
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+    },
+    blockcerts: {
+      marginTop: theme.spacing.unit * 2,
     },
     popup: {
         fontFamily: 'Arial, Helvetica, sans-serif',
@@ -112,7 +136,7 @@ class Experience extends React.Component {
         this.state = { showCert: false };
         this.showCertification = this.showCertification.bind(this);
     }
-    
+
     showCertification() {
         this.setState({ showCert: !this.state.showCert });
     }
@@ -132,7 +156,7 @@ class Experience extends React.Component {
                         <p>Are you sure you want to remove this experience ?</p>
                         <Button style={{ marginRight: '20px' }} className={this.props.classes.certificatButton} onClick={onClose}>No</Button>
                         {/*Experience without blockchain*/}
-                        {!this.props.value.idBlockchain 
+                        {!this.props.value.idBlockchain
                         ?
                             <Button className={this.props.classes.removeButton} onClick={() => {
                                 this.props.dispatch(removeExpFromBackend(this.props.value, this.props.user));
@@ -151,7 +175,7 @@ class Experience extends React.Component {
     }
 
     render() {
-        const { user } = this.props;
+        const { classes, user } = this.props;
         let competencyTags;
         let dateDiff;
         let monthDiff;
@@ -191,58 +215,97 @@ class Experience extends React.Component {
                         <Typography variant="body1" gutterBottom className={this.props.classes.description}>
                             {this.props.value.description}
                         </Typography>
-                            <Grid container spacing={24}>
-                                {!this.props.value.certificatUrl &&
-                                    <Grid item lg={3} xs={12}>
-                                        <Button onClick={() => this.props.value.certificatAsked ? this.fileInput.click() : this.props.dispatch(askForCertificate(this.props.value.idBack, user))} className={this.props.classes.certificatButton}>
-                                            <input onChange={(e) => this.props.dispatch(addCertificat(e.target, this.props.value, user))} 
-                                            style={{ display: 'none' }} 
-                                            ref={fileInput => this.fileInput = fileInput} 
-                                            type="file" accept="application/json" />
-                                            <Fingerprint />
-                                            <span className={this.props.classes.iconMargin}>{this.props.value.certificatAsked ? 'Add certificate' : 'Request a certificate'}</span>
-                                        </Button>
-                                    </Grid>
+                        <div className={classes.certificateButtons}>
+                          {!this.props.value.certificatUrl &&
+                            <Button
+                              onClick={
+                                () => this.props.value.certificatAsked ?
+                                  this.fileInput.click()
+                                  : this.props.dispatch(askForCertificate(this.props.value.idBack, user))
+                              }
+                              className={this.props.classes.certificatButton}
+                            >
+                                <input onChange={
+                                  (e) => {
+                                    if (this.props.value.idBlockchain) {
+                                      this.props.dispatch(
+                                        addCertificateToPostedExperienceOnBlockchain(
+                                          e.target.files[0],
+                                          this.props.value,
+                                          user
+                                        )
+                                      )
+                                    }
+                                    else {
+                                      this.props.dispatch(
+                                        addCertificateToExperienceDraftAndPostOnBlockchain(
+                                          e.target.files[0],
+                                          this.props.value,
+                                          user
+                                        )
+                                      )
+                                    }
+                                  }
                                 }
-                                {!this.props.value.certificatUrl &&
-                                    <Grid item lg={3} xs={12}>
-                                        {!this.props.value.idBlockchain
-                                        ?
-                                            <Button onClick={() => this.props.dispatch(postExperience(this.props.value, user))} className={this.props.classes.certificatButton}>
-                                            <CloudUpload />
-                                                <span className={this.props.classes.iconMargin}>Post the experience</span>
-                                            </Button>
-                                        :
-                                            <Button onClick={() => this.props.dispatch(unPostExperience(this.props.value, user))} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
-                                            <Close />
-                                                <span className={this.props.classes.iconMargin}>Unpost</span>
-                                            </Button>
-                                        }
-                                    </Grid>      
-                                }    
-                                {(!this.props.value.certificatAsked || this.props.value.certificatUrl) &&
-                                    <Grid item lg={3} xs={12}>
-                                        <Button onClick={this.removeExperienceFromBackend} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
-                                        <Close />
-                                            <span className={this.props.classes.iconMargin}>Remove</span>
-                                        </Button>
-                                    </Grid>
-                                }
-                            </Grid>                 
-                            {this.props.value.certificatUrl &&
-                            <div>
-                                <Grid item xs={12}>
-                                    <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
-                                        <LineStyle />
-                                        <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
-                                        <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
-                                    </Button>
-                                </Grid>
-                                <div style={{ display: this.state.showCert ? 'block' : 'none' }}>
-                                    <Blockcerts url={this.props.value.certificatUrl} key={this.props.value.certificatUrl} image={talaoCertificateImage} color='#282828' color_bg='#edecec'/>
-                                </div>
-                            </div>
-                            }
+                                style={{ display: 'none' }}
+                                ref={fileInput => this.fileInput = fileInput}
+                                type="file" accept="application/json" />
+                                <Fingerprint />
+                                <span className={this.props.classes.iconMargin}>
+                                  {
+                                    this.props.value.certificatAsked ?
+                                      this.props.value.idBlockchain ?
+                                        'Add certificate and update'
+                                      : 'Add certificate and post'
+                                    : 'Request a certificate'
+                                  }
+                                </span>
+                            </Button>
+                          }
+                          {!this.props.value.certificatUrl &&
+                            <React.Fragment>
+                              {!this.props.value.idBlockchain
+                              ?
+                                  <Button onClick={() => this.props.dispatch(postExperience(this.props.value, user))} className={this.props.classes.certificatButton}>
+                                  <CloudUpload />
+                                      <span className={this.props.classes.iconMargin}>Post the experience</span>
+                                  </Button>
+                              :
+                                  <Button onClick={() => this.props.dispatch(unPostExperience(this.props.value, user))} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                                  <Close />
+                                      <span className={this.props.classes.iconMargin}>Unpost</span>
+                                  </Button>
+                              }
+                            </React.Fragment>
+                          }
+                          {(!this.props.value.certificatAsked || this.props.value.certificatUrl) &&
+                              <React.Fragment>
+                                <Button onClick={this.removeExperienceFromBackend} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                                <Close />
+                                    <span className={this.props.classes.iconMargin}>Remove</span>
+                                </Button>
+                              </React.Fragment>
+                          }
+                        </div>
+                        {this.props.value.certificatUrl &&
+                        <div className={classes.viewCertificate}>
+                          <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>
+                            <LineStyle />
+                            <span style={{ display: !this.state.showCert ? 'inline-block' : 'none' }}>View certificat</span>
+                            <span style={{ display: this.state.showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
+                          </Button>
+                          <div
+                            className={classes.blockcerts}
+                            style={{ display: this.state.showCert ? 'block' : 'none' }}>
+                            <Blockcerts
+                              url={this.props.value.certificatUrl}
+                              image={talaoCertificateImage}
+                              color='#282828'
+                              color_bg='#edecec'
+                            />
+                          </div>
+                        </div>
+                        }
                     </div>
                 </div>
             </div>

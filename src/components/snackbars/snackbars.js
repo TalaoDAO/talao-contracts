@@ -10,8 +10,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import WarningIcon from '@material-ui/icons/Warning';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
@@ -77,16 +75,8 @@ function MySnackbarContent(props) {
           {message}
           {showSpinner ?
           <CircularProgress className={classes.progress}/>
-          :          
-          <IconButton
-            key="close"
-            aria-label="Close"
-            color="inherit"
-            className={classes.spacingButton}
-            onClick={onClose}
-          >
-          <CloseIcon className={classes.icon} />
-          </IconButton>
+          :
+          null
           }
         </span>
       }
@@ -145,7 +135,7 @@ class CustomizedSnackbars extends React.Component {
             message={this.props.message}
             showSpinner={this.props.showSpinner}
           />
-        </Snackbar>      
+        </Snackbar>
       </div>
     );
   }

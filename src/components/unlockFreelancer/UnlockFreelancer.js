@@ -119,7 +119,7 @@ class UnlockFreelancer extends React.Component {
     } else if (transactionError) {
         snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
-        snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+        snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time='3000' />);
     }
 
     let freelancer = this.props.user.searchedFreelancers;
@@ -127,7 +127,7 @@ class UnlockFreelancer extends React.Component {
     const competencyTags = competencies.map((competency, index) =>
     (<CompetencyTag value={competency} key={index} />));
 
-    return ( 
+    return (
       <Card>
         <CardContent>
           <div className={this.props.classes.container}>

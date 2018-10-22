@@ -15,7 +15,7 @@ module.exports = {
     ganache: {
       host: "127.0.0.1",
       port: 7545,
-      network_id: "*" // matching any id
+      network_id: 3
     },
     parity: {
       host: "127.0.0.1",

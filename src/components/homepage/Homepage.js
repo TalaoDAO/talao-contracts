@@ -77,28 +77,28 @@ const styles = theme => ({
 
 const mapStateToProps = state => ({
     message: state.guardReducer.message,
-    freelancerAddress: state.homepageReducer.freelancerAddress, 
-    freelancerAddressError: state.homepageReducer.freelancerAddressError, 
-    freelancerAddressEmpty: state.homepageReducer.freelancerAddressEmpty, 
-    invalidAddress: state.homepageReducer.invalidAddress, 
+    freelancerAddress: state.homepageReducer.freelancerAddress,
+    freelancerAddressError: state.homepageReducer.freelancerAddressError,
+    freelancerAddressEmpty: state.homepageReducer.freelancerAddressEmpty,
+    invalidAddress: state.homepageReducer.invalidAddress,
     emptyAddress: state.homepageReducer.emptyAddress,
     transactionError: state.transactionReducer.transactionError,
     transactionReceipt: state.transactionReducer.transactionReceipt,
     object: state.transactionReducer.object,
     transactionHash: state.transactionReducer.transactionHash,
   });
-  
+
 class Homepage extends React.Component {
 
     render() {
         //get props
-        const { message, 
-                freelancerAddress, 
-                freelancerAddressError, 
-                freelancerAddressEmpty, 
-                invalidAddress, 
-                emptyAddress, 
-                transactionError, 
+        const { message,
+                freelancerAddress,
+                freelancerAddressError,
+                freelancerAddressEmpty,
+                invalidAddress,
+                emptyAddress,
+                transactionError,
                 transactionHash,
                 transactionReceipt,
                 object } = this.props;
@@ -117,13 +117,13 @@ class Homepage extends React.Component {
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+            snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time='3000' />);
         }
 
         //If the user doesn't have a wallet he can't create a vault
         let showCreateYourVaultBlock;
         if (this.props.user.ethAddress) {
-            showCreateYourVaultBlock = 
+            showCreateYourVaultBlock =
             (<Grid item xs={12} lg={6}>
                 <Card className={this.props.classes.card}>
                     <CardContent>
@@ -135,10 +135,10 @@ class Homepage extends React.Component {
                         </div>
                         <div className={this.props.classes.center}>
                             <Button onClick={() => { if (this.props.user.freelancerDatas) {
-                                                        let usr = this.props.user; 
-                                                        usr.searchedFreelancers = null; 
-                                                        this.props.dispatch(removeResearch(usr)); 
-                                                        this.props.dispatch(viewDatasClicked(this.props.history)) } else { 
+                                                        let usr = this.props.user;
+                                                        usr.searchedFreelancers = null;
+                                                        this.props.dispatch(removeResearch(usr));
+                                                        this.props.dispatch(viewDatasClicked(this.props.history)) } else {
                                                         this.props.dispatch(createVaultClicked(this.props.history))}
                                                         }
                                                     } className={this.props.classes.certificatButton} label="login">
@@ -153,7 +153,7 @@ class Homepage extends React.Component {
         //If the user doesn't have a wallet we propose him to install it
         let createYourWallet;
         if (!this.props.user.ethAddress) {
-            createYourWallet = 
+            createYourWallet =
             (<Grid item xs={12} lg={6}>
                 <Card className={this.props.classes.card}>
                     <CardContent>

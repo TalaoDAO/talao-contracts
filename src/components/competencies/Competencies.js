@@ -97,7 +97,7 @@ const styles = {
 };
 
 const mapStateToProps = state => ({
-    loadingGuard: state.guardReducer.loading,   
+    loadingGuard: state.guardReducer.loading,
     guardCheck: state.guardReducer.guardCheck,
     transactionError: state.transactionReducer.transactionError,
     transactionHash: state.transactionReducer.transactionHash,
@@ -107,7 +107,7 @@ const mapStateToProps = state => ({
 
 class Competencies extends React.Component {
 
-    componentDidMount() {      
+    componentDidMount() {
         if (this.props.user && !this.props.guardCheck) {
             this.props.dispatch(hasAccess(window.location.pathname.split('/')[1], queryString.extract(window.location.search), this.props.user, this.props.history));
         }
@@ -137,7 +137,7 @@ class Competencies extends React.Component {
     } else if (transactionError) {
         snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
-        snackbar = (<CustomizedSnackbars message='Transaction sucessfull !' showSpinner={false} type='success'/>);
+        snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time='3000' />);
     }
 
     //pick the current user or a searched freelancer
@@ -192,15 +192,15 @@ class Competencies extends React.Component {
                         {competencies}
                     </div>
                 </Grid>
-                {(!this.props.user.searchedFreelancers && freelancer.competencies.length === 0) && 
+                {(!this.props.user.searchedFreelancers && freelancer.competencies.length === 0) &&
                         <Grid item xs={12}
                               container
                               direction="column"
                               justify="center"
-                              alignItems="center">          
-                            <Typography variant="subheading">The skills section is automatically filled with your experience information.</Typography>                 
+                              alignItems="center">
+                            <Typography variant="subheading">The skills section is automatically filled with your certified experiences.</Typography>
                             <Button onClick={() => this.props.dispatch(moveToNewExp(this.props.history))} className={this.props.classes.certificatButton}>
-                                Add your first experience
+                                Add your first experience and request a certificate
                             </Button>
                         </Grid>
                 }

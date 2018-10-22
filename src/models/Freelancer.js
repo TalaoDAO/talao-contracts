@@ -48,40 +48,107 @@ class Freelancer {
         });
     }
 
-    getDocumentByEvent(docId, cb) {
-            //Check if the doc is active
-            this.getDocumentIsAlive(docId).then((isAlive) => {
-                if (isAlive) {
-                    //Get the data of the doc
-                    this.vaultContract.methods.getDoc(docId).call({from : this.ethAddress}).then(data => {
-                        let title = window.web3.utils.hexToAscii(data['title']).replace(/\u0000/g, '');
-                        var description = window.web3.utils.hexToAscii(data['description']).replace(/\u0000/g, '');
-                        let startDate = parseInt(data['start'], 10);
-                        let endDate = parseInt(data['end'], 10);
-                        let ratings = this.noHashIpfs(data[7]) ? [] : data['ratings'];
-                        let keywords = data['keywords'];
-                        let jobDuration = data['duration'] ? data['duration'] : 1;
-                        let competencies = [];
-                        for (let index = 0; index < keywords.length; index++) {
-                            competencies.push(new Competency(window.web3.utils.hexToAscii(keywords[index].replace(/\u0000/g, '')), this.noHashIpfs(data[7]) ? 0 : ratings[1], null, jobDuration));
-                        }
-                        //complete the exp with blockchain infos
-                        let index = this.experiencesFromBack.findIndex(x => x.idBlockchain === parseInt(docId, 10));
-                        let idBack = null;
-                        let certificatAsked = false;
-                        if (index !== -1) {
-                            idBack = this.experiencesFromBack[index].idBack;
-                            certificatAsked = this.experiencesFromBack[index].certificatAsked;
-                        }
-                        let experienceToAdd = new Experience(title, description, new Date(startDate), new Date(endDate), competencies,
-                        this.noHashIpfs(data['ipfs']) ? null : "https://gateway.ipfs.io/ipfs/" + FileService.getIpfsHashFromBytes32(data[7]),
-                        this.noHashIpfs(data['ipfs']) ? null : ratings, jobDuration, certificatAsked, parseInt(docId, 10), idBack);
-                         this.addExperience(experienceToAdd);
-                    }).then(() => {
-                        cb();
-                    });
-                }
-            });
+    async getCertificateFromIpfs(ipfs) {
+      // Fetch certificate.
+      try {
+        const hash = FileService.getIpfsHashFromBytes32(ipfs);
+        const response = await fetch('https://gateway.ipfs.io/ipfs/' + hash);
+        const certificate = await response.json();
+        return certificate;
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
+
+    getDoc(_id, _callback) {
+      console.log(_id)
+      // Get the data of the doc.
+      this.vaultContract.methods.getDoc(_id).call({from : this.ethAddress}).then(async data => {
+        let title = window.web3.utils.hexToAscii(data['title']).replace(/\u0000/g, '');
+        let description = window.web3.utils.hexToAscii(data['description']).replace(/\u0000/g, '');
+        let startDate = parseInt(data['start'], 10);
+        let endDate = parseInt(data['end'], 10);
+        let jobDuration = data['duration'] ? data['duration'] : 1;
+        let keywords = [];
+        let ratings = [];
+        let competencyRating;
+        // If Experience has no Certificate.
+        if (this.noHashIpfs(data['ipfs'])) {
+          // Keywords.
+          data['keywords'].forEach(keyword => {
+            keywords.push(window.web3.utils.hexToAscii(keyword.replace(/\u0000/g, '')));
+          });
+          // No ratings.
+          ratings = null;
+          // Competencies ratings = 0;
+          competencyRating = 0;
+        }
+        // Otherwise get the Certificate on IPFS.
+        else {
+          const certificate = await this.getCertificateFromIpfs(data['ipfs']);
+          // Replace Experience data by Certificate data.
+          title = certificate.jobTitle;
+          description = certificate.jobDescription;
+          startDate = certificate.jobStart;
+          endDate = certificate.jobEnd;
+          jobDuration = certificate.jobDuration;
+          // Keywords.
+          keywords = [];
+          for (let i = 1; i <= 10; i++) {
+            const property = 'jobSkill' + i;
+            if (certificate[property] !== '') {
+              keywords.push(certificate[property]);
+            }
+          }
+          // Ratings.
+          ratings = [
+            certificate.jobRating1,
+            certificate.jobRating2,
+            certificate.jobRating3,
+            certificate.jobRating4,
+            certificate.jobRating5
+          ];
+          // Competencies ratings = always answer to question 2.
+          competencyRating = certificate.jobRating2;
+        }
+        // Build compentencies.
+        let competencies = [];
+        for (let i = 0; i < keywords.length; i++) {
+          competencies.push(
+            new Competency(
+              keywords[i],
+              competencyRating,
+              null,
+              jobDuration
+            )
+          );
+        }
+        // Complete the backend Experience with Blockchain infos.
+        let index = this.experiencesFromBack.findIndex(x => x.idBlockchain === parseInt(_id, 10));
+        let idBack = null;
+        let certificatAsked = false;
+        if (index !== -1) {
+          idBack = this.experiencesFromBack[index].idBack;
+          certificatAsked = this.experiencesFromBack[index].certificatAsked;
+        }
+        let experienceToAdd = new Experience(
+          title,
+          description,
+          new Date(startDate),
+          new Date(endDate),
+          competencies,
+          this.noHashIpfs(data['ipfs']) ? null : 'https://gateway.ipfs.io/ipfs/' + FileService.getIpfsHashFromBytes32(data['ipfs']),
+          ratings,
+          jobDuration,
+          certificatAsked,
+          _id,
+          idBack
+        );
+        this.addExperience(experienceToAdd);
+      }).then(() => {
+        _callback();
+      });
     }
 
     noHashIpfs(hash) {
@@ -96,10 +163,10 @@ class Freelancer {
     }
 
     getAllDocuments(docsId) {
-        return new Promise((resolve) => {
-            let requests = docsId.map((index) => {
-                return new Promise((resolve) => {
-                    this.getDocumentByEvent(index, resolve);
+        return new Promise(resolve => {
+            let requests = docsId.map(id => {
+                return new Promise(resolve => {
+                    this.getDoc(id, resolve);
                 })
             });
             Promise.all(requests).then(() => resolve(true));
@@ -143,9 +210,30 @@ class Freelancer {
         });
     }
 
-    addDocument(title, description, startDate, endDate, jobDuration, keywords, ratings, documentType, ipfsHash) {
-        return this.vaultContract.methods.createDoc(title, description, startDate, endDate, jobDuration, keywords, ratings, documentType, ipfsHash)
-                                        .send({from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_ADD_DOC});
+    addDocument(
+      title,
+      description,
+      startDate,
+      endDate,
+      jobDuration,
+      keywords,
+      documentType,
+      ipfsHash
+    ) {
+      return this.vaultContract.methods.createDoc(
+        title,
+        description,
+        startDate,
+        endDate,
+        jobDuration,
+        keywords,
+        documentType,
+        ipfsHash
+      ).send({from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_ADD_DOC});
+    }
+
+    setDocIpfs(_id, _ipfs) {
+      return this.vaultContract.methods.setDocIpfs(_id, _ipfs).send({from: window.account, gasPrice: process.env.REACT_APP_TRANSACTION_ADD_DOC});
     }
 
     removeDocument(id) {
@@ -178,27 +266,28 @@ class Freelancer {
     }
 
     getGlobalConfidenceIndex() {
-        let totalDuration = 0;
-        let totalNotation = 0;
-        return new Promise(resolve => {
-            if (this.experiences.length === 0)
-                resolve(true);
-            this.experiences.forEach((experience, index) => {
-                if (experience.certificatUrl) {
-                    let duration = parseInt(experience.jobDuration, 10);
-                    let notation = 0
-                    for (var i = 0; i < 5; i++) {
-                        notation += parseInt(experience.confidenceIndex[i], 10);
-                    }
-                    totalNotation += (notation / 5) * duration;
-                    totalDuration += duration;
-                }
-                if (index + 1 === this.experiences.length) {
-                    this.confidenceIndex = (totalNotation > 0 && totalDuration > 0 ) ? Math.round((totalNotation / totalDuration) * 10) / 10 : 0;
-                    resolve(true);
-                }
-            });
+      let totalDuration = 0;
+      let totalNotation = 0;
+      return new Promise(resolve => {
+        if (this.experiences.length === 0) {
+          resolve(true);
+        }
+        this.experiences.forEach((experience, index) => {
+          if (experience.certificatUrl) {
+            let duration = parseInt(experience.jobDuration, 10);
+            let notation = 0;
+            for (var i = 0; i < 5; i++) {
+              notation += parseInt(experience.confidenceIndex[i], 10);
+            }
+            totalNotation += (notation / 5) * duration;
+            totalDuration += duration;
+          }
+          if (index + 1 === this.experiences.length) {
+            this.confidenceIndex = (totalNotation > 0 && totalDuration > 0 ) ? Math.round((totalNotation / totalDuration) * 10) / 10 : 0;
+            resolve(true);
+          }
         });
+      });
     }
 }
 
