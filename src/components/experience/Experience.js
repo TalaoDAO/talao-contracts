@@ -176,6 +176,7 @@ class Experience extends React.Component {
 
     render() {
         const { classes, user } = this.props;
+        const experience = this.props.value;
         let competencyTags;
         let dateDiff;
         let monthDiff;

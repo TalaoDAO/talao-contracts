@@ -158,7 +158,17 @@ export function fetchFreelancer(currentUser, searchedFreelancerAddress) {
                               // Get all documents.
                               currentUser.searchedFreelancers.getAllDocuments(docsId).then((resolve) => {
                                   if (resolve) {
-                                      dispatch(fetchFreelancerSuccess(currentUser));
+                                    // Competencies & Confidence index.
+                                    currentUser.searchedFreelancers.getCompetencies().then(resolve => {
+                                        if (resolve) {
+                                            currentUser.searchedFreelancers.getGlobalConfidenceIndex().then(resolve => {
+                                                if (resolve) {
+                                                    dispatch(fetchUserSuccess(currentUser));
+                                                    dispatch(resetGuard());
+                                                }
+                                            });
+                                        }
+                                    });
                                   }
                               })
                             })
