@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
 import { Blockcerts } from 'react-blockcerts';
+import addDays from 'date-fns/add_days';
+import distanceInWords from 'date-fns/distance_in_words';
 
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -182,17 +184,12 @@ class Experience extends Component {
 
   askForCertificate(idBack, user) {
     this.props.dispatch(askForCertificate(idBack, user));
-    // this.props.dispatch(
-    //   setSnackbar(
-    //     'Your certificate has been requested. You can follow the process in your dashboard',
-    //     'success'
-    //   )
-    // );
   }
 
   render() {
     const { classes, experience, isClient, user } = this.props;
     const { showCert } = this.state;
+    const durationInWords = distanceInWords(new Date(), addDays(new Date(), experience.jobDuration));
     let competencyTags, dateDiff, monthDiff;
 
     if (!user) {
@@ -201,8 +198,6 @@ class Experience extends Component {
       competencyTags = experience.competencies.map((competency, index) =>
       (<CompetencyTag value={competency} key={index} />)
     );
-    dateDiff = DateService.dateDiffAsString(experience.from, experience.to);
-    monthDiff = DateService.monthDiff(experience.from, experience.to);
   }
   return (
     <div className={classes.experienceContainer}>
@@ -211,9 +206,21 @@ class Experience extends Component {
           &nbsp;
         </div>
         <div className={classes.timeLine} >
-          <div className={classes.line} style={{ width: (isMobile) ? '28px' : (monthDiff >= 120) ? (120 * 5) + 'px' : (monthDiff * 5) + 'px' }}></div>
+          <div
+            className={classes.line}
+            style={
+              {
+                width: isMobile ?
+                  '28px'
+                : experience.jobDuration < 800 ?
+                  experience.jobDuration + 'px'
+                : '800px'
+              }
+            }
+          >
+          </div>
           <div className={classes.timeContainer}>
-            {dateDiff}
+            {durationInWords}
           </div>
         </div>
         <div className={classes.dateContainer}>
