@@ -17,6 +17,7 @@ import compose from 'recompose/compose';
 import { fetchFreelancer } from '../../actions/user';
 import { unlockFreelancerClicked } from '../../actions/unlockFreelancer';
 import CustomizedSnackbars from '../snackbars/snackbars';
+import TimedSnackbar from '../snackbars/TimedSnackbar';
 
 const Loading = require('react-loading-animation');
 const styles = theme => ({
@@ -119,7 +120,7 @@ class UnlockFreelancer extends React.Component {
     } else if (transactionError) {
         snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
-        snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time={5000} />);
+        snackbar = (<TimedSnackbar transaction message='Transaction successfull!' type='success' autoHideDuration={5000} />);
     }
 
     let freelancer = this.props.user.searchedFreelancers;

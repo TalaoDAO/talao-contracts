@@ -12,6 +12,7 @@ import { initVaultCreation, canSwitchStep, setVaultInput, setAccessPrice, submit
 import queryString from 'query-string'
 import { hasAccess } from '../../actions/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
+import TimedSnackbar from '../snackbars/TimedSnackbar';
 import Typography from '@material-ui/core/Typography';
 import { isMobile } from 'react-device-detect';
 
@@ -213,7 +214,7 @@ class VaultCreation extends React.Component {
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time={5000} />);
+            snackbar = (<TimedSnackbar transaction message='Transaction successfull!' type='success' autoHideDuration={5000} />);
         }
 
         let canSubmit = (!firstNameError && !firstNameEmpty && !lastNameError && !lastNameEmpty && !titleError && !titleEmpty && !mailError && !phoneError);

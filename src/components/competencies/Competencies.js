@@ -9,6 +9,7 @@ import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
 import { fetchFreelancer } from '../../actions/user';
 import CustomizedSnackbars from '../snackbars/snackbars';
+import TimedSnackbar from '../snackbars/TimedSnackbar';
 import Button from '@material-ui/core/Button';
 import { moveToNewExp } from '../../actions/experience';
 import Typography from "@material-ui/core/Typography";
@@ -137,7 +138,7 @@ class Competencies extends React.Component {
     } else if (transactionError) {
         snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
-        snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time={5000} />);
+        snackbar = (<TimedSnackbar transaction message='Transaction successfull!' type='success' autoHideDuration={5000} />);
     }
 
     //pick the current user or a searched freelancer

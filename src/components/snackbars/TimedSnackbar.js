@@ -16,6 +16,7 @@ import { isMobile } from 'react-device-detect';
 import { withStyles } from '@material-ui/core/styles';
 
 import { removeSnackbar } from '../../actions/snackbar';
+import { resetTransaction } from '../../actions/transactions';
 
 const variantIcon = {
   success: CheckCircleIcon,
@@ -114,6 +115,9 @@ class TimedSnackbar extends Component {
     }
     this.setState({ open: false });
     this.props.dispatch(removeSnackbar());
+    if (this.props.transaction) {
+      this.props.dispatch(resetTransaction());
+    }
   };
   render() {
     const { autoHideDuration, message, type } = this.props;
