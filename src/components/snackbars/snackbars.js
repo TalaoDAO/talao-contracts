@@ -119,24 +119,23 @@ class CustomizedSnackbars extends React.Component {
 
   render() {
     return (
-      <div>
-        <Snackbar
-          anchorOrigin={{
-            vertical: (isMobile) ? 'top' : 'bottom',
-            horizontal: 'center',
-          }}
-          open={this.state.open}
-          autoHideDuration={this.props.time}
+      <Snackbar
+        anchorOrigin={{
+          vertical: (isMobile) ? 'top' : 'bottom',
+          horizontal: 'center',
+        }}
+        open={this.state.open}
+        autoHideDuration={this.props.time}
+        onClose={this.handleClose}
+        key={this.props.message}
+      >
+        <MySnackbarContentWrapper
           onClose={this.handleClose}
-        >
-          <MySnackbarContentWrapper
-            onClose={this.handleClose}
-            variant={this.props.type}
-            message={this.props.message}
-            showSpinner={this.props.showSpinner}
-          />
-        </Snackbar>
-      </div>
+          variant={this.props.type}
+          message={this.props.message}
+          showSpinner={this.props.showSpinner}
+        />
+      </Snackbar>
     );
   }
 }

@@ -5,6 +5,7 @@ import { changeMenu } from './menu';
 import ExperienceService from '../api/experiences';
 import OrganizationService from '../api/organization';
 import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions';
+import { setSnackbar } from './snackbar';
 import FileService from '../services/FileService';
 
 export const ASYNC_CALL_BEGIN            = 'ASYNC_CALL_BEGIN';
@@ -168,7 +169,13 @@ export function askForCertificate(experienceId, user) {
                 dispatch(asyncCallSuccess());
                 let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experienceId && x.certificatAsked === false);
                 user.freelancerDatas.experiences[index].certificatAsked = true;
-                dispatch(fetchUserSuccess(user))
+                dispatch(fetchUserSuccess(user));
+                dispatch(
+                  setSnackbar(
+                    'Your certificate has been requested. You can follow the process in your dashboard',
+                    'success'
+                  )
+                );
             }
         }).catch(error => {
             // if an error is not handle

@@ -117,7 +117,7 @@ class Homepage extends React.Component {
         } else if (transactionError) {
             snackbar = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
         } else if (transactionReceipt) {
-            snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time='3000' />);
+            snackbar = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time={5000} />);
         }
 
         //If the user doesn't have a wallet he can't create a vault
