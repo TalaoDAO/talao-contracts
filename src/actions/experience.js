@@ -141,8 +141,16 @@ export function fetchExperience(experience, organization, user) {
                 if (organization) {
                     organization.createdByFree = experience.freelanceEthereumAddress;
                     organizationService.add(organization).then(response => {
-                        if (response.error)
-                            dispatch(asyncCallError(response.error));
+                      dispatch(
+                        setSnackbar(
+                          'Your client request has been sent. Talao takes care of the mechanics. You can also follow this process in your dashboard.',
+                          'success'
+                        )
+                      );
+                        if (response.error) {
+                          dispatch(asyncCallError(response.error));
+                        }
+
                     }).catch(() => {
                         dispatch(asyncCallError('Failed to create the organization'));
                     });
@@ -172,7 +180,7 @@ export function askForCertificate(experienceId, user) {
                 dispatch(fetchUserSuccess(user));
                 dispatch(
                   setSnackbar(
-                    'Your certificate has been requested. You can follow the process in your dashboard',
+                    'Your certificate has been requested. You can follow the process in your dashboard.',
                     'success'
                   )
                 );
