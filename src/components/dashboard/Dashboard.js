@@ -101,11 +101,11 @@ class Dashboard extends React.Component {
     getStatusFromNumber(status) {
         switch (status) {
             case 1:
-                return 'Request send to client' 
+                return 'Request send to client'
             case 2:
-                return 'Wainting for Talao finalization'   
+                return 'Wainting for Talao finalization'
             case 3:
-                return 'Completed'   
+                return 'Completed'
             default:
                 break;
         }
@@ -147,11 +147,11 @@ class Dashboard extends React.Component {
 
     render() {
         const { experiences, organizations, certificats } = this.props;
-        let tableExpRows = experiences.map((experience) => { 
+        let tableExpRows = experiences.map((experience) => {
             return (
                 <TableRow className={this.props.classes.row} key={experience.id}>
                     <CustomTableCell component="th" scope="row"> {experience.organization.name} </CustomTableCell>
-                    <CustomTableCell>{experience.job_description}</CustomTableCell>
+                    <CustomTableCell>{experience.job_title}</CustomTableCell>
                     <CustomTableCell>{ this.getStatusFromNumber(experience.status) }</CustomTableCell>
                     <CustomTableCell>
                         <Button>
@@ -168,10 +168,10 @@ class Dashboard extends React.Component {
                         </Button>
                     </CustomTableCell>
                 </TableRow>
-            ); 
+            );
         });
 
-        let tableOrgRows = organizations.map((organization) => { 
+        let tableOrgRows = organizations.map((organization) => {
             return (
                 <TableRow className={this.props.classes.row} key={organization.id}>
                     <CustomTableCell component="th" scope="row"> {organization.name} </CustomTableCell>
@@ -179,10 +179,10 @@ class Dashboard extends React.Component {
                     <CustomTableCell>{ organization.validated ? 'Completed' : 'Pending' }</CustomTableCell>
                     <CustomTableCell>actions...</CustomTableCell>
                 </TableRow>
-            ); 
+            );
         });
 
-        let tableCertsRows = certificats.map((certificat) => { 
+        let tableCertsRows = certificats.map((certificat) => {
             return (
                 <TableRow className={this.props.classes.row} key={certificat.id}>
                     <CustomTableCell component="th" scope="row"> {certificat.job_title} </CustomTableCell>
@@ -193,7 +193,7 @@ class Dashboard extends React.Component {
                         <Button>
                             <Share />
                         </Button>
-                        <Button onClick={() => this.downloadCertificat(certificat.signed_json)}>  
+                        <Button onClick={() => this.downloadCertificat(certificat.signed_json)}>
                             <CloudDownload />
                         </Button>
                         <Button onClick={() => this.removeCertificat(certificat)}>
@@ -201,7 +201,7 @@ class Dashboard extends React.Component {
                         </Button>
                     </CustomTableCell>
                 </TableRow>
-            ); 
+            );
         });
 
         return (
@@ -216,19 +216,19 @@ class Dashboard extends React.Component {
                                         <TableHead>
                                         <TableRow>
                                             <CustomTableCell>Client</CustomTableCell>
-                                            <CustomTableCell>Job description</CustomTableCell>
+                                            <CustomTableCell>Job title</CustomTableCell>
                                             <CustomTableCell>Statut</CustomTableCell>
                                             <CustomTableCell>Actions</CustomTableCell>
                                         </TableRow>
                                         </TableHead>
-                                        {tableExpRows && 
+                                        {tableExpRows &&
                                             <TableBody>
                                                 {tableExpRows}
                                             </TableBody>
                                         }
                                     </Table>
                                 </Paper>
-                            </Grid>    
+                            </Grid>
                             <Grid item lg={12}>
                             <Typography variant="display1" className={this.props.classes.tableTitle}>My client request</Typography>
                                 <Paper className={this.props.classes.root}>
@@ -241,14 +241,14 @@ class Dashboard extends React.Component {
                                             <CustomTableCell>Actions</CustomTableCell>
                                         </TableRow>
                                         </TableHead>
-                                        {tableOrgRows && 
+                                        {tableOrgRows &&
                                             <TableBody>
                                                 {tableOrgRows}
                                             </TableBody>
                                         }
                                     </Table>
                                 </Paper>
-                            </Grid>      
+                            </Grid>
                             <Grid item lg={12}>
                             <Typography variant="display1" className={this.props.classes.tableTitle}>My certificates</Typography>
                                 <Paper className={this.props.classes.root}>
@@ -259,14 +259,14 @@ class Dashboard extends React.Component {
                                             <CustomTableCell>Actions</CustomTableCell>
                                         </TableRow>
                                         </TableHead>
-                                        {tableCertsRows && 
+                                        {tableCertsRows &&
                                             <TableBody>
                                                 {tableCertsRows}
                                             </TableBody>
                                         }
                                     </Table>
                                 </Paper>
-                            </Grid>                                                   
+                            </Grid>
                             {this.state.cert &&
                                 <Blockcerts json={this.state.cert} key={this.state.cert} image={talaoCertificateImage} color='#282828' color_bg='#edecec'/>
                             }
