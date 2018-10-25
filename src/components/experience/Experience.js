@@ -190,7 +190,7 @@ class Experience extends Component {
     const { classes, experience, isClient, user } = this.props;
     const { showCert } = this.state;
     const durationInWords = distanceInWords(new Date(), addDays(new Date(), experience.jobDuration));
-    let competencyTags, dateDiff, monthDiff;
+    let competencyTags;
 
     if (!user) {
       return (<Loading />);
