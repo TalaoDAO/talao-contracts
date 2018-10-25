@@ -102,65 +102,105 @@ export function removeExpFromBackend(exp, user) {
 }
 
 export function fetchExperience(experience, organization, user) {
-    return dispatch => {
-        dispatch(asyncCallBegin());
-        let experienceService = ExperienceService.getExperienceService();
-        let organizationService = OrganizationService.getOrganizationService();
-
+  return dispatch => {
+    dispatch(asyncCallBegin());
+    let experienceService = ExperienceService.getExperienceService();
+    let organizationService = OrganizationService.getOrganizationService();
+    // Add a new organization if the user asked for it.
+    if (organization) {
+      organization.createdByFree = experience.freelanceEthereumAddress;
+      organizationService.add(organization).then(response => {
+        if (response.error) {
+          dispatch(asyncCallError(response.error));
+        }
+        const createdOrganization = response;
+        dispatch(
+          setSnackbar(
+            'Your client request has been sent. Talao takes care of the mechanics. You can also follow this process in your dashboard.',
+            'success'
+          )
+        );
+        // Add new organization to experience.
+        experience.organizationId = createdOrganization.id;
+        // Add new experience.
         experienceService.add(experience).then(response => {
-            if (response.error)
-                dispatch(asyncCallError(response.error));
-            else {
-
-                //Set the success & reset the state
-                dispatch(asyncCallSuccess());
-
-                //Add the new experience to the user
-                let competencies = [];
-                for (let i = 1; i <= 10; i++) {
-                    if (experience['skill' + i]) {
-                        competencies.push(new Competency(experience['skill' + i], 0, null, 0));
-                    }
-                }
-                user.freelancerDatas.addExperience(
-                    new Experience(experience.job_title,
-                                   experience.job_description,
-                                   new Date(experience.date_start),
-                                   new Date(experience.date_end),
-                                   competencies, null, 0,
-                                   experience.job_duration,
-                                   experience.certificatAsked,
-                                   experience.postedOnBlockchain,
-                                   response.id));
-                dispatch(fetchUserSuccess(user));
-
-                //reset the state
-                dispatch({type:'RESET_EXPERIENCE_REDUCER'});
-
-                //Add the organization if the user ask for it
-                if (organization) {
-                    organization.createdByFree = experience.freelanceEthereumAddress;
-                    organizationService.add(organization).then(response => {
-                      dispatch(
-                        setSnackbar(
-                          'Your client request has been sent. Talao takes care of the mechanics. You can also follow this process in your dashboard.',
-                          'success'
-                        )
-                      );
-                        if (response.error) {
-                          dispatch(asyncCallError(response.error));
-                        }
-
-                    }).catch(() => {
-                        dispatch(asyncCallError('Failed to create the organization'));
-                    });
-                }
+          if (response.error)
+          dispatch(asyncCallError(response.error));
+          else {
+            // Set the success & reset the state.
+            dispatch(asyncCallSuccess());
+            // Add the new experience to the user.
+            let competencies = [];
+            for (let i = 1; i <= 10; i++) {
+              if (experience['skill' + i]) {
+                competencies.push(new Competency(experience['skill' + i], 0, null, 0));
+              }
             }
+            user.freelancerDatas.addExperience(
+              new Experience(
+                experience.job_title,
+                experience.job_description,
+                new Date(experience.date_start),
+                new Date(experience.date_end),
+                competencies,
+                null,
+                0,
+                experience.job_duration,
+                experience.certificatAsked,
+                experience.postedOnBlockchain,
+                response.id
+              )
+            );
+            dispatch(fetchUserSuccess(user));
+            // Reset the state.
+            dispatch({type:'RESET_EXPERIENCE_REDUCER'});
+          }
         }).catch(error => {
-            // if an error is not handle
-            dispatch(asyncCallError(error));
+          dispatch(asyncCallError(error));
         });
-    };
+      }).catch(() => {
+        dispatch(asyncCallError('Failed to create the organization'));
+      });
+    }
+    else {
+      // No new organization, just adds experience.
+      experienceService.add(experience).then(response => {
+        if (response.error)
+        dispatch(asyncCallError(response.error));
+        else {
+          // Set the success & reset the state.
+          dispatch(asyncCallSuccess());
+          // Add the new experience to the user.
+          let competencies = [];
+          for (let i = 1; i <= 10; i++) {
+            if (experience['skill' + i]) {
+              competencies.push(new Competency(experience['skill' + i], 0, null, 0));
+            }
+          }
+          user.freelancerDatas.addExperience(
+            new Experience(
+              experience.job_title,
+              experience.job_description,
+              new Date(experience.date_start),
+              new Date(experience.date_end),
+              competencies,
+              null,
+              0,
+              experience.job_duration,
+              experience.certificatAsked,
+              experience.postedOnBlockchain,
+              response.id
+            )
+          );
+          dispatch(fetchUserSuccess(user));
+          // Reset the state.
+          dispatch({type:'RESET_EXPERIENCE_REDUCER'});
+        }
+      }).catch(error => {
+        dispatch(asyncCallError(error));
+      });
+    }
+  };
 }
 
 export function askForCertificate(experienceId, user) {
