@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { changeMenuClicked } from '../../actions/menu';
 
-const mapStateToProps = state => ({  
+const mapStateToProps = state => ({
     currentMenu: state.menuReducer.selectedMenu
   });
 
@@ -61,7 +61,7 @@ const styles = theme => ({
 class Menu extends React.Component {
 
     render() {
-        const { currentMenu } = this.props;
+        const { classes, currentMenu } = this.props;
 
         //Loading user from parent AppConnected...
         if (!this.props.user) {
@@ -73,35 +73,35 @@ class Menu extends React.Component {
         let showFreelancerMenu = ((this.props.user.freelancerDatas || this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') &&
             <div>
                 <Typography to="/">
-                    <Link 
+                    <Link
                         onClick={() => this.props.dispatch(changeMenuClicked('/chronology', true))}
-                        className={currentMenu === '/chronology' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                        className={currentMenu === '/chronology' ? classes.sidebarItemSelected : classes.sidebarItem}
                         to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
                     >
                         Work Experiences
                     </Link>
                 </Typography>
                 <Typography to="/" style={{clear: "both"}}>
-                    <Link 
+                    <Link
                         onClick={() => this.props.dispatch(changeMenuClicked('/competencies', true))}
-                        className={currentMenu === '/competencies' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                        className={currentMenu === '/competencies' ? classes.sidebarItemSelected : classes.sidebarItem}
                         to={!this.props.user.searchedFreelancers ? "/competencies" : "/competencies?" + this.props.user.searchedFreelancers.ethAddress}
                     >
                         Skills Rating
                     </Link>
                 </Typography>
                 <Typography to="/" style={{clear: "both"}}>
-                    <Link to="#" className={this.props.classes.sidebarItem} style={{color: "lightgray"}}>
+                    <Link to="#" className={classes.sidebarItem} style={{color: "lightgray"}}>
                         Diploma
                     </Link>
                 </Typography>
-            </div>  
+            </div>
         let showDashboard = this.props.user.freelancerDatas &&
         <div>
             <Typography to="/" style={{clear: "both"}}>
-                <Link 
+                <Link
                     onClick={() => this.props.dispatch(changeMenuClicked('/dashboard', true))}
-                    className={currentMenu === '/dashboard' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                    className={currentMenu === '/dashboard' ? classes.sidebarItemSelected : classes.sidebarItem}
                     to="/dashboard"
                 >
                     Dashboard
@@ -111,9 +111,9 @@ class Menu extends React.Component {
         //if this is a client or a freelancer
         let showCreateVaultMenu = (this.props.user.ethAddress && !this.props.user.searchedFreelancers && currentMenu !== '/unlockfreelancer') &&
         <Typography to="/">
-            <Link 
+            <Link
                 onClick={() => this.props.dispatch(changeMenuClicked('/register', true))}
-                className={currentMenu === '/register' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                className={currentMenu === '/register' ? classes.sidebarItemSelected : classes.sidebarItem}
                 to="/register"
             >
                 {this.props.user.freelancerDatas ? 'Personal Information' : 'Create resume'}
@@ -121,19 +121,19 @@ class Menu extends React.Component {
         </Typography>
 
         return (
-            <div className={this.props.classes.root}>
+            <div className={classes.root}>
                 <div>
                     <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage', true))} >
-                        <img src={logoTalao} className={this.props.classes.logo} alt="Talao" />
+                        <img src={logoTalao} className={classes.logo} alt="Talao" />
                     </Link>
-                    <Typography className={this.props.classes.underLogo}>Certified<br/>Resume</Typography>
+                    <Typography className={classes.underLogo}>Certified<br/>Resume</Typography>
                 </div>
-                <div className={this.props.classes.sidebar}>
+                <div className={classes.sidebar}>
                     <div>
                         <Typography to="/">
-                            <Link 
+                            <Link
                                 onClick={() => { this.props.dispatch(changeMenuClicked('/homepage', true))}}
-                                className={currentMenu === '/homepage' ? this.props.classes.sidebarItemSelected : this.props.classes.sidebarItem} 
+                                className={currentMenu === '/homepage' ? classes.sidebarItemSelected : classes.sidebarItem}
                                 to="/homepage"
                             >
                                 Home page
@@ -144,18 +144,46 @@ class Menu extends React.Component {
                         {showDashboard}
                     </div>
                 </div>
-                <div className={this.props.classes.menus}>
+                <div className={classes.menus}>
                     <Typography>
-                        <a className={this.props.classes.menuItem} href="#TODO">HOW DOES IT WORK ?</a>
+                        <a
+                          className={classes.menuItem}
+                          href="https://talao.io/talao-certified-resume-how-does-it-work/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          HOW DOES IT WORK ?
+                        </a>
                     </Typography>
                     <Typography>
-                        <a className={this.props.classes.menuItem} href="#TODO">WHAT IS IT ?</a>
+                        <a
+                          className={classes.menuItem}
+                          href="https://talao.io/talao-certified-resume-freedom-for-freelancers/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          WHAT IS IT ?
+                        </a>
                     </Typography>
                     <Typography>
-                        <a className={this.props.classes.menuItem} href="#TODO">TALAO.IO</a>
+                        <a
+                          className={classes.menuItem}
+                          href="https://talao.io/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          TALAO.IO
+                        </a>
                     </Typography>
                     <Typography>
-                        <a className={this.props.classes.menuItem} href="#TODO">ABOUT</a>
+                        <a
+                          className={classes.menuItem}
+                          href="#TODO"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          ABOUT
+                        </a>
                     </Typography>
                 </div>
             </div>
