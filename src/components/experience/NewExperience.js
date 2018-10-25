@@ -194,7 +194,7 @@ class NewExperience extends React.Component {
 
     allSkillFill() {
         for(let i = 1; i < this.state.skills.length + 1; i++) {
-            if (this.isEmpty(this.props.formData['skill' + i])) {
+            if (this.isEmpty(this.props.formData['skill' + i]) || this.isOverTextLimit(this.props.formData['skill' + i])) {
                 return false;
             }
         }
