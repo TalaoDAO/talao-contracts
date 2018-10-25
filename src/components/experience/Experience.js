@@ -175,7 +175,7 @@ class Experience extends React.Component {
     }
 
     render() {
-        const { classes, user } = this.props;
+        const { classes, isClient, user } = this.props;
         let competencyTags;
         let dateDiff;
         let monthDiff;
@@ -215,78 +215,83 @@ class Experience extends React.Component {
                         <Typography variant="body1" gutterBottom className={this.props.classes.description}>
                             {this.props.value.description}
                         </Typography>
-                        <div className={classes.certificateButtons}>
-                          {!this.props.value.certificatUrl &&
-                            <Button
-                              onClick={
-                                () => this.props.value.certificatAsked ?
-                                  this.fileInput.click()
-                                  : this.props.dispatch(askForCertificate(this.props.value.idBack, user))
-                              }
-                              className={this.props.classes.certificatButton}
-                            >
-                                <input onChange={
-                                  (e) => {
-                                    if (this.props.value.idBlockchain) {
-                                      this.props.dispatch(
-                                        addCertificateToPostedExperienceOnBlockchain(
-                                          e.target.files[0],
-                                          this.props.value,
-                                          user
-                                        )
-                                      )
-                                    }
-                                    else {
-                                      this.props.dispatch(
-                                        addCertificateToExperienceDraftAndPostOnBlockchain(
-                                          e.target.files[0],
-                                          this.props.value,
-                                          user
-                                        )
-                                      )
-                                    }
+                        {
+                          isClient ?
+                            null
+                          :
+                            <div className={classes.certificateButtons}>
+                              {!this.props.value.certificatUrl &&
+                                <Button
+                                  onClick={
+                                    () => this.props.value.certificatAsked ?
+                                      this.fileInput.click()
+                                      : this.props.dispatch(askForCertificate(this.props.value.idBack, user))
                                   }
-                                }
-                                style={{ display: 'none' }}
-                                ref={fileInput => this.fileInput = fileInput}
-                                type="file" accept="application/json" />
-                                <Fingerprint />
-                                <span className={this.props.classes.iconMargin}>
-                                  {
-                                    this.props.value.certificatAsked ?
-                                      this.props.value.idBlockchain ?
-                                        'Add certificate and update'
-                                      : 'Add certificate and post'
-                                    : 'Request a certificate'
-                                  }
-                                </span>
-                            </Button>
-                          }
-                          {!this.props.value.certificatUrl &&
-                            <React.Fragment>
-                              {!this.props.value.idBlockchain
-                              ?
-                                  <Button onClick={() => this.props.dispatch(postExperience(this.props.value, user))} className={this.props.classes.certificatButton}>
-                                  <CloudUpload />
-                                      <span className={this.props.classes.iconMargin}>Post the experience</span>
-                                  </Button>
-                              :
-                                  <Button onClick={() => this.props.dispatch(unPostExperience(this.props.value, user))} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
-                                  <Close />
-                                      <span className={this.props.classes.iconMargin}>Unpost</span>
-                                  </Button>
-                              }
-                            </React.Fragment>
-                          }
-                          {(!this.props.value.certificatAsked || this.props.value.certificatUrl) &&
-                              <React.Fragment>
-                                <Button onClick={this.removeExperienceFromBackend} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
-                                <Close />
-                                    <span className={this.props.classes.iconMargin}>Remove</span>
+                                  className={this.props.classes.certificatButton}
+                                >
+                                    <input onChange={
+                                      (e) => {
+                                        if (this.props.value.idBlockchain) {
+                                          this.props.dispatch(
+                                            addCertificateToPostedExperienceOnBlockchain(
+                                              e.target.files[0],
+                                              this.props.value,
+                                              user
+                                            )
+                                          )
+                                        }
+                                        else {
+                                          this.props.dispatch(
+                                            addCertificateToExperienceDraftAndPostOnBlockchain(
+                                              e.target.files[0],
+                                              this.props.value,
+                                              user
+                                            )
+                                          )
+                                        }
+                                      }
+                                    }
+                                    style={{ display: 'none' }}
+                                    ref={fileInput => this.fileInput = fileInput}
+                                    type="file" accept="application/json" />
+                                    <Fingerprint />
+                                    <span className={this.props.classes.iconMargin}>
+                                      {
+                                        this.props.value.certificatAsked ?
+                                          this.props.value.idBlockchain ?
+                                            'Add certificate and update'
+                                          : 'Add certificate and post'
+                                        : 'Request a certificate'
+                                      }
+                                    </span>
                                 </Button>
-                              </React.Fragment>
-                          }
-                        </div>
+                              }
+                              {!this.props.value.certificatUrl &&
+                                <React.Fragment>
+                                  {!this.props.value.idBlockchain
+                                  ?
+                                      <Button onClick={() => this.props.dispatch(postExperience(this.props.value, user))} className={this.props.classes.certificatButton}>
+                                      <CloudUpload />
+                                          <span className={this.props.classes.iconMargin}>Post the experience</span>
+                                      </Button>
+                                  :
+                                      <Button onClick={() => this.props.dispatch(unPostExperience(this.props.value, user))} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                                      <Close />
+                                          <span className={this.props.classes.iconMargin}>Unpost</span>
+                                      </Button>
+                                  }
+                                </React.Fragment>
+                              }
+                              {(!this.props.value.certificatAsked || this.props.value.certificatUrl) &&
+                                  <React.Fragment>
+                                    <Button onClick={this.removeExperienceFromBackend} style={{ display: !this.props.user.searchedFreelancers ? 'inline-flex' : 'none' }} className={this.props.classes.removeButton}>
+                                    <Close />
+                                        <span className={this.props.classes.iconMargin}>Remove</span>
+                                    </Button>
+                                  </React.Fragment>
+                              }
+                            </div>
+                        }
                         {this.props.value.certificatUrl &&
                         <div className={classes.viewCertificate}>
                           <Button onClick={this.showCertification} className={this.props.classes.certificatButton}>

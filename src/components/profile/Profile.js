@@ -1,26 +1,18 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import { constants } from '../../constants';
-import Card from '@material-ui/core/Card';
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import Typography from "@material-ui/core/Typography";
-import IconButton from '@material-ui/core/IconButton';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Collapse from '@material-ui/core/Collapse';
-import MailIcon from '@material-ui/icons/Mail';
-import Share from '@material-ui/icons/Share';
-import PhoneIcon from '@material-ui/icons/Phone';
-import BlurOnIcon from '@material-ui/icons/BlurOn';
-import classnames from 'classnames';
-import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 import Media from "react-media";
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import { expandProfil } from '../../actions/experience';
-import Grid from '@material-ui/core/Grid';
-import SimplePopover from '../buttons/simplePopover';
 import queryString from 'query-string';
+
+import { withStyles } from '@material-ui/core/styles';
+import { Card, CardActions, CardContent, Collapse, Grid, IconButton, Typography } from '@material-ui/core';
+import { BlurOn, ExpandMore, Mail, Phone, Share } from '@material-ui/icons';
+import { constants } from '../../constants';
+import classnames from 'classnames';
+import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
+
+import { expandProfil } from '../../actions/experience';
+import SimplePopover from '../buttons/simplePopover';
 
 const styles = theme => ({
   container: {
@@ -94,7 +86,6 @@ class Profile extends React.Component {
   render() {
     const { expanded } = this.props;
     if (!this.props.freelancer) {
-      //Prevent to have multiple loader
       return (<div />)
     }
 
@@ -105,32 +96,33 @@ class Profile extends React.Component {
             <div className={this.props.classes.pictureContainer}>
               <div className={this.props.classes.confidenceIndexContainer}>
                 <div className={this.props.classes.confidenceIndex}>{Math.round(this.props.freelancer.confidenceIndex * 10) / 10}
-                  <span style={{fontSize: '12px'}}>/5</span>
-                </div>
+                <span style={{fontSize: '12px'}}>/5</span>
               </div>
-              <img src={(this.props.freelancer.pictureUrl) ? this.props.freelancer.pictureUrl : defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
             </div>
-            <div className={this.props.classes.profileContainer}>
-              <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>
-                {this.props.freelancer.firstName} {this.props.freelancer.lastName}
-              </Typography>
-              <Typography variant="subheading" component="h2" className={this.props.classes.title}>
-                {this.props.freelancer.title}
-              </Typography>
-              <Typography>
-                {this.props.freelancer.description}
-              </Typography>
-            </div>
-            <div className={this.props.classes.actionsContainer}>
-              <CardActions className={this.props.classes.actions} disableActionSpacing>
-                <IconButton
-                  className={classnames(this.props.classes.expand, { [this.props.classes.expandOpen]: expanded })}
-                  onClick={() => this.props.dispatch(expandProfil(!expanded))}
-                  aria-expanded={expanded}
-                  aria-label="Show more">
-                  <ExpandMoreIcon />
+            <img src={(this.props.freelancer.pictureUrl) ? this.props.freelancer.pictureUrl : defaultFreelancerPicture} className={this.props.classes.picture} alt="Freelancer" />
+          </div>
+          <div className={this.props.classes.profileContainer}>
+            <Typography variant="headline" component="h1" gutterBottom className={this.props.classes.name}>
+              {this.props.freelancer.firstName} {this.props.freelancer.lastName}
+            </Typography>
+            <Typography variant="subheading" component="h2" className={this.props.classes.title}>
+              {this.props.freelancer.title}
+            </Typography>
+            <Typography>
+              {this.props.freelancer.description}
+            </Typography>
+          </div>
+          <div className={this.props.classes.actionsContainer}>
+            <CardActions className={this.props.classes.actions} disableActionSpacing>
+              <IconButton
+                className={classnames(this.props.classes.expand, { [this.props.classes.expandOpen]: expanded })}
+                onClick={() => this.props.dispatch(expandProfil(!expanded))}
+                aria-expanded={expanded}
+                aria-label="Show more"
+                >
+                  <ExpandMore />
                 </IconButton>
-              </CardActions >
+              </CardActions>
             </div>
           </div>
         </CardContent>
@@ -140,32 +132,32 @@ class Profile extends React.Component {
               const marginLeftIfMobile = matches ? '0px' : '130px';
               return (
                 <CardContent>
-                  {this.props.showContact && 
-                  <div>
-                    <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                      <MailIcon />&nbsp;{this.props.freelancer.email}<br />
-                    </Typography>
-                    <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                      <PhoneIcon />&nbsp;{this.props.freelancer.phone}<br />
-                    </Typography>
-                  </div>
+                  {this.props.showContact &&
+                    <div>
+                      <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                        <Mail />&nbsp;{this.props.freelancer.email}<br />
+                      </Typography>
+                      <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
+                        <Phone />&nbsp;{this.props.freelancer.phone}<br />
+                      </Typography>
+                    </div>
                   }
                   <Typography style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                    <BlurOnIcon />&nbsp;{this.props.freelancer.ethereumAddress}
+                    <BlurOn />&nbsp;{this.props.freelancer.ethereumAddress}
                   </Typography>
                   <Grid style={{ marginLeft: marginLeftIfMobile }} className={this.props.classes.detailsContainer}>
-                      <Share />
-                      <SimplePopover ethAddress={this.props.freelancer.ethAddress} isWatching={queryString.extract(window.location.search) ? true : false}/>
-                  </Grid>             
+                    <Share />
+                    <SimplePopover ethAddress={this.props.freelancer.ethAddress} isWatching={queryString.extract(window.location.search) ? true : false}/>
+                  </Grid>
                 </CardContent>
               )
             }
-            }
-          </Media>
-        </Collapse>
-      </Card >
-    );
-  }
+          }
+        </Media>
+      </Collapse>
+    </Card>
+  );
+}
 }
 
 export default compose(withStyles(styles), connect(mapStateToProps))(Profile);
