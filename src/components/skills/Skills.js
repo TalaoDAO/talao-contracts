@@ -8,11 +8,12 @@ const mapStateToProps = state => ({
   formData: state.experienceReducer.formData
 });
 class Skills extends Component {
-  isOverTextLimit(text) {
-    return (text.length > TEXT_VALIDATOR_LENGTH);
-  }
   isEmpty(text) {
     return text.length <= 0;
+  }
+  remainingCharacters(text) {
+    const remaining = TEXT_VALIDATOR_LENGTH - text.length;
+    return 'Remaining characters: ' + remaining;
   }
   render() {
     const { formData, id } = this.props;
@@ -22,14 +23,16 @@ class Skills extends Component {
         <TextField
           required
           type="text"
+          inputProps={{
+            maxLength: 30
+          }}
           value={skill}
-          error={this.isEmpty(skill) || this.isOverTextLimit(skill)}
+          error={this.isEmpty(skill)}
           helperText={
             this.isEmpty(skill) ?
               'This field can\'t be empty.'
-            : this.isOverTextLimit(skill) ?
-              'This field can\'t have more than 30 characters.'
-            : ''
+            :
+              this.remainingCharacters(skill)
           }
           onChange={(event) =>  this.props.dispatch(setExperienceFormInput(['skill' + this.props.id], event.target.value))}
           style={{margin: '10px 20px', width: '-webkit-fill-available'}}

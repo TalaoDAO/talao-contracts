@@ -1,4 +1,4 @@
-import { SNACKBAR } from '../actions/snackbar';
+import { SNACKBAR_SET, SNACKBAR_REMOVE } from '../actions/snackbar';
 
 const initialState = {
   snackbar: null
@@ -6,11 +6,16 @@ const initialState = {
 
 export default function snackbarReducer(state = initialState, action) {
   switch (action.type) {
-    case SNACKBAR:
+    case SNACKBAR_SET:
       return {
         ...state,
         snackbar: action.snackbar
       };
+      case SNACKBAR_REMOVE:
+        return {
+          ...state,
+          snackbar: null
+        };
     default:
       return state;
   }

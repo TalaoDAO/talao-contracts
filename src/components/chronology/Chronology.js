@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { hasAccess } from '../../actions/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
+import TimedSnackbar from '../snackbars/TimedSnackbar';
 import { fetchFreelancer } from '../../actions/user';
 
 const Loading = require('react-loading-animation');
@@ -72,7 +73,7 @@ class Chronology extends React.Component {
     } else if (transactionError) {
       snackbarOld = (<CustomizedSnackbars message={transactionError.message} showSpinner={false} type='error'/>);
     } else if (transactionReceipt) {
-      snackbarOld = (<CustomizedSnackbars message='Transaction successfull!' showSpinner={false} type='success' time={5000} />);
+      snackbarOld = (<TimedSnackbar message='Transaction successfull!' type='success' autoHideDuration={5000} />);
     }
 
     //pick the current user or a searched freelancer
@@ -138,11 +139,10 @@ class Chronology extends React.Component {
         {snackbarOld}
         {
           snackbar ?
-          <CustomizedSnackbars
+          <TimedSnackbar
             message={snackbar.message}
-            showSpinner={false}
             type={snackbar.type}
-            time={5000}
+            autoHideDuration={5000}
           />
           : null
         }
