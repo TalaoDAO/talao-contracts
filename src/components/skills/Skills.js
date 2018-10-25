@@ -4,11 +4,10 @@ import { connect } from "react-redux";
 import { setExperienceFormInput } from '../../actions/experience';
 import { TEXT_VALIDATOR_LENGTH } from '../../actions/createVault';
 
-//map the redux store the the props component
 const mapStateToProps = state => ({
   formData: state.experienceReducer.formData
 });
-class Skills extends React.Component {
+class Skills extends Component {
   isOverTextLimit(text) {
     return (text.length > TEXT_VALIDATOR_LENGTH);
   }
