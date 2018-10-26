@@ -8,6 +8,7 @@ import { getDashboardDatas, deleteAsync } from '../../actions/dashboard';
 import { confirmAlert } from 'react-confirm-alert';
 import talaoCertificateImage from '../../images/talaoCertificateImage';
 import { Blockcerts } from 'react-blockcerts';
+import { slugify } from 'transliteration';
 import downloadjs from 'downloadjs';
 
 const CustomTableCell = withStyles(theme => ({
@@ -140,9 +141,11 @@ class Dashboard extends React.Component {
     }
 
     downloadCertificat(signedCertificat) {
-        var decoder = new TextDecoder("utf-8");
-        let certificat = decoder.decode(Buffer.from(signedCertificat.data));
-        downloadjs(certificat, 'certificate.json', 'application/json');
+        const decoder = new TextDecoder("utf-8");
+        const certificat = decoder.decode(Buffer.from(signedCertificat.data));
+        const certificatJson =  JSON.parse(certificat);
+        const fileName = slugify(certificatJson.recipientProfile.name + '-' + certificatJson.jobTitle);
+        downloadjs(certificat, fileName + '.json', 'application/json');
     }
 
     render() {
