@@ -76,7 +76,8 @@ export function fetchUser(address) {
                         if (reject) {
                             dispatch(fetchUserError(reject))
                         }
-                        //the user is a freelancer so we init his datas
+                        // The user is a freelancer so we init his datas.
+                        // Resolve is his Vault address.
                         else if (resolve !== false) {
                             user.freelancerDatas = new Freelancer(resolve, user.ethAddress);
 

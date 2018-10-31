@@ -10,71 +10,71 @@ export const DELETE_ASYNC_SUCCESS  = 'DELETE_ASYNC_SUCCESS';
 export const DELETE_ASYNC_ERROR    = 'DELETE_ASYNC_ERROR';
 
 export const getDashboardBegin = () => ({
-    type: GET_DASHBOARD_BEGIN
+  type: GET_DASHBOARD_BEGIN
 });
 
 export const getDashboardSuccess = (experiences, organizations, certificats) => ({
-    type: GET_DASHBOARD_SUCCESS,
-    experiences,
-    organizations,
-    certificats
+  type: GET_DASHBOARD_SUCCESS,
+  experiences,
+  organizations,
+  certificats
 });
 
 export const getDashboardError = (error) => ({
-    type: GET_DASHBOARD_ERROR,
-    error
+  type: GET_DASHBOARD_ERROR,
+  error
 });
 
 export const deleteAsyncBegin = () => ({
-    type: DELETE_ASYNC_BEGIN
+  type: DELETE_ASYNC_BEGIN
 });
 
 export const deleteAsyncSuccess = (certificats) => ({
-    type: DELETE_ASYNC_SUCCESS,
-    certificats
+  type: DELETE_ASYNC_SUCCESS,
+  certificats
 });
 
 export const deleteAsyncError = (error) => ({
-    type: DELETE_ASYNC_ERROR,
-    error
+  type: DELETE_ASYNC_ERROR,
+  error
 });
 
 export function deleteAsync(id, certificats) {
-    return dispatch => {
-        dispatch(deleteAsyncBegin());
-        CertificatService.getCertificatService().delete(id).then(() => {
-            var index = certificats.findIndex(x => x.id === id);
-            certificats.splice(index, 1);
-            dispatch(deleteAsyncSuccess(certificats));
-        }).catch((error) => {
-            dispatch(deleteAsyncError(error));
-        });
-    };
+  return dispatch => {
+    dispatch(deleteAsyncBegin());
+    CertificatService.getCertificatService().delete(id).then(res => {
+      const index = certificats.findIndex(x => x.id === id);
+      certificats.splice(index, 1);
+      dispatch(deleteAsyncSuccess(certificats));
+    }).catch((error) => {
+      dispatch(deleteAsyncError(error));
+    });
+  };
 }
 
 export function getDashboardDatas(userEthAddress) {
-    return dispatch => {
-       dispatch(getDashboardBegin());
+  return dispatch => {
+    dispatch(getDashboardBegin());
 
-       Promise.all([
-                    getFromEth(ExperienceService.getExperienceService(), userEthAddress), 
-                    getFromEth(OrganizationService.getOrganizationService(), userEthAddress), 
-                    getFromEth(CertificatService.getCertificatService(), userEthAddress)
-        ])
-        .then(([experiences, organizations, certificats]) => {
-            dispatch(getDashboardSuccess(experiences, organizations, certificats));
-        }).catch(error => {
-            dispatch(getDashboardError(error));
-        });
-    };
+    Promise.all([
+      getFromEth(ExperienceService.getExperienceService(), userEthAddress),
+      getFromEth(OrganizationService.getOrganizationService(), userEthAddress),
+      getFromEth(CertificatService.getCertificatService(), userEthAddress)
+    ])
+    .then(([experiences, organizations, certificats]) => {
+      dispatch(getDashboardSuccess(experiences, organizations, certificats));
+    }).catch(error => {
+      dispatch(getDashboardError(error));
+    });
+  };
 }
 
 function getFromEth(service, ethAddress) {
-    return new Promise((resolve, reject) => {
-        service.getAllFromEth(ethAddress).then(response => {       
-            response.error ? reject(response.error) : resolve(response)
-        }).catch(error => {
-            reject(error);
-        });
+  return new Promise((resolve, reject) => {
+    service.getAllFromEth(ethAddress).then(response => {
+      response.error ? reject(response.error) : resolve(response)
+    }).catch(error => {
+      reject(error);
     });
+  });
 }
