@@ -82,7 +82,7 @@ class Chronology extends React.Component {
     let experiences = freelancer.experiences
     // Sort descending by date
     .sort((extendedExperienceA, extendedExperienceB) => {
-      return extendedExperienceA.from < extendedExperienceB.from;
+      return extendedExperienceB.from - extendedExperienceA.from;
     })
 
     // Generate components
