@@ -1,4 +1,4 @@
-import BackendAuth from '../helpers/BackendAuth';
+import AuthHelper from '../helpers/authHelper';
 const apiGlobalRoute = process.env.REACT_APP_API_ADDRESS;
 
 class CertificateService {
@@ -16,7 +16,7 @@ class Certificate {
     this.vaultRoute = apiGlobalRoute + 'vault/';
     this.freelanceVaultRoute = this.vaultRoute + 'freelance';
     this.clientVaultRoute = this.vaultRoute + 'client';
-    this.headers = BackendAuth.setHeaders();
+    this.headers = AuthHelper.setHeaders();
   }
 
   /**
