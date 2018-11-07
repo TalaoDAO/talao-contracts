@@ -1,7 +1,7 @@
 import store from '../store/store';
 
-export default class BackendHeaders {
-  static setBackendHeaders() {
+export default class BackendAuth {
+  static setHeaders() {
     const storeState = store.getState();
     const userReducer = storeState.userReducer;
     const { user } = userReducer;

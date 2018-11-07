@@ -21,9 +21,9 @@ export const removeResearch = (user) => ({
     user
 });
 
-export const login = (address) => ({
+export const login = address => ({
     type: LOGIN,
-    address
+    address: address.toLowerCase()
 });
 
 export const fetchUserBegin = () => ({

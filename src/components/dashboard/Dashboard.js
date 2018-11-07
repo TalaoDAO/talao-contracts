@@ -81,7 +81,7 @@ const styles = theme => ({
 const mapStateToProps = state => ({
     experiences: state.dashboardReducer.experiences,
     organizations: state.dashboardReducer.organizations,
-    certificats: state.dashboardReducer.certificats
+    certificates: state.dashboardReducer.certificates
   });
 
 class Dashboard extends React.Component {
@@ -121,7 +121,7 @@ class Dashboard extends React.Component {
                         <p>Are you sure you want to remove this experience ?</p>
                         <Button style={{ marginRight: '20px' }} className={this.props.classes.certificatButton} onClick={onClose}>No</Button>
                         <Button className={this.props.classes.removeButton} onClick={() => {
-                            this.props.dispatch(deleteAsync(certificat.id, this.props.certificats));
+                            this.props.dispatch(deleteAsync(certificat.id, this.props.certificates));
                             onClose()
                         }}>Yes</Button>
                     </div>
@@ -149,7 +149,7 @@ class Dashboard extends React.Component {
     }
 
     render() {
-        const { experiences, organizations, certificats } = this.props;
+        const { experiences, organizations, certificates } = this.props;
         let tableExpRows = experiences.map((experience) => {
             return (
                 <TableRow className={this.props.classes.row} key={experience.id}>
@@ -185,21 +185,21 @@ class Dashboard extends React.Component {
             );
         });
 
-        let tableCertsRows = certificats.map((certificat) => {
+        let tableCertsRows = certificates.map((certificate) => {
             return (
-                <TableRow className={this.props.classes.row} key={certificat.id}>
-                    <CustomTableCell component="th" scope="row"> {certificat.job_title} </CustomTableCell>
+                <TableRow className={this.props.classes.row} key={certificate.id}>
+                    <CustomTableCell component="th" scope="row"> {certificate.job_title} </CustomTableCell>
                     <CustomTableCell>
-                        <Button onClick={() => this.previewcertificat(certificat.signed_json)}>
+                        <Button onClick={() => this.previewcertificat(certificate.signed_json)}>
                             <Visibility />
                         </Button>
                         <Button>
                             <Share />
                         </Button>
-                        <Button onClick={() => this.downloadCertificat(certificat.signed_json)}>
+                        <Button onClick={() => this.downloadCertificat(certificate.signed_json)}>
                             <CloudDownload />
                         </Button>
-                        <Button onClick={() => this.removeCertificat(certificat)}>
+                        <Button onClick={() => this.removeCertificat(certificate)}>
                             <DeleteForever />
                         </Button>
                     </CustomTableCell>

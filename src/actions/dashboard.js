@@ -1,6 +1,6 @@
 import ExperienceService from '../api/experiences';
 import OrganizationService from '../api/organization';
-import CertificatService from '../api/certificats';
+import CertificateService from '../api/certificate';
 
 export const GET_DASHBOARD_BEGIN   = 'GET_DASHBOARD_BEGIN';
 export const GET_DASHBOARD_SUCCESS = 'GET_DASHBOARD_SUCCESS';
@@ -13,11 +13,11 @@ export const getDashboardBegin = () => ({
   type: GET_DASHBOARD_BEGIN
 });
 
-export const getDashboardSuccess = (experiences, organizations, certificats) => ({
+export const getDashboardSuccess = (experiences, organizations, certificates) => ({
   type: GET_DASHBOARD_SUCCESS,
   experiences,
   organizations,
-  certificats
+  certificates
 });
 
 export const getDashboardError = (error) => ({
@@ -29,9 +29,9 @@ export const deleteAsyncBegin = () => ({
   type: DELETE_ASYNC_BEGIN
 });
 
-export const deleteAsyncSuccess = (certificats) => ({
+export const deleteAsyncSuccess = (certificates) => ({
   type: DELETE_ASYNC_SUCCESS,
-  certificats
+  certificates
 });
 
 export const deleteAsyncError = (error) => ({
@@ -39,13 +39,13 @@ export const deleteAsyncError = (error) => ({
   error
 });
 
-export function deleteAsync(id, certificats) {
+export function deleteAsync(id, certificates) {
   return dispatch => {
     dispatch(deleteAsyncBegin());
-    CertificatService.getCertificatService().delete(id).then(res => {
-      const index = certificats.findIndex(x => x.id === id);
-      certificats.splice(index, 1);
-      dispatch(deleteAsyncSuccess(certificats));
+    CertificateService.getCertificateService().delete(id).then(res => {
+      const index = certificates.findIndex(x => x.id === id);
+      certificates.splice(index, 1);
+      dispatch(deleteAsyncSuccess(certificates));
     }).catch((error) => {
       dispatch(deleteAsyncError(error));
     });
@@ -56,13 +56,14 @@ export function getDashboardDatas(userEthAddress) {
   return dispatch => {
     dispatch(getDashboardBegin());
 
+    // TODO: migrate all to get()
     Promise.all([
       getFromEth(ExperienceService.getExperienceService(), userEthAddress),
       getFromEth(OrganizationService.getOrganizationService(), userEthAddress),
-      getFromEth(CertificatService.getCertificatService(), userEthAddress)
+      get(CertificateService.getCertificateService())
     ])
-    .then(([experiences, organizations, certificats]) => {
-      dispatch(getDashboardSuccess(experiences, organizations, certificats));
+    .then(([experiences, organizations, certificates]) => {
+      dispatch(getDashboardSuccess(experiences, organizations, certificates));
     }).catch(error => {
       dispatch(getDashboardError(error));
     });
@@ -72,6 +73,16 @@ export function getDashboardDatas(userEthAddress) {
 function getFromEth(service, ethAddress) {
   return new Promise((resolve, reject) => {
     service.getAllFromEth(ethAddress).then(response => {
+      response.error ? reject(response.error) : resolve(response)
+    }).catch(error => {
+      reject(error);
+    });
+  });
+}
+
+function get(service) {
+  return new Promise((resolve, reject) => {
+    service.get().then(response => {
       response.error ? reject(response.error) : resolve(response)
     }).catch(error => {
       reject(error);
