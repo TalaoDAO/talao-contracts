@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Grid, TextField } from '@material-ui/core';
 import { connect } from "react-redux";
-import { setExperienceFormInput } from '../../actions/experience';
-import { TEXT_VALIDATOR_LENGTH } from '../../actions/createVault';
+import { setExperienceFormInput } from '../../actions/freelance/experience';
+import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 
 const mapStateToProps = state => ({
   formData: state.experienceReducer.formData

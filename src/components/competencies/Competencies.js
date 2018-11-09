@@ -6,12 +6,12 @@ import Profile from '../profile/Profile';
 import queryString from 'query-string'
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import { hasAccess } from '../../actions/guard';
-import { fetchFreelancer } from '../../actions/user';
+import { hasAccess } from '../../actions/public/guard';
+import { fetchFreelancer } from '../../actions/public/user';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import TimedSnackbar from '../snackbars/TimedSnackbar';
 import Button from '@material-ui/core/Button';
-import { moveToNewExp } from '../../actions/experience';
+import { moveToNewExp } from '../../actions/freelance/experience';
 import Typography from "@material-ui/core/Typography";
 
 const Loading = require('react-loading-animation');

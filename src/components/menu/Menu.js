@@ -5,7 +5,7 @@ import { Typography } from '@material-ui/core';
 import logoTalao from '../../images/logo-talao.png';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import { changeMenuClicked } from '../../actions/menu';
+import { changeMenuClicked } from '../../actions/public/menu';
 
 const mapStateToProps = state => ({
     currentMenu: state.menuReducer.selectedMenu

@@ -11,7 +11,7 @@ import { constants } from '../../constants';
 import classnames from 'classnames';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 
-import { expandProfil } from '../../actions/experience';
+import { expandProfil } from '../../actions/freelance/experience';
 import SimplePopover from '../buttons/simplePopover';
 
 const styles = theme => ({

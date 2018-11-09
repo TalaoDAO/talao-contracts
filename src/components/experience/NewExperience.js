@@ -9,8 +9,8 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import Skills from '../skills/Skills';
 import NewExperienceWithCertificate from './NewExperienceWithCertificate';
-import { setExperienceFormInput, setOrganizationFormInput, newExperienceClicked, fetchExperience } from '../../actions/experience';
-import { TEXT_VALIDATOR_LENGTH } from '../../actions/createVault';
+import { setExperienceFormInput, setOrganizationFormInput, newExperienceClicked, fetchExperience } from '../../actions/freelance/experience';
+import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 
 const styles = theme => ({
   root: {

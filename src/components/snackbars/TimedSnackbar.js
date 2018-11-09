@@ -15,8 +15,8 @@ import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
 import { withStyles } from '@material-ui/core/styles';
 
-import { removeSnackbar } from '../../actions/snackbar';
-import { resetTransaction } from '../../actions/transactions';
+import { removeSnackbar } from '../../actions/public/snackbar';
+import { resetTransaction } from '../../actions/public/transaction';
 
 const variantIcon = {
   success: CheckCircleIcon,

@@ -1,10 +1,10 @@
 import {
-  TRANSACTION_HASH, 
+  TRANSACTION_HASH,
   TRANSACTION_RECEIPT,
   TRANSACTION_ERROR,
   RESET_TRANSACTION,
   TRANSACTION_BEGIN
-} from '../actions/transactions'
+} from '../../actions/public/transaction'
 
 const initialState = {
   transactionHash: null,
@@ -47,16 +47,15 @@ export default function transactionReducer(state = initialState, action) {
     };
 
     case RESET_TRANSACTION:
-      return {
-        ...state,
-        transactionHash: null,
-        transactionReceipt: null,
-        transactionError: null,
-        object: null
+    return {
+      ...state,
+      transactionHash: null,
+      transactionReceipt: null,
+      transactionError: null,
+      object: null
     };
     default:
-      // ALWAYS have a default case in a reducer
-      return state;
+    // ALWAYS have a default case in a reducer
+    return state;
   }
 }
-  

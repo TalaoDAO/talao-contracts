@@ -1,12 +1,20 @@
-import Experience from '../models/Experience';
-import { fetchUserSuccess } from '../actions/user'
-import Competency from '../models/Competency';
-import { changeMenu } from './menu';
-import ExperienceService from '../api/experiences';
-import OrganizationService from '../api/organization';
-import { transactionHash, transactionReceipt, transactionError, transactionBegin } from '../actions/transactions';
-import { setSnackbar } from './snackbar';
-import FileService from '../services/FileService';
+import Experience from '../../models/Experience';
+import Competency from '../../models/Competency';
+
+import ExperienceService from '../../api/freelance/experience';
+import OrganizationService from '../../api/freelance/organization';
+
+import { fetchUserSuccess } from '../../actions/public/user'
+import { changeMenu } from '../../actions/public/menu';
+import {
+  transactionHash,
+  transactionReceipt,
+  transactionError,
+  transactionBegin
+} from '../../actions/public/transaction';
+import { setSnackbar } from '../../actions/public/snackbar';
+
+import FileService from '../../services/FileService';
 
 export const ASYNC_CALL_BEGIN            = 'ASYNC_CALL_BEGIN';
 export const ASYNC_CALL_SUCCESS          = 'ASYNC_CALL_SUCCESS';
@@ -17,95 +25,94 @@ export const SET_ORGANIZATION_FORM_INPUT = 'SET_ORGANIZATION_FORM_INPUT';
 export const EXPAND_PROFIL               = 'EXPAND_PROFIL';
 export const NEW_EXPERIENCE_CLICKED      = 'NEW_EXPERIENCE_CLICKED';
 
-//API STATE
 export const asyncCallBegin = () => ({
-    type: ASYNC_CALL_BEGIN
-  });
-
-export const asyncCallSuccess = (success) => ({
-    type: ASYNC_CALL_SUCCESS,
-    success
+  type: ASYNC_CALL_BEGIN
 });
 
-export const asyncCallError = (error) => ({
-    type: ASYNC_CALL_ERROR,
-    error
+export const asyncCallSuccess = success => ({
+  type: ASYNC_CALL_SUCCESS,
+  success
 });
 
-//FORM INPUT
+export const asyncCallError = error => ({
+  type: ASYNC_CALL_ERROR,
+  error
+});
+
 export const setExperienceFormInput = (property, value) => ({
-    type: SET_EXPERIENCE_FORM_INPUT,
-    property,
-    value
+  type: SET_EXPERIENCE_FORM_INPUT,
+  property,
+  value
 });
 
 export const setOrganizationFormInput = (property, value) => ({
-    type: SET_ORGANIZATION_FORM_INPUT,
-    property,
-    value
+  type: SET_ORGANIZATION_FORM_INPUT,
+  property,
+  value
 });
 
-export const newExperience = (value) => ({
-    type: NEW_EXPERIENCE_CLICKED,
-    value
+export const newExperience = value => ({
+  type: NEW_EXPERIENCE_CLICKED,
+  value
 });
 
 export const expandProfil = expandProfil => ({
-    type: EXPAND_PROFIL,
-    expandProfil
+  type: EXPAND_PROFIL,
+  expandProfil
 });
 
-//API CALL
-export const getOrganizations = (organizations) => ({
-    type: GET_ORGANIZATIONS,
-    organizations
+export const getOrganizations = organizations => ({
+  type: GET_ORGANIZATIONS,
+  organizations
 });
 
 export function fetchOrganizations() {
-    return dispatch => {
-        dispatch(asyncCallBegin());
-        let organizationService = OrganizationService.getOrganizationService();
-        organizationService.getOrganizations().then(response => {
-            //if the API send back an error
-            if (response.error)
-                dispatch(asyncCallError(response.error));
-            else {
-                // if the API send success
-                dispatch(asyncCallSuccess());
+  return dispatch => {
+    dispatch(asyncCallBegin());
+    let organizationService = OrganizationService.getService();
+    organizationService.get({
+      validated: true
+    })
+    .then(response => {
+      if (response.error)
+      dispatch(asyncCallError(response.error));
+      else {
+        // if the API send success
+        dispatch(asyncCallSuccess());
 
-                dispatch(getOrganizations(response));
-            }
-        }).catch(error => {
-            // if an error is not handle
-            dispatch(asyncCallError(error));
-        });
-    };
+        dispatch(getOrganizations(response));
+      }
+    }).catch(error => {
+      // if an error is not handle
+      dispatch(asyncCallError(error));
+    });
+  };
 }
 
 export function removeExpFromBackend(exp, user) {
-    return dispatch => {
-        dispatch(asyncCallBegin());
-        let experienceService = ExperienceService.getExperienceService();
-        experienceService.delete(exp.idBack).then(response => {
-            if (response.error)
-                dispatch(asyncCallError(response.error));
-            else {
-                let itemToRemove = user.freelancerDatas.experiences.findIndex(x => x.idBack === exp.idBack && !x.idBlockchain && x.certificatAsked === false);
-                user.freelancerDatas.experiences.splice(itemToRemove, 1);
-                dispatch(fetchUserSuccess(user));
-                dispatch(asyncCallSuccess());
-            }
-        }).catch(() => {
-            dispatch(asyncCallError());
-        });
-    };
+  return dispatch => {
+    dispatch(asyncCallBegin());
+    let experienceService = ExperienceService.getService();
+    experienceService.delete(exp.idBack).then(response => {
+      if (response.error)
+      dispatch(asyncCallError(response.error));
+      else {
+        let itemToRemove = user.freelancerDatas.experiences.findIndex(x => x.idBack === exp.idBack && !x.idBlockchain && x.certificatAsked === false);
+        user.freelancerDatas.experiences.splice(itemToRemove, 1);
+        dispatch(fetchUserSuccess(user));
+        dispatch(asyncCallSuccess());
+      }
+    }).catch(() => {
+      dispatch(asyncCallError());
+    });
+  };
 }
 
 export function fetchExperience(experience, organization, user) {
   return dispatch => {
     dispatch(asyncCallBegin());
-    let experienceService = ExperienceService.getExperienceService();
-    let organizationService = OrganizationService.getOrganizationService();
+    let experienceService = ExperienceService.getService();
+    let organizationService = OrganizationService.getService();
     // Add a new organization if the user asked for it.
     if (organization) {
       organization.createdByFree = experience.freelanceEthereumAddress;
@@ -148,7 +155,8 @@ export function fetchExperience(experience, organization, user) {
                 experience.job_duration,
                 experience.certificatAsked,
                 experience.postedOnBlockchain,
-                response.id
+                response.id,
+                1
               )
             );
             dispatch(fetchUserSuccess(user));
@@ -189,7 +197,8 @@ export function fetchExperience(experience, organization, user) {
               experience.job_duration,
               experience.certificatAsked,
               experience.postedOnBlockchain,
-              response.id
+              response.id,
+              1
             )
           );
           dispatch(fetchUserSuccess(user));
@@ -204,178 +213,181 @@ export function fetchExperience(experience, organization, user) {
 }
 
 export function askForCertificate(experienceId, user) {
-    return dispatch => {
-
-        dispatch(asyncCallBegin());
-
-        let experience = { certificatAsked: true };
-        let experienceService = ExperienceService.getExperienceService();
-        experienceService.update(experienceId, experience).then(response => {
-            if (response.error)
-                dispatch(asyncCallError(response.error));
-            else {
-                dispatch(asyncCallSuccess());
-                let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experienceId && x.certificatAsked === false);
-                user.freelancerDatas.experiences[index].certificatAsked = true;
-                dispatch(fetchUserSuccess(user));
-                dispatch(
-                  setSnackbar(
-                    'Your certificate has been requested. You can follow the process in your dashboard.',
-                    'success'
-                  )
-                );
-            }
-        }).catch(error => {
-            // if an error is not handle
-            dispatch(asyncCallError(error));
-        });
+  return dispatch => {
+    dispatch(asyncCallBegin());
+    const experience = {
+      status: 2,
+      certificatAsked: true
     };
+    const experienceService = ExperienceService.getService();
+    experienceService.update(experienceId, experience).then(response => {
+      if (response.error) {
+        dispatch(asyncCallError(response.error));
+      }
+      else {
+        dispatch(asyncCallSuccess());
+        const index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experienceId && x.certificatAsked === false);
+        user.freelancerDatas.experiences[index].status = 2;
+        user.freelancerDatas.experiences[index].certificatAsked = true;
+        dispatch(fetchUserSuccess(user));
+        dispatch(
+          setSnackbar(
+            'Your certificate has been requested. You can follow the process in your dashboard.',
+            'success'
+          )
+        );
+      }
+    })
+    .catch(error => {
+      dispatch(asyncCallError(error));
+    });
+  };
 }
 
 export function newExperienceClicked(value, user) {
-    return dispatch => {
-        if(value) {
-            dispatch(setExperienceFormInput('freelanceName', user.freelancerDatas.firstName + ' ' + user.freelancerDatas.lastName));
-            dispatch(setExperienceFormInput('freelanceEmail', user.freelancerDatas.email));
-            dispatch(setExperienceFormInput('freelanceEthereumAddress', user.freelancerDatas.ethAddress));
-            dispatch(fetchOrganizations());
-        }
-        dispatch(newExperience(value));
+  return dispatch => {
+    if(value) {
+      dispatch(setExperienceFormInput('freelanceName', user.freelancerDatas.firstName + ' ' + user.freelancerDatas.lastName));
+      dispatch(setExperienceFormInput('freelanceEmail', user.freelancerDatas.email));
+      dispatch(setExperienceFormInput('freelanceEthereumAddress', user.freelancerDatas.ethAddress));
+      dispatch(fetchOrganizations());
     }
+    dispatch(newExperience(value));
+  }
 }
 
 export function moveToNewExp(history) {
-    return dispatch => {
-        dispatch(newExperience(true));
-        dispatch(changeMenu('/chronology', false));
-        history.push('/chronology');
-    }
+  return dispatch => {
+    dispatch(newExperience(true));
+    dispatch(changeMenu('/chronology', false));
+    history.push('/chronology');
+  }
 }
 
 export function postExperience(experience, user) {
-    return dispatch => {
-        //Submit to blockchain
-        let keywords = [];
-        for (let i = 0; i < experience.competencies.length; i++) {
-            keywords.push(window.web3.utils.fromAscii(experience.competencies[i].name));
+  return dispatch => {
+    //Submit to blockchain
+    let keywords = [];
+    for (let i = 0; i < experience.competencies.length; i++) {
+      keywords.push(window.web3.utils.fromAscii(experience.competencies[i].name));
+    }
+    dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+    user.freelancerDatas.addDocument(
+      window.web3.utils.fromAscii(experience.title),
+      window.web3.utils.fromAscii(experience.description),
+      new Date(experience.from).getTime(),
+      new Date(experience.to).getTime(),
+      experience.jobDuration,
+      keywords,
+      4,
+      window.web3.utils.fromAscii('')
+    ).once('transactionHash', (hash) => {
+      dispatch(transactionHash(hash));
+    })
+    .once('receipt', (receipt) => {
+      dispatch(transactionReceipt(receipt));
+    })
+    .on('error', (error) => {
+      dispatch(transactionError(error));
+    })
+    .then(value => {
+      //get the id from the event
+      let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
+
+      //complete the exp with blockchain infos
+      let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.idBlockchain);
+      user.freelancerDatas.experiences[index].idBlockchain = idFromBlockchain;
+
+      //Set the flag on the back
+      let experienceModified = { idBlockchain: idFromBlockchain };
+      let experienceService = ExperienceService.getService();
+      experienceService.update(experience.idBack, experienceModified).then(response => {
+        if (response.error)
+        dispatch(asyncCallError(response.error));
+        else {
+          dispatch(asyncCallSuccess());
+          dispatch(fetchUserSuccess(user));
         }
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-        user.freelancerDatas.addDocument(
-            window.web3.utils.fromAscii(experience.title),
-            window.web3.utils.fromAscii(experience.description),
-            new Date(experience.from).getTime(),
-            new Date(experience.to).getTime(),
-            experience.jobDuration,
-            keywords,
-            4,
-            window.web3.utils.fromAscii('')
-        ).once('transactionHash', (hash) => {
-            dispatch(transactionHash(hash));
-        })
-        .once('receipt', (receipt) => {
-            dispatch(transactionReceipt(receipt));
-        })
-        .on('error', (error) => {
-            dispatch(transactionError(error));
-        })
-        .then(value => {
-            //get the id from the event
-            let idFromBlockchain = parseInt(value.events.NewDocument.returnValues[0], 10);
-
-            //complete the exp with blockchain infos
-            let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.idBlockchain);
-            user.freelancerDatas.experiences[index].idBlockchain = idFromBlockchain;
-
-            //Set the flag on the back
-            let experienceModified = { idBlockchain: idFromBlockchain };
-            let experienceService = ExperienceService.getExperienceService();
-            experienceService.update(experience.idBack, experienceModified).then(response => {
-                if (response.error)
-                    dispatch(asyncCallError(response.error));
-                else {
-                    dispatch(asyncCallSuccess());
-                    dispatch(fetchUserSuccess(user));
-                }
-            }).catch(error => {
-                // if an error is not handle
-                dispatch(asyncCallError(error));
-            });
-        })
-        .catch((error) => {
-            dispatch(asyncCallError(error));
-        });
-    };
+      }).catch(error => {
+        // if an error is not handle
+        dispatch(asyncCallError(error));
+      });
+    })
+    .catch((error) => {
+      dispatch(asyncCallError(error));
+    });
+  };
 }
 
 export function unPostExperience(experience, user) {
-    return dispatch => {
+  return dispatch => {
 
-        //Submit to blockchain
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-        user.freelancerDatas.removeDocument(
-            experience.idBlockchain
-        ).once('transactionHash', (hash) => {
-            dispatch(transactionHash(hash));
-        })
-        .once('receipt', (receipt) => {
-            dispatch(transactionReceipt(receipt));
-        })
-        .on('error', (error) => {
-            dispatch(transactionError(error));
-        })
-        .then(() => {
-            //remove the blockchain exp and replace it by the back one
-            let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && x.idBlockchain === experience.idBlockchain);
-            user.freelancerDatas.experiences[index].idBlockchain = null;
+    //Submit to blockchain
+    dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+    user.freelancerDatas.removeDocument(
+      experience.idBlockchain
+    ).once('transactionHash', (hash) => {
+      dispatch(transactionHash(hash));
+    })
+    .once('receipt', (receipt) => {
+      dispatch(transactionReceipt(receipt));
+    })
+    .on('error', (error) => {
+      dispatch(transactionError(error));
+    })
+    .then(() => {
+      //remove the blockchain exp and replace it by the back one
+      let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && x.idBlockchain === experience.idBlockchain);
+      user.freelancerDatas.experiences[index].idBlockchain = null;
 
-            //Set the flag on the back
-            let experienceModified = { idBlockchain: null };
-            let experienceService = ExperienceService.getExperienceService();
-            experienceService.update(experience.idBack, experienceModified).then(response => {
-                if (response.error)
-                    dispatch(asyncCallError(response.error));
-                else {
-                    dispatch(asyncCallSuccess());
-                    dispatch(fetchUserSuccess(user));
-                }
-            }).catch(error => {
-                // if an error is not handle
-                dispatch(asyncCallError(error));
-            });
-        })
-        .catch((error) => {
-            dispatch(asyncCallError(error));
-        });
-    };
+      //Set the flag on the back
+      let experienceModified = { idBlockchain: null };
+      let experienceService = ExperienceService.getService();
+      experienceService.update(experience.idBack, experienceModified).then(response => {
+        if (response.error)
+        dispatch(asyncCallError(response.error));
+        else {
+          dispatch(asyncCallSuccess());
+          dispatch(fetchUserSuccess(user));
+        }
+      }).catch(error => {
+        // if an error is not handle
+        dispatch(asyncCallError(error));
+      });
+    })
+    .catch((error) => {
+      dispatch(asyncCallError(error));
+    });
+  };
 }
 
 export function removeBlockchainExp(experience, user) {
-    return dispatch => {
+  return dispatch => {
 
-        //Submit to blockchain
-        dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
-        user.freelancerDatas.removeDocument(
-            experience.idBlockchain
-        ).once('transactionHash', (hash) => {
-            dispatch(transactionHash(hash));
-        })
-        .once('receipt', (receipt) => {
-            dispatch(transactionReceipt(receipt));
-        })
-        .on('error', (error) => {
-            dispatch(transactionError(error));
-        })
-        .then(() => {
-            //remove the blockchain exp and replace it by the back one
-            let index = user.freelancerDatas.experiences.findIndex(x => x.idBlockchain === experience.idBlockchain);
-            user.freelancerDatas.experiences.splice(index, 1);
-            dispatch(asyncCallSuccess());
-            dispatch(fetchUserSuccess(user));
-        })
-        .catch((error) => {
-            dispatch(asyncCallError(error));
-        });
-    };
+    //Submit to blockchain
+    dispatch(transactionBegin("Close your computer, take a coffee...this transaction can last several minutes !"));
+    user.freelancerDatas.removeDocument(
+      experience.idBlockchain
+    ).once('transactionHash', (hash) => {
+      dispatch(transactionHash(hash));
+    })
+    .once('receipt', (receipt) => {
+      dispatch(transactionReceipt(receipt));
+    })
+    .on('error', (error) => {
+      dispatch(transactionError(error));
+    })
+    .then(() => {
+      //remove the blockchain exp and replace it by the back one
+      let index = user.freelancerDatas.experiences.findIndex(x => x.idBlockchain === experience.idBlockchain);
+      user.freelancerDatas.experiences.splice(index, 1);
+      dispatch(asyncCallSuccess());
+      dispatch(fetchUserSuccess(user));
+    })
+    .catch((error) => {
+      dispatch(asyncCallError(error));
+    });
+  };
 }
 
 export function postOnBlockchainExperienceWithCertificate(file, user) {
@@ -466,6 +478,7 @@ export function postOnBlockchainExperienceWithCertificate(file, user) {
                 json.jobDuration,
                 null,
                 idFromBlockchain,
+                null,
                 null
               );
               // Add it to the others.
@@ -560,7 +573,7 @@ export function addCertificateToExperienceDraftAndPostOnBlockchain(file, experie
               const index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.postedOnBlockchain);
               user.freelancerDatas.experiences.splice(index, 1);
               // Remove the Experience from the backend.
-              const experienceService = ExperienceService.getExperienceService();
+              const experienceService = ExperienceService.getService();
               experienceService.delete(experience.idBack).then(response => {
                 if (response.error) {
                   dispatch(asyncCallError(response.error));
@@ -599,7 +612,8 @@ export function addCertificateToExperienceDraftAndPostOnBlockchain(file, experie
                 json.jobDuration,
                 null,
                 idFromBlockchain,
-                null
+                null,
+                4
               );
               // Add it to the others.
               user.freelancerDatas.experiences.push(experienceToAdd);
@@ -696,7 +710,8 @@ export function addCertificateToPostedExperienceOnBlockchain(file, experience, u
                 json.jobDuration,
                 experience.certificatAsked,
                 experience.idBlockchain,
-                experience.idBack
+                experience.idBack,
+                4
               );
               // Remove the Experience fetch from the back.
               user.freelancerDatas.experiences.splice(index, 1);

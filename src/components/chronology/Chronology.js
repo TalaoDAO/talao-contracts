@@ -8,10 +8,10 @@ import Profile from '../profile/Profile';
 import queryString from 'query-string';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import { hasAccess } from '../../actions/guard';
+import { hasAccess } from '../../actions/public/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import TimedSnackbar from '../snackbars/TimedSnackbar';
-import { fetchFreelancer } from '../../actions/user';
+import { fetchFreelancer } from '../../actions/public/user';
 
 const Loading = require('react-loading-animation');
 

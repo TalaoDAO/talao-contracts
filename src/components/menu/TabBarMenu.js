@@ -10,8 +10,8 @@ import AccountCircle from '@material-ui/icons/AccountCircle'
 import ExploreIcon from '@material-ui/icons/Explore';
 import HomeIcon from '@material-ui/icons/Home';
 import Grid from '@material-ui/core/Grid';
-import { changeMenuClicked } from '../../actions/menu';
-import { removeResearch } from '../../actions/user';
+import { changeMenuClicked } from '../../actions/public/menu';
+import { removeResearch } from '../../actions/public/user';
 
 const Loading = require('react-loading-animation');
 

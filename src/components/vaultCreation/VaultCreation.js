@@ -8,9 +8,9 @@ import Collapse from '@material-ui/core/Collapse';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
-import { initVaultCreation, canSwitchStep, setVaultInput, setAccessPrice, submitVault, addImageClicked, addProfilePicture } from '../../actions/createVault';//accessPriceChange
+import { initVaultCreation, canSwitchStep, setVaultInput, setAccessPrice, submitVault, addImageClicked, addProfilePicture } from '../../actions/freelance/createVault';//accessPriceChange
 import queryString from 'query-string'
-import { hasAccess } from '../../actions/guard';
+import { hasAccess } from '../../actions/public/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import TimedSnackbar from '../snackbars/TimedSnackbar';
 import Typography from '@material-ui/core/Typography';

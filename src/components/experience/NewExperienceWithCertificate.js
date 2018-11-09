@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import compose from 'recompose/compose';
 import { connect } from 'react-redux';
-import { postOnBlockchainExperienceWithCertificate } from '../../actions/experience';
+import { postOnBlockchainExperienceWithCertificate } from '../../actions/freelance/experience';
 import Dropzone from 'react-dropzone';
 import { Blockcerts } from 'react-blockcerts';
 

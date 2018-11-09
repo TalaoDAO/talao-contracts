@@ -1,24 +1,26 @@
 import { combineReducers } from 'redux';
-import userReducer from './user';
-import createVaultReducer from './createVault';
-import transactionReducer from './transactions';
-import experienceReducer from './experience';
-import guardReducer from './guard';
-import homepageReducer from './homepage';
-import menuReducer from './menu';
-import snackbarReducer from './snackbar';
-import dashboardReducer from './dashboard';
+
+import userReducer from './public/user';
+import transactionReducer from './public/transaction';
+import guardReducer from './public/guard';
+import homepageReducer from './public/homepage';
+import menuReducer from './public/menu';
+import snackbarReducer from './public/snackbar';
+
+import createVaultReducer from './freelance/createVault';
+import dashboardReducer from './freelance/dashboard';
+import experienceReducer from './freelance/experience';
 
 const appReducer = combineReducers({
   userReducer,
-  createVaultReducer,
   transactionReducer,
-  experienceReducer,
   guardReducer,
   homepageReducer,
   menuReducer,
   snackbarReducer,
-  dashboardReducer
+  createVaultReducer,
+  dashboardReducer,
+  experienceReducer
 });
 
 export const rootReducer = (state, action) => {

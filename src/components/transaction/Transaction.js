@@ -6,7 +6,7 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Divider } from '../../../node_modules/material-ui';
-//import { changeMenu } from '../../actions/menu';
+//import { changeMenu } from '../../actions/public/menu';
 
 const ETHERSCANURL = (process.env.NODE_ENV === 'production') ? "https://etherscan.io/tx/" : "https://ropsten.etherscan.io/tx/";
 

@@ -7,36 +7,36 @@ export const TRANSACTION_SUCCESS        = 'TRANSACTION_SUCCESS';
 export const RESET_TRANSACTION          = 'RESET_TRANSACTION';
 
 export const transactionBegin = object => ({
-    type: TRANSACTION_BEGIN,
-    object
-  });
+  type: TRANSACTION_BEGIN,
+  object
+});
 
 export const transactionHash = txHash => ({
-    type: TRANSACTION_HASH,
-    txHash
-  });
+  type: TRANSACTION_HASH,
+  txHash
+});
 
 export const transactionReceipt = receipt => ({
-    type: TRANSACTION_RECEIPT,
-    receipt
+  type: TRANSACTION_RECEIPT,
+  receipt
 });
 
 export const transactionConfirmation = (confNumber, receipt) => ({
-    type: TRANSACTION_CONFIRMATION,
-    receipt,
-    confNumber
+  type: TRANSACTION_CONFIRMATION,
+  receipt,
+  confNumber
 });
 
 export const transactionError = error => ({
-    type: TRANSACTION_ERROR,
-    error
+  type: TRANSACTION_ERROR,
+  error
 });
 
 export const transactionSuccess = receipt => ({
-    type: TRANSACTION_SUCCESS,
-    receipt
+  type: TRANSACTION_SUCCESS,
+  receipt
 });
 
 export const resetTransaction = () => ({
-    type: RESET_TRANSACTION
+  type: RESET_TRANSACTION
 });

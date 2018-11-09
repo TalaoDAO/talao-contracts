@@ -11,11 +11,11 @@ import Typography from "@material-ui/core/Typography";
 import defaultFreelancerPicture from '../../images/freelancer-picture.jpg';
 import { Icon } from '@material-ui/core';
 import queryString from 'query-string'
-import { hasAccess } from '../../actions/guard';
+import { hasAccess } from '../../actions/public/guard';
 import { connect } from "react-redux";
 import compose from 'recompose/compose';
-import { fetchFreelancer } from '../../actions/user';
-import { unlockFreelancerClicked } from '../../actions/unlockFreelancer';
+import { fetchFreelancer } from '../../actions/public/user';
+import { unlockFreelancerClicked } from '../../actions/public/unlockFreelancer';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import TimedSnackbar from '../snackbars/TimedSnackbar';
 

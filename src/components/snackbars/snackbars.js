@@ -14,7 +14,7 @@ import { connect } from "react-redux";
 import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
 import { withStyles } from '@material-ui/core/styles';
-import { resetTransaction } from '../../actions/transactions';
+import { resetTransaction } from '../../actions/public/transaction';
 
 const variantIcon = {
   success: CheckCircleIcon,

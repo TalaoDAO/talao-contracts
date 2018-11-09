@@ -1,4 +1,4 @@
-import React , { Component } from 'react';
+import React , { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import compose from 'recompose/compose';
 import { isMobile } from 'react-device-detect';
@@ -11,7 +11,7 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography } from '@material-ui/core';
-import { Close, CloudUpload, Fingerprint, LineStyle } from '@material-ui/icons';
+import { AvTimer, Close, CloudUpload, Fingerprint, LineStyle } from '@material-ui/icons';
 import { constants } from '../../constants';
 import talaoCertificateImage from '../../images/talaoCertificateImage';
 
@@ -23,7 +23,7 @@ import {
   postExperience,
   unPostExperience,
   removeBlockchainExp
-} from '../../actions/experience';
+} from '../../actions/freelance/experience';
 
 import DateService from '../../services/DateService';
 
@@ -80,13 +80,16 @@ const styles = theme => ({
   description: {
     marginTop: '15px',
   },
-  certificateButtons: {
+  experienceButtons: {
     marginTop: theme.spacing.unit * 2,
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
-  certificatButton: {
+  experienceButton: {
+    marginRight: theme.spacing.unit * 2,
+  },
+  experienceOldButton: {
     marginRight: theme.spacing.unit * 2,
     color: theme.palette.white.main,
     backgroundColor: theme.palette.black.main,
@@ -148,7 +151,7 @@ class Experience extends Component {
     this.setState({ showCert: !showCert });
   }
 
-  removeExperienceFromBackend = () => {
+  removeExperience = () => {
     const { classes, experience, user } = this.props;
     confirmAlert({
       customUI: ({ onClose }) => {
@@ -162,7 +165,7 @@ class Experience extends Component {
               <h1>Remove {experience.title} experience from the blockchain ?</h1>
             }
             <p>Are you sure you want to remove this experience ?</p>
-            <Button style={{ marginRight: '20px' }} className={classes.certificatButton} onClick={onClose}>No</Button>
+            <Button style={{ marginRight: '20px' }} className={classes.experienceOldButton} onClick={onClose}>No</Button>
             {/*Experience without blockchain*/}
             {!experience.idBlockchain
               ?
@@ -196,7 +199,12 @@ class Experience extends Component {
       return (<Loading />);
     } else {
       competencyTags = experience.competencies.map((competency, index) =>
-      (<CompetencyTag value={competency} key={index} />)
+      (
+        <CompetencyTag
+          key={index}
+          value={competency}
+        />
+      )
     );
   }
   return (
@@ -238,90 +246,109 @@ class Experience extends Component {
             {experience.description}
           </Typography>
           {
-            isClient ?
-            null
-            :
-            <div className={classes.certificateButtons}>
-              {!experience.certificatUrl &&
-                <Button
-                  onClick={
-                    () => {
-                      if (experience.certificatAsked) {
-                        this.fileInput.click();
-                      }
-                      else {
-                        this.askForCertificate(experience.idBack, user);
-                      }
-                    }
-                  }
-                  className={classes.certificatButton}
-                  >
-                    <input onChange={
-                      (e) => {
-                        if (experience.idBlockchain) {
-                          this.props.dispatch(
-                            addCertificateToPostedExperienceOnBlockchain(
-                              e.target.files[0],
-                              experience,
-                              user
-                            )
-                          )
-                        }
-                        else {
-                          this.props.dispatch(
-                            addCertificateToExperienceDraftAndPostOnBlockchain(
-                              e.target.files[0],
-                              experience,
-                              user
-                            )
-                          )
-                        }
-                      }
-                    }
-                    style={{ display: 'none' }}
-                    ref={fileInput => this.fileInput = fileInput}
-                    type="file" accept="application/json" />
-                    <Fingerprint />
-                    <span className={classes.iconMargin}>
+            !isClient &&
+              <div className={classes.experienceButtons}>
+                {
+                  [1, 2, 3].includes(experience.status) &&
+                    <Fragment>
                       {
-                        experience.certificatAsked ?
                         experience.idBlockchain ?
-                        'Add certificate and update'
-                        : 'Add certificate and post'
-                        : 'Request a certificate'
+                          <Button
+                            onClick={() => this.props.dispatch(unPostExperience(experience, user))}
+                            style={{ display: !user.searchedFreelancers ? 'inline-flex' : 'none' }} className={classes.removeButton}>
+                            <Close />
+                            Unpost
+                          </Button>
+                        :
+                          <Button
+                            onClick={() => this.props.dispatch(postExperience(experience, user))} className={classes.experienceOldButton}>
+                            <CloudUpload />
+                            Post
+                          </Button>
                       }
-                    </span>
-                  </Button>
+                    </Fragment>
                 }
-                {!experience.certificatUrl &&
-                  <React.Fragment>
-                    {!experience.idBlockchain
-                      ?
-                      <Button onClick={() => this.props.dispatch(postExperience(experience, user))} className={classes.certificatButton}>
-                        <CloudUpload />
-                        <span className={classes.iconMargin}>Post the experience</span>
-                      </Button>
-                      :
-                      <Button onClick={() => this.props.dispatch(unPostExperience(experience, user))} style={{ display: !user.searchedFreelancers ? 'inline-flex' : 'none' }} className={classes.removeButton}>
-                        <Close />
-                        <span className={classes.iconMargin}>Unpost</span>
-                      </Button>
-                    }
-                  </React.Fragment>
-                }
-                {(!experience.certificatAsked || experience.certificatUrl) &&
-                  <React.Fragment>
-                    <Button onClick={this.removeExperienceFromBackend} style={{ display: !user.searchedFreelancers ? 'inline-flex' : 'none' }} className={classes.removeButton}>
-                      <Close />
-                      <span className={classes.iconMargin}>Remove</span>
+                {
+                  [2, 3].includes(experience.status) &&
+                    <Button
+                      disabled
+                      variant="outlined"
+                      className={classes.experienceButton}
+                    >
+                      <AvTimer />Waiting for certificate
                     </Button>
-                  </React.Fragment>
                 }
-              </div>
-            }
-            {experience.certificatUrl &&
+                {
+                  [1, 4].includes(experience.status) &&
+                    <Button
+                      onClick={
+                        () => {
+                          if (experience.certificatAsked) {
+                            this.fileInput.click();
+                          }
+                          else {
+                            this.askForCertificate(experience.idBack, user);
+                          }
+                        }
+                      }
+                      className={classes.experienceOldButton}
+                      >
+                        <input onChange={
+                          (e) => {
+                            if (experience.idBlockchain) {
+                              this.props.dispatch(
+                                addCertificateToPostedExperienceOnBlockchain(
+                                  e.target.files[0],
+                                  experience,
+                                  user
+                                )
+                              )
+                            }
+                            else {
+                              this.props.dispatch(
+                                addCertificateToExperienceDraftAndPostOnBlockchain(
+                                  e.target.files[0],
+                                  experience,
+                                  user
+                                )
+                              )
+                            }
+                          }
+                        }
+                        style={{ display: 'none' }}
+                        ref={fileInput => this.fileInput = fileInput}
+                        type="file" accept="application/json" />
+                        <Fingerprint />
+                        <span className={classes.iconMargin}>
+                          {
+                            experience.certificatAsked ?
+                            experience.idBlockchain ?
+                            'Add certificate and update'
+                            : 'Add certificate and post'
+                            : 'Request a certificate'
+                          }
+                        </span>
+                      </Button>
+                  }
+                  {
+                    (
+                      experience.status === 1 ||
+                      experience.status === 4 ||
+                      !experience.idBack
+                    ) &&
+                      <Fragment>
+                        <Button onClick={this.removeExperience} style={{ display: !user.searchedFreelancers ? 'inline-flex' : 'none' }} className={classes.removeButton}>
+                          <Close />
+                          <span className={classes.iconMargin}>Remove</span>
+                        </Button>
+                      </Fragment>
+                  }
+                </div>
+          }
+          {
+            experience.certificatUrl &&
               <div className={classes.viewCertificate}>
-                <Button onClick={this.showCertification} className={classes.certificatButton}>
+                <Button onClick={this.showCertification} className={classes.experienceOldButton}>
                   <LineStyle />
                   <span style={{ display: !showCert ? 'inline-block' : 'none' }}>View certificat</span>
                   <span style={{ display: showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
@@ -337,7 +364,7 @@ class Experience extends Component {
                   />
                 </div>
               </div>
-            }
+          }
           </div>
         </div>
       </div>
