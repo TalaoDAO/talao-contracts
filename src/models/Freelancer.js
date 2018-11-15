@@ -128,10 +128,12 @@ class Freelancer {
       let idBack = null;
       let certificatAsked = false;
       let statusBack;
+      let certificateId = null;
       if (index !== -1) {
         idBack = this.experiencesFromBack[index].idBack;
         certificatAsked = this.experiencesFromBack[index].certificatAsked;
         statusBack = this.experiencesFromBack[index].status;
+        certificateId = this.experiencesFromBack[index].certificatId;
       }
       let experienceToAdd = new Experience(
         title,
@@ -145,7 +147,8 @@ class Freelancer {
         certificatAsked,
         _id,
         idBack,
-        statusBack
+        statusBack,
+        certificateId
       );
       this.addExperience(experienceToAdd);
     }).then(() => {
@@ -197,9 +200,9 @@ class Freelancer {
               }
             }
             if (!exp.idBlockchain)
-            this.addExperience(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id, exp.status));
+            this.addExperience(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id, exp.status, exp.certificatId));
             //Save the full list for data management...
-            this.experiencesFromBack.push(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id, exp.status));
+            this.experiencesFromBack.push(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id, exp.status, exp.certificatId));
 
             if (index + 1 === response.length)
             resolve(true);

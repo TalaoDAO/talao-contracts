@@ -156,7 +156,8 @@ export function fetchExperience(experience, organization, user) {
                 experience.certificatAsked,
                 experience.postedOnBlockchain,
                 response.id,
-                1
+                1,
+                null
               )
             );
             dispatch(fetchUserSuccess(user));
@@ -198,7 +199,8 @@ export function fetchExperience(experience, organization, user) {
               experience.certificatAsked,
               experience.postedOnBlockchain,
               response.id,
-              1
+              1,
+              null
             )
           );
           dispatch(fetchUserSuccess(user));
@@ -401,6 +403,7 @@ export function postOnBlockchainExperienceWithCertificate(file, user) {
         // Upload the file.
         FileService.uploadToIpfs(file).then(result => {
           // Check if the file is already uploaded.
+          // TODO: fix.
           let alreadyUploaded = false;
           user.freelancerDatas.experiences.forEach(experience => {
             if (experience.postedOnBlockchain === 1 && FileService.getIpfsHashFromBytes32(experience.docId) === result) {
@@ -476,9 +479,10 @@ export function postOnBlockchainExperienceWithCertificate(file, user) {
                 'https://gateway.ipfs.io/ipfs/' + result,
                 ratings,
                 json.jobDuration,
-                null,
+                false,
                 idFromBlockchain,
                 null,
+                undefined,
                 null
               );
               // Add it to the others.
@@ -613,7 +617,8 @@ export function addCertificateToExperienceDraftAndPostOnBlockchain(file, experie
                 null,
                 idFromBlockchain,
                 null,
-                4
+                undefined,
+                null
               );
               // Add it to the others.
               user.freelancerDatas.experiences.push(experienceToAdd);
@@ -690,6 +695,18 @@ export function addCertificateToPostedExperienceOnBlockchain(file, experience, u
               dispatch(transactionError(error));
             })
             .then(value => {
+              // Remove the Experience from the backend.
+              const experienceService = ExperienceService.getService();
+              experienceService.delete(experience.idBack).then(response => {
+                if (response.error) {
+                  dispatch(asyncCallError(response.error));
+                }
+                else {
+                  dispatch(asyncCallSuccess());
+                }
+              }).catch(error => {
+                dispatch(asyncCallError(error));
+              });
               // Remove the Experience get from the backend.
               let index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experience.idBack && !x.postedOnBlockchain);
               // Build the new experience.
@@ -708,10 +725,11 @@ export function addCertificateToPostedExperienceOnBlockchain(file, experience, u
                 'https://gateway.ipfs.io/ipfs/' + result,
                 ratings,
                 json.jobDuration,
-                experience.certificatAsked,
+                false,
                 experience.idBlockchain,
-                experience.idBack,
-                4
+                null,
+                undefined,
+                null
               );
               // Remove the Experience fetch from the back.
               user.freelancerDatas.experiences.splice(index, 1);

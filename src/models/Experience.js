@@ -11,7 +11,8 @@ class Experience {
     certificatAsked,
     idBlockchain,
     idBack,
-    statusBack
+    statusBack,
+    certificateId
   ) {
     this.title = title;
     this.description = description;
@@ -25,6 +26,7 @@ class Experience {
     this.idBlockchain = idBlockchain;
     this.idBack = idBack;
     this.status = statusBack;
+    this.certificateId = certificateId;
   }
 }
 

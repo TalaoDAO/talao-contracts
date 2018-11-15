@@ -22,7 +22,7 @@ class Organization {
   async get(filters = null) {
     let url = new URL(this.route);
     if (filters) {
-      Object.keys(filters).forEach(key => url.searchParams.append(key, filters[key]));  
+      Object.keys(filters).forEach(key => url.searchParams.append(key, filters[key]));
     }
     const response = await fetch(
       url, {
@@ -35,9 +35,8 @@ class Organization {
   }
 
   async add(organization) {
-
     const response = await fetch(
-      this.organizationRoute + '/create', {
+      this.route + '/create', {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify({
@@ -45,8 +44,8 @@ class Organization {
         })
       }
     );
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   }
 
 }

@@ -45,9 +45,7 @@ const initialState = {
     responsible_last_name: '',
     responsible_job_title: '',
     email: '',
-    phone: '',
-    createdByFree: null
-
+    phone: ''
   },
   user: null,
   loading: false,

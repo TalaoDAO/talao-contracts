@@ -12,61 +12,65 @@ const lightAccent4Color = '#f2f2f2';
 const lightGreyColor = '#f2f2f2';
 const whiteColor = '#ffffff';
 const blackColor = '#3b3838';
+const redColor = '#ff3c47';
 
 var constants = {
-    colors: {
-        primary: primaryColor,
-        secondary: secondaryColor,
-        accent1: accent1Color,
-        accent2: accent2Color,
-        accent3: accent3Color,
-        accent4: accent4Color,
-        grey: greyColor,
-        lightAccent1: lightAccent1Color,
-        lightAccent2: lightAccent2Color,
-        lightAccent3: lightAccent3Color,
-        lightAccent4: lightAccent4Color,
-        lightGrey: lightGreyColor,
-        textAccent1: '#000',
-        textAccent2: '#fff',
-        textAccent3: '#fff',
-        textAccent4: '#000',
-        textGrey: lightGreyColor,
+  colors: {
+    primary: primaryColor,
+    secondary: secondaryColor,
+    accent1: accent1Color,
+    accent2: accent2Color,
+    accent3: accent3Color,
+    accent4: accent4Color,
+    grey: greyColor,
+    lightAccent1: lightAccent1Color,
+    lightAccent2: lightAccent2Color,
+    lightAccent3: lightAccent3Color,
+    lightAccent4: lightAccent4Color,
+    lightGrey: lightGreyColor,
+    textAccent1: '#000',
+    textAccent2: '#fff',
+    textAccent3: '#fff',
+    textAccent4: '#000',
+    textGrey: lightGreyColor,
+  },
+  fontSize: {
+    small: '80%',
+    large: '130%',
+    extraLarge: '160%',
+  },
+  padding: {
+    default: '20px'
+  },
+  theme: {
+    palette: {
+      primary: {
+        main: primaryColor,
+      },
+      secondary: {
+        main: secondaryColor,
+      },
+      background: {
+        default: lightGreyColor,
+      },
+      white: {
+        main: whiteColor,
+      },
+      black: {
+        main: blackColor,
+      },
+      red: {
+        main: redColor,
+      },
     },
-    fontSize: {
-        small: '80%',
-        large: '130%',
-        extraLarge: '160%',
-    },
-    padding: {
-        default: '20px'
-    },
-    theme: {
-        palette: {
-            primary: {
-                main: primaryColor,
-            },
-            secondary: {
-                main: secondaryColor,
-            },
-            background: {
-                default: lightGreyColor,
-            },
-            white: {
-              main: whiteColor,
-            },
-            black: {
-              main: blackColor,
-            },
+    overrides: {
+      MuiCard: {
+        root: {
+          borderRadius: '5px',
         },
-        overrides: {
-            MuiCard: {
-                root: {
-                    borderRadius: '5px',
-                },
-            },
-        },
+      },
     },
+  },
 };
 
 export { constants };
