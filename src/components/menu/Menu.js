@@ -78,7 +78,7 @@ class Menu extends React.Component {
                         className={currentMenu === '/chronology' ? classes.sidebarItemSelected : classes.sidebarItem}
                         to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
                     >
-                        Work Experiences
+                        Certified resume
                     </Link>
                 </Typography>
                 <Typography to="/" style={{clear: "both"}}>
@@ -116,7 +116,7 @@ class Menu extends React.Component {
                 className={currentMenu === '/register' ? classes.sidebarItemSelected : classes.sidebarItem}
                 to="/register"
             >
-                {this.props.user.freelancerDatas ? 'Personal Information' : 'Create resume'}
+                {this.props.user.freelancerDatas ? 'Personal Information' : 'Create account'}
             </Link>
         </Typography>
 
@@ -126,7 +126,7 @@ class Menu extends React.Component {
                     <Link to="/homepage" onClick={() => this.props.dispatch(changeMenuClicked('/homepage', true))} >
                         <img src={logoTalao} className={classes.logo} alt="Talao" />
                     </Link>
-                    <Typography className={classes.underLogo}>Certified<br/>Resume</Typography>
+                    <Typography className={classes.underLogo}>Freelancer<br/>Dapp</Typography>
                 </div>
                 <div className={classes.sidebar}>
                     <div>

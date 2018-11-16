@@ -15,7 +15,7 @@ const initialState = {
     date_end: '',
     job_title: '',
     job_description: '',
-    job_duration: 0,
+    job_duration: '',
     organizationId: 1,
     contactLastName: '',
     contactFirstName: '',

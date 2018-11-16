@@ -1,7 +1,6 @@
 import React from 'react';
 import Experience from '../experience/Experience';
 import Card from '@material-ui/core/Card';
-import ColorService from '../../services/ColorService';
 import { withStyles, CardContent, Grid } from '@material-ui/core';
 import NewExperience from '../experience/NewExperience';
 import Profile from '../profile/Profile';
@@ -12,6 +11,9 @@ import { hasAccess } from '../../actions/public/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import TimedSnackbar from '../snackbars/TimedSnackbar';
 import { fetchFreelancer } from '../../actions/public/user';
+
+import ColorService from '../../services/ColorService';
+import RatingService from '../../services/RatingService';
 
 const Loading = require('react-loading-animation');
 
@@ -87,7 +89,9 @@ class Chronology extends React.Component {
 
     // Generate components
     .map((extendedExperience, index) => {
-      const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, extendedExperience.confidenceIndex);
+      const meanRating = RatingService.getMeanRating(extendedExperience.confidenceIndex);
+      console.log(meanRating)
+      const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, meanRating);
       const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
       const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
       return (

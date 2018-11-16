@@ -202,7 +202,6 @@ class Dashboard extends Component {
           <CustomTableCell component="th" scope="row"> {organization.name} </CustomTableCell>
           <CustomTableCell>{organization.responsible_first_name + ' ' + organization.responsible_last_name}</CustomTableCell>
           <CustomTableCell>{ organization.validated ? 'Completed' : 'Pending' }</CustomTableCell>
-          <CustomTableCell>actions...</CustomTableCell>
         </TableRow>
       );
     });
@@ -239,7 +238,7 @@ class Dashboard extends Component {
                       <Table className={this.props.classes.table}>
                         <TableHead>
                           <TableRow>
-                            <CustomTableCell>Experience title</CustomTableCell>
+                            <CustomTableCell>Job title</CustomTableCell>
                             <CustomTableCell>Actions</CustomTableCell>
                           </TableRow>
                         </TableHead>
@@ -264,7 +263,6 @@ class Dashboard extends Component {
                             <CustomTableCell>Company</CustomTableCell>
                             <CustomTableCell>Name</CustomTableCell>
                             <CustomTableCell>Statut</CustomTableCell>
-                            <CustomTableCell>Actions</CustomTableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>

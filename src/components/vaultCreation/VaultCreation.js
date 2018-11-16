@@ -13,7 +13,6 @@ import queryString from 'query-string'
 import { hasAccess } from '../../actions/public/guard';
 import CustomizedSnackbars from '../snackbars/snackbars';
 import TimedSnackbar from '../snackbars/TimedSnackbar';
-import Typography from '@material-ui/core/Typography';
 import { isMobile } from 'react-device-detect';
 
 const Loading = require('react-loading-animation');
@@ -244,7 +243,7 @@ class VaultCreation extends React.Component {
                 label="Access Price (Talao Token)"
                 id="accessPrice"
            />*/}
-           {(this.props.user.talaoBalance > 10) ?
+           {(this.props.user.talaoBalance > 100) ?
                 <div className={this.props.classes.wrapper}>
                     <Button style={{marginLeft: '20px'}} onClick={() => this.props.dispatch(setAccessPrice(accessPrice, this.props.user))} className={!accessPriceError ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} label="login">
                         Initiate my certified resume on blockchain
@@ -252,9 +251,11 @@ class VaultCreation extends React.Component {
                 </div>
             :
                 <div className={this.props.classes.wrapper}>
-                    <Typography style={{marginLeft: '20px'}} variant="subheading">You have to load your wallet to open your certified resume.</Typography>
-                    <Button style={{marginLeft: '20px'}} onClick={() => console.log('ok')} className={this.props.classes.certificatButton}>
-                        Load my wallet
+                    <Button
+                      href="https://talao.io/talao-certified-resume-how-does-it-work/"
+                      style={{marginLeft: '20px'}}
+                      className={this.props.classes.certificatButton}>
+                        Request my account
                     </Button>
                 </div>
            }

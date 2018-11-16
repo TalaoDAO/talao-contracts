@@ -1,16 +1,36 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core';
-import { constants } from '../../constants';
-import { Grid, FormControl, Input, InputLabel, TextField, InputAdornment, Radio, FormControlLabel, MenuItem, Select } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
-import Icon from '@material-ui/core/Icon';
-import blue from '@material-ui/core/colors/blue';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
 import compose from 'recompose/compose';
+
+import {
+  Button,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  Icon,
+  Input,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Radio,
+  Select,
+  TextField,
+  withStyles
+} from '@material-ui/core';
+import { constants } from '../../constants';
+import blue from '@material-ui/core/colors/blue';
+import PropTypes from 'prop-types';
+
+import {
+  setExperienceFormInput,
+  setOrganizationFormInput,
+  newExperienceClicked,
+  fetchExperience
+} from '../../actions/freelance/experience';
+import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
+
 import Skills from '../skills/Skills';
 import NewExperienceWithCertificate from './NewExperienceWithCertificate';
-import { setExperienceFormInput, setOrganizationFormInput, newExperienceClicked, fetchExperience } from '../../actions/freelance/experience';
-import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 
 const styles = theme => ({
   root: {
@@ -26,11 +46,6 @@ const styles = theme => ({
     },
   },
   cssFocused: {},
-  cssUnderline: {
-    '&:after': {
-      borderBottomColor: blue[500],
-    },
-  },
   certificatButton: {
     margin: '20px',
     backgroundColor: '#3b3838',
@@ -246,6 +261,7 @@ class NewExperience extends React.Component {
 
   render() {
     const {
+      classes,
       formData,
       newExperience,
       organizations,
@@ -265,21 +281,21 @@ class NewExperience extends React.Component {
     return (
       <div>
         <div>
-          <div onClick={() => this.props.dispatch(newExperienceClicked(!newExperience, user))} className={this.props.classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
+          <div onClick={() => this.props.dispatch(newExperienceClicked(!newExperience, user))} className={classes.indicator} style={{ backgroundColor: constants.colors["primary"], color: constants.colors["textAccent2"] }}>
             <span style={{ display: !newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>+</span>
             <span style={{ display: newExperience ? 'inline-block' : 'none', fontSize: '30px' }}>-</span>
           </div>
-          <div style={{ display: !newExperience ? 'inline-block' : 'none' }} className={this.props.classes.timeLine} >
-            <div className={this.props.classes.line} style={{ width: (5 * 5) + 'px' }}></div>
-            <div className={this.props.classes.timeContainer}>
+          <div style={{ display: !newExperience ? 'inline-block' : 'none' }} className={classes.timeLine} >
+            <div className={classes.line} style={{ width: (5 * 5) + 'px' }}></div>
+            <div className={classes.timeContainer}>
               Add a new experience
             </div>
           </div>
         </div>
-        <div className={this.props.classes.content} style={{ display: newExperience ? 'inline-block' : 'none' }}>
+        <div className={classes.content} style={{ display: newExperience ? 'inline-block' : 'none' }}>
           <Grid container spacing={40}>
-            <form className={this.props.classes.container} noValidate autoComplete="off">
-              <Grid item lg={12} xs={12} className={this.props.classes.textField}>
+            <form className={classes.container} noValidate autoComplete="off">
+              <Grid item lg={12} xs={12} className={classes.textField}>
                 <FormControl>
                   <FormControlLabel
                     control={
@@ -290,8 +306,8 @@ class NewExperience extends React.Component {
                         name="radio-button-demo"
                         aria-label="C"
                         classes={{
-                          root: this.props.classes.root,
-                          checked: this.props.classes.checked
+                          root: classes.root,
+                          checked: classes.checked
                         }}
                       />}
                       label="I don't have a certificate"
@@ -307,8 +323,8 @@ class NewExperience extends React.Component {
                           name="radio-button-demo"
                           aria-label="C"
                           classes={{
-                            root: this.props.classes.root,
-                            checked: this.props.classes.checked
+                            root: classes.root,
+                            checked: classes.checked
                           }}
                         />
                       }
@@ -332,11 +348,11 @@ class NewExperience extends React.Component {
                         onChange={(event) => this.props.dispatch(setExperienceFormInput('date_start', event.target.value))}
                         required
                         error={this.isEmpty(formData.date_start)}
-                        className={this.props.classes.textField}
+                        className={classes.textField}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Icon className={this.props.classes.icon} color="primary">
+                              <Icon className={classes.icon} color="primary">
                                 calendar_today
                               </Icon>
                             </InputAdornment>
@@ -356,11 +372,11 @@ class NewExperience extends React.Component {
                         error={this.isEmpty(formData.date_end) || this.isBefore(formData.date_end, formData.date_start)}
                         onChange={(event) => this.props.dispatch(setExperienceFormInput('date_end', event.target.value))}
                         required
-                        className={this.props.classes.textField}
+                        className={classes.textField}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Icon className={this.props.classes.icon} color="primary">
+                              <Icon className={classes.icon} color="primary">
                                 calendar_today
                               </Icon>
                             </InputAdornment>
@@ -379,8 +395,8 @@ class NewExperience extends React.Component {
                         error={this.isEmpty(formData.job_duration)}
                         helperText={this.isEmpty(formData.job_duration) ? 'This field is required' : ''}
                         onChange={(event) => this.props.dispatch(setExperienceFormInput('job_duration', event.target.value))}
-                        className={this.props.classes.textField}
-                        label="Job duration"
+                        className={classes.textField}
+                        label="Total number of days"
                         id="jobDuration"
                       />
                     </Grid>
@@ -401,31 +417,34 @@ class NewExperience extends React.Component {
                           this.remainingCharacters(formData.job_title)
                         }
                         onChange={(event) => this.props.dispatch(setExperienceFormInput('job_title', event.target.value))}
-                        className={this.props.classes.textField}
+                        className={classes.textField}
                         label="Title"
                         id="title"
                       />
                     </Grid>
                     <Grid item lg={9} xs={12}>
-                      <FormControl className={this.props.classes.textField}>
+                      <FormControl className={classes.textField}>
                         <InputLabel
                           required
                           error={this.isEmpty(formData.job_description)}
                           FormLabelClasses={{
-                            root: this.props.classes.cssLabel,
-                            focused: this.props.classes.cssFocused,
+                            root: classes.cssLabel,
+                            focused: classes.cssFocused,
                           }} htmlFor="custom-css-input">
                           Description
                         </InputLabel>
-                        <Input required
+                        <Input
+                          required
                           error={this.isEmpty(formData.job_description)}
                           value={formData.job_description}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('job_description', event.target.value))}
-                          multiline rows="4" classes={{ underline: this.props.classes.cssUnderline, }} id="custom-css-input" />
+                          multiline
+                          rowsMax="4"
+                          id="custom-css-input" />
                         </FormControl>
                     </Grid>
                     <Grid item lg={6} xs={12}>
-                      <FormControl className={this.props.classes.textField}>
+                      <FormControl className={classes.textField}>
                         <InputLabel required error={!this.state.selectedCompanyName}
                           shrink={(this.state.selectedCompanyName) ? true : false}
                           htmlFor="company-required">
@@ -440,7 +459,7 @@ class NewExperience extends React.Component {
                           inputProps={{
                             id: 'company-required',
                           }}
-                          className={this.props.classes.selectEmpty}
+                          className={classes.selectEmpty}
                           >
                             <MenuItem key={0} value={'CompanyNotInTheList'}>{'My company is not in the list'}</MenuItem>
                             { companys }
@@ -458,7 +477,7 @@ class NewExperience extends React.Component {
                             error={this.isEmpty(formData.finalClientCompany)}
                             helperText={!this.isEmpty(formData.finalClientCompany) ? '' : 'This field is required.'}
                             onChange={(event) => this.props.dispatch(setExperienceFormInput('finalClientCompany', event.target.value))}
-                            className={this.props.classes.textField}
+                            className={classes.textField}
                             label="Final client company"
                             id="finalClientCompany"
                         />
@@ -473,7 +492,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(formData.contactLastName)}
                           helperText={!this.isEmpty(formData.contactLastName) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactLastName', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Last name"
                           id="contactLastName"
                         />
@@ -487,7 +506,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(formData.contactFirstName)}
                           helperText={!this.isEmpty(formData.contactFirstName) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactFirstName', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="First name"
                           id="contactFirstName"
                         />
@@ -501,7 +520,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(formData.contactJobTitle)}
                           helperText={!this.isEmpty(formData.contactJobTitle) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactJobTitle', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Job title"
                           id="contactJobTitle"
                         />
@@ -516,7 +535,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(newOrganizationData.name)}
                           helperText={!this.isEmpty(newOrganizationData.name) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('name', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Company name"
                           id="companyName"
                         />
@@ -530,7 +549,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(newOrganizationData.responsible_first_name)}
                           helperText={!this.isEmpty(newOrganizationData.responsible_first_name) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_first_name', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Responsible first name"
                           id="responsibleFirstName"
                         />
@@ -544,7 +563,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(newOrganizationData.responsible_last_name)}
                           helperText={!this.isEmpty(newOrganizationData.responsible_last_name) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_last_name', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Responsible last name"
                           id="responsibleLastName"
                         />
@@ -559,7 +578,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(newOrganizationData.responsible_job_title)}
                           helperText={!this.isEmpty(newOrganizationData.responsible_job_title) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_job_title', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Responsible job title"
                           id="responsibleJobTitle"
                         />
@@ -573,7 +592,7 @@ class NewExperience extends React.Component {
                           error={this.isEmpty(newOrganizationData.email)}
                           helperText={!this.isEmpty(newOrganizationData.email) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('email', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Company email"
                           id="companyEmail"
                         />
@@ -584,20 +603,19 @@ class NewExperience extends React.Component {
                           type="text"
                           value={newOrganizationData.phone}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('phone', event.target.value))}
-                          className={this.props.classes.textField}
+                          className={classes.textField}
                           label="Company phone"
                           id="companyPhone"
                         />
                       </Grid>
                       <Grid item lg={12} xs={12} />
-                      <Grid item lg={6} xs={12}>
-                        <Button className={this.props.classes.certificatButton} onClick={() => this.handleAddSkills()}>Add skills</Button>
-                        <Button className={this.props.classes.certificatButton} onClick={() => this.handleRemoveSkills()}>Remove skills</Button>
-                      </Grid>
-                      <Grid item lg={6} xs={12} />
                       {skills}
                       <Grid item lg={12} xs={12}>
-                        <Button className={this.canSubmit() ? this.props.classes.certificatButton : this.props.classes.certificatButtonDisabled} onClick={() => this.saveExperience()}>Save</Button>
+                        <Button className={classes.certificatButton} onClick={() => this.handleAddSkills()}>Add skills</Button>
+                        <Button className={classes.certificatButton} onClick={() => this.handleRemoveSkills()}>Remove skills</Button>
+                      </Grid>
+                      <Grid item lg={12} xs={12}>
+                        <Button className={this.canSubmit() ? classes.certificatButton : classes.certificatButtonDisabled} onClick={() => this.saveExperience()}>Save</Button>
                       </Grid>
                     </React.Fragment>
                   }
@@ -609,4 +627,11 @@ class NewExperience extends React.Component {
   }
 }
 
-export default compose(withStyles(styles), connect(mapStateToProps))(NewExperience);
+NewExperience.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default compose(
+  withStyles(styles),
+  connect(mapStateToProps)
+)(NewExperience);
