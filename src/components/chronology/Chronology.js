@@ -89,8 +89,10 @@ class Chronology extends React.Component {
 
     // Generate components
     .map((extendedExperience, index) => {
-      const meanRating = RatingService.getMeanRating(extendedExperience.confidenceIndex);
-      console.log(meanRating)
+      let meanRating = 0;
+      if (extendedExperience.confidenceIndex) {
+        meanRating = RatingService.getMeanRating(extendedExperience.confidenceIndex);
+      }
       const backgroundColorString = ColorService.getCompetencyColorName(extendedExperience, meanRating);
       const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
       const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
