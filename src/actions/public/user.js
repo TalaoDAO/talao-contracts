@@ -37,9 +37,9 @@ export const fetchUserSuccess = user => ({
   user
 });
 
-export const fetchUserSetBackendAuth = user => ({
+export const fetchUserSetBackendAuth = auth => ({
   type: FETCH_USER_SET_BACKEND_AUTH,
-  user
+  auth
 });
 
 export const fetchUserError = error => ({
@@ -78,11 +78,14 @@ export function fetchUser(address) {
           }
           // User is a Freelance.
           else if (vaultAddress !== false) {
-            // Add the Vault address in the reducer, to allow backend requests.
-            user.vaultAddress = vaultAddress;
-            dispatch(fetchUserSetBackendAuth(user));
+            // Add the authorization data in the reducer, to allow backend requests.
+            const auth = {
+              freelancerAddress: user.ethAddress,
+              freelancerVaultAddress: vaultAddress
+            }
+            dispatch(fetchUserSetBackendAuth(auth));
             // Get data from backend.
-            dispatch(initFreelancer(user));
+            dispatch(initFreelancer(user, auth));
           } else {
             // User is a Client with an ethAddress. We are finished.
             dispatch(fetchUserSuccess(user));
