@@ -12,6 +12,7 @@ import {
 } from '../../actions/public/user';
 
 const initialState = {
+  auth: null,
   user: null,
   loading: false,
   error: null
@@ -70,7 +71,7 @@ export default function userReducer(state = initialState, action) {
     case FETCH_USER_SET_BACKEND_AUTH:
     return {
       ...state,
-      user: Object.assign({}, action.user)
+      auth: action.auth
     };
 
     case FETCH_USER_FAILURE:

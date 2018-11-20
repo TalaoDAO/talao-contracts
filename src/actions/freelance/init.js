@@ -14,10 +14,10 @@ export const initFreelancerError = error => ({
   error
 });
 
-export function initFreelancer(user) {
+export function initFreelancer(user, auth) {
   return dispatch => {
     dispatch(initFreelancerBegin());
-    user.freelancerDatas = new Freelancer(user.vaultAddress, user.ethAddress);
+    user.freelancerDatas = new Freelancer(auth.freelancerVaultAddress, auth.freelancerAddress);
     user.freelancerDatas.getFreelanceData().then((resolve, reject) => {
       if (reject) {
         dispatch(initFreelancerError(reject))
