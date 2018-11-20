@@ -95,6 +95,16 @@ class Menu extends React.Component {
                         Diploma
                     </Link>
                 </Typography>
+                <Typography to="/" style={{clear: "both"}}>
+                    <Link to="#" className={classes.sidebarItem} style={{color: "lightgray"}}>
+                        Availability
+                    </Link>
+                </Typography>
+                <Typography to="/" style={{clear: "both"}}>
+                    <Link to="#" className={classes.sidebarItem} style={{color: "lightgray"}}>
+                        Daily rate
+                    </Link>
+                </Typography>
             </div>
         let showDashboard = this.props.user.freelancerDatas &&
         <div>
