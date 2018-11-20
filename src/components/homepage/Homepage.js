@@ -54,10 +54,6 @@ const styles = theme => ({
     flexWrap: 'wrap',
     alignItems: 'flex-start',
   },
-  textField: {
-    margin: '10px 20px',
-    width: '-webkit-fill-available',
-  },
   title: {
     color: theme.palette.text.primary,
     lineHeight: '50px',
