@@ -55,7 +55,10 @@ const styles = theme => ({
         marginLeft: '23%',
         marginTop: '10px',
         fontSize: '20px',
-    }
+    },
+    freelancerMenu: {
+      marginTop: '20px',
+    },
 });
 
 class Menu extends React.Component {
@@ -71,7 +74,7 @@ class Menu extends React.Component {
 
         //if this is a freelancer
         let showFreelancerMenu = ((this.props.user.freelancerDatas || this.props.user.searchedFreelancers) && currentMenu !== '/unlockfreelancer') &&
-            <div>
+            <div className={classes.freelancerMenu}>
                 <Typography to="/">
                     <Link
                         onClick={() => this.props.dispatch(changeMenuClicked('/chronology', true))}
