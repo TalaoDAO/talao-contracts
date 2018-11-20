@@ -9262,10 +9262,10 @@ react-base16-styling@^0.6.0:
     lodash.flow "^3.3.0"
     pure-color "^1.2.0"
 
-react-blockcerts@^0.5.2:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/react-blockcerts/-/react-blockcerts-0.5.2.tgz#bd2b8dddee6ab78fac7e32cbcf2dc716163c305b"
-  integrity sha512-cjV6EDPiPqnAg7SdzILCwTKIcSlrCZko70xfnqBTItPn9Fe9u1LSDm4AsXuDxvdewiokwR7o2KOmiSC6NNssBA==
+react-blockcerts@^0.5.3:
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/react-blockcerts/-/react-blockcerts-0.5.3.tgz#9a488f0b273385d8bbb4674265e5f4b36a005e95"
+  integrity sha512-Wtu5+oMb/xXDrMZJLxQTBTYFtmwW9emtgKthPZIk5C0lSMKAoUF0CZypBlDxEl06EYlJJctVtZz0zdYfoxB0lg==
   dependencies:
     "@material-ui/core" "^1.2.1"
     "@material-ui/icons" "^1.1.0"
