@@ -8,6 +8,9 @@ export const GET_DASHBOARD_ERROR   = 'GET_DASHBOARD_ERROR';
 export const DELETE_ASYNC_BEGIN    = 'DELETE_ASYNC_BEGIN';
 export const DELETE_ASYNC_SUCCESS  = 'DELETE_ASYNC_SUCCESS';
 export const DELETE_ASYNC_ERROR    = 'DELETE_ASYNC_ERROR';
+export const SHARE_CERTIFICATE_BEGIN = 'SHARE_CERTIFICATE_BEGIN';
+export const SHARE_CERTIFICATE_SUCCESS = 'SHARE_CERTIFICATE_SUCCESS';
+export const SHARE_CERTIFICATE_ERROR = 'SHARE_CERTIFICATE_ERROR';
 
 export const getDashboardBegin = () => ({
   type: GET_DASHBOARD_BEGIN
@@ -39,6 +42,26 @@ export const deleteAsyncError = error => ({
   error
 });
 
+export const shareCertificateInit = certificate => ({
+  type: 'SHARE_CERTIFICATE_INIT',
+  certificate
+});
+
+export const shareCertificateBegin = () => ({
+  type: SHARE_CERTIFICATE_BEGIN,
+});
+
+export const shareCertificateSuccess = (certificate, certificates) => ({
+  type: SHARE_CERTIFICATE_SUCCESS,
+  certificates,
+  certificate
+});
+
+export const shareCertificateError = error => ({
+  type: SHARE_CERTIFICATE_ERROR,
+  error
+});
+
 export function deleteAsync(id, certificates) {
   return dispatch => {
     dispatch(deleteAsyncBegin());
@@ -55,7 +78,6 @@ export function deleteAsync(id, certificates) {
 export function getDashboardDatas(userEthAddress) {
   return dispatch => {
     dispatch(getDashboardBegin());
-
     Promise.all([
       get(ExperienceService.getService()),
       get(OrganizationService.getService()),
@@ -77,4 +99,18 @@ function get(service) {
       reject(error);
     });
   });
+}
+
+export function shareCertificate(id, certificates) {
+  return dispatch => {
+    const index = certificates.findIndex(x => x.id === id);
+    dispatch(shareCertificateBegin());
+    CertificateService.getService().share(id)
+    .then(certificate => {
+      certificates[index] = certificate;
+      dispatch(shareCertificateSuccess(certificate, certificates));
+    }).catch((error) => {
+      dispatch(shareCertificateError(error));
+    });
+  };
 }

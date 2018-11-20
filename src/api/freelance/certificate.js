@@ -1,4 +1,6 @@
 import AuthHelper from '../../helpers/authHelper';
+import BlobService from '../../services/BlobService';
+
 const apiGlobalRoute = process.env.REACT_APP_API_ADDRESS;
 
 export default class CertificateService {
@@ -20,27 +22,38 @@ class Certificate {
   }
 
   async get() {
-
     const response = await fetch(
       this.route, {
         method: 'GET',
         headers: this.headers
       }
     );
-    const data = await response.json();
-    return data;
+    const blobCertificates = await response.json();
+    const result = BlobService.BlobCertificatesToJson(blobCertificates);
+    return result;
+  }
+
+  async share(id) {
+    const response = await fetch(
+      this.route + '/share/' + id, {
+        method: 'PUT',
+        headers: this.headers
+      }
+    );
+    const blobCertificate = await response.json();
+    const result = BlobService.BlobCertificateToJson(blobCertificate);
+    return result;
   }
 
   async delete(id) {
-
     const response = await fetch(
       this.route + '/delete/' + id, {
         method: 'DELETE',
         headers: this.headers
       }
     );
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   }
 
 }
