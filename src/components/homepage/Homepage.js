@@ -107,11 +107,11 @@ class Homepage extends React.Component {
       loading
     } = this.props;
 
-    //Loading.
+    // Loading.
     if (loading) {
       return (<Loading />);
     }
-    //snackbar if guard has an error
+    // Snackbar if guard has an error.
     let snackbar;
     if (message) {
       snackbar = (<CustomizedSnackbars message={message} time={5000} type='error'/>);
@@ -191,6 +191,7 @@ class Homepage extends React.Component {
               helperText={(!freelancerAddressError && !freelancerAddressEmpty) ? '' : (freelancerAddressEmpty) ? emptyAddress : invalidAddress}
               onChange={(event) => this.props.dispatch(setFreelancerAddress(event.target.value))}
               className={this.props.classes.textField}
+              fullWidth
               inputProps={{
                 style: { textAlign: "center" }
               }}
