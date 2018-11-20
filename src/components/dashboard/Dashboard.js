@@ -133,7 +133,6 @@ class Dashboard extends Component {
 
   componentDidMount() {
     const { user } = this.props;
-    const { step } = this.state;
     if (user) {
       this.props.dispatch(getDashboardDatas(user.ethAddress));
     }
