@@ -23,7 +23,7 @@ const styles = theme => ({
     sidebar: {
         float: 'right',
         marginRight: '40px',
-        height: '50vh',
+        height: '60vh',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
