@@ -156,7 +156,7 @@ class Homepage extends React.Component {
 
     //If the user doesn't have a wallet we propose him to install it
     let createYourWallet;
-    if (!this.props.user.ethAddress) {
+    if (this.props.user && !this.props.user.ethAddress) {
       createYourWallet =
       (<Grid item xs={12} lg={6}>
         <Card className={this.props.classes.card}>
