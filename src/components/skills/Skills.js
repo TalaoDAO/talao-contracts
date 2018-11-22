@@ -30,7 +30,7 @@ class Skills extends Component {
           error={this.isEmpty(skill)}
           helperText={
             this.isEmpty(skill) ?
-              'This field can\'t be empty.'
+              ''
             :
               this.remainingCharacters(skill)
           }

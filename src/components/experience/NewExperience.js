@@ -393,7 +393,6 @@ class NewExperience extends React.Component {
                         type="number"
                         value={formData.job_duration}
                         error={this.isEmpty(formData.job_duration)}
-                        helperText={this.isEmpty(formData.job_duration) ? 'This field is required' : ''}
                         onChange={(event) => this.props.dispatch(setExperienceFormInput('job_duration', event.target.value))}
                         className={classes.textField}
                         label="Total number of days"
@@ -412,7 +411,7 @@ class NewExperience extends React.Component {
                         error={this.isEmpty(formData.job_title)}
                         helperText={
                           this.isEmpty(formData.job_title) ?
-                          'This field is required.'
+                          ''
                           :
                           this.remainingCharacters(formData.job_title)
                         }
@@ -475,7 +474,6 @@ class NewExperience extends React.Component {
                             type="text"
                             value={formData.finalClientCompany}
                             error={this.isEmpty(formData.finalClientCompany)}
-                            helperText={!this.isEmpty(formData.finalClientCompany) ? '' : 'This field is required.'}
                             onChange={(event) => this.props.dispatch(setExperienceFormInput('finalClientCompany', event.target.value))}
                             className={classes.textField}
                             label="Final client company"
@@ -490,7 +488,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={formData.contactFirstName}
                           error={this.isEmpty(formData.contactFirstName)}
-                          helperText={!this.isEmpty(formData.contactFirstName) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactFirstName', event.target.value))}
                           className={classes.textField}
                           label="Responsible first name"
@@ -504,7 +501,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={formData.contactLastName}
                           error={this.isEmpty(formData.contactLastName)}
-                          helperText={!this.isEmpty(formData.contactLastName) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactLastName', event.target.value))}
                           className={classes.textField}
                           label="Responsible last name"
@@ -518,7 +514,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={formData.contactJobTitle}
                           error={this.isEmpty(formData.contactJobTitle)}
-                          helperText={!this.isEmpty(formData.contactJobTitle) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactJobTitle', event.target.value))}
                           className={classes.textField}
                           label="Responsible job title"
@@ -533,7 +528,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={newOrganizationData.name}
                           error={this.isEmpty(newOrganizationData.name)}
-                          helperText={!this.isEmpty(newOrganizationData.name) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('name', event.target.value))}
                           className={classes.textField}
                           label="Company name"
@@ -548,7 +542,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={newOrganizationData.responsible_first_name}
                           error={this.isEmpty(newOrganizationData.responsible_first_name)}
-                          helperText={!this.isEmpty(newOrganizationData.responsible_first_name) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_first_name', event.target.value))}
                           className={classes.textField}
                           label="Responsible first name"
@@ -562,7 +555,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={newOrganizationData.responsible_last_name}
                           error={this.isEmpty(newOrganizationData.responsible_last_name)}
-                          helperText={!this.isEmpty(newOrganizationData.responsible_last_name) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_last_name', event.target.value))}
                           className={classes.textField}
                           label="Responsible last name"
@@ -576,7 +568,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={newOrganizationData.responsible_job_title}
                           error={this.isEmpty(newOrganizationData.responsible_job_title)}
-                          helperText={!this.isEmpty(newOrganizationData.responsible_job_title) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('responsible_job_title', event.target.value))}
                           className={classes.textField}
                           label="Responsible job title"
@@ -591,7 +582,6 @@ class NewExperience extends React.Component {
                           type="text"
                           value={newOrganizationData.email}
                           error={this.isEmpty(newOrganizationData.email)}
-                          helperText={!this.isEmpty(newOrganizationData.email) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('email', event.target.value))}
                           className={classes.textField}
                           label="Responsible email"
