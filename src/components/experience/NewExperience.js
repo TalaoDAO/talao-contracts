@@ -488,13 +488,13 @@ class NewExperience extends React.Component {
                           required
                           style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
                           type="text"
-                          value={formData.contactLastName}
-                          error={this.isEmpty(formData.contactLastName)}
-                          helperText={!this.isEmpty(formData.contactLastName) ? '' : 'This field is required.'}
-                          onChange={(event) => this.props.dispatch(setExperienceFormInput('contactLastName', event.target.value))}
+                          value={formData.contactFirstName}
+                          error={this.isEmpty(formData.contactFirstName)}
+                          helperText={!this.isEmpty(formData.contactFirstName) ? '' : 'This field is required.'}
+                          onChange={(event) => this.props.dispatch(setExperienceFormInput('contactFirstName', event.target.value))}
                           className={classes.textField}
-                          label="Last name"
-                          id="contactLastName"
+                          label="Responsible first name"
+                          id="contactFirstName"
                         />
                       </Grid>
                       <Grid item lg={3} xs={12}>
@@ -502,13 +502,13 @@ class NewExperience extends React.Component {
                           required
                           style={{ display: this.state.selectedCompanyName !== 'CompanyNotInTheList' ? 'flex' : 'none'}}
                           type="text"
-                          value={formData.contactFirstName}
-                          error={this.isEmpty(formData.contactFirstName)}
-                          helperText={!this.isEmpty(formData.contactFirstName) ? '' : 'This field is required.'}
-                          onChange={(event) => this.props.dispatch(setExperienceFormInput('contactFirstName', event.target.value))}
+                          value={formData.contactLastName}
+                          error={this.isEmpty(formData.contactLastName)}
+                          helperText={!this.isEmpty(formData.contactLastName) ? '' : 'This field is required.'}
+                          onChange={(event) => this.props.dispatch(setExperienceFormInput('contactLastName', event.target.value))}
                           className={classes.textField}
-                          label="First name"
-                          id="contactFirstName"
+                          label="Responsible last name"
+                          id="contactLastName"
                         />
                       </Grid>
                       <Grid item lg={3} xs={12}>
@@ -521,12 +521,12 @@ class NewExperience extends React.Component {
                           helperText={!this.isEmpty(formData.contactJobTitle) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setExperienceFormInput('contactJobTitle', event.target.value))}
                           className={classes.textField}
-                          label="Job title"
+                          label="Responsible job title"
                           id="contactJobTitle"
                         />
                       </Grid>
                       <Grid item lg={12} xs={12} />
-                      <Grid item lg={3} xs={12}>
+                      <Grid item lg={6} xs={12}>
                         <TextField
                           required
                           style={{ display: this.state.selectedCompanyName === 'CompanyNotInTheList' ? 'flex' : 'none'}}
@@ -540,6 +540,7 @@ class NewExperience extends React.Component {
                           id="companyName"
                         />
                       </Grid>
+                      <Grid item lg={6} xs={12}></Grid>
                       <Grid item lg={3} xs={12}>
                         <TextField
                           required
@@ -568,7 +569,6 @@ class NewExperience extends React.Component {
                           id="responsibleLastName"
                         />
                       </Grid>
-                      <Grid item lg={3} xs={12} />
                       <Grid item lg={3} xs={12}>
                         <TextField
                           required
@@ -583,6 +583,7 @@ class NewExperience extends React.Component {
                           id="responsibleJobTitle"
                         />
                       </Grid>
+                      <Grid item lg={3} xs={12}></Grid>
                       <Grid item lg={3} xs={12}>
                         <TextField
                           required
@@ -593,7 +594,7 @@ class NewExperience extends React.Component {
                           helperText={!this.isEmpty(newOrganizationData.email) ? '' : 'This field is required.'}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('email', event.target.value))}
                           className={classes.textField}
-                          label="Company email"
+                          label="Responsible email"
                           id="companyEmail"
                         />
                       </Grid>
@@ -604,7 +605,7 @@ class NewExperience extends React.Component {
                           value={newOrganizationData.phone}
                           onChange={(event) => this.props.dispatch(setOrganizationFormInput('phone', event.target.value))}
                           className={classes.textField}
-                          label="Company phone"
+                          label="Responsible phone"
                           id="companyPhone"
                         />
                       </Grid>
