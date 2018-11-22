@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
@@ -81,7 +81,7 @@ class Menu extends React.Component {
         className={currentMenu === '/chronology' ? classes.sidebarItemSelected : classes.sidebarItem}
         to={!this.props.user.searchedFreelancers ? "/chronology" : "/chronology?" + this.props.user.searchedFreelancers.ethAddress}
         >
-          Certified resume
+          Certified experience
         </Link>
       </Typography>
       <Typography to="/" style={{clear: "both"}}>
@@ -98,17 +98,7 @@ class Menu extends React.Component {
         Diploma
       </Link>
     </Typography>
-    <Typography to="/" style={{clear: "both"}}>
-    <Link to="#" className={classes.sidebarItem} style={{color: "lightgray"}}>
-      Availability
-    </Link>
-  </Typography>
-  <Typography to="/" style={{clear: "both"}}>
-  <Link to="#" className={classes.sidebarItem} style={{color: "lightgray"}}>
-    Daily rate
-  </Link>
-</Typography>
-</div>
+  </div>
 let showDashboard = this.props.user.freelancerDatas &&
 <div>
   <Typography to="/" style={{clear: "both"}}>
@@ -122,16 +112,30 @@ let showDashboard = this.props.user.freelancerDatas &&
   </Typography>
 </div>
 //if this is a client or a freelancer
-let showCreateVaultMenu = (this.props.user.ethAddress && !this.props.user.searchedFreelancers && currentMenu !== '/unlockfreelancer') &&
-<Typography to="/">
-<Link
-  onClick={() => this.props.dispatch(changeMenuClicked('/register', true))}
-  className={currentMenu === '/register' ? classes.sidebarItemSelected : classes.sidebarItem}
-  to="/register"
-  >
-    {this.props.user.freelancerDatas ? 'Personal Information' : 'Create account'}
-  </Link>
-</Typography>
+const showCreateVaultMenu = (
+  this.props.user.ethAddress &&
+  !this.props.user.searchedFreelancers &&
+  currentMenu !== '/unlockfreelancer'
+) &&
+  <Fragment>
+    <Typography to="/">
+      <Link
+        onClick={() => this.props.dispatch(changeMenuClicked('/register', true))}
+        className={currentMenu === '/register' ? classes.sidebarItemSelected : classes.sidebarItem}
+        to="/register"
+        >
+          {this.props.user.freelancerDatas ? 'Personal Information' : 'Create account'}
+      </Link>
+    </Typography>
+    {
+      this.props.user.freelancerDatas &&
+        <Typography to="/" style={{clear: "both"}}>
+          <Link to="#" className={classes.sidebarItem} style={{color: "lightgray"}}>
+            Availability & daily rate
+          </Link>
+        </Typography>
+    }
+  </Fragment>;
 
 return (
   <div className={classes.root}>
