@@ -1,16 +1,32 @@
 import React, { Component } from 'react';
+import compose from 'recompose/compose';
+import { connect } from 'react-redux';
 
 import {
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  withStyles
 } from '@material-ui/core';
+import { Save } from '@material-ui/icons';
+
+const styles = theme => ({
+  leftIcon: {
+    marginRight: theme.spacing.unit,
+  },
+})
+
+const mapStateToProps = state => ({
+  user: state.userReducer.user
+});
 
 class FreelancerExperienceEdit extends Component {
   render() {
-    const { open, onClose, title} = this.props;
+    const { classes, experience } = this.props;
+    const { open, onClose } = this.props;
+    console.log(experience)
     return (
       <Dialog
         aria-labelledby="confirmation-dialog-title"
@@ -20,7 +36,7 @@ class FreelancerExperienceEdit extends Component {
         <DialogTitle
           id="confirmation-dialog-title"
         >
-          {title}
+          Edit experience
         </DialogTitle>
         <DialogContent>
           Content
@@ -36,7 +52,7 @@ class FreelancerExperienceEdit extends Component {
             color="primary"
             variant="outlined"
           >
-            Update
+            <Save className={classes.leftIcon} />Save
           </Button>
         </DialogActions>
       </Dialog>
@@ -44,4 +60,7 @@ class FreelancerExperienceEdit extends Component {
   }
 }
 
-export default FreelancerExperienceEdit;
+export default compose(
+  withStyles(styles),
+  connect(mapStateToProps)
+)(FreelancerExperienceEdit);

@@ -524,10 +524,9 @@ class PublicExperience extends Component {
       {
         (dialog && dialog.type === 'editExperience') &&
           <FreelancerExperienceEdit
-            open={dialog}
-            experience={dialog.experience}
+            open={dialog ? true : false}
+            experience={dialog.data}
             onClose={() => this.closeDialog()}
-            title="Edit experience"
           />
       }
     </Fragment>
