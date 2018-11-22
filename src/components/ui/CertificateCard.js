@@ -1,18 +1,28 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import format from 'date-fns/format';
+// import format from 'date-fns/format';
 
 import {
   Card,
   CardActions,
-  CardContent,
+  // CardContent,
   CardHeader,
   CardMedia,
+  // Typography,
   withStyles
 } from '@material-ui/core';
 
 const styles = {
   card: {},
+  cardHeaderRoot: {
+    height: 70,
+  },
+  media: {
+    maxHeight: 100,
+    width: 'auto',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
   content: {
     paddingTop: 20,
     marginBottom: 10,
@@ -53,7 +63,10 @@ class CertificateCard extends Component {
       >
         <CardHeader
           title={certificate.signed_json.jobTitle}
-          subheader={certificate.signed_json.badge.issuer.name + ', ' + format(certificate.signed_json.issuedOn, 'D MMMM YYYY [at] H[h]mm')}
+          subheader={certificate.signed_json.badge.issuer.name}
+          classes={{
+            root: classes.cardHeaderRoot
+          }}
         />
         <CardMedia
           onClick={() => this.props.onClick()}
@@ -61,8 +74,11 @@ class CertificateCard extends Component {
           src={certificate.signed_json.badge.issuer.image}
           className={classes.media}
         />
-        <CardContent>
-        </CardContent>
+        {/* <CardContent>
+          <Typography variant="caption">
+            Issued on {format(certificate.signed_json.issuedOn, 'D MMMM YYYY [at] H[h]mm')}
+          </Typography>
+        </CardContent> */}
         <CardActions>
           {actions}
         </CardActions>

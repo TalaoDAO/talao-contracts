@@ -318,7 +318,7 @@ class Dashboard extends Component {
         {
           experiences.length > 0 &&
             <Grid item xs={12}>
-              <Typography variant="display2" paragraph>My certificates requests</Typography>
+              <Typography variant="display2" paragraph>My experiences</Typography>
               <Table className={this.props.classes.table}>
                 <TableHead>
                   <TableRow>
