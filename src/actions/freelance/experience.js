@@ -248,6 +248,38 @@ export function askForCertificate(experienceId, user) {
   };
 }
 
+export function cancelCertificateRequest(experienceId, user) {
+  return dispatch => {
+    dispatch(asyncCallBegin());
+    const experience = {
+      status: 1,
+      certificatAsked: false
+    };
+    const experienceService = ExperienceService.getService();
+    experienceService.update(experienceId, experience).then(response => {
+      if (response.error) {
+        dispatch(asyncCallError(response.error));
+      }
+      else {
+        dispatch(asyncCallSuccess());
+        const index = user.freelancerDatas.experiences.findIndex(x => x.idBack === experienceId);
+        user.freelancerDatas.experiences[index].status = 1;
+        user.freelancerDatas.experiences[index].certificatAsked = false;
+        dispatch(fetchUserSuccess(user));
+        dispatch(
+          setSnackbar(
+            'Your certificate request has been canceled. You can now edit or remove the experience.',
+            'success'
+          )
+        );
+      }
+    })
+    .catch(error => {
+      dispatch(asyncCallError(error));
+    });
+  };
+}
+
 export function newExperienceClicked(value, user) {
   return dispatch => {
     if(value) {

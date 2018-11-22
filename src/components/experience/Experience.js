@@ -12,7 +12,14 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import { withStyles } from '@material-ui/core/styles';
 import { Button, Typography } from '@material-ui/core';
-import { AvTimer, Close, CloudUpload, Fingerprint, LineStyle } from '@material-ui/icons';
+import {
+  AvTimer,
+  Cancel,
+  Close,
+  CloudUpload,
+  Fingerprint,
+  LineStyle
+} from '@material-ui/icons';
 
 import { constants } from '../../constants';
 import talaoCertificateImage from '../../images/talaoCertificateImage';
@@ -20,6 +27,7 @@ import talaoCertificateImage from '../../images/talaoCertificateImage';
 import {
   removeExpFromBackend,
   askForCertificate,
+  cancelCertificateRequest,
   addCertificateToPostedExperienceOnBlockchain,
   addCertificateToExperienceDraftAndPostOnBlockchain,
   postExperience,
@@ -338,13 +346,26 @@ class Experience extends Component {
                 {/* Certificate asked */}
                 {
                   [2, 3].includes(experience.status) &&
-                    <Button
-                      disabled
-                      variant="outlined"
-                      className={classes.experienceButton}
-                    >
-                      <AvTimer />Waiting for certificate
-                    </Button>
+                    <Fragment>
+                      <Button
+                        disabled
+                        variant="outlined"
+                        className={classes.experienceButton}
+                      >
+                        <AvTimer />Certification in progress
+                      </Button>
+                      <Button
+                        onClick={
+                          () => this.props.dispatch(
+                            cancelCertificateRequest(experience.idBack, user)
+                          )
+                        }
+                        variant="outlined"
+                        className={classes.experienceButton}
+                      >
+                        <Close />Cancel certification
+                      </Button>
+                    </Fragment>
                 }
                 {/* Add certificate to posted experience or to draft experience */}
                 {
