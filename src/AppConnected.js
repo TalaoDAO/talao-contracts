@@ -1,22 +1,28 @@
-import { withStyles } from '@material-ui/core/styles';
+import React from 'react';
+import compose from 'recompose/compose';
+import { connect } from 'react-redux';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect
+} from 'react-router-dom';
+
+import { fetchUser, logout, login } from './actions/public/user';
+import { resetTransaction } from './actions/public/transaction';
+
+import { Grid, Hidden, withStyles } from '@material-ui/core';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { constants } from './constants';
+
 import Menu from './components/menu/Menu';
+import TabBarMenu from './components/menu/TabBarMenu';
 import VaultCreation from './components/vaultCreation/VaultCreation';
 import Homepage from './components/homepage/Homepage';
 import Competencies from './components/competencies/Competencies';
 import UnlockFreelancer from './components/unlockFreelancer/UnlockFreelancer';
 import Chronology from './components/chronology/Chronology';
-import Dashboard from './components/dashboard/Dashboard';
-import Grid from '@material-ui/core/Grid';
-import Hidden from '@material-ui/core/Hidden';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
-import { fetchUser, logout, login } from './actions/public/user';
-import { resetTransaction } from './actions/public/transaction';
-import { connect } from "react-redux";
-import React from 'react';
-import compose from 'recompose/compose';
-import TabBarMenu from './components/menu/TabBarMenu';
+import FreelancerDashboard from './components/freelancer/FreelancerDashboard';
 
 const theme = createMuiTheme(constants.theme);
 const styles = theme =>
@@ -74,7 +80,7 @@ class AppConnected extends React.Component {
       }
     }.bind(this));
   }
-  
+
   //If no ethAddress, we init an empty user
   //This action is trigger each time we first log in
   //If the user has a wallet, this action is erase by the action 'RECEIVE ACCOUNT'
@@ -103,10 +109,10 @@ class AppConnected extends React.Component {
 
   render() {
     const { user} = this.props;
-    
+
     const MyHomePageComponent = (props) => {
       return (
-        <Homepage 
+        <Homepage
           user={user}
           {...props}
         />
@@ -114,7 +120,7 @@ class AppConnected extends React.Component {
     }
     const MyChronologyComponent = (props) => {
       return (
-        <Chronology 
+        <Chronology
           user={user}
           {...props}
         />
@@ -146,7 +152,7 @@ class AppConnected extends React.Component {
     }
     const MyDashboardComponent = (props) => {
       return (
-        <Dashboard
+        <FreelancerDashboard
           user={user}
           {...props}
         />

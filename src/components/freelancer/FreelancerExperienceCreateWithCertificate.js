@@ -61,7 +61,7 @@ const mapStateToProps = state => ({
   user: state.userReducer.user
 });
 
-class NewExperienceWithCertificate extends Component {
+class FreelancerExperienceCreateWithCertificate extends Component {
   constructor (props) {
     super (props);
     this.state = {
@@ -130,11 +130,11 @@ class NewExperienceWithCertificate extends Component {
   }
 }
 
-NewExperienceWithCertificate.propTypes = {
+FreelancerExperienceCreateWithCertificate.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
 export default compose(
   withStyles(styles),
   connect(mapStateToProps)
-)(NewExperienceWithCertificate);
+)(FreelancerExperienceCreateWithCertificate);

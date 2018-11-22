@@ -119,7 +119,7 @@ const mapStateToProps = state => ({
   guardLoading: state.guardReducer.loading,
 });
 
-class Dashboard extends Component {
+class FreelancerDashboard extends Component {
 
   constructor(props) {
     super(props);
@@ -285,36 +285,39 @@ class Dashboard extends Component {
 
     return (
       <Grid container spacing={24}>
-        <Grid item xs={12}>
-          <Stepper
-            activeStep={step}
-            alternativeLabel
-            className={classes.stepper}
-          >
-            <Step key={0}>
-              <StepLabel>Add a new experience</StepLabel>
-            </Step>
-            <Step key={1}>
-              <StepLabel>Request a certificate</StepLabel>
-            </Step>
-            <Step key={2}>
-              <StepLabel>Company rates & certifies the experience</StepLabel>
-            </Step>
-            <Step key={3}>
-              <StepLabel>You get your certificate!</StepLabel>
-            </Step>
-          </Stepper>
-          <div className={classes.buttons}>
-            <Button
-              component={Link}
-              to={'/chronology'}
-              color="primary"
-              variant="outlined"
-            >
-              Add an experience
-            </Button>
-          </div>
-        </Grid>
+        {
+          experiences.length === 0 && certificates.length === 0 &&
+            <Grid item xs={12}>
+              <Stepper
+                activeStep={step}
+                alternativeLabel
+                className={classes.stepper}
+              >
+                <Step key={0}>
+                  <StepLabel>Add a new experience</StepLabel>
+                </Step>
+                <Step key={1}>
+                  <StepLabel>Request a certificate</StepLabel>
+                </Step>
+                <Step key={2}>
+                  <StepLabel>Company rates & certifies the experience</StepLabel>
+                </Step>
+                <Step key={3}>
+                  <StepLabel>You get your certificate!</StepLabel>
+                </Step>
+              </Stepper>
+              <div className={classes.buttons}>
+                <Button
+                  component={Link}
+                  to={'/chronology'}
+                  color="primary"
+                  variant="outlined"
+                >
+                  Add an experience
+                </Button>
+              </div>
+            </Grid>
+        }
         {
           experiences.length > 0 &&
             <Grid item xs={12}>
@@ -526,4 +529,4 @@ class Dashboard extends Component {
   }
 }
 
-export default compose(withStyles(styles), connect(mapStateToProps))(Dashboard);
+export default compose(withStyles(styles), connect(mapStateToProps))(FreelancerDashboard);

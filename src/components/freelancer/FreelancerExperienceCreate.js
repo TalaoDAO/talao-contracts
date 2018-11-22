@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import compose from 'recompose/compose';
+import PropTypes from 'prop-types';
 
 import {
   Button,
@@ -19,7 +20,6 @@ import {
 } from '@material-ui/core';
 import { constants } from '../../constants';
 import blue from '@material-ui/core/colors/blue';
-import PropTypes from 'prop-types';
 
 import {
   setExperienceFormInput,
@@ -30,7 +30,7 @@ import {
 import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 
 import Skills from '../skills/Skills';
-import NewExperienceWithCertificate from './NewExperienceWithCertificate';
+import FreelancerExperienceCreateWithCertificate from './FreelancerExperienceCreateWithCertificate';
 
 const styles = theme => ({
   root: {
@@ -133,7 +133,7 @@ const mapStateToProps = state => ({
   organizations: state.experienceReducer.organizations,
 });
 
-class NewExperience extends React.Component {
+class FreelancerExperienceCreate extends React.Component {
 
   constructor(props) {
     super(props);
@@ -335,7 +335,7 @@ class NewExperience extends React.Component {
               {
                 alreadyHaveCert ?
                   <Grid item xs={12}>
-                    <NewExperienceWithCertificate />
+                    <FreelancerExperienceCreateWithCertificate />
                   </Grid>
                 :
                   <React.Fragment>
@@ -618,11 +618,11 @@ class NewExperience extends React.Component {
   }
 }
 
-NewExperience.propTypes = {
+FreelancerExperienceCreate.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
 export default compose(
   withStyles(styles),
   connect(mapStateToProps)
-)(NewExperience);
+)(FreelancerExperienceCreate);

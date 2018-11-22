@@ -1,8 +1,6 @@
 import React from 'react';
-import Experience from '../experience/Experience';
 import Card from '@material-ui/core/Card';
 import { withStyles, CardContent, Grid } from '@material-ui/core';
-import NewExperience from '../experience/NewExperience';
 import Profile from '../profile/Profile';
 import queryString from 'query-string';
 import { connect } from "react-redux";
@@ -14,6 +12,9 @@ import { fetchFreelancer } from '../../actions/public/user';
 
 import ColorService from '../../services/ColorService';
 import RatingService from '../../services/RatingService';
+
+import PublicExperience from '../public/PublicExperience';
+import FreelancerExperienceCreate from '../freelancer/FreelancerExperienceCreate';
 
 const Loading = require('react-loading-animation');
 
@@ -97,7 +98,7 @@ class Chronology extends React.Component {
       const backgroundLightColorString = ColorService.getLightColorName(backgroundColorString);
       const textColorString = "text" + backgroundColorString[0].toUpperCase() + backgroundColorString.substring(1);
       return (
-        <Experience
+        <PublicExperience
           user={freelancer}
           isClient={(queryString.extract(window.location.search)) ? true : false}
           experience={extendedExperience}
@@ -111,7 +112,7 @@ class Chronology extends React.Component {
 
     const MyNewExperienceComponent = (props) => {
       return (
-        <NewExperience
+        <FreelancerExperienceCreate
           user={this.props.user}
           {...props}
         />

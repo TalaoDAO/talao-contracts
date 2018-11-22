@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import Experience from '../experience/Experience';
+import PublicExperience from '../public/PublicExperience';
 
 export default class Experiences extends Component {
   render() {
     const experiences = this.props.value.map((experience, index) =>
-    (<Experience
+    (<PublicExperience
       experience={experience}
       color={this.props.color}
       lightColor={this.props.lightColor}
