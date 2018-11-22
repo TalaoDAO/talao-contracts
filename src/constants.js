@@ -31,7 +31,7 @@ var constants = {
     textAccent1: '#000',
     textAccent2: '#fff',
     textAccent3: '#fff',
-    textAccent4: '#000',
+    textAccent4: '#fff',
     textGrey: lightGreyColor,
   },
   fontSize: {

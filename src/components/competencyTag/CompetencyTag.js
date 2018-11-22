@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import ColorService from '../../services/ColorService';
 
@@ -45,15 +45,22 @@ class CompetencyTag extends Component {
         className={classes.container}
         style={{ backgroundColor: ColorService.getColorFromName(backgroundColorString) }}
       >
-        {
-          value.confidenceIndex !== 0 &&
-            <div
-              className={classes.confidenceIndex}
-              style={{ backgroundColor: ColorService.getColorFromName(backgroundLightColorString) }}>
-              {Math.round(value.confidenceIndex * 10) / 10}
-              <span style={{fontSize: '10px'}}>/5</span>
-            </div>
-        }
+        <div
+          className={classes.confidenceIndex}
+          style={{ backgroundColor: ColorService.getColorFromName(backgroundLightColorString) }}
+        >
+          {
+            value.confidenceIndex !== 0 ?
+              <Fragment>
+                {Math.round(value.confidenceIndex * 10) / 10}
+                <span style={{fontSize: '10px'}}>/5</span>
+              </Fragment>
+            :
+              <Fragment>
+                <span style={{fontSize: '10px'}}>&nbsp;</span>
+              </Fragment>
+          }
+        </div>
         <div
           className={classes.name}
           style={{ color: ColorService.getColorFromName(textColorString) }}
