@@ -72,6 +72,7 @@ class Freelancer {
       let keywords = [];
       let ratings = [];
       let competencyRating;
+      let certificate;
       // If Experience has no Certificate.
       if (this.noHashIpfs(data['ipfs'])) {
         // Keywords.
@@ -85,7 +86,7 @@ class Freelancer {
       }
       // Otherwise get the Certificate on IPFS.
       else {
-        const certificate = await this.getCertificateFromIpfs(data['ipfs']);
+        certificate = await this.getCertificateFromIpfs(data['ipfs']);
         // Replace Experience data by Certificate data.
         title = certificate.jobTitle;
         description = certificate.jobDescription;
@@ -142,6 +143,7 @@ class Freelancer {
         new Date(endDate),
         competencies,
         this.noHashIpfs(data['ipfs']) ? null : 'https://gateway.ipfs.io/ipfs/' + FileService.getIpfsHashFromBytes32(data['ipfs']),
+        certificate ? certificate : null,
         ratings,
         jobDuration,
         certificatAsked,
@@ -200,9 +202,43 @@ class Freelancer {
               }
             }
             if (!exp.idBlockchain)
-            this.addExperience(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id, exp.status, exp.certificatId));
+            this.addExperience(
+              new Experience(
+                exp.job_title,
+                exp.job_description,
+                new Date(exp.date_start),
+                new Date(exp.date_end),
+                competencies,
+                null,
+                null,
+                0,
+                exp.job_duration,
+                exp.certificatAsked,
+                exp.idBlockchain,
+                exp.id,
+                exp.status,
+                exp.certificatId
+              )
+            );
             //Save the full list for data management...
-            this.experiencesFromBack.push(new Experience(exp.job_title, exp.job_description, new Date(exp.date_start), new Date(exp.date_end), competencies, null, 0, exp.job_duration, exp.certificatAsked, exp.idBlockchain, exp.id, exp.status, exp.certificatId));
+            this.experiencesFromBack.push(
+              new Experience(
+                exp.job_title,
+                exp.job_description,
+                new Date(exp.date_start),
+                new Date(exp.date_end),
+                competencies,
+                null,
+                null,
+                0,
+                exp.job_duration,
+                exp.certificatAsked,
+                exp.idBlockchain,
+                exp.id,
+                exp.status,
+                exp.certificatId
+              )
+            );
 
             if (index + 1 === response.length)
             resolve(true);

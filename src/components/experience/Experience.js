@@ -78,6 +78,10 @@ const styles = theme => ({
     borderLeft: '1px solid ' + theme.palette.grey[300],
     width: '80%',
   },
+  clientName: {
+    marginTop: 20,
+    color: theme.palette.grey[600],
+  },
   description: {
     marginTop: '15px',
   },
@@ -281,6 +285,15 @@ class Experience extends Component {
             {experience.title}
           </Typography>
           {competencyTags}
+          {
+            experience.certificate &&
+              <Typography
+                variant="title"
+                className={classes.clientName}
+              >
+                {experience.certificate.badge.issuer.name}
+              </Typography>
+          }
           <Typography variant="body1" gutterBottom className={classes.description}>
             {experience.description}
           </Typography>
@@ -431,9 +444,12 @@ class Experience extends Component {
                 </div>
           }
           {
-            experience.certificatUrl &&
+            experience.certificate &&
               <div className={classes.viewCertificate}>
-                <Button onClick={this.showCertification} className={classNames(classes.experienceButton, classes.experienceBlackButton)}>
+                <Button
+                  onClick={this.showCertification}
+                  className={classNames(classes.experienceButton, classes.experienceBlackButton)}
+                >
                   <LineStyle />
                   <span style={{ display: !showCert ? 'inline-block' : 'none' }}>View certificat</span>
                   <span style={{ display: showCert ? 'inline-block' : 'none' }}>Hide certificat</span>
@@ -442,7 +458,7 @@ class Experience extends Component {
                   className={classes.blockcerts}
                   style={{ display: showCert ? 'block' : 'none' }}>
                   <Blockcerts
-                    url={experience.certificatUrl}
+                    json={experience.certificate}
                     image={talaoCertificateImage}
                     color='#282828'
                     color_bg='#edecec'

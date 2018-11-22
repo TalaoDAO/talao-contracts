@@ -6,6 +6,7 @@ class Experience {
     to,
     competencies,
     certificatUrl,
+    certificate,
     confidenceIndex,
     jobDuration,
     certificatAsked,
@@ -20,6 +21,7 @@ class Experience {
     this.to = to;
     this.competencies = competencies;
     this.certificatUrl = certificatUrl;
+    this.certificate = certificate;
     this.confidenceIndex = confidenceIndex;
     this.jobDuration = jobDuration;
     this.certificatAsked = certificatAsked;
