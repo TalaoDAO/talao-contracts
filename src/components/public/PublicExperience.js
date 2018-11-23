@@ -439,7 +439,7 @@ class PublicExperience extends Component {
                       </Button>
                   }
                   {/* Edit experience draft */}
-                  {
+                  {/* {
                     (
                       [1].includes(experience.status) &&
                       !experience.idBlockchain
@@ -450,7 +450,7 @@ class PublicExperience extends Component {
                       >
                         <Edit className={classes.leftIcon} />Edit
                       </Button>
-                  }
+                  } */}
                   {/* Experience without certificate => Post */}
                   {
                     (

@@ -31,8 +31,6 @@ import {
 } from '../../actions/freelance/experience';
 import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 
-import FreelancerExperienceSkill from './FreelancerExperienceSkill';
-
 const styles = theme => ({
   leftIcon: {
     marginRight: theme.spacing.unit,
@@ -101,7 +99,6 @@ class FreelancerExperienceEdit extends Component {
       classes,
       dispatch,
       open,
-      onClose,
       operation,
       loading,
       formData,
