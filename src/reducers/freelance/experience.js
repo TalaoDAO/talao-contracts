@@ -6,7 +6,8 @@ import {
   SET_EXPERIENCE_FORM_INPUT,
   SET_ORGANIZATION_FORM_INPUT,
   EXPAND_PROFIL,
-  NEW_EXPERIENCE_CLICKED
+  NEW_EXPERIENCE_CLICKED,
+  GET_BACKEND_EXPERIENCE_SUCCESS
 } from '../../actions/freelance/experience';
 
 const initialState = {
@@ -51,9 +52,10 @@ const initialState = {
   loading: false,
   success: null,
   error: null,
+  operation: null,
   newExperience: false,
   expandProfil: false,
-  organizations: []
+  organizations: [],
 };
 
 export default function experienceReducer(state = initialState, action) {
@@ -126,6 +128,14 @@ export default function experienceReducer(state = initialState, action) {
       ...state,
       expandProfil: action.expandProfil
     };
+
+    case GET_BACKEND_EXPERIENCE_SUCCESS:
+      return {
+        ...state,
+        formData: action.experience,
+        operation: 'edit',
+        loading: false
+      };
 
     default:
     return state;

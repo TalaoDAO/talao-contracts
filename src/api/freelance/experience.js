@@ -18,15 +18,19 @@ class Experience {
     this.headers = AuthHelper.setHeaders();
   }
 
-  async get() {
+  async get(filters = null) {
+    let url = new URL(this.route);
+    if (filters) {
+      Object.keys(filters).forEach(key => url.searchParams.append(key, filters[key]));
+    }
     const response = await fetch(
-      this.route, {
+      url, {
         method: 'GET',
         headers: this.headers
       }
     );
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   }
 
   async add(experience) {

@@ -24,6 +24,7 @@ export const SET_EXPERIENCE_FORM_INPUT   = 'SET_EXPERIENCE_FORM_INPUT';
 export const SET_ORGANIZATION_FORM_INPUT = 'SET_ORGANIZATION_FORM_INPUT';
 export const EXPAND_PROFIL               = 'EXPAND_PROFIL';
 export const NEW_EXPERIENCE_CLICKED      = 'NEW_EXPERIENCE_CLICKED';
+export const GET_BACKEND_EXPERIENCE_SUCCESS = 'GET_BACKEND_EXPERIENCE_SUCCESS';
 
 export const asyncCallBegin = () => ({
   type: ASYNC_CALL_BEGIN
@@ -66,6 +67,11 @@ export const getOrganizations = organizations => ({
   organizations
 });
 
+export const getBackendExperienceSuccess = experience => ({
+  type: GET_BACKEND_EXPERIENCE_SUCCESS,
+  experience
+})
+
 export function fetchOrganizations() {
   return dispatch => {
     dispatch(asyncCallBegin());
@@ -84,6 +90,26 @@ export function fetchOrganizations() {
       }
     }).catch(error => {
       // if an error is not handle
+      dispatch(asyncCallError(error));
+    });
+  };
+}
+
+export function getBackendExperience(id) {
+  return dispatch => {
+    dispatch(asyncCallBegin());
+    let experienceService = ExperienceService.getService();
+    experienceService.get({
+      id: id
+    })
+    .then(response => {
+      if (response.error)
+      dispatch(asyncCallError(response.error));
+      else {
+        const experience = response[0];
+        dispatch(getBackendExperienceSuccess(experience));
+      }
+    }).catch(error => {
       dispatch(asyncCallError(error));
     });
   };

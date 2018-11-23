@@ -1,3 +1,4 @@
+// TODO: seperate in 2 components: 1 for the Freelancer, 1 public.
 import React , { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import compose from 'recompose/compose';
@@ -525,7 +526,7 @@ class PublicExperience extends Component {
         (dialog && dialog.type === 'editExperience') &&
           <FreelancerExperienceEdit
             open={dialog ? true : false}
-            experience={dialog.data}
+            id={dialog.data.idBack}
             onClose={() => this.closeDialog()}
           />
       }
