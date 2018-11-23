@@ -7,7 +7,7 @@ import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 const mapStateToProps = state => ({
   formData: state.experienceReducer.formData
 });
-class Skills extends Component {
+class Skill extends Component {
   isEmpty(text) {
     return text.length <= 0;
   }
@@ -19,7 +19,7 @@ class Skills extends Component {
     const { formData, id } = this.props;
     const skill = formData['skill' + id];
     return (
-      <Grid item lg={6} xs={12}>
+      <Grid item md={6} xs={12}>
         <TextField
           required
           type="text"
@@ -43,4 +43,4 @@ class Skills extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Skills);
+export default connect(mapStateToProps)(Skill);
