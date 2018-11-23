@@ -25,6 +25,7 @@ export const SET_ORGANIZATION_FORM_INPUT = 'SET_ORGANIZATION_FORM_INPUT';
 export const EXPAND_PROFIL               = 'EXPAND_PROFIL';
 export const NEW_EXPERIENCE_CLICKED      = 'NEW_EXPERIENCE_CLICKED';
 export const GET_BACKEND_EXPERIENCE_SUCCESS = 'GET_BACKEND_EXPERIENCE_SUCCESS';
+export const SET_EXPERIENCE_SKILLS = 'SET_EXPERIENCE_SKILLS';
 
 export const asyncCallBegin = () => ({
   type: ASYNC_CALL_BEGIN
@@ -67,10 +68,16 @@ export const getOrganizations = organizations => ({
   organizations
 });
 
-export const getBackendExperienceSuccess = experience => ({
+export const getBackendExperienceSuccess = (experience, skills) => ({
   type: GET_BACKEND_EXPERIENCE_SUCCESS,
-  experience
-})
+  experience,
+  skills
+});
+
+export const setExperienceSkills = skills => ({
+  type: SET_EXPERIENCE_SKILLS,
+  skills
+});
 
 export function fetchOrganizations() {
   return dispatch => {
@@ -107,12 +114,36 @@ export function getBackendExperience(id) {
       dispatch(asyncCallError(response.error));
       else {
         const experience = response[0];
-        dispatch(getBackendExperienceSuccess(experience));
+        let skills = [];
+        for (let i = 1; i <= 10; i++) {
+          if (experience['skill' + i] !== '') {
+            skills.push({
+              id: i,
+              title: experience['skill' + i]
+            });
+          }
+        }
+        dispatch(getBackendExperienceSuccess(experience, skills));
       }
     }).catch(error => {
       dispatch(asyncCallError(error));
     });
   };
+}
+
+export function setExperienceSkill(id, value, skills) {
+  return dispatch => {
+    if (value === '') {
+    }
+    else {
+      const index = skills.findIndex(x => x.id === id);
+      skills[index] = {
+        id: id,
+        title: value
+      };
+    }
+    dispatch(setExperienceSkills(skills));
+  }
 }
 
 export function removeExpFromBackend(exp, user) {

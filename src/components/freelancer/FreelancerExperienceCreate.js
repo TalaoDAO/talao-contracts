@@ -29,7 +29,7 @@ import {
 } from '../../actions/freelance/experience';
 import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
 
-import Skills from '../skills/Skills';
+import FreelancerExperienceSkill from './FreelancerExperienceSkill';
 import FreelancerExperienceCreateWithCertificate from './FreelancerExperienceCreateWithCertificate';
 
 const styles = theme => ({
@@ -272,7 +272,7 @@ class FreelancerExperienceCreate extends React.Component {
     const { alreadyHaveCert } = this.state;
 
     let skills = this.state.skills.map((skill, index) => {
-      return ( <Skills key={index+1} id={index+1}/> );
+      return ( <FreelancerExperienceSkill key={index+1} id={index+1}/> );
     });
 
     let companys = (organizations) && organizations.map(organization => {

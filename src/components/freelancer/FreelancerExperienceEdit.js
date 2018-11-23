@@ -26,9 +26,12 @@ import { Save } from '@material-ui/icons';
 
 import {
   getBackendExperience,
-  setExperienceFormInput
+  setExperienceFormInput,
+  setExperienceSkill
 } from '../../actions/freelance/experience';
 import { TEXT_VALIDATOR_LENGTH } from '../../actions/freelance/createVault';
+
+import FreelancerExperienceSkill from './FreelancerExperienceSkill';
 
 const styles = theme => ({
   leftIcon: {
@@ -38,6 +41,7 @@ const styles = theme => ({
 
 const mapStateToProps = state => ({
   formData: state.experienceReducer.formData,
+  skills: state.experienceReducer.skills,
   operation: state.experienceReducer.operation,
   loading: state.experienceReducer.loading
 });
@@ -82,6 +86,11 @@ class FreelancerExperienceEdit extends Component {
     onClose();
   }
 
+  setSkill = (id, value) => {
+    const { dispatch, skills } = this.props;
+    dispatch(setExperienceSkill(id, value, skills));
+  }
+
   componentDidMount() {
     const { dispatch, id } = this.props;
     dispatch(getBackendExperience(id));
@@ -95,11 +104,10 @@ class FreelancerExperienceEdit extends Component {
       onClose,
       operation,
       loading,
-      formData
+      formData,
+      skills
     } = this.props;
     const newOrganizationData = {};
-    const skills = {};
-
     return (
       <Dialog
         aria-labelledby="confirmation-dialog-title"
@@ -377,9 +385,30 @@ class FreelancerExperienceEdit extends Component {
                           id="companyPhone"
                         />
                       </Grid> */}
-                      {/* <Grid item lg={12} xs={12} />
-                      {skills}
-                      <Grid item lg={12} xs={12}>
+                      {
+                        skills.map(
+                          skill => {
+                            return (
+                              <Grid item md={4} xs={12} key={skill.id}>
+                                <TextField
+                                  required
+                                  label={'Skill' + skill.id}
+                                  type="text"
+                                  inputProps={{
+                                    maxLength: 30
+                                  }}
+                                  value={skill.title}
+                                  error={this.isEmpty(skill.title)}
+                                  helperText={this.remainingCharacters(skill.title)}
+                                  onChange={event => this.setSkill(skill.id, event.target.value)}
+                                  fullWidth
+                                />
+                              </Grid>
+                            )
+                          }
+                        )
+                      }
+                      {/* <Grid item lg={12} xs={12}>
                         <Button className={classes.certificatButton} onClick={() => this.handleAddSkills()}>Add skills</Button>
                         <Button className={classes.certificatButton} onClick={() => this.handleRemoveSkills()}>Remove skills</Button>
                       </Grid> */}
