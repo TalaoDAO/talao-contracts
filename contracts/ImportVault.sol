@@ -22,49 +22,61 @@ contract ImportVault is Ownable {
     /**
      * @dev Import a document.
      */
-    function importDoc(uint _newId, uint _newIndex, uint _id)
+    function importDocument(uint _newId, uint16 _newIndex, uint _id)
         public
     {
-        (bytes32 title, string memory description, uint start, uint end, uint duration, bytes32[] memory keywords, uint doctype, bytes32 ipfs) = previousVault.getDoc(_id);
+        // Read document from old Vault.
+        (
+            uint8 type_doc,
+            uint8 type_version,
+            uint8 storage_type,
+            uint8 misc,
+            bytes32 title,
+            bytes32 storage_hash,
+            bool encrypted
+        ) = previousVault.getDocument(_id);
+
+        // Storage pointer.
         Vault.Document storage doc = importedDocuments[_newId];
-        doc.title = title;
-        doc.description = description;
-        doc.start = start;
-        doc.end = end;
-        doc.duration = duration;
-        doc.keywords = keywords;
-        doc.doctype = doctype;
-        doc.ipfs = ipfs;
+
+        // Write data.
         doc.published = true;
+        doc.encrypted = encrypted;
+        doc.type_doc = type_doc;
+        doc.type_version = type_version;
+        doc.storage_type = storage_type;
+        doc.misc = misc;
         doc.index = _newIndex;
+        doc.title = title;
+        doc.storage_hash = storage_hash;
     }
 
     /**
      * @dev Get an imported document
      */
-    function getImportedDoc(uint _id)
+    function getImportedDocument(uint _id)
         view
         public
         returns (
+            uint8 type_doc,
+            uint8 type_version,
+            uint8 storage_type,
+            uint8 misc,
             bytes32 title,
-            string description,
-            uint start,
-            uint end,
-            uint duration,
-            bytes32[] keywords,
-            uint doctype,
-            bytes32 ipfs
+            bytes32 storage_hash,
+            bool encrypted
         )
     {
-        Vault.Document storage doc = importedDocuments[_id];
+        // Memory pointer.
+        Vault.Document memory doc = importedDocuments[_id];
 
+        // Return data.
+        type_doc = doc.type_doc;
+        type_version = doc.type_version;
+        storage_type = doc.storage_type;
+        misc = doc.misc;
         title = doc.title;
-        description = doc.description;
-        start = doc.start;
-        end = doc.end;
-        duration = doc.duration;
-        keywords = doc.keywords;
-        doctype = doc.doctype;
-        ipfs = doc.ipfs;
+        storage_hash = doc.storage_hash;
+        encrypted = doc.encrypted;
     }
 }

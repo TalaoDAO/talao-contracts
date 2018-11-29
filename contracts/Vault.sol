@@ -23,28 +23,41 @@ contract Vault is Ownable {
     uint documentsCounter;
     // Used to parse all documents using index as relationship between this array and TalentsDocuments mapping.
     uint[] documentIndex;
-    // Document struct.
+    /**
+     * @dev Document struct.
+     * @dev published, encrypted, type_doc, type_version use slot 1.
+     * @dev storage_type, misc, index use slot 2.
+     * @dev title uses slot 3.
+     * @dev storage_hash uses slot 4.
+     */
     struct Document {
-        // Title.
-        bytes32 title;
-        // Description.
-        string description;
-        // Timestamp of start.
-        uint start;
-        // Timestamp of end.
-        uint end;
-        // Duration in days.
-        uint duration;
-        // Array of keywords.
-        bytes32[] keywords;
-        // Type: DIPLOMA = 1, EDUCATION = 2, SKILL = 3, WORK = 4, 5 = ID
-        uint doctype;
-        // IPFS hash of the attached file, if any.
-        bytes32 ipfs;
         // True if "published", false if "unpublished".
         bool published;
+
+        // Encrypted.
+        bool encrypted;
+
+        // Type of document: 1 = work experience, ...
+        uint8 type_doc;
+
+        // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
+        uint8 type_version;
+
+        // Storage type: 1 = IPFS, ...
+        uint8 storage_type;
+
+        // Basically we don't need that one now, we just add it to fill the slot 2. It might be usefull one day.
+        uint8 misc;
+
         // Position in index.
-        uint index;
+        // Note: documentsCounter and documentIndex are still uint256 because it's cheaper outside of a struct.
+        uint16 index;
+
+        // Title.
+        bytes32 title;
+
+        // Storage hash.
+        bytes32 storage_hash;
     }
     // Mapping: documentId => Document.
     mapping(uint => Document) public Documents;
@@ -78,71 +91,52 @@ contract Vault is Ownable {
      * Modifier for functions to allow only users who have access to the Vault in the token + Partners.
      */
     modifier onlyVaultReaders() {
-        // Sender must be set.
-        require (msg.sender != address(0), 'Sender must be set.');
         // See if Vault price = 0 to allow anyone in that case.
-        (uint accessPrice, address appointedAgent, uint sharingPlan, uint userDeposit) = myToken.data(owner);
+        (uint accessPrice,,,) = myToken.data(owner);
         // Accept only users who have access to the Vault in the token + Partners.
         require(accessPrice == 0 || myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess(msg.sender, owner), 'Sender has no Vault access.');
         _;
     }
 
     /**
-     * @dev See if document is published.
-     * @param _id uint Document ID.
-     */
-    function isDocPublished(uint _id)
-        view
-        public
-        onlyVaultReaders
-        returns(bool isPublished)
-    {
-        require(_id > 0, 'Document ID must be > 0');
-
-        isPublished = Documents[_id].published;
-    }
-
-    /**
      * @dev Document getter.
      * @param _id uint Document ID.
      */
-    function getDoc(uint _id)
+    function getDocument(uint _id)
         view
         public
         onlyVaultReaders
         returns (
+            uint8 type_doc,
+            uint8 type_version,
+            uint8 storage_type,
+            uint8 misc,
             bytes32 title,
-            string description,
-            uint start,
-            uint end,
-            uint duration,
-            bytes32[] keywords,
-            uint doctype,
-            bytes32 ipfs
+            bytes32 storage_hash,
+            bool encrypted
         )
     {
+        // Memory pointer.
+        Document memory doc = Documents[_id];
+
         // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
-
-        // Validate doc state.
-        Document memory doc = Documents[_id];
         require(doc.published, 'Document does not exist.');
 
         // Return data.
+        type_doc = doc.type_doc;
+        type_version = doc.type_version;
+        storage_type = doc.storage_type;
+        misc = doc.misc;
         title = doc.title;
-        description = doc.description;
-        start = doc.start;
-        end = doc.end;
-        duration = doc.duration;
-        keywords = doc.keywords;
-        doctype = doc.doctype;
-        ipfs = doc.ipfs;
+        storage_hash = doc.storage_hash;
+        encrypted = doc.encrypted;
     }
 
     /**
      * @dev Get all published documents.
      */
-    function getDocs()
+    function getDocuments()
         view
         public
         onlyVaultReaders
@@ -154,15 +148,14 @@ contract Vault is Ownable {
     /**
      * @dev Create a document.
      */
-    function createDoc(
+    function createDocument(
+        uint8 _type_doc,
+        uint8 _type_version,
+        uint8 _storage_type,
+        uint8 _misc,
         bytes32 _title,
-        string _description,
-        uint _start,
-        uint _end,
-        uint _duration,
-        bytes32[] _keywords,
-        uint _doctype,
-        bytes32 _ipfs
+        bytes32 _storage_hash,
+        bool _encrypted
     )
         public
         onlyOwner
@@ -170,24 +163,29 @@ contract Vault is Ownable {
         returns (uint)
     {
         // Validate parameters.
-        require(_title != 0, 'Title can not be empty.');
-        require(_doctype > 0, 'Type must be > 0.');
+        require(_type_doc > 0, 'Type of document must be > 0.');
+        require(_type_version > 0, 'Version of document type must be > 0.');
+        require(
+          _storage_hash == 0 || (_storage_hash > 0 && _storage_type > 0),
+          'Storage type must be > 0.'
+        );
 
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
 
-        // Write document data.
+        // Storage pointer.
         Document storage doc = Documents[documentsCounter];
-        doc.title = _title;
-        doc.description = _description;
-        doc.start = _start;
-        doc.end = _end;
-        doc.duration = _duration;
-        doc.keywords = _keywords;
-        doc.doctype = _doctype;
-        doc.ipfs = _ipfs;
+
+        // Write data.
         doc.published = true;
-        doc.index = documentIndex.push(documentsCounter).sub(1);
+        doc.encrypted = _encrypted;
+        doc.type_doc = _type_doc;
+        doc.type_version = _type_version;
+        doc.storage_type = _storage_type;
+        doc.misc = _misc;
+        doc.index = uint16(documentIndex.push(documentsCounter).sub(1));
+        doc.title = _title;
+        doc.storage_hash = _storage_hash;
 
         // Emit event.
         emit NewDocument(
@@ -198,53 +196,66 @@ contract Vault is Ownable {
     }
 
     /**
-     * @dev Set an IPFS hash of an IPFS uploaded file, to attach it.
-     * @param _id uint Document ID.
-     * @param _ipfs bytes32 IPFS hash of the file.
+     * @dev Update a document.
      */
-    function setDocIpfs(
+    function updateDocument(
         uint _id,
-        bytes32 _ipfs
+        uint8 _type_doc,
+        uint8 _type_version,
+        uint8 _storage_type,
+        uint8 _misc,
+        bytes32 _title,
+        bytes32 _storage_hash,
+        bool _encrypted
     )
         public
         onlyOwner
         onlyActiveFreelancer
     {
+        // Storage pointer.
+        Document storage doc = Documents[_id];
+
         // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
-        require(_ipfs != 0, 'IPFS hash can not be empty.');
-
-        // Validate doc state.
-        Document storage doc = Documents[_id];
-        require (doc.published, 'IPFS files can be attached only to published documents.');
+        require(
+          _storage_hash == 0 || (_storage_hash > 0 && _storage_type > 0),
+          'Storage type must be > 0.'
+        );
+        require(doc.published, 'Document does not exist.');
 
         // Write data.
-        doc.ipfs = _ipfs;
+        doc.type_doc = _type_doc;
+        doc.type_version = _type_version;
+        doc.storage_type = _storage_type;
+        doc.misc = _misc;
+        doc.title = _title;
+        doc.storage_hash = _storage_hash;
+        doc.encrypted = _encrypted;
     }
 
     /**
      * @dev Remove a document.
      */
-    function deleteDoc (uint _id)
+    function deleteDocument (uint _id)
         public
         onlyOwner
         onlyActiveFreelancer
     {
-        // Validate parameter.
-        require (_id > 0, 'Document ID must be > 0.');
-
-        // Validate state.
+        // Storage pointer.
         Document storage docToDelete = Documents[_id];
-        require (docToDelete.published, 'Only published documents can be removed.');
+
+        // Validate parameters.
+        require (_id > 0, 'Document ID must be > 0.');
+        require(docToDelete.published, 'Document does not exist.');
 
         /**
          * Remove document from index.
          */
 
         // If the removed document is not the last in the index,
-        if (docToDelete.index < (documentIndex.length - 1)) {
+        if (docToDelete.index < (documentIndex.length).sub(1)) {
           // Find the last document of the index.
-          uint lastDocId = documentIndex[(documentIndex.length - 1)];
+          uint lastDocId = documentIndex[(documentIndex.length).sub(1)];
           Document storage lastDoc = Documents[lastDocId];
           // Move it in the index in place of the document to delete.
           documentIndex[docToDelete.index] = lastDocId;

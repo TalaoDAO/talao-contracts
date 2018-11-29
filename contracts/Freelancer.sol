@@ -25,10 +25,10 @@ contract Freelancer is Ownable {
         bytes32 mobile;
         bytes32 email;
         bytes32 title;
-        string description;
         bytes32 picture;
+        string description;
         FreelancerState state;
-        uint subscription;
+        uint32 subscription;
     }
     // Mapping of Freelancers Ethereum addresses => Freelancer information. TODO: put in private and use getFreelancer?
     mapping (address => FreelancerInformation) public Freelancers;
@@ -140,7 +140,7 @@ contract Freelancer is Ownable {
         // Set Freelancer data.
         // New or returning Freelancer.
         if (thisFreelancer.state == FreelancerState.Inactive) {
-            thisFreelancer.subscription = now;
+            thisFreelancer.subscription = uint32(now);
         }
         // All.
         thisFreelancer.firstname = _firstname;
