@@ -60,7 +60,7 @@ contract Vault is Ownable {
         bytes32 storage_hash;
     }
     // Mapping: documentId => Document.
-    mapping(uint => Document) public Documents;
+    mapping(uint => Document) Documents;
 
     // Event: new document added.
     // Just because we need to get the document ID after the transaction, in the frontend.
