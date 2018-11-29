@@ -12,7 +12,14 @@ const Vault = artifacts.require('Vault');
 const Freelancer = artifacts.require('Freelancer');
 const ImportVault = artifacts.require('ImportVault');
 
+let gasUsed;
+
 contract('VaultFactory', async (accounts) => {
+
+  beforeEach( () => {
+    gasUsed = 0;
+  });
+
   const tryCatch = require('./exceptions.js').tryCatch;
   const errTypes = require('./exceptions.js').errTypes;
 
@@ -48,20 +55,25 @@ contract('VaultFactory', async (accounts) => {
    */
   it('Should create the TalaoToken', async () => {
     TalaoInstance = await Talao.deployed();
+    gasUsed = '';
     assert(TalaoInstance);
   });
   it('Should mint', async () => {
     const isMinted = await TalaoInstance.mint(owner, 150000000000000000000);
+    gasUsed = isMinted.receipt.gasUsed;
     assert(isMinted);
   });
   it('Should stop minting', async () => {
     const hasMintedStopped = await TalaoInstance.finishMinting();
+    gasUsed = hasMintedStopped.receipt.gasUsed;
     assert(hasMintedStopped);
   });
   it('Should set vault deposit', async () => {
-    await TalaoInstance.setVaultDeposit(10);
+    const setVaultDepositTx = await TalaoInstance.setVaultDeposit(10);
+    gasUsed = setVaultDepositTx.receipt.gasUsed;
   });
   it('Should get balance of Talao', async () => {
+    gasUsed = '';
     const ownerBalance = await TalaoInstance.balanceOf(owner);
     assert.equal(ownerBalance.c, 1500000);
   });
@@ -76,22 +88,27 @@ contract('VaultFactory', async (accounts) => {
       20,
       { from: owner }
     );
+    gasUsed = isTransferDone.receipt.gasUsed;
     assert(isTransferDone);
   });
   it('Should get balance of Freelance', async () => {
     const freelancerBalance = await TalaoInstance.balanceOf(freelancer);
+    gasUsed = '';
     assert.equal(freelancerBalance.c, 20);
   });
   it('Should get Vault deposit', async () => {
     const vaultDeposit = await TalaoInstance.vaultDeposit.call();
+    gasUsed = '';
     assert.equal(vaultDeposit.c, 10);
   });
   it('Should create Vault access', async () => {
-    await TalaoInstance.createVaultAccess(5, { from: freelancer });
+    const createVaultAccess = await TalaoInstance.createVaultAccess(5, { from: freelancer });
+    gasUsed = createVaultAccess.receipt.gasUsed;
   });
   it('Vault price should be set.', async () => {
     const freelancerData = await TalaoInstance.data(freelancer);
     const freelancerVaultPrice = freelancerData[0].toNumber();
+    gasUsed = '';
     assert.equal(freelancerVaultPrice, 5);
   });
 
@@ -103,6 +120,7 @@ contract('VaultFactory', async (accounts) => {
       TalaoInstance.address,
       { from: owner }
     );
+    gasUsed = '';
     assert(FreelancerInstance);
   });
   it('Should create the VaultFactory smart contract', async () => {
@@ -111,6 +129,7 @@ contract('VaultFactory', async (accounts) => {
       FreelancerInstance.address,
       { from: owner }
     );
+    gasUsed = '';
     assert(VaultFactoryInstance);
   });
 
@@ -129,16 +148,19 @@ contract('VaultFactory', async (accounts) => {
       { from: freelancer }
     );
     vaultAddress = VaultReceipt.logs[0].address;
+    gasUsed = VaultReceipt.receipt.gasUsed;
   });
   it('Freelancer should have a Vault now', async () => {
     const hasVault = await VaultFactoryInstance.hasVault.call(
       freelancer,
       { from: someone }
     );
+    gasUsed = '';
     assert(hasVault);
   });
   it('There should be 1 Vault in total now', async () => {
     const vaultsNb = await VaultFactoryInstance.vaultsNb.call({ from: someone });
+    gasUsed = '';
     assert.equal(vaultsNb, 1);
   });
 
@@ -157,6 +179,7 @@ contract('VaultFactory', async (accounts) => {
       'Description',
       { from: freelancer }
     );
+    gasUsed = freelancerInfo.receipt.gasUsed;
     assert(freelancerInfo);
   });
   it('Freelancer should be active', async () => {
@@ -164,6 +187,7 @@ contract('VaultFactory', async (accounts) => {
       freelancer,
       { from: someone }
     );
+    gasUsed = '';
     assert(isFreelancerActive);
   });
 
@@ -175,18 +199,21 @@ contract('VaultFactory', async (accounts) => {
       freelancer,
       { from: bot }
     );
+    gasUsed = '';
     assert.equal(vaultAddressNull, '0x0000000000000000000000000000000000000000');
   });
   it('Should set the bot address', async () => {
-    await FreelancerInstance.setTalaoBot(bot, { from: owner });
+    const setTalaoBotTx = await FreelancerInstance.setTalaoBot(bot, { from: owner });
     const isTalaoBot = await FreelancerInstance.isTalaoBot.call(
       bot,
       { from: someone }
     );
+    gasUsed = setTalaoBotTx.receipt.gasUsed;
     assert.equal(isTalaoBot, true);
   });
   it('Should get the bot address, when called by owner.', async () => {
     const getTalaoBot = await FreelancerInstance.getTalaoBot.call({ from: owner });
+    gasUsed = '';
     assert.equal(getTalaoBot, bot);
   });
   it('Should allow bot to get the Vault address', async () => {
@@ -194,6 +221,7 @@ contract('VaultFactory', async (accounts) => {
       freelancer,
       { from: bot }
     );
+    gasUsed = '';
     assert.equal(botGetVaultAddress, vaultAddress);
   });
 
@@ -204,7 +232,7 @@ contract('VaultFactory', async (accounts) => {
     if (VaultInstance == null) {
       VaultInstance = Vault.at(vaultAddress);
     }
-    const doc1receipt = await VaultInstance.createDocument(
+    const doc1tx = await VaultInstance.createDocument(
       1,
       1,
       1,
@@ -214,11 +242,13 @@ contract('VaultFactory', async (accounts) => {
       false,
       { from: freelancer }
     );
-    const doc1id = doc1receipt.logs[0].args.id.toNumber();
+    const doc1id = doc1tx.logs[0].args.id.toNumber();
+    gasUsed = doc1tx.receipt.gasUsed;
     assert.equal(doc1id, 1);
   });
   it('Should get the document', async () => {
     const doc1 = await VaultInstance.getDocument.call(1, { from: freelancer });
+    gasUsed = '';
     assert.equal(doc1[0].toNumber(), 1);
     assert.equal(doc1[1].toNumber(), 1);
     assert.equal(doc1[2].toNumber(), 1);
@@ -242,6 +272,7 @@ contract('VaultFactory', async (accounts) => {
       { from: freelancer }
     );
     const doc2id = doc2receipt.logs[0].args.id.toNumber();
+    gasUsed = doc2receipt.receipt.gasUsed;
     assert.equal(doc2id, 2);
   });
   it('Freelance should be able to update the document', async () => {
@@ -256,10 +287,12 @@ contract('VaultFactory', async (accounts) => {
       false,
       { from: freelancer }
     );
+    gasUsed = doc2UpdateReceipt.receipt.gasUsed;
     assert(doc2UpdateReceipt);
   });
   it('Document should have been updated', async () => {
     const doc2Updated = await VaultInstance.getDocument.call(2, { from: freelancer });
+    gasUsed = '';
     assert.equal(doc2Updated[0].toNumber(), 1);
     assert.equal(doc2Updated[1].toNumber(), 1);
     assert.equal(doc2Updated[2].toNumber(), 1);
@@ -270,6 +303,7 @@ contract('VaultFactory', async (accounts) => {
   });
   it('Freelancer should be able to get the index of all the published documents IDs', async () => {
     const index = await VaultInstance.getDocuments.call({ from: freelancer });
+    gasUsed = '';
     assert.equal(index[0].toNumber(), 1);
     assert.equal(index[1].toNumber(), 2);
   });
@@ -287,10 +321,12 @@ contract('VaultFactory', async (accounts) => {
     );
     // Now delete the 2nd document.
     const doc2DeletedReceipt = await VaultInstance.deleteDocument(2, { from: freelancer });
+    gasUsed = doc2DeletedReceipt.receipt.gasUsed;
     assert(doc2DeletedReceipt);
   });
   it('Index should have been updated with document 2 removed', async () => {
     const newIndex = await VaultInstance.getDocuments.call({ from: freelancer });
+    gasUsed = '';
     assert.equal(newIndex[0].toNumber(), 1);
     assert.equal(newIndex[1].toNumber(), 3);
   });
@@ -304,6 +340,7 @@ contract('VaultFactory', async (accounts) => {
       partner,
       { from: someone }
     );
+    gasUsed = '';
     assert(!isPartner);
   });
   it('Should set a Partner', async () => {
@@ -312,6 +349,7 @@ contract('VaultFactory', async (accounts) => {
       true,
       { from: freelancer }
     );
+    gasUsed = setPartner.receipt.gasUsed;
     assert(setPartner);
   });
   it('Partner should be allowed now', async () => {
@@ -320,6 +358,7 @@ contract('VaultFactory', async (accounts) => {
       partner,
       { from: someone }
     );
+    gasUsed = '';
     assert(isPartner2);
   });
   it('Partner should be able to get the index and the first doc', async () => {
@@ -328,6 +367,7 @@ contract('VaultFactory', async (accounts) => {
       doc1index[0],
       { from: partner }
     );
+    gasUsed = '';
     assert.equal(doc1indexdoc[4], '0x7465737431000000000000000000000000000000000000000000000000000000');
   });
 
@@ -340,6 +380,7 @@ contract('VaultFactory', async (accounts) => {
       20,
       { from: owner }
     );
+    gasUsed = talaoTransfer2.receipt.gasUsed;
     assert(talaoTransfer2);
   });
   it('Freelancer 2 should be able to set his Vault price to 0', async () => {
@@ -347,6 +388,7 @@ contract('VaultFactory', async (accounts) => {
       0,
       { from: freelancer2 }
     );
+    gasUsed = createVaultAccess2.receipt.gasUsed;
   });
   it('Freelancer 2 should be able to create a Vault', async () => {
     const vaultReceipt2 = await VaultFactoryInstance.createVaultContract(
@@ -359,6 +401,7 @@ contract('VaultFactory', async (accounts) => {
       0,
       { from: freelancer2 }
     );
+    gasUsed = vaultReceipt2.receipt.gasUsed;
     vaultAddress2 = vaultReceipt2.logs[0].address;
   });
   it('Freelancer 2 should be able add a document to his Vault', async () => {
@@ -376,10 +419,12 @@ contract('VaultFactory', async (accounts) => {
       { from: freelancer2 }
     );
     const f2Doc1Id = f2Doc1receipt.logs[0].args.id.toNumber();
+    gasUsed = f2Doc1receipt.receipt.gasUsed;
     assert.equal(f2Doc1Id, 1);
   });
   it('Anyone should be able to get the document', async () => {
     const getDoc1Freelance2 = await VaultInstance2.getDocument.call(1, { from: someone });
+    gasUsed = '';
     assert.equal(getDoc1Freelance2[4], '0x7465737431000000000000000000000000000000000000000000000000000000');
   });
 
@@ -396,16 +441,18 @@ contract('VaultFactory', async (accounts) => {
       true,
       { from: freelancer }
     );
+    gasUsed = setPartner.receipt.gasUsed;
     assert(setPartner);
   });
   it('Should import a document into a new Vault', async () => {
     const indexOfDocsToImport = await VaultInstance.getDocuments.call({ from: partner });
-    await ImportVaultInstance.importDocument(
+    const importDocumentTx = await ImportVaultInstance.importDocument(
       1,
       0,
       indexOfDocsToImport[0].toNumber(),
       { from: partner }
     );
+    gasUsed = importDocumentTx.receipt.gasUsed;
     const originalDoc = await VaultInstance.getDocument.call(
       indexOfDocsToImport[0],
       {from: partner}
@@ -415,6 +462,12 @@ contract('VaultFactory', async (accounts) => {
       { from: partner }
     );
     assert.equal(originalDoc.toString(), newDoc.toString());
+  });
+
+  afterEach( () => {
+    if (gasUsed != '') {
+      console.log('Gas used: ' + gasUsed);
+    }
   });
 
 });

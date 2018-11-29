@@ -222,6 +222,7 @@ contract Vault is Ownable {
           'Storage type must be > 0.'
         );
         require(doc.published, 'Document does not exist.');
+        // TODO: rules for changes around encrypted and storage_type + storage_hash, depending on stored values...
 
         // Write data.
         doc.type_doc = _type_doc;
