@@ -2,12 +2,11 @@ pragma solidity ^0.4.24;
 
 import './Talao.sol';
 import './Vault.sol';
-import './Freelancer.sol';
 
 /**
  * @title ImportVault.
- * @dev Import a Talent's Vault.
- * @author SlowSense, Talao, Blockchain Partners.
+ * @dev Import a Vault.
+ * @author Talao, Blockchain Partners, SlowSense.
  */
 contract ImportVault is Ownable {
 
@@ -27,28 +26,26 @@ contract ImportVault is Ownable {
     {
         // Read document from old Vault.
         (
-            uint8 type_doc,
-            uint8 type_version,
-            uint8 storage_type,
-            uint8 misc,
-            bytes32 title,
-            bytes32 storage_hash,
-            bool encrypted
+            bytes32 fileHash,
+            uint16 fileEngine,
+            uint8 docType,
+            uint8 docTypeVersion,
+            bool encrypted,
+            bytes24 additionalData
         ) = previousVault.getDocument(_id);
 
         // Storage pointer.
         Vault.Document storage doc = importedDocuments[_newId];
 
         // Write data.
+        doc.fileHash = fileHash;
+        doc.fileEngine = fileEngine;
+        doc.index = _newIndex;
+        doc.docType = docType;
+        doc.docTypeVersion = docTypeVersion;
         doc.published = true;
         doc.encrypted = encrypted;
-        doc.type_doc = type_doc;
-        doc.type_version = type_version;
-        doc.storage_type = storage_type;
-        doc.misc = misc;
-        doc.index = _newIndex;
-        doc.title = title;
-        doc.storage_hash = storage_hash;
+        doc.additionalData = additionalData;
     }
 
     /**
@@ -58,25 +55,23 @@ contract ImportVault is Ownable {
         view
         public
         returns (
-            uint8 type_doc,
-            uint8 type_version,
-            uint8 storage_type,
-            uint8 misc,
-            bytes32 title,
-            bytes32 storage_hash,
-            bool encrypted
+            bytes32 fileHash,
+            uint16 fileEngine,
+            uint8 docType,
+            uint8 docTypeVersion,
+            bool encrypted,
+            bytes24 additionalData
         )
     {
         // Memory pointer.
         Vault.Document memory doc = importedDocuments[_id];
 
         // Return data.
-        type_doc = doc.type_doc;
-        type_version = doc.type_version;
-        storage_type = doc.storage_type;
-        misc = doc.misc;
-        title = doc.title;
-        storage_hash = doc.storage_hash;
+        fileHash = doc.fileHash;
+        fileEngine = doc.fileEngine;
+        docType = doc.docType;
+        docTypeVersion = doc.docTypeVersion;
         encrypted = doc.encrypted;
+        additionalData = doc.additionalData;
     }
 }

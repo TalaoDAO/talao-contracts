@@ -9,8 +9,26 @@ const should = require('chai')
 const Talao = artifacts.require('TalaoToken');
 const VaultFactory = artifacts.require('VaultFactory');
 const Vault = artifacts.require('Vault');
-const Freelancer = artifacts.require('Freelancer');
 const ImportVault = artifacts.require('ImportVault');
+
+// "this is 16 bytes"
+const bytes16 = '0x74686973206973203136206279746573';
+const otherBytes16 = '0x74686973206973203136206279746574';
+// "this is exactly 24 bytes"
+const bytes24 = '0x746869732069732065786163746c79203234206279746573';
+const otherBytes24 = '0x746869732069732065786163746c79203234206279746574';
+// "this string just fills a bytes32"
+const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
+const otherBytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733333';
+// "this string is exactly bytes30"
+const bytes30 = '0x7468697320737472696e672069732065786163746c792062797465733330';
+const otherBytes30 = '0x7468697320737472696e672069732065786163746c792062797465733331';
+// Small string.
+const smallString = 'This is really a rather small string which barely makes 1 line.';
+const otherSmallString = 'This is another rather small string which barely makes 1 line.';
+// Big string.
+const bigString = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tristique quam iaculis quam accumsan, in sollicitudin arcu pulvinar. Morbi malesuada metus a hendrerit tempor. Quisque egestas eros tellus. Maecenas in nisi eu orci tempor accumsan quis non sapien. Morbi nec efficitur leo. Aliquam porta mauris in eleifend faucibus. Vestibulum pulvinar quis lorem tempor vestibulum. Proin semper mattis commodo. Nam sagittis maximus elementum. Integer in porta orci. Donec eu porta odio, sit amet rutrum urna.';
+const otherBigString = 'Donec a pulvinar augue, nec dapibus lacus. Pellentesque vitae dui facilisis, viverra massa quis, blandit eros. Duis tincidunt, purus ac fermentum pharetra, felis tellus mollis arcu, pretium pulvinar nunc est quis dui. Fusce mollis placerat massa, vitae laoreet lacus porta eu. Praesent eros velit, egestas aliquam rhoncus in, suscipit mollis sapien. Sed velit purus, euismod ut metus quis, blandit venenatis justo. Aenean a tellus a libero varius fringilla. Aliquam sed ligula laoreet justo consequat faucibus id nec ex. Nullam et nisl id purus mattis tempus eu eu dui. Quisque efficitur, ligula quis placerat elementum, leo urna laoreet mi, et viverra metus enim faucibus libero. Integer urna elit, laoreet nec tristique eu, tincidunt nec quam. Quisque vel ligula sit amet ex fermentum scelerisque vel id diam. Donec accumsan quis nulla sit amet semper.';
 
 let gasUsed;
 
@@ -27,7 +45,6 @@ contract('VaultFactory', async (accounts) => {
       VaultFactoryInstance,
       VaultInstance,
       VaultInstance2,
-      FreelancerInstance,
       ImportVaultInstance;
 
   let vaultAddress, vaultAddress2;
@@ -104,6 +121,8 @@ contract('VaultFactory', async (accounts) => {
   it('Should create Vault access', async () => {
     const createVaultAccess = await TalaoInstance.createVaultAccess(5, { from: freelancer });
     gasUsed = createVaultAccess.receipt.gasUsed;
+    const hasVaultAccess = await TalaoInstance.hasVaultAccess(freelancer, freelancer, { from: someone });
+    assert(hasVaultAccess);
   });
   it('Vault price should be set.', async () => {
     const freelancerData = await TalaoInstance.data(freelancer);
@@ -113,20 +132,11 @@ contract('VaultFactory', async (accounts) => {
   });
 
   /**
-   * Create Freelancer & VaultFactory smart contracts.
+   * Create VaultFactory smart contract.
    */
-  it('Should create the Freelancer smart contract', async () => {
-    FreelancerInstance = await Freelancer.new(
-      TalaoInstance.address,
-      { from: owner }
-    );
-    gasUsed = '';
-    assert(FreelancerInstance);
-  });
   it('Should create the VaultFactory smart contract', async () => {
     VaultFactoryInstance = await VaultFactory.new(
       TalaoInstance.address,
-      FreelancerInstance.address,
       { from: owner }
     );
     gasUsed = '';
@@ -138,20 +148,22 @@ contract('VaultFactory', async (accounts) => {
    */
   it('Freelancer should be able to create a Vault', async () => {
     let VaultReceipt = await VaultFactoryInstance.createVaultContract(
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      bytes16,
+      bytes16,
+      bytes16,
+      bytes16,
+      bytes32,
+      bytes32,
+      1,
+      bytes30,
+      bigString,
       { from: freelancer }
     );
     vaultAddress = VaultReceipt.logs[0].address;
     gasUsed = VaultReceipt.receipt.gasUsed;
   });
   it('Freelancer should have a Vault now', async () => {
-    const hasVault = await VaultFactoryInstance.hasVault.call(
+    const hasVault = await VaultFactoryInstance.hasValidatedVault.call(
       freelancer,
       { from: someone }
     );
@@ -159,40 +171,13 @@ contract('VaultFactory', async (accounts) => {
     assert(hasVault);
   });
   it('There should be 1 Vault in total now', async () => {
-    const vaultsNb = await VaultFactoryInstance.vaultsNb.call({ from: someone });
+    const vaultsNumber = await VaultFactoryInstance.vaultsNumber.call({ from: someone });
     gasUsed = '';
-    assert.equal(vaultsNb, 1);
+    assert.equal(vaultsNumber, 1);
   });
 
   /**
-   * Add Freelancer professional information in Freelancer.
-   */
-  it('Should add information about Freelancer to Vault', async () => {
-    const freelancerInfo = await FreelancerInstance.setFreelancer(
-      0,
-      0,
-      '0x00aaff',
-      '0x00aaff',
-      '0x00aaff',
-      '0x00aaff',
-      '0x00aaff',
-      'Description',
-      { from: freelancer }
-    );
-    gasUsed = freelancerInfo.receipt.gasUsed;
-    assert(freelancerInfo);
-  });
-  it('Freelancer should be active', async () => {
-    const isFreelancerActive = await FreelancerInstance.isActive.call(
-      freelancer,
-      { from: someone }
-    );
-    gasUsed = '';
-    assert(isFreelancerActive);
-  });
-
-  /**
-   * Talao certificates bot.
+   * Talao bot.
    */
   it('Should not allow non set bot to get the Vault address', async () => {
     const vaultAddressNull = await VaultFactoryInstance.getVault.call(
@@ -203,8 +188,8 @@ contract('VaultFactory', async (accounts) => {
     assert.equal(vaultAddressNull, '0x0000000000000000000000000000000000000000');
   });
   it('Should set the bot address', async () => {
-    const setTalaoBotTx = await FreelancerInstance.setTalaoBot(bot, { from: owner });
-    const isTalaoBot = await FreelancerInstance.isTalaoBot.call(
+    const setTalaoBotTx = await VaultFactoryInstance.setTalaoBot(bot, { from: owner });
+    const isTalaoBot = await VaultFactoryInstance.isTalaoBot.call(
       bot,
       { from: someone }
     );
@@ -212,7 +197,7 @@ contract('VaultFactory', async (accounts) => {
     assert.equal(isTalaoBot, true);
   });
   it('Should get the bot address, when called by owner.', async () => {
-    const getTalaoBot = await FreelancerInstance.getTalaoBot.call({ from: owner });
+    const getTalaoBot = await VaultFactoryInstance.getTalaoBot.call({ from: owner });
     gasUsed = '';
     assert.equal(getTalaoBot, bot);
   });
@@ -226,20 +211,37 @@ contract('VaultFactory', async (accounts) => {
   });
 
   /**
-   * Vault documents CRUD.
+   * Vault.
    */
+  it('Freelancer profile should be set', async () => {
+    if (VaultInstance == null) {
+      VaultInstance = Vault.at(vaultAddress);
+    }
+    const freelancerProfile = await VaultInstance.getProfile(
+      { from: someone }
+    );
+    gasUsed = '';
+    assert.equal(freelancerProfile[0], bytes16);
+    assert.equal(freelancerProfile[1], bytes16);
+    assert.equal(freelancerProfile[2], bytes16);
+    assert.equal(freelancerProfile[3], bytes16);
+    assert.equal(freelancerProfile[4], bytes32);
+    assert.equal(freelancerProfile[5], bytes32);
+    assert.equal(freelancerProfile[6], 1);
+    assert.equal(freelancerProfile[7], bytes30);
+    assert.equal(freelancerProfile[8], bigString);
+  });
   it('Should add document to Vault', async () => {
     if (VaultInstance == null) {
       VaultInstance = Vault.at(vaultAddress);
     }
     const doc1tx = await VaultInstance.createDocument(
+      bytes32,
       1,
       1,
       1,
-      0,
-      '0x7465737431000000000000000000000000000000000000000000000000000000',
-      '0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838',
       false,
+      bytes24,
       { from: freelancer }
     );
     const doc1id = doc1tx.logs[0].args.id.toNumber();
@@ -249,42 +251,38 @@ contract('VaultFactory', async (accounts) => {
   it('Should get the document', async () => {
     const doc1 = await VaultInstance.getDocument.call(1, { from: freelancer });
     gasUsed = '';
-    assert.equal(doc1[0].toNumber(), 1);
-    assert.equal(doc1[1].toNumber(), 1);
-    assert.equal(doc1[2].toNumber(), 1);
-    assert.equal(doc1[3].toNumber(), 0);
-    assert.equal(doc1[4], '0x7465737431000000000000000000000000000000000000000000000000000000');
-    assert.equal(doc1[5], '0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838');
-    assert.equal(doc1[6], false);
+    assert.equal(doc1[0], bytes32);
+    assert.equal(doc1[1], 1);
+    assert.equal(doc1[2], 1);
+    assert.equal(doc1[3], 1);
+    assert(!doc1[4]);
+    assert.equal(doc1[5], bytes24);
   });
-  it('Should add another document to Vault', async () => {
+  it('Should add a 2nd document to Vault', async () => {
     if (VaultInstance == null) {
       VaultInstance = Vault.at(vaultAddress);
     }
-    const doc2receipt = await VaultInstance.createDocument(
-      2,
-      2,
-      2,
-      2,
-      '0x7465737432000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000000',
-      true,
+    const doc2tx = await VaultInstance.createDocument(
+      bytes32,
+      1,
+      1,
+      1,
+      false,
+      bytes24,
       { from: freelancer }
     );
-    const doc2id = doc2receipt.logs[0].args.id.toNumber();
-    gasUsed = doc2receipt.receipt.gasUsed;
+    const doc2id = doc2tx.logs[0].args.id.toNumber();
+    gasUsed = doc2tx.receipt.gasUsed;
     assert.equal(doc2id, 2);
   });
   it('Freelance should be able to update the document', async () => {
     const doc2UpdateReceipt = await VaultInstance.updateDocument(
       2,
-      1,
-      1,
-      1,
-      0,
-      '0x7465737433000000000000000000000000000000000000000000000000000000',
-      '0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9839',
-      false,
+      otherBytes32,
+      2,
+      2,
+      2,
+      otherBytes24,
       { from: freelancer }
     );
     gasUsed = doc2UpdateReceipt.receipt.gasUsed;
@@ -293,15 +291,14 @@ contract('VaultFactory', async (accounts) => {
   it('Document should have been updated', async () => {
     const doc2Updated = await VaultInstance.getDocument.call(2, { from: freelancer });
     gasUsed = '';
-    assert.equal(doc2Updated[0].toNumber(), 1);
-    assert.equal(doc2Updated[1].toNumber(), 1);
-    assert.equal(doc2Updated[2].toNumber(), 1);
-    assert.equal(doc2Updated[3].toNumber(), 0);
-    assert.equal(doc2Updated[4], '0x7465737433000000000000000000000000000000000000000000000000000000');
-    assert.equal(doc2Updated[5], '0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9839');
-    assert.equal(doc2Updated[6], false);
+    assert.equal(doc2Updated[0], otherBytes32);
+    assert.equal(doc2Updated[1].toNumber(), 2);
+    assert.equal(doc2Updated[2].toNumber(), 2);
+    assert.equal(doc2Updated[3].toNumber(), 2);
+    assert(!doc2Updated[4]);
+    assert.equal(doc2Updated[5], otherBytes24);
   });
-  it('Freelancer should be able to get the index of all the published documents IDs', async () => {
+  it('Should be able to get the documents index', async () => {
     const index = await VaultInstance.getDocuments.call({ from: freelancer });
     gasUsed = '';
     assert.equal(index[0].toNumber(), 1);
@@ -310,13 +307,12 @@ contract('VaultFactory', async (accounts) => {
   it('Freelancer should be able to delete a document', async () => {
     // First create a 3rd document, to verify the index later.
     await VaultInstance.createDocument(
+      bytes32,
       1,
       1,
       1,
-      0,
-      '0x0000000000000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000000',
       false,
+      bytes24,
       { from: freelancer }
     );
     // Now delete the 2nd document.
@@ -335,8 +331,7 @@ contract('VaultFactory', async (accounts) => {
    * Partner
    */
   it('Should refuse Partner because it was not set yet', async () => {
-    const isPartner = await FreelancerInstance.isPartner.call(
-      freelancer,
+    const isPartner = await VaultInstance.Partners.call(
       partner,
       { from: someone }
     );
@@ -344,7 +339,7 @@ contract('VaultFactory', async (accounts) => {
     assert(!isPartner);
   });
   it('Should set a Partner', async () => {
-    const setPartner = await FreelancerInstance.setPartner(
+    const setPartner = await VaultInstance.setPartner(
       partner,
       true,
       { from: freelancer }
@@ -353,8 +348,7 @@ contract('VaultFactory', async (accounts) => {
     assert(setPartner);
   });
   it('Partner should be allowed now', async () => {
-    const isPartner2 = await FreelancerInstance.isPartner.call(
-      freelancer,
+    const isPartner2 = await VaultInstance.Partners.call(
       partner,
       { from: someone }
     );
@@ -368,7 +362,12 @@ contract('VaultFactory', async (accounts) => {
       { from: partner }
     );
     gasUsed = '';
-    assert.equal(doc1indexdoc[4], '0x7465737431000000000000000000000000000000000000000000000000000000');
+    assert.equal(doc1indexdoc[0], bytes32);
+    assert.equal(doc1indexdoc[1], 1);
+    assert.equal(doc1indexdoc[2], 1);
+    assert.equal(doc1indexdoc[3], 1);
+    assert(!doc1indexdoc[4]);
+    assert.equal(doc1indexdoc[5], bytes24);
   });
 
   /**
@@ -390,42 +389,48 @@ contract('VaultFactory', async (accounts) => {
     );
     gasUsed = createVaultAccess2.receipt.gasUsed;
   });
-  it('Freelancer 2 should be able to create a Vault', async () => {
-    const vaultReceipt2 = await VaultFactoryInstance.createVaultContract(
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+  it('Freelancer2 should be able to create a Vault', async () => {
+    let VaultReceipt2 = await VaultFactoryInstance.createVaultContract(
+      bytes16,
+      bytes16,
+      bytes16,
+      bytes16,
+      bytes32,
+      bytes32,
+      1,
+      bytes30,
+      bigString,
       { from: freelancer2 }
     );
-    gasUsed = vaultReceipt2.receipt.gasUsed;
-    vaultAddress2 = vaultReceipt2.logs[0].address;
+    vaultAddress2 = VaultReceipt2.logs[0].address;
+    gasUsed = VaultReceipt2.receipt.gasUsed;
   });
-  it('Freelancer 2 should be able add a document to his Vault', async () => {
+  it('Should add document to Vault', async () => {
     if (VaultInstance2 == null) {
       VaultInstance2 = Vault.at(vaultAddress2);
     }
-    const f2Doc1receipt = await VaultInstance2.createDocument(
+    const f2doc1tx = await VaultInstance2.createDocument(
+      bytes32,
       1,
       1,
       1,
-      0,
-      '0x7465737431000000000000000000000000000000000000000000000000000000',
-      '0x6142b269b7b163be4d5679d06632e913dd1fe35eae3b3e7e03de0c8fd26f9838',
       false,
+      bytes24,
       { from: freelancer2 }
     );
-    const f2Doc1Id = f2Doc1receipt.logs[0].args.id.toNumber();
-    gasUsed = f2Doc1receipt.receipt.gasUsed;
-    assert.equal(f2Doc1Id, 1);
+    const f2doc1id = f2doc1tx.logs[0].args.id.toNumber();
+    gasUsed = f2doc1tx.receipt.gasUsed;
+    assert.equal(f2doc1id, 1);
   });
   it('Anyone should be able to get the document', async () => {
     const getDoc1Freelance2 = await VaultInstance2.getDocument.call(1, { from: someone });
     gasUsed = '';
-    assert.equal(getDoc1Freelance2[4], '0x7465737431000000000000000000000000000000000000000000000000000000');
+    assert.equal(getDoc1Freelance2[0], bytes32);
+    assert.equal(getDoc1Freelance2[1].toNumber(), 1);
+    assert.equal(getDoc1Freelance2[2].toNumber(), 1);
+    assert.equal(getDoc1Freelance2[3].toNumber(), 1);
+    assert(!getDoc1Freelance2[4]);
+    assert.equal(getDoc1Freelance2[5], bytes24);
   });
 
   /**
@@ -436,7 +441,7 @@ contract('VaultFactory', async (accounts) => {
     assert(ImportVaultInstance);
   });
   it('Should list a Partner in order to import docs', async () => {
-    const setPartner = await FreelancerInstance.setPartner(
+    const setPartner = await VaultInstance.setPartner(
       ImportVaultInstance.address,
       true,
       { from: freelancer }

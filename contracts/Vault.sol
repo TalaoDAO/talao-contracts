@@ -1,69 +1,103 @@
 pragma solidity ^0.4.24;
 
 import './Talao.sol';
-import './Freelancer.sol';
+
+/**
+ * @title Interface for Vault Factory, which created this contract.
+ */
+contract VaultFactoryInterface {
+
+  /**
+   * @notice Checks that the Freelancer has a registred Vault.
+   */
+  function hasValidatedVault(address _address) public view returns (bool has_vault);
+
+  /**
+   * @notice Unregister this Vault from Talao's Vault Factory.
+   */
+  function unregisterVault(address _address) public;
+}
 
 /**
  * @title Vault.
- * @dev A Talent's Vault.
- * @author SlowSense, Talao, Blockchain Partners.
+ * @dev A Freelancer's Vault.
+ * @author Talao, SlowSense, Blockchain Partners.
  */
 contract Vault is Ownable {
 
     // SafeMath to avoid overflows.
     using SafeMath for uint;
 
-    // Talao token contract.
-    TalaoToken public myToken;
+    // Talao token.
+    TalaoToken token;
 
-    // Freelancer contract.
-    Freelancer public myFreelancer;
+    // Interface with Vault Factory contract.
+    VaultFactoryInterface vaultFactoryInterface;
+
+    // Profile struct.
+    struct Profile {
+      bytes16 firstName;
+      bytes16 lastName;
+      bytes16 phone;
+      bytes16 email;
+      bytes32 jobTitle;
+      bytes32 pictureHash;
+      uint16 pictureEngine;
+      bytes30 additionalData;
+      string description;
+    }
+
+    // Profile.
+    Profile myProfile;
+
+    // Partners.
+    mapping (address => bool) public Partners;
 
     // Documents counter.
     uint documentsCounter;
-    // Used to parse all documents using index as relationship between this array and TalentsDocuments mapping.
-    uint[] documentIndex;
-    /**
-     * @dev Document struct.
-     * @dev published, encrypted, type_doc, type_version use slot 1.
-     * @dev storage_type, misc, index use slot 2.
-     * @dev title uses slot 3.
-     * @dev storage_hash uses slot 4.
-     */
+    // Documents index.
+    uint[] documentsIndex;
+
+    // Document struct.
     struct Document {
+
+        // File hash.
+        bytes32 fileHash;
+        // So far we have used 1 SSTORAGE.
+
+        // File engine.
+        uint16 fileEngine;
+        // 30 bytes remaining in SSTORAGE 2.
+
+        // Position in index.
+        // Note: documentsCounter and documentsIndex are still uint256 because it's cheaper outside of a struct.
+        uint16 index;
+        // 28 bytes remaining in SSTORAGE 2.
+
+        // Type of document: 1 = work experience, ...
+        uint8 docType;
+        // 27 bytes remaining in SSTORAGE 2.
+
+        // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
+        uint8 docTypeVersion;
+        // 26 bytes remaining in SSTORAGE 2.
+
         // True if "published", false if "unpublished".
         bool published;
+        // 25 bytes remaining in SSTORAGE 2.
 
         // Encrypted.
         bool encrypted;
+        // 24 bytes remaining in SSTORAGE 2.
 
-        // Type of document: 1 = work experience, ...
-        uint8 type_doc;
-
-        // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
-        uint8 type_version;
-
-        // Storage type: 1 = IPFS, ...
-        uint8 storage_type;
-
-        // Basically we don't need that one now, we just add it to fill the slot 2. It might be usefull one day.
-        uint8 misc;
-
-        // Position in index.
-        // Note: documentsCounter and documentIndex are still uint256 because it's cheaper outside of a struct.
-        uint16 index;
-
-        // Title.
-        bytes32 title;
-
-        // Storage hash.
-        bytes32 storage_hash;
+        // To fill the 2nd SSTORAGE, let's add this, it might proove usefull.
+        bytes24 additionalData;
     }
-    // Mapping: documentId => Document.
+    // Documents.
     mapping(uint => Document) Documents;
 
     // Event: new document added.
-    // Just because we need to get the document ID after the transaction, in the frontend.
+    // Because frontend needs to get the document ID after the transaction.
     event NewDocument (
         uint id
     );
@@ -71,19 +105,36 @@ contract Vault is Ownable {
     /**
      * Constructor.
      */
-    constructor(address _token, address _freelancer)
+    constructor(address _tokenAddress, address _vaultFactoryAddress)
         public
     {
-        myToken = TalaoToken(_token);
-        myFreelancer = Freelancer(_freelancer);
+        token = TalaoToken(_tokenAddress);
+        vaultFactoryInterface = VaultFactoryInterface(_vaultFactoryAddress);
+    }
+
+    /**
+     * @notice Modifier for functions to allow only VaultFactory.
+     * @dev Only used at Vault creation.
+     * TODO: can be removed if we decide that Vaults are autonom.
+     */
+    modifier onlyVaultFactory () {
+        require(
+          msg.sender == address(vaultFactoryInterface),
+          'Only VaultFactory is authorized.'
+        );
+        _;
     }
 
     /**
      * Modifier for functions to allow only active Freelancers.
+     * TODO: decide if Vaults are autonom even if we unlist them from Registry.
      */
     modifier onlyActiveFreelancer () {
         // Accept only active Freelancers.
-        require(myFreelancer.isActive(msg.sender), 'Sender is not active.');
+        require(
+            vaultFactoryInterface.hasValidatedVault(msg.sender),
+            'Sender is not active.'
+        );
         _;
     }
 
@@ -92,9 +143,16 @@ contract Vault is Ownable {
      */
     modifier onlyVaultReaders() {
         // See if Vault price = 0 to allow anyone in that case.
-        (uint accessPrice,,,) = myToken.data(owner);
-        // Accept only users who have access to the Vault in the token + Partners.
-        require(accessPrice == 0 || myFreelancer.isPartner(owner, msg.sender) || myToken.hasVaultAccess(msg.sender, owner), 'Sender has no Vault access.');
+        (uint accessPrice,,,) = token.data(owner);
+        // Vault must be free, or the user must have paid or be a Partner.
+        require(
+            (
+                accessPrice == 0 ||
+                token.hasVaultAccess(msg.sender, owner) ||
+                Partners[msg.sender]
+            ),
+            'You have no Vault access.'
+        );
         _;
     }
 
@@ -107,13 +165,12 @@ contract Vault is Ownable {
         public
         onlyVaultReaders
         returns (
-            uint8 type_doc,
-            uint8 type_version,
-            uint8 storage_type,
-            uint8 misc,
-            bytes32 title,
-            bytes32 storage_hash,
-            bool encrypted
+            bytes32 fileHash,
+            uint16 fileEngine,
+            uint8 docType,
+            uint8 docTypeVersion,
+            bool encrypted,
+            bytes24 additionalData
         )
     {
         // Memory pointer.
@@ -124,13 +181,12 @@ contract Vault is Ownable {
         require(doc.published, 'Document does not exist.');
 
         // Return data.
-        type_doc = doc.type_doc;
-        type_version = doc.type_version;
-        storage_type = doc.storage_type;
-        misc = doc.misc;
-        title = doc.title;
-        storage_hash = doc.storage_hash;
+        fileHash = doc.fileHash;
+        fileEngine = doc.fileEngine;
+        docType = doc.docType;
+        docTypeVersion = doc.docTypeVersion;
         encrypted = doc.encrypted;
+        additionalData = doc.additionalData;
     }
 
     /**
@@ -142,20 +198,130 @@ contract Vault is Ownable {
         onlyVaultReaders
         returns (uint[])
     {
-        return documentIndex;
+        return documentsIndex;
+    }
+
+    /**
+     * @dev Get profile.
+     */
+    function getProfile()
+        public
+        view
+        returns (
+        bytes16 firstName,
+        bytes16 lastName,
+        bytes16 phone,
+        bytes16 email,
+        bytes32 jobTitle,
+        bytes32 pictureHash,
+        uint16 pictureEngine,
+        bytes30 additionalData,
+        string description
+    )
+    {
+        firstName = myProfile.firstName;
+        lastName = myProfile.lastName;
+        phone = myProfile.phone;
+        email = myProfile.email;
+        jobTitle = myProfile.jobTitle;
+        pictureHash = myProfile.pictureHash;
+        pictureEngine = myProfile.pictureEngine;
+        additionalData = myProfile.additionalData;
+        description = myProfile.description;
+    }
+
+    /**
+     * @dev Create profile. Only used once by VaultFactory.
+     */
+    function createProfile(
+        bytes16 _firstName,
+        bytes16 _lastName,
+        bytes16 _phone,
+        bytes16 _email,
+        bytes32 _jobTitle,
+        bytes32 _pictureHash,
+        uint16 _pictureEngine,
+        bytes30 _additionalData,
+        string _description
+    )
+        public
+        onlyVaultFactory
+    {
+        myProfile.firstName = _firstName;
+        myProfile.lastName = _lastName;
+        myProfile.phone = _phone;
+        myProfile.email = _email;
+        myProfile.jobTitle = _jobTitle;
+        myProfile.pictureHash = _pictureHash;
+        myProfile.pictureEngine = _pictureEngine;
+        myProfile.additionalData = _additionalData;
+        myProfile.description = _description;
+    }
+
+    /**
+     * @dev Edit profile.
+     */
+    function editProfile(
+        bytes16 _firstName,
+        bytes16 _lastName,
+        bytes16 _phone,
+        bytes16 _email,
+        bytes32 _jobTitle,
+        bytes32 _pictureHash,
+        uint16 _pictureEngine,
+        bytes30 _additionalData,
+        string _description
+    )
+        public
+        onlyOwner
+        onlyActiveFreelancer
+    {
+        myProfile.firstName = _firstName;
+        myProfile.lastName = _lastName;
+        myProfile.phone = _phone;
+        myProfile.email = _email;
+        myProfile.jobTitle = _jobTitle;
+        myProfile.pictureHash = _pictureHash;
+        myProfile.pictureEngine = _pictureEngine;
+        myProfile.additionalData = _additionalData;
+        myProfile.description = _description;
+    }
+
+    /**
+     * @dev Delete the Vault.
+     */
+    function deleteVault() public onlyOwner {
+        // Freelancer must be active.
+        require(vaultFactoryInterface.hasValidatedVault(msg.sender), 'Only validated Freelancers can unsubscribe.');
+
+        // Unregister Vault from Talao Vault Registry.
+        vaultFactoryInterface.unregisterVault(msg.sender);
+
+        // Delete data.
+        delete myProfile;
+        delete documentsCounter;
+        delete documentsIndex;
+    }
+
+    /**
+     * @dev Freelancer can add or remove a Partner. Partner will have a free access to his Vault.
+     */
+    function setPartner(address _partner, bool _ispartner)
+        public
+    {
+        Partners[_partner] = _ispartner;
     }
 
     /**
      * @dev Create a document.
      */
     function createDocument(
-        uint8 _type_doc,
-        uint8 _type_version,
-        uint8 _storage_type,
-        uint8 _misc,
-        bytes32 _title,
-        bytes32 _storage_hash,
-        bool _encrypted
+        bytes32 _fileHash,
+        uint16 _fileEngine,
+        uint8 _docType,
+        uint8 _docTypeVersion,
+        bool _encrypted,
+        bytes24 _additionalData
     )
         public
         onlyOwner
@@ -163,12 +329,10 @@ contract Vault is Ownable {
         returns (uint)
     {
         // Validate parameters.
-        require(_type_doc > 0, 'Type of document must be > 0.');
-        require(_type_version > 0, 'Version of document type must be > 0.');
-        require(
-          _storage_hash == 0 || (_storage_hash > 0 && _storage_type > 0),
-          'Storage type must be > 0.'
-        );
+        require(_fileHash != '0x0', 'File hash must exist.');
+        require(_fileEngine > 0, 'File engine must be > 0.');
+        require(_docType > 0, 'Type of document must be > 0.');
+        require(_docTypeVersion > 0, 'Version of document type must be > 0.');
 
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
@@ -177,15 +341,14 @@ contract Vault is Ownable {
         Document storage doc = Documents[documentsCounter];
 
         // Write data.
+        doc.fileHash = _fileHash;
+        doc.fileEngine = _fileEngine;
+        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
+        doc.docType = _docType;
+        doc.docTypeVersion = _docTypeVersion;
         doc.published = true;
         doc.encrypted = _encrypted;
-        doc.type_doc = _type_doc;
-        doc.type_version = _type_version;
-        doc.storage_type = _storage_type;
-        doc.misc = _misc;
-        doc.index = uint16(documentIndex.push(documentsCounter).sub(1));
-        doc.title = _title;
-        doc.storage_hash = _storage_hash;
+        doc.additionalData = _additionalData;
 
         // Emit event.
         emit NewDocument(
@@ -200,13 +363,11 @@ contract Vault is Ownable {
      */
     function updateDocument(
         uint _id,
-        uint8 _type_doc,
-        uint8 _type_version,
-        uint8 _storage_type,
-        uint8 _misc,
-        bytes32 _title,
-        bytes32 _storage_hash,
-        bool _encrypted
+        bytes32 _fileHash,
+        uint16 _fileEngine,
+        uint8 _docType,
+        uint8 _docTypeVersion,
+        bytes24 _additionalData
     )
         public
         onlyOwner
@@ -217,21 +378,17 @@ contract Vault is Ownable {
 
         // Validate parameters.
         require(_id > 0, 'Document ID must be > 0.');
-        require(
-          _storage_hash == 0 || (_storage_hash > 0 && _storage_type > 0),
-          'Storage type must be > 0.'
-        );
-        require(doc.published, 'Document does not exist.');
-        // TODO: rules for changes around encrypted and storage_type + storage_hash, depending on stored values...
+        require(_fileHash != '0x0', 'File hash must exist.');
+        require(_fileEngine > 0, 'File engine must be > 0.');
+        require(_docType > 0, 'Type of document must be > 0.');
+        require(_docTypeVersion > 0, 'Version of document type must be > 0.');
 
         // Write data.
-        doc.type_doc = _type_doc;
-        doc.type_version = _type_version;
-        doc.storage_type = _storage_type;
-        doc.misc = _misc;
-        doc.title = _title;
-        doc.storage_hash = _storage_hash;
-        doc.encrypted = _encrypted;
+        doc.fileHash = _fileHash;
+        doc.fileEngine = _fileEngine;
+        doc.docType = _docType;
+        doc.docTypeVersion = _docTypeVersion;
+        doc.additionalData = _additionalData;
     }
 
     /**
@@ -254,17 +411,17 @@ contract Vault is Ownable {
          */
 
         // If the removed document is not the last in the index,
-        if (docToDelete.index < (documentIndex.length).sub(1)) {
+        if (docToDelete.index < (documentsIndex.length).sub(1)) {
           // Find the last document of the index.
-          uint lastDocId = documentIndex[(documentIndex.length).sub(1)];
+          uint lastDocId = documentsIndex[(documentsIndex.length).sub(1)];
           Document storage lastDoc = Documents[lastDocId];
           // Move it in the index in place of the document to delete.
-          documentIndex[docToDelete.index] = lastDocId;
+          documentsIndex[docToDelete.index] = lastDocId;
           // Update this document that was moved from last position.
           lastDoc.index = docToDelete.index;
         }
         // Remove last element from index.
-        documentIndex.length --;
+        documentsIndex.length --;
         // Unpublish document.
         docToDelete.published = false;
     }

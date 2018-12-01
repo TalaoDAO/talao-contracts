@@ -29,6 +29,7 @@ class FileService {
     }
 
     static getIpfsHashFromBytes32(bytes32Hex) {
+        console.log('bytes32: ' + bytes32Hex);
         // Add our default ipfs values for first 2 bytes:
         // function:0x12=sha2, size:0x20=256 bits
         // and cut off leading "0x"

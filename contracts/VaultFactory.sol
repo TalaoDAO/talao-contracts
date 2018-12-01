@@ -1,12 +1,11 @@
 pragma solidity ^0.4.24;
 
-import './Vault.sol';
 import './Talao.sol';
-import './Freelancer.sol';
+import './Vault.sol';
 
 /**
  * @title VaultFactory
- * @dev This contract is a factory of Vault contracts.
+ * @notice This contract is a factory of Vault contracts.
  * @author Talao, Slowsense, Blockchain Partner.
  */
 contract VaultFactory is Ownable {
@@ -14,85 +13,99 @@ contract VaultFactory is Ownable {
     // SafeMath to avoid overflows.
     using SafeMath for uint;
 
-    // Number of Vaults.
-    uint public vaultsNb;
     // Talao token.
     TalaoToken myToken;
-    // Freelancer contract to store freelancers information.
-    Freelancer myFreelancer;
 
-    // First address is the freelance Ethereum address.
-    // Second address is the freelance's Vault smart contract address.
-    mapping (address => address) FreelancesVaults;
+    // Vaults Registry.
+    enum FreelancerStatus { Unregistered, Active, Blocked }
+    struct VaultsRegistryEntry {
+        address vaultAddress;
+        FreelancerStatus status;
+    }
+    mapping (address => VaultsRegistryEntry) VaultsRegistry;
+    uint public vaultsNumber;
 
-    enum VaultState { AccessDenied, AlreadyExist, Created }
+    // Address of the Talao Bot. He can get the Vault addresses of the Freelancers, but not the Vaults content.
+    address TalaoBot;
 
-    // Talao token smart contract address.
-    constructor(address _token, address _freelancer)
+    /**
+     * @dev Constructor.
+     */
+    constructor(address _token)
         public
     {
         myToken = TalaoToken(_token);
-        myFreelancer = Freelancer(_freelancer);
     }
 
     /**
-     * @dev Getter to see if a freelance has a Vault.
+     * @dev Getter to see if someone has a validated Vault.
      */
-    function hasVault (address _freelance)
+    function hasValidatedVault(address _address)
         public
         view
-        returns (bool hasvault)
-    {
-        address freelanceVault = FreelancesVaults[_freelance];
-        if(freelanceVault != address(0)) {
-            hasvault = true;
+        returns (bool hasVault) {
+        if (VaultsRegistry[_address].status == FreelancerStatus.Active) {
+            hasVault = true;
         }
     }
 
     /**
-     * @dev Get the freelance's Vault address, if authorized.
+     * @dev Get the Freelancer's Vault address, if authorized.
      */
-    function getVault(address freelance)
+    function getVault(address _address)
         public
         view
         returns (address)
     {
-        // Tupple used for data.
-        uint256 accessPrice;
-        address appointedAgent;
-        uint sharingPlan;
-        uint256 userDeposit;
+        (uint256 accessPrice,,,) = myToken.data(_address);
 
-        (accessPrice, appointedAgent, sharingPlan, userDeposit) = myToken.data(freelance);
+        // Memory pointer.
 
-        if (accessPrice <= 0) {
-            return FreelancesVaults[freelance];
+        // Free Vaults.
+        if (accessPrice == 0) {
+            return VaultsRegistry[_address].vaultAddress;
         }
 
-        if (msg.sender != address(0)) {
-            bool hasAccess = myToken.hasVaultAccess(freelance, msg.sender);
-            bool isPartner = myFreelancer.isPartner(freelance, msg.sender);
-            bool isTalaoBot = myFreelancer.isTalaoBot(msg.sender);
-
-            if (hasAccess || isPartner || isTalaoBot) {
-                return FreelancesVaults[freelance];
-            }
+        // Vaults with access price, authorized access.
+        Vault myVault = Vault(VaultsRegistry[_address].vaultAddress);
+        if (
+            myToken.hasVaultAccess(_address, msg.sender) ||
+            myVault.Partners(msg.sender) ||
+            isTalaoBot(msg.sender)
+        ) {
+            return VaultsRegistry[_address].vaultAddress;
         }
 
+        // No authorized access.
         return address(0);
+    }
+
+    /**
+     * @dev Is an address the Talao Bot?
+     */
+    function isTalaoBot(address _address)
+        public
+        view
+        returns (bool talaoBot)
+    {
+        if (TalaoBot == _address) {
+            talaoBot = true;
+        }
     }
 
     /**
      * @dev Talent can call this method to create a new Vault contract with the maker being the owner of this new Vault.
      */
     function createVaultContract (
-        bytes32 _firstname,
-        bytes32 _lastname,
-        bytes32 _mobile,
-        bytes32 _email,
-        bytes32 _title,
-        string _description,
-        bytes32 _picture
+        bytes16 _firstName,
+        bytes16 _lastName,
+        bytes16 _phone,
+        bytes16 _email,
+        bytes32 _jobTitle,
+        bytes32 _pictureHash,
+        uint16 _pictureEngine,
+        bytes30 _additionalData,
+        string _description
     )
         public
         returns (address)
@@ -100,18 +113,74 @@ contract VaultFactory is Ownable {
         // Sender must have access to his Vault in the Token.
         require(myToken.hasVaultAccess(msg.sender, msg.sender), 'Sender has no access to Vault.');
 
-        // Set Freelancer information.
-        myFreelancer.setFreelancer(msg.sender, _firstname, _lastname, _mobile, _email, _title, _description, _picture);
         // Create Vault.
-        Vault newVault = new Vault(myToken, myFreelancer);
-        // Index Vault.
-        FreelancesVaults[msg.sender] = address(newVault);
+        Vault newVault = new Vault(myToken, address(this));
+
+        // Add Vault to Vaults Registry.
+        VaultsRegistryEntry storage newVaultRegistryEntry = VaultsRegistry[msg.sender];
+        newVaultRegistryEntry.vaultAddress = address(newVault);
+        newVaultRegistryEntry.status = FreelancerStatus.Active;
+        vaultsNumber = vaultsNumber.add(1);
+
+        // Create Freelancer's Profile in his Vault.
+        newVault.createProfile(
+            _firstName,
+            _lastName,
+            _phone,
+            _email,
+            _jobTitle,
+            _pictureHash,
+            _pictureEngine,
+            _additionalData,
+            _description
+        );
+
         // Transfer Vault to Freelancer.
         newVault.transferOwnership(msg.sender);
-        // Increment total number of Vaults.
-        vaultsNb = vaultsNb.add(1);
 
+        // Return new Vault address.
         return address(newVault);
+    }
+
+    /**
+     * @dev Unregister a Vault from the Registry.
+     * @dev Data stored in the Vault contract is deleted in the Vault contract.
+     */
+    function unregisterVault(address _freelancer_address) public {
+        // Storage pointer.
+        VaultsRegistryEntry storage myVaultRegistryEntry = VaultsRegistry[_freelancer_address];
+
+        // Validate.
+        require(msg.sender == myVaultRegistryEntry.vaultAddress, 'Only this Vault can unregister this Vault.');
+        require(myVaultRegistryEntry.status == FreelancerStatus.Active, 'Freelancer must be active.');
+
+        // Remove the Vault from the Registry.
+        delete myVaultRegistryEntry.vaultAddress;
+        delete myVaultRegistryEntry.status;
+        vaultsNumber = vaultsNumber.sub(1);
+    }
+
+    /**
+     * @dev Get the Talao Bot address.
+     */
+    function getTalaoBot()
+        public
+        onlyOwner
+        view
+        returns (address)
+    {
+        return TalaoBot;
+    }
+
+    /**
+     * @dev Set the Talao Bot Ethereum address.
+     * He can get the Vault addresses of the Freelancers, but not the Vaults content.
+     */
+    function setTalaoBot(address _talaobot)
+        public
+        onlyOwner
+    {
+        TalaoBot = _talaobot;
     }
 
     /**
