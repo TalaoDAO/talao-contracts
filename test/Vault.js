@@ -163,7 +163,7 @@ contract('VaultFactory', async (accounts) => {
     gasUsed = VaultReceipt.receipt.gasUsed;
   });
   it('Freelancer should have a Vault now', async () => {
-    const hasVault = await VaultFactoryInstance.hasValidatedVault.call(
+    const hasVault = await VaultFactoryInstance.hasActiveVault.call(
       freelancer,
       { from: someone }
     );
@@ -171,7 +171,7 @@ contract('VaultFactory', async (accounts) => {
     assert(hasVault);
   });
   it('There should be 1 Vault in total now', async () => {
-    const vaultsNumber = await VaultFactoryInstance.vaultsNumber.call({ from: someone });
+    const vaultsNumber = await VaultFactoryInstance.activeVaultsNumber.call({ from: someone });
     gasUsed = '';
     assert.equal(vaultsNumber, 1);
   });
@@ -195,11 +195,6 @@ contract('VaultFactory', async (accounts) => {
     );
     gasUsed = setTalaoBotTx.receipt.gasUsed;
     assert.equal(isTalaoBot, true);
-  });
-  it('Should get the bot address, when called by owner.', async () => {
-    const getTalaoBot = await VaultFactoryInstance.getTalaoBot.call({ from: owner });
-    gasUsed = '';
-    assert.equal(getTalaoBot, bot);
   });
   it('Should allow bot to get the Vault address', async () => {
     const botGetVaultAddress = await VaultFactoryInstance.getVault(

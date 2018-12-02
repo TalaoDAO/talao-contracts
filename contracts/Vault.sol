@@ -4,18 +4,19 @@ import './Talao.sol';
 
 /**
  * @title Interface for Vault Factory, which created this contract.
+ * TODO: decide autonomy of Vaults.
  */
 contract VaultFactoryInterface {
 
   /**
-   * @notice Checks that the Freelancer has a registred Vault.
+   * @notice Checks that the Freelancer has an active Vault.
    */
-  function hasValidatedVault(address _address) public view returns (bool has_vault);
+  function hasActiveVault(address _freelancerAddress) public view returns (bool);
 
   /**
-   * @notice Unregister this Vault from Talao's Vault Factory.
+   * @notice Remove this Vault from Talao's Vault Factory.
    */
-  function unregisterVault(address _address) public;
+  function removeMyVault(address _freelancerAddress) public;
 }
 
 /**
@@ -33,18 +34,26 @@ contract Vault is Ownable {
 
     // Interface with Vault Factory contract.
     VaultFactoryInterface vaultFactoryInterface;
+    // TODO: decide autonomy of Vaults.
 
     // Profile struct.
     struct Profile {
       bytes16 firstName;
       bytes16 lastName;
+      // So far we have used 1 SSTORAGE.
       bytes16 phone;
       bytes16 email;
+      // So far we have used 2 SSTORAGEs.
       bytes32 jobTitle;
+      // So far we have used 3 SSTORAGEs.
       bytes32 pictureHash;
+      // So far we have used 4 SSTORAGEs.
       uint16 pictureEngine;
+      // We have 30 bytes left, let's fill them into 1 property for the future.
       bytes30 additionalData;
+      // So far we have used 5 SSTORAGEs.
       string description;
+      // Storage cost depends on the string.
     }
 
     // Profile.
@@ -55,6 +64,7 @@ contract Vault is Ownable {
 
     // Documents counter.
     uint documentsCounter;
+
     // Documents index.
     uint[] documentsIndex;
 
@@ -93,6 +103,7 @@ contract Vault is Ownable {
         // To fill the 2nd SSTORAGE, let's add this, it might proove usefull.
         bytes24 additionalData;
     }
+
     // Documents.
     mapping(uint => Document) Documents;
 
@@ -105,19 +116,18 @@ contract Vault is Ownable {
     /**
      * Constructor.
      */
-    constructor(address _tokenAddress, address _vaultFactoryAddress)
-        public
-    {
+    constructor(address _tokenAddress, address _vaultFactoryAddress) public {
         token = TalaoToken(_tokenAddress);
         vaultFactoryInterface = VaultFactoryInterface(_vaultFactoryAddress);
+        // TODO: decide autonomy of Vaults.
     }
 
     /**
-     * @notice Modifier for functions to allow only VaultFactory.
+     * @notice Allow only VaultFactory.
      * @dev Only used at Vault creation.
-     * TODO: can be removed if we decide that Vaults are autonom.
+     * TODO: decide autonomy of Vaults.
      */
-    modifier onlyVaultFactory () {
+    modifier onlyVaultFactory() {
         require(
           msg.sender == address(vaultFactoryInterface),
           'Only VaultFactory is authorized.'
@@ -126,24 +136,25 @@ contract Vault is Ownable {
     }
 
     /**
-     * Modifier for functions to allow only active Freelancers.
-     * TODO: decide if Vaults are autonom even if we unlist them from Registry.
+     * Allow only active Vaults.
+     * TODO: decide autonomy of Vaults.
      */
-    modifier onlyActiveFreelancer () {
-        // Accept only active Freelancers.
+    modifier onlyActiveVault() {
         require(
-            vaultFactoryInterface.hasValidatedVault(msg.sender),
-            'Sender is not active.'
+            vaultFactoryInterface.hasActiveVault(msg.sender),
+            'Vault is not active.'
         );
         _;
     }
 
     /**
-     * Modifier for functions to allow only users who have access to the Vault in the token + Partners.
+     * Allow only users who have access to the Vault in the token + Partners.
      */
     modifier onlyVaultReaders() {
-        // See if Vault price = 0 to allow anyone in that case.
+
+        // Get Vault price in the token.
         (uint accessPrice,,,) = token.data(owner);
+
         // Vault must be free, or the user must have paid or be a Partner.
         require(
             (
@@ -192,12 +203,7 @@ contract Vault is Ownable {
     /**
      * @dev Get all published documents.
      */
-    function getDocuments()
-        view
-        public
-        onlyVaultReaders
-        returns (uint[])
-    {
+    function getDocuments() view public onlyVaultReaders returns (uint[]) {
         return documentsIndex;
     }
 
@@ -274,7 +280,7 @@ contract Vault is Ownable {
     )
         public
         onlyOwner
-        onlyActiveFreelancer
+        onlyActiveVault
     {
         myProfile.firstName = _firstName;
         myProfile.lastName = _lastName;
@@ -285,22 +291,6 @@ contract Vault is Ownable {
         myProfile.pictureEngine = _pictureEngine;
         myProfile.additionalData = _additionalData;
         myProfile.description = _description;
-    }
-
-    /**
-     * @dev Delete the Vault.
-     */
-    function deleteVault() public onlyOwner {
-        // Freelancer must be active.
-        require(vaultFactoryInterface.hasValidatedVault(msg.sender), 'Only validated Freelancers can unsubscribe.');
-
-        // Unregister Vault from Talao Vault Registry.
-        vaultFactoryInterface.unregisterVault(msg.sender);
-
-        // Delete data.
-        delete myProfile;
-        delete documentsCounter;
-        delete documentsIndex;
     }
 
     /**
@@ -325,7 +315,7 @@ contract Vault is Ownable {
     )
         public
         onlyOwner
-        onlyActiveFreelancer
+        onlyActiveVault
         returns (uint)
     {
         // Validate parameters.
@@ -371,7 +361,7 @@ contract Vault is Ownable {
     )
         public
         onlyOwner
-        onlyActiveFreelancer
+        onlyActiveVault
     {
         // Storage pointer.
         Document storage doc = Documents[_id];
@@ -397,7 +387,7 @@ contract Vault is Ownable {
     function deleteDocument (uint _id)
         public
         onlyOwner
-        onlyActiveFreelancer
+        onlyActiveVault
     {
         // Storage pointer.
         Document storage docToDelete = Documents[_id];
@@ -427,11 +417,54 @@ contract Vault is Ownable {
     }
 
     /**
+     * @dev Remove the Vault from Talao's Vault Registry.
+     * @dev THERE IS NO WAY TO CANCEL THIS.
+     * TODO: decide autonomy of Vaults.
+     */
+    function unregisterVault() external onlyOwner {
+
+        // Validate.
+        require(
+            vaultFactoryInterface.hasActiveVault(msg.sender),
+            'Vault must be active.'
+        );
+
+        // Remove Vault from Talao Vault Registry.
+        vaultFactoryInterface.removeMyVault(msg.sender);
+
+    }
+
+    /**
+     * @dev Delete the Vault.
+     * @dev THERE IS NO WAY TO CANCEL THIS.
+     */
+    function deleteVault() external onlyOwner {
+
+        // Validate.
+        require(
+            vaultFactoryInterface.hasActiveVault(msg.sender),
+            'Vault must be active.'
+        );
+
+        // Remove Vault from Talao Vault Registry.
+        vaultFactoryInterface.removeMyVault(msg.sender);
+
+        // Delete data.
+        for (uint i = 0; i < documentsIndex.length; i++) {
+          delete Documents[i];
+        }
+        delete documentsIndex;
+        delete documentsCounter;
+        delete myProfile;
+
+        // If by accident, the owner sent some Ether to this contract:
+        selfdestruct(owner);
+    }
+
+    /**
      * @dev Prevents accidental sending of ether.
      */
-    function ()
-        public
-    {
+    function() public {
         revert();
     }
 }
