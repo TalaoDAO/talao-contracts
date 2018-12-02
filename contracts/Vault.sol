@@ -11,12 +11,12 @@ contract VaultFactoryInterface {
   /**
    * @notice Checks that the Freelancer has an active Vault.
    */
-  function hasActiveVault(address _freelancerAddress) public view returns (bool);
+  function hasActiveVault(address _freelancerAddress) external view returns (bool);
 
   /**
    * @notice Remove this Vault from Talao's Vault Factory.
    */
-  function removeMyVault(address _freelancerAddress) public;
+  function removeMyVault(address _freelancerAddress) external;
 }
 
 /**
@@ -172,8 +172,8 @@ contract Vault is Ownable {
      * @param _id uint Document ID.
      */
     function getDocument(uint _id)
+        external
         view
-        public
         onlyVaultReaders
         returns (
             bytes32 fileHash,
@@ -203,7 +203,7 @@ contract Vault is Ownable {
     /**
      * @dev Get all published documents.
      */
-    function getDocuments() view public onlyVaultReaders returns (uint[]) {
+    function getDocuments() external view onlyVaultReaders returns (uint[]) {
         return documentsIndex;
     }
 
@@ -211,7 +211,7 @@ contract Vault is Ownable {
      * @dev Get profile.
      */
     function getProfile()
-        public
+        external
         view
         returns (
         bytes16 firstName,
@@ -250,7 +250,7 @@ contract Vault is Ownable {
         bytes30 _additionalData,
         string _description
     )
-        public
+        external
         onlyVaultFactory
     {
         myProfile.firstName = _firstName;
@@ -278,7 +278,7 @@ contract Vault is Ownable {
         bytes30 _additionalData,
         string _description
     )
-        public
+        external
         onlyOwner
         onlyActiveVault
     {
@@ -297,7 +297,9 @@ contract Vault is Ownable {
      * @dev Freelancer can add or remove a Partner. Partner will have a free access to his Vault.
      */
     function setPartner(address _partner, bool _ispartner)
-        public
+        external
+        onlyOwner
+        onlyActiveVault
     {
         Partners[_partner] = _ispartner;
     }
@@ -313,7 +315,7 @@ contract Vault is Ownable {
         bool _encrypted,
         bytes24 _additionalData
     )
-        public
+        external
         onlyOwner
         onlyActiveVault
         returns (uint)
@@ -359,7 +361,7 @@ contract Vault is Ownable {
         uint8 _docTypeVersion,
         bytes24 _additionalData
     )
-        public
+        external
         onlyOwner
         onlyActiveVault
     {
@@ -384,11 +386,8 @@ contract Vault is Ownable {
     /**
      * @dev Remove a document.
      */
-    function deleteDocument (uint _id)
-        public
-        onlyOwner
-        onlyActiveVault
-    {
+    function deleteDocument (uint _id) external onlyOwner onlyActiveVault {
+
         // Storage pointer.
         Document storage docToDelete = Documents[_id];
 
@@ -396,19 +395,15 @@ contract Vault is Ownable {
         require (_id > 0, 'Document ID must be > 0.');
         require(docToDelete.published, 'Document does not exist.');
 
-        /**
-         * Remove document from index.
-         */
-
         // If the removed document is not the last in the index,
         if (docToDelete.index < (documentsIndex.length).sub(1)) {
-          // Find the last document of the index.
-          uint lastDocId = documentsIndex[(documentsIndex.length).sub(1)];
-          Document storage lastDoc = Documents[lastDocId];
-          // Move it in the index in place of the document to delete.
-          documentsIndex[docToDelete.index] = lastDocId;
-          // Update this document that was moved from last position.
-          lastDoc.index = docToDelete.index;
+            // Find the last document of the index.
+            uint lastDocId = documentsIndex[(documentsIndex.length).sub(1)];
+            Document storage lastDoc = Documents[lastDocId];
+            // Move it in the index in place of the document to delete.
+            documentsIndex[docToDelete.index] = lastDocId;
+            // Update this document that was moved from last position.
+            lastDoc.index = docToDelete.index;
         }
         // Remove last element from index.
         documentsIndex.length --;

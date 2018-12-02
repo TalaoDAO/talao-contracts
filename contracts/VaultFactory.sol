@@ -45,20 +45,14 @@ contract VaultFactory is Ownable {
     /**
      * @dev Getter to see if someone has an active Vault.
      */
-    function hasActiveVault(address _freelancerAddress)
-        public
-        view
-        returns (bool) {
+    function hasActiveVault(address _freelancerAddress) external view returns (bool) {
         return VaultsRegistry[_freelancerAddress].vaultStatus == VaultStatus.Active;
     }
 
     /**
      * @dev Get the Freelancer's Vault address, if authorized.
      */
-    function getVault(address _freelancerAddress)
-        public
-        view
-        returns (address) {
+    function getVault(address _freelancerAddress) external view returns (address) {
 
         // Get access price of the Vault.
         (uint256 accessPrice,,,) = myToken.data(_freelancerAddress);
@@ -103,8 +97,9 @@ contract VaultFactory is Ownable {
         bytes30 _additionalData,
         string _description
     )
-        public
-        returns (address) {
+        external
+        returns (address)
+    {
 
         // Sender must have access to his Vault in the Token.
         require(
@@ -146,7 +141,7 @@ contract VaultFactory is Ownable {
      * @dev Remove a Vault from the Registry.
      * @dev Data stored in the Vault contract is deleted in the Vault contract.
      */
-    function removeMyVault(address _freelancerAddress) public {
+    function removeMyVault(address _freelancerAddress) external {
 
         // Storage pointer.
         VaultEntry storage myVaultEntry = VaultsRegistry[_freelancerAddress];
@@ -170,7 +165,7 @@ contract VaultFactory is Ownable {
      * @dev Suspend a Vault in the Registry.
      * TODO: decide autonomy of Vaults.
      */
-    function suspendVault(address _freelancerAddress) public onlyOwner {
+    function suspendVault(address _freelancerAddress) external onlyOwner {
 
         // Storage pointer.
         VaultEntry storage thisVaultEntry = VaultsRegistry[_freelancerAddress];
@@ -186,7 +181,7 @@ contract VaultFactory is Ownable {
     /**
      * @dev Unsuspend a Vault in the Registry.
      */
-    function unsuspendVault(address _freelancerAddress) public onlyOwner {
+    function unsuspendVault(address _freelancerAddress) external onlyOwner {
 
         // Storage pointer.
         VaultEntry storage thisVaultEntry = VaultsRegistry[_freelancerAddress];
@@ -206,7 +201,7 @@ contract VaultFactory is Ownable {
      * @dev Set the Talao Bot Ethereum address.
      * He can get the Vault addresses of the Freelancers, but not the Vaults content.
      */
-    function setTalaoBot(address _talaobotAddress) public onlyOwner {
+    function setTalaoBot(address _talaobotAddress) external onlyOwner {
         talaoBot = _talaobotAddress;
     }
 
