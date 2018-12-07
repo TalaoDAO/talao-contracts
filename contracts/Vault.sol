@@ -1,169 +1,206 @@
 pragma solidity ^0.4.24;
 
-import './Talao.sol';
+/**
+ * Uncomment to use the exact code of the Talao Token ICO on Mainnet.
+ */
+// import './ico/TalaoToken.sol';
 
 /**
- * @title Interface for Vault Factory, which created this contract.
- * TODO: decide autonomy of Vaults.
+ * Comment to use the exact code of the Talao Token ICO on Mainnet.
  */
-contract VaultFactoryInterface {
+import './libraries/openzeppelin/SafeMath.sol';
+import './inherited/openzeppelin/Ownable.sol';
+import './token/TalaoToken.sol';
+
+/**
+ * @title Interface with a Marketplace.
+ */
+contract MarketplaceInterface {
 
   /**
-   * @notice Checks that the Freelancer has an active Vault.
+   * @dev Submit this Vault to a Marketplace.
    */
-  function hasActiveVault(address _freelancerAddress) external view returns (bool);
+  function submitVault() external;
 
   /**
-   * @notice Remove this Vault from Talao's Vault Factory.
+   * @dev Remove this Vault from a Marketplace.
    */
-  function removeMyVault(address _freelancerAddress) external;
+  function removeVault() external;
 }
 
 /**
- * @title Vault.
- * @dev A Freelancer's Vault.
- * @author Talao, SlowSense, Blockchain Partners.
+ * @title A Freelancer's Vault contract.
+ * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Vault is Ownable {
+contract Vault is TalaoContract {
 
-    // SafeMath to avoid overflows.
-    using SafeMath for uint;
+    // Enum for Marketplace status.
+    enum KnownMarketplaceStatus = { Unknown, Validated, Pending }
 
-    // Talao token.
-    TalaoToken token;
+    // Known Marketplace struct.
+    struct KnownMarketplace {
+        // Marketplace status.
+        // takes same storage as an uint8 ? bytes31 left after this?
+        KnownMarketplaceStatus status;
 
-    // Interface with Vault Factory contract.
-    VaultFactoryInterface vaultFactoryInterface;
-    // TODO: decide autonomy of Vaults.
+        // Key in pending Marketplaces index or validated Marketplaces index.
+        // bytes27 left after this.
+        uint32 indexKey;
+
+        // TODO: bytes27 remain in the SSTORAGE n°1?
+    }
+
+    // Known Marketplaces.
+    // TODO: public = OK?
+    mapping (address => KnownMarketplace) public KnownMarketplaces;
+
+    // Index of pending Marketplaces.
+    address[] pendingMarketplaces;
+
+    // Index of validated Marketplaces.
+    address[] validatedMarketplaces;
 
     // Profile struct.
     struct Profile {
-      bytes16 firstName;
-      bytes16 lastName;
-      // So far we have used 1 SSTORAGE.
-      bytes16 phone;
-      bytes16 email;
-      // So far we have used 2 SSTORAGEs.
-      bytes32 jobTitle;
-      // So far we have used 3 SSTORAGEs.
-      bytes32 pictureHash;
-      // So far we have used 4 SSTORAGEs.
-      uint16 pictureEngine;
-      // We have 30 bytes left, let's fill them into 1 property for the future.
-      bytes30 additionalData;
-      // So far we have used 5 SSTORAGEs.
-      string description;
-      // Storage cost depends on the string.
+        // First name.
+        // SSTORAGE 1 filled after this.
+        bytes32 firstName;
+
+        // Last name.
+        // SSTORAGE 2 filled after this.
+        bytes32 lastName;
+
+        // Email.
+        // SSTORAGE 3 filled after this.
+        bytes32 email;
+
+        // Job title.
+        // SSTORAGE 4 filled after this.
+        bytes32 jobTitle;
+
+        // File hash of the profile picture.
+        // SSTORAGE 5 filled after this.
+        bytes32 pictureHash;
+
+        // ID of the file engine used for the picture.
+        // bytes30 left on SSTORAGE 6 after this.
+        uint16 pictureEngine;
+
+        // Mobile.
+        // bytes4 left on SSTORAGE 6 after this.
+        bytes16 mobile;
+
+        // TODO: bytes4 left on SSTORAGE 6.
+
+        // Description.
+        string description;
     }
 
     // Profile.
-    Profile myProfile;
+    Profile profile;
 
     // Partners.
     mapping (address => bool) public Partners;
-
-    // Documents counter.
-    uint documentsCounter;
-
-    // Documents index.
-    uint[] documentsIndex;
 
     // Document struct.
     struct Document {
 
         // File hash.
+        // SSTORAGE 1 filled after this.
         bytes32 fileHash;
-        // So far we have used 1 SSTORAGE.
 
         // File engine.
+        // 30 bytes remaining in SSTORAGE 2 after this.
         uint16 fileEngine;
-        // 30 bytes remaining in SSTORAGE 2.
 
         // Position in index.
-        // Note: documentsCounter and documentsIndex are still uint256 because it's cheaper outside of a struct.
+        // 28 bytes remaining in SSTORAGE 2 after this.
         uint16 index;
-        // 28 bytes remaining in SSTORAGE 2.
 
         // Type of document: 1 = work experience, ...
+        // 27 bytes remaining in SSTORAGE 2 after this.
         uint8 docType;
-        // 27 bytes remaining in SSTORAGE 2.
 
         // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
+        // 26 bytes remaining in SSTORAGE 2 after this.
         uint8 docTypeVersion;
-        // 26 bytes remaining in SSTORAGE 2.
 
         // True if "published", false if "unpublished".
+        // 25 bytes remaining in SSTORAGE 2 after this.
         bool published;
-        // 25 bytes remaining in SSTORAGE 2.
 
         // Encrypted.
+        // 24 bytes remaining in SSTORAGE 2 after this.
         bool encrypted;
-        // 24 bytes remaining in SSTORAGE 2.
 
-        // To fill the 2nd SSTORAGE, let's add this, it might proove usefull.
+        // To fill the 2nd SSTORAGE.
         bytes24 additionalData;
     }
 
-    // Documents.
-    mapping(uint => Document) Documents;
+    // Documents registry
+    mapping(uint => Document) documentsRegistry;
+
+    // Documents index.
+    uint[] documentsIndex;
 
     // Event: new document added.
-    // Because frontend needs to get the document ID after the transaction.
+    // Frontend needs to get the document ID after the transaction.
     event NewDocument (
         uint id
     );
 
     /**
-     * Constructor.
+     * @dev Constructor.
      */
-    constructor(address _tokenAddress, address _vaultFactoryAddress) public {
-        token = TalaoToken(_tokenAddress);
-        vaultFactoryInterface = VaultFactoryInterface(_vaultFactoryAddress);
-        // TODO: decide autonomy of Vaults.
+    constructor(address _talaoToken) {
+        talaoToken = TalaoToken(_talaoToken);
     }
 
     /**
-     * @notice Allow only VaultFactory.
-     * @dev Only used at Vault creation.
-     * TODO: decide autonomy of Vaults.
-     */
-    modifier onlyVaultFactory() {
-        require(
-          msg.sender == address(vaultFactoryInterface),
-          'Only VaultFactory is authorized.'
-        );
-        _;
-    }
-
-    /**
-     * Allow only active Vaults.
-     * TODO: decide autonomy of Vaults.
-     */
-    modifier onlyActiveVault() {
-        require(
-            vaultFactoryInterface.hasActiveVault(msg.sender),
-            'Vault is not active.'
-        );
-        _;
-    }
-
-    /**
-     * Allow only users who have access to the Vault in the token + Partners.
+     * This modifier allows to use all read functions.
      */
     modifier onlyVaultReaders() {
 
-        // Get Vault price in the token.
+        // Get Vault access price in the Talao token.
         (uint accessPrice,,,) = token.data(owner);
 
-        // Vault must be free, or the user must have paid or be a Partner.
+        // OR conditions to read all the Vault data:
+        // 1) Sender is the owner or has paid Vault access price.
+        // 2) Sender is a Partner and owner has Vault access in the Talao token.
+        // 3) Vault is free and owner has Vault access in the Talao token.
+        // 4) Sender is a validated Marketplace.
         require(
             (
-                accessPrice == 0 ||
-                token.hasVaultAccess(msg.sender, owner) ||
-                Partners[msg.sender]
+                token.hasVaultAccess(owner, msg.sender) ||
+                (
+                    Partners[msg.sender] &&
+                    token.hasVaultAccess(owner, owner)
+                ) ||
+                (
+                    accessPrice == 0 &&
+                    token.hasVaultAccess(owner, owner)
+                ) ||
+                KnownMarketplaces[msg.sender].status == KnownMarketplaceStatus.Validated
             ),
-            'You have no Vault access.'
+            'Vault access denied.'
         );
+        _;
+    }
+
+    /**
+     * @dev This modifier restricts all write functions to the owner,
+     * @dev plus the owner must have an open Vault access in the Talao token.
+     * @dev A Freelancer that has closed his Vault in the token,
+     * @dev and received this deposit back, can not use write functions.
+     * @dev Except functions inherited from Ownable.sol.
+     */
+    modifier onlyOwnerWithOpenVaultAccess() {
+
+        require(isOwner(), 'Only owner is allowed.');
+        require(
+            token.hasVaultAccess(msg.sender, msg.sender),
+            'Write is disabled if Vault access is closed in Talao token'
+        )
         _;
     }
 
@@ -240,8 +277,8 @@ contract Vault is Ownable {
      * @dev Create profile. Only used once by VaultFactory.
      */
     function createProfile(
-        bytes16 _firstName,
-        bytes16 _lastName,
+        bytes32 _firstName,
+        bytes32 _lastName,
         bytes16 _phone,
         bytes16 _email,
         bytes32 _jobTitle,
@@ -264,10 +301,15 @@ contract Vault is Ownable {
         myProfile.description = _description;
     }
 
+    function editProfile(bytes _data) {
+
+    }
+
     /**
      * @dev Edit profile.
      */
     function editProfile(
+        string _patati,
         bytes16 _firstName,
         bytes16 _lastName,
         bytes16 _phone,
@@ -276,7 +318,7 @@ contract Vault is Ownable {
         bytes32 _pictureHash,
         uint16 _pictureEngine,
         bytes30 _additionalData,
-        string _description
+        string _description,
     )
         external
         onlyOwner
@@ -412,6 +454,15 @@ contract Vault is Ownable {
     }
 
     /**
+     * @dev Submit the Vault to a Marketplace.
+     */
+    function submitVault() external onlyOwnerWithOpenVaultAccess {
+
+        MarketplaceInterface marketplace;
+        marketplace.submitVault();
+    }
+
+    /**
      * @dev Remove the Vault from Talao's Vault Registry.
      * @dev THERE IS NO WAY TO CANCEL THIS.
      * TODO: decide autonomy of Vaults.
@@ -426,7 +477,6 @@ contract Vault is Ownable {
 
         // Remove Vault from Talao Vault Registry.
         vaultFactoryInterface.removeMyVault(msg.sender);
-
     }
 
     /**
