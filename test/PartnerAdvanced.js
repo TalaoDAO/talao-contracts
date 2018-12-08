@@ -2,7 +2,7 @@ const truffleAssert = require('truffle-assertions');
 const PartnerInherited1 = artifacts.require('PartnerInherited1');
 const PartnerInherited2 = artifacts.require('PartnerInherited2');
 
-contract('PartnerInherited1, PartnerInherited2', async (accounts) => {
+contract('Partner (advanced tests with contracts that inherit)', async (accounts) => {
   const userRoot = accounts[0];
   const user1 = accounts[1];
   const user2 = accounts[2];
