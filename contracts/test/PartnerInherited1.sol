@@ -5,7 +5,7 @@ import '../Partner.sol';
  * @title Test if contracts that inherit from Partner work fine together.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
-contract PartnerInheritance is Partner {
+contract PartnerInherited1 is Partner {
 
     uint public randomVariable = 123456789;
     uint public variableFromConstructor;
@@ -40,9 +40,13 @@ contract PartnerInheritance is Partner {
     }
 
     /**
-     * @dev Test for onlyPartner() modifier.
+     * @dev Convention:
+     * @dev functions that should be called by Partner contracts proxys
+     * @dev start by: r2p (Return to Partner)
+     * @dev See also PartnerInheritanceReader.sol,
+     * @dev for implementation of the symetrical function.
      */
-    function getOnlyPartnerTest() external view onlyPartner returns (string) {
+    function r2pGetTest() external view onlyPartner returns (string) {
        return partnerString;
     }
 }
