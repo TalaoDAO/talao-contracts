@@ -39,7 +39,12 @@ contract('Partner', async (accounts) => {
 
   it('Partner1 should be in pending approval in Partner2', async() => {
     result = await InstancePartner2.returnPartnershipStatus({ from: InstancePartner1.address});
-    assert.equal(result.toNumber(), 1);
+    assert.equal(result.toNumber(), 2);
+  });
+
+  it('user1 should get his Partner1 contract status in Partner2', async() => {
+    result = await InstancePartner1.getPartnershipStatus(InstancePartner2.address, { from: user1 });
+    assert.equal(result.toNumber(), 2);
   });
 
   it('Partner2 should have been added as an authorized partner in Partner1.', async() => {
@@ -69,7 +74,27 @@ contract('Partner', async (accounts) => {
   it('user2 should get Partner3 Partner information', async() => {
     result = await InstancePartner2.getPartner(InstancePartner3.address, { from: user2 });
     assert.equal(result[0], 255);
-    assert.equal(result[1], 1);
+    assert.equal(result[1], 2);
+  });
+
+  it('user2 should reject Partner3 in his contract Partner2.', async() => {
+    tx = await InstancePartner2.rejectPartner(InstancePartner3.address, { from: user2 });
+    assert(tx);
+  });
+
+  it('Partner3 should be rejected in Partner2', async() => {
+    result = await InstancePartner2.returnPartnershipStatus({ from: InstancePartner3.address});
+    assert.equal(result.toNumber(), 3);
+  });
+
+  it('user2 should authorize Partner3 in his contract Partner2.', async() => {
+    tx = await InstancePartner2.authorizePartner(InstancePartner3.address, { from: user2 });
+    assert(tx);
+  });
+
+  it('Partner3 should be an authorized partner in Partner2.', async() => {
+    result = await InstancePartner2.isPartner({ from: InstancePartner3.address});
+    assert(result);
   });
 
 });

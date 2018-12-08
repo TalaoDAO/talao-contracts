@@ -45,7 +45,7 @@ contract Partner is Ownable {
     using SafeMath for uint;
 
     // Partner authorization status.
-    enum PartnerAuthorization { Unknown, Pending, Authorized, Rejected }
+    enum PartnerAuthorization { Unknown, Authorized, Pending, Rejected }
 
     // Struct for one know Partner.
     struct KnownPartner {
