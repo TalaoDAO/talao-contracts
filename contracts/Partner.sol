@@ -44,38 +44,22 @@ contract Partner is Ownable {
     // SafeMath to avoid overflows.
     using SafeMath for uint;
 
-    // Partner counter to generate unique uint IDs.
-    // Always incremented.
-    // For events we want to use this ID instead of simply the partner address.
-    // Otherwise anyone could reconstruct the whole list of partners.
-    // See getPartnerId().
-    // uint is cheaper than uint8 outside of structs.
-    uint partnersCounter;
-
-    // Partner ID => Partner address mapping.
-    mapping (uint => address) partnerIdToAddress;
-
     // Partner authorization status.
     enum PartnerAuthorization { Unknown, Pending, Authorized, Rejected }
 
     // Struct for one know Partner.
     struct KnownPartner {
-        // ID of this partner.
-        // TODO: uint32 = 4.3 billion, enough?
-        // bytes28 left on SSTORAGE 1 after this.
-        uint32 id;
-
         // Partner category.
         // We use uint8 instead of enum so we can add categories in the future.
-        // bytes27 left on SSTORAGE 1 after this.
+        // bytes31 left on SSTORAGE 1 after this.
         uint8 category;
 
         // Authorization of this partner.
         // Takes same place as an uint8.
-        // bytes26 left on SSTORAGE 1 after this.
+        // bytes30 left on SSTORAGE 1 after this.
         PartnerAuthorization authorization;
 
-        // TODO: bytes26 left on SSTORAGE 1.
+        // TODO: bytes30 left on SSTORAGE 1.
     }
 
     // Known Partners mapping.
@@ -84,7 +68,8 @@ contract Partner is Ownable {
     // Index of known Partners.
     // Includes all authorizations and all categories.
     // This is to avoid maintaining a lot of indexes.
-    // See getParners() and getPartner(_id).
+    // Filtering is done on the frontend.
+    // See getParners().
     address[] knownPartnersIndex;
 
     // This contract information.
@@ -103,8 +88,12 @@ contract Partner is Ownable {
     }
     PartnerProfile public partnerProfile;
 
-    // Partnerships events.
-    event Partnership (uint32 id, PartnerAuthorization authorization);
+    // Partnership asked event.
+    // Basically it's just to let know the owner when partnerships are asked.
+    // We don't want to log an address here.
+    // Frontend will have to call getPartners().
+    // Also, it would not be usefull to emit an event for our own actions.
+    event PartnershipAsked();
 
     /**
      * @dev Constructor.
@@ -132,32 +121,16 @@ contract Partner is Ownable {
     }
 
     /**
-     * @dev Get Partner address from its ID.
-     * @dev Should not be very usefull but we never know.
-     */
-    function getPartnerAddress(uint32 _id)
-        external view onlyOwner returns(address partner)
-    {
-        partner = partnerIdToAddress[_id];
-    }
-
-    /**
      * @dev Get a Partner.
      */
     function getPartner(address _partner)
         external
         view
         onlyOwner
-        returns
-    (
-          uint32 id,
-          uint8 category,
-          uint authorization
-    )
+        returns (uint8 category, uint authorization)
     {
           KnownPartner memory thisPartner = KnownPartners[_partner];
 
-          id = thisPartner.id;
           category = thisPartner.category;
           authorization = uint(thisPartner.authorization);
     }
@@ -209,17 +182,12 @@ contract Partner is Ownable {
             '_category must be > 0'
         );
 
-        partnersCounter = partnersCounter.add(1);
-
-        newPartner.id = uint32(partnersCounter);
-        // TODO: after max uint32 value, will loop over same ID or security pb?
-        partnerIdToAddress[newPartner.id] = msg.sender;
         newPartner.category = _category;
         newPartner.authorization = PartnerAuthorization.Pending;
 
         knownPartnersIndex.push(msg.sender);
 
-        emit Partnership(newPartner.id, PartnerAuthorization.Pending);
+        emit PartnershipAsked();
 
         // Return success.
         success = true;
@@ -269,18 +237,10 @@ contract Partner is Ownable {
 
         // If partnership request was a success,
         if (success) {
-            // Add & authorize the other contract on our side.
-            partnersCounter = partnersCounter.add(1);
-
-            newPartner.id = uint32(partnersCounter);
-            // TODO: after max uint32 value, will loop over same ID or security pb?
-            partnerIdToAddress[newPartner.id] = _partner;
             newPartner.category = newPartnerCategory;
             newPartner.authorization = PartnerAuthorization.Authorized;
 
             knownPartnersIndex.push(_partner);
-
-            emit Partnership(newPartner.id, PartnerAuthorization.Authorized);
         }
     }
 
@@ -300,8 +260,6 @@ contract Partner is Ownable {
         );
 
         thisPartner.authorization = PartnerAuthorization.Authorized;
-
-        emit Partnership(thisPartner.id, PartnerAuthorization.Authorized);
     }
 
     /**
@@ -320,7 +278,5 @@ contract Partner is Ownable {
         );
 
         thisPartner.authorization = PartnerAuthorization.Rejected;
-
-        emit Partnership(thisPartner.id, PartnerAuthorization.Rejected);
     }
 }

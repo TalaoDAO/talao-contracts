@@ -33,22 +33,13 @@ contract('Partner', async (accounts) => {
     assert(tx);
   });
 
-  it('Partnership event should have been emitted by Partner2 contract, giving the partnerId of Partner1 in Partner2, and telling that Partner1 is pending', async() => {
-    truffleAssert.eventEmitted(tx, 'Partnership', ev => {
-      console.log(ev)
-      return ev.id.toNumber() === 1 && ev.authorization.toNumber() === 1;
-    });
+  it('PartnershipAsked event should have been emitted by Partner2 contract', async() => {
+    truffleAssert.eventEmitted(tx, 'PartnershipAsked');
   });
 
   it('Partner1 should be in pending approval in Partner2', async() => {
     result = await InstancePartner2.returnPartnershipStatus({ from: InstancePartner1.address});
     assert.equal(result.toNumber(), 1);
-  });
-
-  it('Partnership event should have been emitted by Partner1 contract, giving the partnerId of Partner2 in Partner1, and telling that Partner2 is authorized', async() => {
-    truffleAssert.eventEmitted(tx, 'Partnership', ev => {
-      return ev.id.toNumber() === 1 && ev.authorization.toNumber() === 2;
-    });
   });
 
   it('Partner2 should have been added as an authorized partner in Partner1.', async() => {
@@ -59,12 +50,6 @@ contract('Partner', async (accounts) => {
   it('user2 should authorize Partner1 in his contract Partner2.', async() => {
     tx = await InstancePartner2.authorizePartner(InstancePartner1.address, { from: user2 });
     assert(tx);
-  });
-
-  it('Partnership event should have been emitted by Partner2 contract, telling that Partner1 is authorized', async() => {
-    truffleAssert.eventEmitted(tx, 'Partnership', ev => {
-      return ev.id.toNumber() === 1 && ev.authorization.toNumber() === 2;
-    });
   });
 
   it('Partner1 should have been added as an authorized partner in Partner2.', async() => {
@@ -81,16 +66,10 @@ contract('Partner', async (accounts) => {
     assert.equal(result.toString(), [InstancePartner1.address, InstancePartner3.address]);
   });
 
-  it('user2 should get address of Partner3 by its ID', async() => {
-    result = await InstancePartner2.getPartnerAddress(2, { from: user2 });
-    assert.equal(result.toString(), InstancePartner3.address);
-  });
-
-  it('user2 should get Partner3 information', async() => {
+  it('user2 should get Partner3 Partner information', async() => {
     result = await InstancePartner2.getPartner(InstancePartner3.address, { from: user2 });
-    assert.equal(result[0], 2);
-    assert.equal(result[1], 255);
-    assert.equal(result[2], 1);
+    assert.equal(result[0], 255);
+    assert.equal(result[1], 1);
   });
 
 });
