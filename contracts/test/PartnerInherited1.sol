@@ -22,7 +22,7 @@ contract PartnerInherited1 is Partner {
         public
         Partner(_category)
     {
-        partnerProfile.category = _category;
+        partnerInformation.category = _category;
         variableFromConstructor = _variableForThisContractConstructor;
     }
 

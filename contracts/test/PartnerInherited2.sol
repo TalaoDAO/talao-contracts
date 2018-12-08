@@ -23,7 +23,7 @@ contract PartnerInherited2 is Partner {
      * @dev Constructor.
      */
     constructor(uint8 _category) public Partner(_category) {
-        partnerProfile.category = _category;
+        partnerInformation.category = _category;
     }
 
     /**

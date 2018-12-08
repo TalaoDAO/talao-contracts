@@ -17,7 +17,7 @@ interface PartnerInterface {
   /**
    * @dev Get other contract information.
    */
-  function partnerProfile() external view returns (uint8, bytes32);
+  function partnerInformation() external view returns (uint8);
 
   /**
    * @dev Return partnershipstatus.
@@ -72,9 +72,10 @@ contract Partner is Ownable {
     // See getParners().
     address[] knownPartnersIndex;
 
-    // This contract information.
-    // TODO: create common Profile contract?
-    struct PartnerProfile {
+    // This contract Partner information.
+    // Not a full profile, only the minimum needed
+    // to exchange with other Partner contracts.
+    struct PartnerInformation {
         // Partner category.
         // We use uint8 instead of enum so we can add categories in the future.
         // bytes31 left on SSTORAGE 1 after this.
@@ -82,11 +83,8 @@ contract Partner is Ownable {
 
         // TODO: bytes31 left on SSTORAGE 1.
 
-        // Public encryption key.
-        // SSTORAGE 2 filled after this.
-        bytes32 publicEncryptionKey;
     }
-    PartnerProfile public partnerProfile;
+    PartnerInformation public partnerInformation;
 
     // Partnership asked event.
     // Basically it's just to let know the owner when partnerships are asked.
@@ -99,7 +97,7 @@ contract Partner is Ownable {
      * @dev Constructor.
      */
     constructor(uint8 _category) public {
-        partnerProfile.category = _category;
+        partnerInformation.category = _category;
     }
 
     /**
@@ -222,7 +220,7 @@ contract Partner is Ownable {
         PartnerInterface otherContract = PartnerInterface(_partner);
 
         // Read information from other contract.
-        (uint8 newPartnerCategory,) = otherContract.partnerProfile();
+        uint8 newPartnerCategory = otherContract.partnerInformation();
 
         // Partner must have a category.
         require(
@@ -232,7 +230,7 @@ contract Partner is Ownable {
 
         // Request partnership in the other contract.
         bool success = otherContract.requestPartnershipFromContract(
-            partnerProfile.category
+            partnerInformation.category
         );
 
         // If partnership request was a success,
