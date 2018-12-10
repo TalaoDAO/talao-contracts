@@ -4,40 +4,27 @@ import './libraries/SafeMath.sol';
 import './Ownable.sol';
 
 /**
- * @title Interface with clones or inherited contracts.
- */
-interface PartnerInterface {
-
-  /**
-   * @dev Request partnership with this other contract.
-   */
-  function partnerRequest_requestPartnership
-      (uint8 _category) external view returns (bool);
-
-  /**
-   * @dev Get other contract information.
-   */
-  function partnerInformation() external view returns (uint8);
-
-  /**
-   * @dev Return partnershipstatus.
-   */
-  function returnPartnershipStatus() external view returns (uint8);
-}
-
-/**
  * @title Partner contract.
  * @notice This contract provides partner functionnalities.
- * @notice Inherited by Freelancer and Marketplace contracts.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
- * @dev A Partner has to ask this contract to be a Partner.
- * @dev It will have the Pending status.
- * @dev When this contract owner validates the partnership,
- * @dev then it gets the Authorized status.
- * @dev In Freelancer, a Partner is usually a Marketplace contract.
- * @dev In Marketplace, a Partner is usually a Freelancer contract.
- * @dev Any contract or Ethereum user can potentially ask for partnership.
+ * @dev Partners are contracts that inherit this contract.
+ * @dev Owners can request to establish partnerships with other Partner contracts.
+ * @dev We use some symetrical functions to do this.
  * @dev This contract owner should carefully review the partnership requests!
+ * @dev
+ * @dev "Symetrical" functions
+ * @dev ====================
+ * @dev 1) User1 calls owner_doSomething(_address2) in his contract Partner1
+ * @dev 2) Partner1 opens the interface function partner_doSomething() at _address2
+ * @dev 3) Partner2 contracts returns the result to Partner1
+ * @dev 4) Partner1 returns the result to User1
+ * @dev Convention
+ * @dev ==========
+ * @dev Function meant to be called by owner should start by owner_
+ * @dev Function meant to be called by partner contract should start by partner_
+ * @dev Exceptions: some partner_doSomething can be called doSomething if it is
+ * @dev meant to be called directly by a user, as well, and not only by
+ * @dev a Partner contract.
  */
 contract Partner is Ownable {
 
@@ -82,16 +69,14 @@ contract Partner is Ownable {
         uint8 category;
 
         // TODO: bytes31 left on SSTORAGE 1.
-
     }
     PartnerInformation public partnerInformation;
 
-    // Partnership asked event.
-    // Basically it's just to let know the owner when partnerships are asked.
-    // We don't want to log an address here.
-    // Frontend will have to call getPartners().
-    // Also, it would not be usefull to emit an event for our own actions.
+    // Event when another Partner contract has asked partnership.
     event PartnershipAsked();
+
+    // Event when another Partner contract has authorized our asked partnership.
+    event PartnershipAuthorized();
 
     /**
      * @dev Constructor.
@@ -101,12 +86,37 @@ contract Partner is Ownable {
     }
 
     /**
-     * @dev Getter to see if msg.sender is an Authorized partner.
-     * @dev Use this fonction to restrict access in contracts
-     * @dev inherit Partner!
+     * @dev Get if sender is an authorized partner.
      */
     function isPartner() public view returns (bool) {
         return KnownPartners[msg.sender].authorization == PartnerAuthorization.Authorized;
+    }
+
+    /**
+     * @dev Get if sender is an authorized partner of a certain category.
+     */
+    function isPartnerCategory(uint _category) public view returns (bool) {
+        return KnownPartners[msg.sender].category == _category;
+    }
+
+    /**
+     * @dev Get partnership status in another Partner contract.
+     */
+    function owner_getPartnershipStatus(address _partner)
+        external view onlyOwner returns (uint authorization)
+    {
+        // The contract for which we want to see our partnership status.
+        PartnerInterface hisContract = PartnerInterface(_partner);
+
+        // Return authorization status.
+        authorization = hisContract.partner_getPartnershipStatus();
+    }
+
+    /**
+     * @dev Symetry of owner_getPartnershipStatus.
+     */
+    function partner_getPartnershipStatus() external view returns (uint) {
+        return uint(KnownPartners[msg.sender].authorization);
     }
 
     /**
@@ -134,77 +144,12 @@ contract Partner is Ownable {
     }
 
     /**
-     * @dev Getter for the owner to see his partnership status in another contract.
-     */
-    function getPartnershipStatus(address _partner)
-        external view onlyOwner returns (uint authorization)
-    {
-        // The contract for which we want to see our partnership status.
-        PartnerInterface hisContract = PartnerInterface(_partner);
-
-        // Return authorization status.
-        authorization = hisContract.returnPartnershipStatus();
-    }
-
-    /**
-     * @dev Getter for a symetrical contract to see his partnership status.
-     */
-    function returnPartnershipStatus() external view returns (uint) {
-        return uint(KnownPartners[msg.sender].authorization);
-    }
-
-    /**
-     * @dev Request partnership, called by another Partner contract.
-     * @dev This is called by the contract/address trying to be a Partner.
-     * @dev This is not called by this contract owner!
-     * @dev This contract owner must call requestPartnership()
-     */
-    function partnerRequest_requestPartnership
-        (uint8 _category) external returns (bool success) {
-
-        KnownPartner storage newPartner = KnownPartners[msg.sender];
-
-        require(
-            msg.sender != owner(),
-            'Owner must call requestPartnership'
-        );
-
-        require(
-            newPartner.authorization == PartnerAuthorization.Unknown,
-            'Partnership already initiated'
-        );
-
-        require(
-            _category > 0,
-            '_category must be > 0'
-        );
-
-        newPartner.category = _category;
-        newPartner.authorization = PartnerAuthorization.Pending;
-
-        knownPartnersIndex.push(msg.sender);
-
-        emit PartnershipAsked();
-
-        // Return success.
-        success = true;
-    }
-
-    /**
      * @dev Request partnership.
-     * @dev This is called by the owner.
-     * @dev Internally, it will instantiate the symetrical Partner contract
-     * @dev and call its symetrical requestPartnershipIn function.
-     * @dev At last, we will automatically add the asked partner as
-     * @dev one of our authorized partners.
      */
-    function requestPartnership(address _partner)
-        external
-        onlyOwner
-    {
+    function owner_requestPartnership(address _newPartner) external onlyOwner {
 
-        // Storage pointer on future Partner.
-        KnownPartner storage newPartner = KnownPartners[_partner];
+        // Storage pointer on new Partner.
+        KnownPartner storage newPartner = KnownPartners[_newPartner];
 
         // We can only request a partnership if he's not already in our partners.
         // If he is, then we symetrically are already in his partners.
@@ -216,64 +161,176 @@ contract Partner is Ownable {
         );
 
         // The contract for which we want to request partnership
-        PartnerInterface otherContract = PartnerInterface(_partner);
+        PartnerInterface otherContract = PartnerInterface(_newPartner);
 
         // Read information from other contract.
         uint8 newPartnerCategory = otherContract.partnerInformation();
 
-        // Partner must have a category.
         require(
             newPartnerCategory > 0,
             'Partner has no category'
         );
 
-        // Request partnership in the other contract.
-        bool success = otherContract.partnerRequest_requestPartnership(
-            partnerInformation.category
+        // TODO: sure about this?
+        require(
+            newPartnerCategory != partnerInformation.category,
+            'Partners of same category can not partnership'
         );
+
+        // Request partnership in the other contract.
+        bool success = otherContract.partner_requestPartnership();
 
         // If partnership request was a success,
         if (success) {
             newPartner.category = newPartnerCategory;
             newPartner.authorization = PartnerAuthorization.Authorized;
 
-            knownPartnersIndex.push(_partner);
+            knownPartnersIndex.push(_newPartner);
         }
+    }
+
+    /**
+     * @dev Symetry of owner_requestPartnership.
+     */
+    function partner_requestPartnership() external returns (bool success) {
+
+        KnownPartner storage newPartner = KnownPartners[msg.sender];
+
+        require(
+            msg.sender != owner(),
+            'Owner must call owner_requestPartnership'
+        );
+
+        require(
+            newPartner.authorization == PartnerAuthorization.Unknown,
+            'Partnership already initiated'
+        );
+
+        // Get category of contract requesting partnership.
+        PartnerInterface requestingPartner = PartnerInterface(msg.sender);
+        uint8 newPartnerCategory = requestingPartner.partnerInformation();
+
+        require(
+            newPartnerCategory > 0,
+            'Partner has no category'
+        );
+
+        // TODO: sure about this?
+        require(
+            newPartnerCategory != partnerInformation.category,
+            'Partners of same category can not partnership'
+        );
+
+        newPartner.category = newPartnerCategory;
+        newPartner.authorization = PartnerAuthorization.Pending;
+
+        knownPartnersIndex.push(msg.sender);
+
+        emit PartnershipAsked();
+
+        // Return success.
+        success = true;
     }
 
     /**
      * @dev Authorize Partner.
      */
-    function authorizePartner(address _partner) external onlyOwner {
+    function authorizePartner(address _thisPartner) external onlyOwner {
 
-        KnownPartner storage thisPartner = KnownPartners[_partner];
+        KnownPartner storage thisPartner = KnownPartners[_thisPartner];
 
         require(
-            (
-                thisPartner.authorization == PartnerAuthorization.Pending ||
-                thisPartner.authorization == PartnerAuthorization.Rejected
-            ),
-            'Partner must be Pending or Rejected'
+            thisPartner.authorization == PartnerAuthorization.Pending,
+            'Partner must be Pending'
         );
 
         thisPartner.authorization = PartnerAuthorization.Authorized;
+
+        // Log an event in the new authorized partner contract.
+        PartnerInterface authorizedContract = PartnerInterface(_thisPartner);
+        authorizedContract.partner_notifyAuthorization();
+    }
+
+    /**
+     * @dev Function for a Partner contract to send an event, when authorizing.
+     */
+    function partner_notifyAuthorization() external {
+
+        require(
+            KnownPartners[msg.sender].authorization == PartnerAuthorization.Authorized,
+            'Only authorized partner can notify authorization'
+        );
+
+        emit PartnershipAuthorized();
+
     }
 
     /**
      * @dev Reject Partner.
      */
-    function rejectPartner(address _partner) external onlyOwner {
+    function rejectPartner(address _address) external onlyOwner {
 
-        KnownPartner storage thisPartner = KnownPartners[_partner];
+        KnownPartner storage thisPartner = KnownPartners[_address];
 
         require(
-            (
-                thisPartner.authorization == PartnerAuthorization.Pending ||
-                thisPartner.authorization == PartnerAuthorization.Authorized
-            ),
-            'Partner must be Pending or Authorized'
+            thisPartner.authorization == PartnerAuthorization.Pending,
+            'Partner must be Pending'
         );
 
         thisPartner.authorization = PartnerAuthorization.Rejected;
     }
+
+    /**
+     * @dev Remove Partner.
+     */
+    function removePartner(address _address) external onlyOwner {
+
+        KnownPartner storage thisPartner = KnownPartners[_address];
+
+        require(
+            (
+                thisPartner.authorization == PartnerAuthorization.Authorized ||
+                thisPartner.authorization == PartnerAuthorization.Rejected
+            ),
+            'Partner must be Authorized or Rejected'
+        );
+
+        // Ask the partner to remove ourselves.
+        PartnerInterface partnerToRemove = PartnerInterface(_address);
+        bool success = partnerToRemove.partner_removePartner();
+
+        // Remove the partner.
+        if (success) {
+            thisPartner.authorization = PartnerAuthorization.Unknown;
+        }
+    }
+
+    /**
+     * @dev Symetry of removePartner.
+     */
+    function partner_removePartner() external returns (bool success) {
+
+         KnownPartner storage thisPartner = KnownPartners[msg.sender];
+
+         thisPartner.authorization = PartnerAuthorization.Unknown;
+
+         success = true;
+    }
+}
+
+
+/**
+ * @title Interface with clones or inherited contracts.
+ */
+interface PartnerInterface {
+
+  function partner_requestPartnership() external view returns (bool);
+
+  function partner_notifyAuthorization() external;
+
+  function partner_getPartnershipStatus() external view returns (uint8);
+
+  function partner_removePartner() external returns (bool success);
+
+  function partnerInformation() external view returns (uint8);
 }

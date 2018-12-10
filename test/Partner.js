@@ -29,7 +29,7 @@ contract('Partner', async (accounts) => {
   });
 
   it('user1 should request partnership of his contract Partner1 to the contract Partner2', async() => {
-    tx = await InstancePartner1.requestPartnership(InstancePartner2.address, { from: user1 });
+    tx = await InstancePartner1.owner_requestPartnership(InstancePartner2.address, { from: user1 });
     assert(tx);
   });
 
@@ -38,12 +38,12 @@ contract('Partner', async (accounts) => {
   });
 
   it('Partner1 should be in pending approval in Partner2', async() => {
-    result = await InstancePartner2.returnPartnershipStatus({ from: InstancePartner1.address});
+    result = await InstancePartner2.partner_getPartnershipStatus({ from: InstancePartner1.address});
     assert.equal(result.toNumber(), 2);
   });
 
   it('user1 should get his Partner1 contract status in Partner2', async() => {
-    result = await InstancePartner1.getPartnershipStatus(InstancePartner2.address, { from: user1 });
+    result = await InstancePartner1.owner_getPartnershipStatus(InstancePartner2.address, { from: user1 });
     assert.equal(result.toNumber(), 2);
   });
 
@@ -62,8 +62,12 @@ contract('Partner', async (accounts) => {
     assert(result);
   });
 
+  it('PartnershipAuthorized event should have been emitted by partner3 contract, triggered by partner2', async() => {
+    truffleAssert.eventEmitted(tx, 'PartnershipAuthorized');
+  });
+
   it('user3 should request partnership of his contract Partner3 to the Partner2 contract', async() => {
-    await InstancePartner3.requestPartnership(InstancePartner2.address, { from: user3 });
+    await InstancePartner3.owner_requestPartnership(InstancePartner2.address, { from: user3 });
   });
 
   it('user2 should get his knowns partners and the result should be an array of Partner1 & Partner3 addresses', async() => {
@@ -83,8 +87,21 @@ contract('Partner', async (accounts) => {
   });
 
   it('Partner3 should be rejected in Partner2', async() => {
-    result = await InstancePartner2.returnPartnershipStatus({ from: InstancePartner3.address});
+    result = await InstancePartner2.partner_getPartnershipStatus({ from: InstancePartner3.address});
     assert.equal(result.toNumber(), 3);
+  });
+
+  it('user3 should remove partner2, both should have Unknown authorization (reset)', async() => {
+    tx = await InstancePartner3.removePartner(InstancePartner2.address, { from: user3 });
+    assert(tx);
+    result1 = await InstancePartner3.owner_getPartnershipStatus(InstancePartner2.address, { from: user3 });
+    assert.equal(result1.toNumber(), 0);
+    result2 = await InstancePartner2.owner_getPartnershipStatus(InstancePartner3.address, { from: user2 });
+    assert.equal(result2.toNumber(), 0);
+  });
+
+  it('user3 should request partnership of his contract Partner3 to the Partner2 contract', async() => {
+    await InstancePartner3.owner_requestPartnership(InstancePartner2.address, { from: user3 });
   });
 
   it('user2 should authorize Partner3 in his contract Partner2.', async() => {

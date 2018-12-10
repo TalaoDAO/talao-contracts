@@ -21,7 +21,7 @@ contract('Partner (advanced tests with contracts that inherit)', async (accounts
   });
 
   it('user2 should request partnership to PartnerInherited1, user1 should authorize and they should be symetrical partners.', async() => {
-    await InstancePartner2.requestPartnership(InstancePartner1.address, { from: user2 });
+    await InstancePartner2.owner_requestPartnership(InstancePartner1.address, { from: user2 });
     result1 = await InstancePartner2.isPartner({ from: InstancePartner1.address});
     assert(result1);
     await InstancePartner1.authorizePartner(InstancePartner2.address, { from: user1 });
