@@ -4,14 +4,14 @@ import './libraries/SafeMath.sol';
 import './Ownable.sol';
 
 /**
- * @title Interface with a Partner contract or a contract that inherits Partner.
+ * @title Interface with clones or inherited contracts.
  */
 interface PartnerInterface {
 
   /**
    * @dev Request partnership with this other contract.
    */
-  function requestPartnershipFromContract
+  function partnerRequest_requestPartnership
       (uint8 _category) external view returns (bool);
 
   /**
@@ -135,7 +135,6 @@ contract Partner is Ownable {
 
     /**
      * @dev Getter for the owner to see his partnership status in another contract.
-     * @dev works with returnPartnershipStatus
      */
     function getPartnershipStatus(address _partner)
         external view onlyOwner returns (uint authorization)
@@ -160,7 +159,7 @@ contract Partner is Ownable {
      * @dev This is not called by this contract owner!
      * @dev This contract owner must call requestPartnership()
      */
-    function requestPartnershipFromContract
+    function partnerRequest_requestPartnership
         (uint8 _category) external returns (bool success) {
 
         KnownPartner storage newPartner = KnownPartners[msg.sender];
@@ -229,7 +228,7 @@ contract Partner is Ownable {
         );
 
         // Request partnership in the other contract.
-        bool success = otherContract.requestPartnershipFromContract(
+        bool success = otherContract.partnerRequest_requestPartnership(
             partnerInformation.category
         );
 
