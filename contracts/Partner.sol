@@ -11,7 +11,7 @@ import './ownership/Ownable.sol';
 contract Partner is Ownable {
 
     // This contract Partner category.
-    uint partnerCategory;
+    uint public partnerCategory;
 
     /**
      * @dev Registry of Partner contracts.
@@ -50,10 +50,10 @@ contract Partner is Ownable {
     mapping(address => bool) private authorizedPartnerOwners;
 
     // Event when another Partner contract has asked partnership.
-    event PartnershipAsked();
+    event PartnershipRequested();
 
     // Event when another Partner contract has authorized our asked partnership.
-    event PartnershipAuthorized();
+    event PartnershipAccepted();
 
     /**
      * @dev Constructor.
@@ -106,13 +106,14 @@ contract Partner is Ownable {
         external
         view
         onlyOwner
-        returns (uint8, uint)
+        returns (uint8, uint, address)
     {
           PartnerInformation memory partnerMemory = partnersRegistry[_address];
 
           return (
               partnerMemory.category,
-              uint(partnerMemory.authorization)
+              uint(partnerMemory.authorization),
+              partnerMemory.owner
           );
     }
 
@@ -137,7 +138,7 @@ contract Partner is Ownable {
         PartnerInterface partnerInterface = PartnerInterface(_address);
 
         // Read information from it.
-        uint8 partnerInterfaceCategory = partnerInterface.partnerCategory();
+        uint partnerInterfaceCategory = partnerInterface.partnerCategory();
         address partnerInterfaceOwner = partnerInterface.owner();
 
         require(
@@ -157,7 +158,7 @@ contract Partner is Ownable {
         // If partnership request was a success,
         if (success) {
             // Write in our registry.
-            partnerStorage.category = partnerInterfaceCategory;
+            partnerStorage.category = uint8(partnerInterfaceCategory);
             partnerStorage.authorization = PartnerAuthorization.Authorized;
             partnerStorage.owner = partnerInterfaceOwner;
 
@@ -185,7 +186,7 @@ contract Partner is Ownable {
         PartnerInterface partnerInterface = PartnerInterface(msg.sender);
 
         // Read information from it.
-        uint8 partnerInterfaceCategory = partnerInterface.partnerCategory();
+        uint partnerInterfaceCategory = partnerInterface.partnerCategory();
 
         require(
             partnerInterfaceCategory > 0,
@@ -199,13 +200,13 @@ contract Partner is Ownable {
         );
 
         // Write to our partners registry.
-        partnerStorage.category = partnerInterfaceCategory;
+        partnerStorage.category = uint8(partnerInterfaceCategory);
         partnerStorage.authorization = PartnerAuthorization.Pending;
 
         // Add the new partner to our partners index.
         partnersIndex.push(msg.sender);
 
-        emit PartnershipAsked();
+        emit PartnershipRequested();
 
         // Return success.
         success = true;
@@ -237,20 +238,20 @@ contract Partner is Ownable {
         authorizedPartnerOwners[partnerInterfaceOwner] = true;
 
         // Log an event in the new authorized partner contract.
-        partnerInterface._notifyPartnershipAuthorized();
+        partnerInterface._notifyPartnershipAccepted();
     }
 
     /**
      * @dev Function for a Partner contract to send an event, when authorizing.
      */
-    function _notifyPartnershipAuthorized() external {
+    function _notifyPartnershipAccepted() external {
 
         require(
             partnersRegistry[msg.sender].authorization == PartnerAuthorization.Authorized,
             'Only authorized partner can notify authorization'
         );
 
-        emit PartnershipAuthorized();
+        emit PartnershipAccepted();
 
     }
 
@@ -370,9 +371,9 @@ contract Partner is Ownable {
 interface PartnerInterface {
   function _getPartnerAuthorization() external view returns (uint8);
   function _requestPartnership() external view returns (bool);
-  function _notifyPartnershipAuthorized() external;
+  function _notifyPartnershipAccepted() external;
   function _removePartner() external returns (bool success);
   function _updatePartnerOwner() external;
-  function partnerCategory() external view returns (uint8);
+  function partnerCategory() external view returns (uint);
   function owner() external view returns (address);
 }
