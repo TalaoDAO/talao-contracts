@@ -42,8 +42,6 @@ contract('Filebox', async (accounts) => {
   it('user2 should be able to notify an encrypted decentralized file in filebox', async() => {
     result = await filebox.fileboxSend(
       bytes32,
-      encryptionAlgorithm,
-      bytes32,
       fileEngine,
       {from: user2}
     );
@@ -54,8 +52,6 @@ contract('Filebox', async (accounts) => {
     });
     event = result.logs[0].args;
     assert.equal(event.sender, user2);
-    assert.equal(event.publicEncryptionKey, bytes32);
-    assert.equal(event.encryptionAlgorithm, encryptionAlgorithm);
     assert.equal(event.fileHash, bytes32);
     assert.equal(event.fileEngine, fileEngine);
   });
@@ -68,8 +64,6 @@ contract('Filebox', async (accounts) => {
   it('user2 should not be able to "send a file" to filebox any more', async() => {
     result = await truffleAssert.fails(
       filebox.fileboxSend(
-        bytes32,
-        encryptionAlgorithm,
         bytes32,
         fileEngine,
         {from: user2}
@@ -88,8 +82,6 @@ contract('Filebox', async (accounts) => {
   it('user2 should be able to notify an encrypted decentralized file in filebox', async() => {
     result = await filebox.fileboxSend(
       bytes32,
-      encryptionAlgorithm,
-      bytes32,
       fileEngine,
       {from: user2}
     );
@@ -100,8 +92,6 @@ contract('Filebox', async (accounts) => {
     });
     event = result.logs[0].args;
     assert.equal(event.sender, user2);
-    assert.equal(event.publicEncryptionKey, bytes32);
-    assert.equal(event.encryptionAlgorithm, encryptionAlgorithm);
     assert.equal(event.fileHash, bytes32);
     assert.equal(event.fileEngine, fileEngine);
   });
