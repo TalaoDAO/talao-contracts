@@ -146,7 +146,6 @@ contract Partner is Ownable {
             'Partner has no category'
         );
 
-        // TODO: sure about this?
         require(
             partnerInterfaceCategory != partnerCategory,
             'Contracts of same category can not partnership'
@@ -193,7 +192,6 @@ contract Partner is Ownable {
             'Partner has no category'
         );
 
-        // TODO: sure about this?
         require(
             partnerInterfaceCategory != partnerCategory,
             'Contracts of same category can not partnership'
