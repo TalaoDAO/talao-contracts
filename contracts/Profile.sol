@@ -21,20 +21,20 @@ contract Profile is Tokenized {
         // SSTORAGE 3 filled after this.
         bytes32 tagline;
 
-        // Email.
+        // URL (Website, ...)
         // SSTORAGE 4 filled after this.
+        bytes32 url;
+
+        // Public email.
+        // SSTORAGE 5 filled after this.
         bytes32 email;
 
-        // Public encryption key.
-        // SSTORAGE 5 filled after this.
-        bytes32 publicEncryptionKey;
-
         // File hash of the profile picture.
-        // SSTORAGE 6 filled after this.
+        // SSTORAGE 7 filled after this.
         bytes32 pictureHash;
 
         // ID of the file engine used for the picture.
-        // bytes30 left on SSTORAGE 7 after this.
+        // bytes30 left on SSTORAGE 8 after this.
         uint16 pictureEngine;
 
         // Description.
@@ -43,13 +43,15 @@ contract Profile is Tokenized {
     PublicProfile public publicProfile;
 
     struct PrivateProfile {
-        // Mobile number.
-        // bytes16 left afther this on SSTORAGE 1.
-        bytes16 mobile;
+        // Private email.
+        // SSTORAGE 1 full after this.
+        bytes32 email;
 
-        // TODO...
+        // Mobile number.
+        // bytes16 left afther this on SSTORAGE 2.
+        bytes16 mobile;
     }
-    PrivateProfile privateProfile;
+    PrivateProfile private privateProfile;
 
     constructor(uint8 _partnerCategory, address _token) public {
         partnerCategory = _partnerCategory;
@@ -57,39 +59,46 @@ contract Profile is Tokenized {
     }
 
     /**
-     * @dev Get public profile.
-     */
-    function getPublicProfile() external view returns (bytes32) {
-        return publicProfile.publicEncryptionKey;
-    }
-
-    /**
      * @dev Get private profile.
      */
-    function getPrivateProfile() external view onlyReader returns (bytes16) {
-        return privateProfile.mobile;
+    function getPrivateProfile()
+        external view onlyReader returns (bytes32, bytes16) {
+        return (
+            privateProfile.email,
+            privateProfile.mobile
+        );
     }
 
     /**
-     * @dev Methods used to call Partner contracts through this contract.
+     * @dev Set public profile.
      */
+    function setPublicProfile(
+        bytes32 _name1,
+        bytes32 _name2,
+        bytes32 _tagline,
+        bytes32 _url,
+        bytes32 _email,
+        bytes32 _pictureHash,
+        uint16 _pictureEngine,
+        string _description
+    )
+        external onlyOwner
+    {
+        publicProfile.name1 = _name1;
+        publicProfile.name2 = _name2;
+        publicProfile.tagline = _tagline;
+        publicProfile.url = _url;
+        publicProfile.email = _email;
+        publicProfile.pictureHash = _pictureHash;
+        publicProfile.pictureEngine = _pictureEngine;
+        publicProfile.description = _description;
+    }
 
     /**
-     * @dev Get public profile from another Partner contract.
+     * @dev Set private profile.
      */
-    function owner_getPublicProfile(address _partner) external view onlyOwner returns (bytes32) {
-
-        // The source contract from which we want to read.
-        ProfileInterface sourceContract = ProfileInterface(_partner);
-
-        // Read the source contract and return value to msg.sender.
-        return sourceContract.getPublicProfile();
+    function setPrivateProfile(bytes32 _email, bytes16 _mobile) external onlyOwner {
+        privateProfile.email = _email;
+        privateProfile.mobile = _mobile;
     }
-}
-
-/**
- * @title Interface with clones or inherited contracts.
- */
-interface ProfileInterface {
-    function getPublicProfile() external view returns (bytes32);
 }
