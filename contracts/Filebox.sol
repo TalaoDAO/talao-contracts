@@ -4,7 +4,7 @@ import './ownership/Ownable.sol';
 
 /**
  * @title Filebox contract.
- * @notice This contract allows to receive decentralized encrypted files.
+ * @notice Contract to "send" and "receive" decentralized encrypted files.
  * @author Talao, Polynomial.
  */
 contract Filebox is Ownable {
@@ -24,7 +24,7 @@ contract Filebox is Ownable {
     FileboxSettings public fileboxSettings;
 
     // Blacklisted addresses.
-    mapping(address => bool) public fileboxBlacklist;
+    mapping(address => bool) public fileboxBlacklisted;
 
     // Event emitted when someone left us an decentralized encrypted file.
     event FileboxReceived (
@@ -36,7 +36,7 @@ contract Filebox is Ownable {
     );
 
     /**
-     * @dev Send a file to the owner.
+     * @dev "Send" a "file" to the owner.
      */
     function fileboxSend
     (
@@ -48,7 +48,7 @@ contract Filebox is Ownable {
         external
     {
         require(
-            !fileboxBlacklist[msg.sender],
+            !fileboxBlacklisted[msg.sender],
             'You are blacklisted'
         );
         emit FileboxReceived(
@@ -77,13 +77,13 @@ contract Filebox is Ownable {
      * @dev Blacklist.
      */
     function fileboxBlacklist(address _address) external onlyOwner {
-        fileboxBlacklist[_address] = true;
+        fileboxBlacklisted[_address] = true;
     }
 
     /**
      * @dev Unblacklist.
      */
     function fileboxUnblacklist(address _address) external onlyOwner {
-        fileboxBlacklist[_address] = false;
+        fileboxBlacklisted[_address] = false;
     }
 }
