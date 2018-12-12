@@ -29,8 +29,6 @@ contract Filebox is Ownable {
     // Event emitted when someone left us an decentralized encrypted file.
     event FileboxReceived (
         address indexed sender,
-        bytes32 publicEncryptionKey,
-        uint16 encryptionAlgorithm,
         bytes32 fileHash,
         uint16 fileEngine
     );
@@ -40,8 +38,6 @@ contract Filebox is Ownable {
      */
     function fileboxSend
     (
-        bytes32 _publicEncryptionKey,
-        uint16 _encryptionKeyAlgorithm,
         bytes32 _fileHash,
         uint16 _fileEngine
     )
@@ -53,8 +49,6 @@ contract Filebox is Ownable {
         );
         emit FileboxReceived(
             msg.sender,
-            _publicEncryptionKey,
-            _encryptionKeyAlgorithm,
             _fileHash,
             _fileEngine
         );
