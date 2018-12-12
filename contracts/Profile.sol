@@ -1,19 +1,44 @@
 pragma solidity ^0.4.24;
 
-import './TokenizedPartner.sol';
+import './Tokenized.sol';
 
 /**
  * @title Profile contract.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
-contract Profile is TokenizedPartner {
+contract Profile is Tokenized {
 
     struct PublicProfile {
+        // Name1 (First name, company name, ...)
+        // SSTORAGE 1 filled after this.
+        bytes32 name1;
+
+        // Name2 (Last name, ...)
+        // SSTORAGE 2 filled after this.
+        bytes32 name2;
+
+        // Tagline (Freelance job title, company slogan, ...)
+        // SSTORAGE 3 filled after this.
+        bytes32 tagline;
+
+        // Email.
+        // SSTORAGE 4 filled after this.
+        bytes32 email;
+
         // Public encryption key.
-        // SSTORAGE 1 full.
+        // SSTORAGE 5 filled after this.
         bytes32 publicEncryptionKey;
 
-        // TODO: name, url, ...
+        // File hash of the profile picture.
+        // SSTORAGE 6 filled after this.
+        bytes32 pictureHash;
+
+        // ID of the file engine used for the picture.
+        // bytes30 left on SSTORAGE 7 after this.
+        uint16 pictureEngine;
+
+        // Description.
+        string description;
     }
     PublicProfile public publicProfile;
 

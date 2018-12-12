@@ -4,10 +4,10 @@ import './Partner.sol';
 import './TalaoToken.sol';
 
 /**
- * @title TokenizedPartner contract.
+ * @title Tokenized contract.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
-contract TokenizedPartner is Partner {
+contract Tokenized is Partner {
 
     TalaoToken public token;
 
