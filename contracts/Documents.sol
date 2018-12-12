@@ -62,17 +62,6 @@ contract Documents is Tokenized {
     );
 
     /**
-     * @dev Constructor.
-     */
-    constructor(uint8 _partnerCategory, address _token)
-        public
-        Tokenized(_partnerCategory, _token)
-    {
-        partnerCategory = _partnerCategory;
-        token = TalaoToken(_token);
-    }
-
-    /**
      * @dev Document getter.
      * @param _id uint Document ID.
      */

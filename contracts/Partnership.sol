@@ -142,11 +142,6 @@ contract Partnership is Ownable {
         address partnershipInterfaceOwner = partnershipInterface.owner();
 
         require(
-            partnershipInterfaceCategory > 0,
-            'Partner has no category'
-        );
-
-        require(
             partnershipInterfaceCategory != partnerCategory,
             'Contracts of same category can not partnership'
         );
@@ -186,11 +181,6 @@ contract Partnership is Ownable {
 
         // Read information from it.
         uint partnershipInterfaceCategory = partnershipInterface.partnerCategory();
-
-        require(
-            partnershipInterfaceCategory > 0,
-            'Partner has no category'
-        );
 
         require(
             partnershipInterfaceCategory != partnerCategory,

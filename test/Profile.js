@@ -1,6 +1,6 @@
 const truffleAssert = require('truffle-assertions');
 const TalaoToken = artifacts.require('TalaoToken');
-const Profile = artifacts.require('Profile');
+const Profile = artifacts.require('Profile4199');
 
 // "this string just fills a bytes32"
 const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
@@ -39,7 +39,7 @@ contract('Profile', async (accounts) => {
     profile2 = await Profile.new(2, token.address);
     await profile2.transferOwnership(user2);
   });
-
+  
   it('In profile1, user1 should set his public profile', async() => {
     tx = await profile1.setPublicProfile(
       bytes32,
