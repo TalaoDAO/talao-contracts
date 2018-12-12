@@ -7,7 +7,7 @@ import './math/SafeMath.sol';
  * @title A Documents contract allows to manage documents and share them.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Documents is Profile {
+contract Documents is Tokenized {
 
     using SafeMath for uint;
 
@@ -22,25 +22,25 @@ contract Documents is Profile {
         // 30 bytes remaining in SSTORAGE 2 after this.
         uint16 fileEngine;
 
-        // Position in index.
+        // Encryption algorithm.
         // 28 bytes remaining in SSTORAGE 2 after this.
+        uint16 encryptionAlgorithm;
+
+        // Position in index.
+        // 26 bytes remaining in SSTORAGE 2 after this.
         uint16 index;
 
         // Type of document: 1 = work experience, ...
-        // 27 bytes remaining in SSTORAGE 2 after this.
+        // 25 bytes remaining in SSTORAGE 2 after this.
         uint8 docType;
 
         // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
-        // 26 bytes remaining in SSTORAGE 2 after this.
+        // 24 bytes remaining in SSTORAGE 2 after this.
         uint8 docTypeVersion;
 
         // True if "published", false if "unpublished".
-        // 25 bytes remaining in SSTORAGE 2 after this.
+        // 23 bytes remaining in SSTORAGE 2 after this.
         bool published;
-
-        // Encrypted.
-        // 24 bytes remaining in SSTORAGE 2 after this.
-        bool encrypted;
 
         // To fill the 2nd SSTORAGE.
         bytes24 additionalData;
@@ -66,7 +66,7 @@ contract Documents is Profile {
      */
     constructor(uint8 _partnerCategory, address _token)
         public
-        Profile(_partnerCategory, _token)
+        Tokenized(_partnerCategory, _token)
     {
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
@@ -83,9 +83,9 @@ contract Documents is Profile {
         returns (
             bytes32,
             uint16,
+            uint16,
             uint8,
             uint8,
-            bool,
             bytes24
         )
     {
@@ -100,9 +100,9 @@ contract Documents is Profile {
         return(
             doc.fileHash,
             doc.fileEngine,
+            doc.encryptionAlgorithm,
             doc.docType,
             doc.docTypeVersion,
-            doc.encrypted,
             doc.additionalData
         );
     }
@@ -120,9 +120,9 @@ contract Documents is Profile {
     function createDocument(
         bytes32 _fileHash,
         uint16 _fileEngine,
+        uint16 _encryptionAlgorithm,
         uint8 _docType,
         uint8 _docTypeVersion,
-        bool _encrypted,
         bytes24 _additionalData
     )
         external
@@ -144,11 +144,11 @@ contract Documents is Profile {
         // Write data.
         doc.fileHash = _fileHash;
         doc.fileEngine = _fileEngine;
+        doc.encryptionAlgorithm = _encryptionAlgorithm;
         doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
         doc.docType = _docType;
         doc.docTypeVersion = _docTypeVersion;
         doc.published = true;
-        doc.encrypted = _encrypted;
         doc.additionalData = _additionalData;
 
         // Emit event.
@@ -157,38 +157,6 @@ contract Documents is Profile {
         );
 
         return documentsCounter;
-    }
-
-    /**
-     * @dev Update a document.
-     */
-    function updateDocument(
-        uint _id,
-        bytes32 _fileHash,
-        uint16 _fileEngine,
-        uint8 _docType,
-        uint8 _docTypeVersion,
-        bytes24 _additionalData
-    )
-        external
-        onlyOwner
-    {
-        // Storage pointer.
-        Document storage doc = documents[_id];
-
-        // Validate parameters.
-        require(_id > 0, 'Document ID must be > 0.');
-        require(_fileHash != '0x0', 'File hash must exist.');
-        require(_fileEngine > 0, 'File engine must be > 0.');
-        require(_docType > 0, 'Type of document must be > 0.');
-        require(_docTypeVersion > 0, 'Version of document type must be > 0.');
-
-        // Write data.
-        doc.fileHash = _fileHash;
-        doc.fileEngine = _fileEngine;
-        doc.docType = _docType;
-        doc.docTypeVersion = _docTypeVersion;
-        doc.additionalData = _additionalData;
     }
 
     /**
