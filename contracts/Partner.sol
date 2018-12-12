@@ -5,7 +5,7 @@ import './ownership/Ownable.sol';
 /**
  * @title Partner contract.
  * @notice This contract provides Partner features.
- * @author Talao, Polynomial, Slowsense, Blockchain Partner.
+ * @author Talao, Polynomial.
  * @dev Convention here: _function = to be called by another partner contract.
  */
 contract Partner is Ownable {
