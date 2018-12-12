@@ -1,15 +1,15 @@
 pragma solidity ^0.4.24;
 
-import './Partnership.sol';
+import './Filebox.sol';
+import './Tokenized.sol';
 import './Profile.sol';
 import './Documents.sol';
-import './Filebox.sol';
 
 /**
  * @title A Freelancer contract.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Freelancer is Filebox, Partnership, Profile, Documents {
+contract Freelancer is Filebox, Tokenized, Profile, Documents {
 
     /**
      * @dev Constructor.
