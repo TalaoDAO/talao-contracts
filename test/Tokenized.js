@@ -58,7 +58,7 @@ contract('Tokenized', async (accounts) => {
 
   it('user2 asks partnership with tokenized1, user1 accepts, and then user2 should not be able to read from tokenized1', async() => {
     await tokenized2.requestPartnership(tokenized1.address, {from: user2});
-    await tokenized1.authorizePartner(tokenized2.address, {from: user1});
+    await tokenized1.authorizePartnership(tokenized2.address, {from: user1});
     result = await tokenized1.isReader({from: user2});
     assert(result);
   });

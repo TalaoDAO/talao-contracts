@@ -99,7 +99,7 @@ contract('Profile', async (accounts) => {
 
   it('user2 requests partnership of his profile2 contract with profile1 contract, user1 accepts, and then user2 should be able to get private profile of profile1', async() => {
     await profile2.requestPartnership(profile1.address, {from:user2});
-    await profile1.authorizePartner(profile2.address, {from:user1});
+    await profile1.authorizePartnership(profile2.address, {from:user1});
     result = await profile1.getPrivateProfile({from:user2});
     assert.equal(
       result.toString(),

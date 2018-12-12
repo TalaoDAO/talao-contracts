@@ -1,20 +1,22 @@
 pragma solidity ^0.4.24;
 
-import './Partner.sol';
+import './Partnership.sol';
 import './TalaoToken.sol';
 
 /**
  * @title Tokenized contract.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
-contract Tokenized is Partner {
+contract Tokenized is Partnership {
 
     TalaoToken public token;
 
     /**
      * @dev Constructor.
      */
-    constructor(uint8 _partnerCategory, address _token) public Partner(_partnerCategory) {
+    constructor(uint8 _partnerCategory, address _token)
+        public Partnership(_partnerCategory)
+    {
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
     }
@@ -37,7 +39,7 @@ contract Tokenized is Partner {
             isOwner() ||
             token.hasVaultAccess(owner(), msg.sender) ||
             (
-                isAuthorizedPartnerOwner() &&
+                isAuthorizedPartnershipOwner() &&
                 token.hasVaultAccess(owner(), owner())
             ) ||
             (

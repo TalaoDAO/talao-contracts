@@ -20,7 +20,7 @@ contract('Filebox', async (accounts) => {
   });
 
   it('user1 should configure his filebox', async() => {
-    result = await filebox.fileboxConfigure(
+    result = await filebox.configureFilebox(
       bytes32,
       encryptionAlgorithm,
       {from: user1}
@@ -40,7 +40,7 @@ contract('Filebox', async (accounts) => {
   });
 
   it('user2 should be able to notify an encrypted decentralized file in filebox', async() => {
-    result = await filebox.fileboxSend(
+    result = await filebox.sendFilebox(
       bytes32,
       fileEngine,
       {from: user2}
@@ -57,13 +57,13 @@ contract('Filebox', async (accounts) => {
   });
 
   it('user1 should blacklist user2', async() => {
-    result = filebox.fileboxBlacklist(user2, {from: user1});
+    result = filebox.blacklistAddressInFilebox(user2, {from: user1});
     assert(result);
   });
 
   it('user2 should not be able to "send a file" to filebox any more', async() => {
     result = await truffleAssert.fails(
-      filebox.fileboxSend(
+      filebox.sendFilebox(
         bytes32,
         fileEngine,
         {from: user2}
@@ -73,14 +73,14 @@ contract('Filebox', async (accounts) => {
   });
 
   it('user1 should unblacklist user2', async() => {
-    result = await filebox.fileboxUnblacklist(user2, {from: user1});
+    result = await filebox.unblacklistAddressInFilebox(user2, {from: user1});
     assert(result);
     result = await filebox.fileboxBlacklisted(user2, {from: user2});
     assert(!result);
   });
 
   it('user2 should be able to notify an encrypted decentralized file in filebox', async() => {
-    result = await filebox.fileboxSend(
+    result = await filebox.sendFilebox(
       bytes32,
       fileEngine,
       {from: user2}

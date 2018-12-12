@@ -36,7 +36,7 @@ contract Filebox is Ownable {
     /**
      * @dev "Send" a "file" to the owner.
      */
-    function fileboxSend
+    function sendFilebox
     (
         bytes32 _fileHash,
         uint16 _fileEngine
@@ -57,7 +57,7 @@ contract Filebox is Ownable {
     /**
      * @dev Configure.
      */
-    function fileboxConfigure(
+    function configureFilebox(
         bytes32 _publicEncryptionKey,
         uint16 _encryptionKeyAlgorithm
     )
@@ -70,14 +70,14 @@ contract Filebox is Ownable {
     /**
      * @dev Blacklist.
      */
-    function fileboxBlacklist(address _address) external onlyOwner {
+    function blacklistAddressInFilebox(address _address) external onlyOwner {
         fileboxBlacklisted[_address] = true;
     }
 
     /**
      * @dev Unblacklist.
      */
-    function fileboxUnblacklist(address _address) external onlyOwner {
+    function unblacklistAddressInFilebox(address _address) external onlyOwner {
         fileboxBlacklisted[_address] = false;
     }
 }
