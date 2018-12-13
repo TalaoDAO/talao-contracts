@@ -21,4 +21,11 @@ contract Freelancer is Filebox, Tokenized, Profile, Documents {
         partnerCategory = 1;
         token = TalaoToken(_token);
     }
+
+    /**
+     * @dev Prevents accidental sending of ether.
+     */
+    function() public {
+        revert();
+    }
 }
