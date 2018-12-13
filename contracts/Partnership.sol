@@ -143,7 +143,7 @@ contract Partnership is Ownable {
     /**
      * @dev Request partnership.
      */
-    function requestPartnership(address _address) external onlyOwner {
+    function requestPartnership(address _address) public onlyOwner {
 
         // Storage pointer on new Partnership.
         PartnershipInformation storage partnershipStorage = partnershipsRegistry[_address];

@@ -16,7 +16,7 @@ contract Freelancer is Filebox, Tokenized, Profile, Documents {
      */
     constructor(address _token)
         public
-        Tokenized(1, _token)
+        Tokenized(4, _token)
     {
         partnerCategory = 1;
         token = TalaoToken(_token);
