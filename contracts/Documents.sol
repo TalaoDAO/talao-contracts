@@ -65,7 +65,7 @@ contract Documents is Tokenized {
      * @dev Document getter.
      * @param _id uint Document ID.
      */
-    function documentGet(uint _id)
+    function getDocument(uint _id)
         external
         view
         onlyReader
