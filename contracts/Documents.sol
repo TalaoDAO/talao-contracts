@@ -118,6 +118,31 @@ contract Documents is Tokenized {
         onlyOwner
         returns (uint)
     {
+        _createDocument(
+            _fileHash,
+            _fileEngine,
+            _encryptionAlgorithm,
+            _docType,
+            _docTypeVersion,
+            _additionalData
+        );
+
+        return documentsCounter;
+    }
+
+    /**
+     * @dev Create a document.
+     */
+    function _createDocument(
+        bytes32 _fileHash,
+        uint16 _fileEngine,
+        uint16 _encryptionAlgorithm,
+        uint8 _docType,
+        uint8 _docTypeVersion,
+        bytes24 _additionalData
+    )
+        internal
+    {
         // Validate parameters.
         require(_fileHash[0] != 0, 'File hash must exist.');
         require(_fileEngine > 0, 'File engine must be > 0.');
@@ -144,14 +169,19 @@ contract Documents is Tokenized {
         emit DocumentAdded(
             documentsCounter
         );
-
-        return documentsCounter;
     }
 
     /**
      * @dev Remove a document.
      */
     function deleteDocument (uint _id) external onlyOwner {
+        _deleteDocument(_id);
+    }
+
+    /**
+     * @dev Remove a document.
+     */
+    function _deleteDocument (uint _id) internal {
 
         // Storage pointer.
         Document storage docToDelete = documents[_id];
@@ -174,5 +204,36 @@ contract Documents is Tokenized {
         documentsIndex.length --;
         // Unpublish document.
         docToDelete.published = false;
+    }
+
+    /**
+     * @dev "Update" a document.
+     * @dev Updating a document makes no sense technically.
+     * @dev Here we provide a function that deletes a doc & create a new one.
+     * @dev But for UX it's very important to have this in 1 transaction.
+     */
+    function updateDocument(
+        uint _id,
+        bytes32 _fileHash,
+        uint16 _fileEngine,
+        uint16 _encryptionAlgorithm,
+        uint8 _docType,
+        uint8 _docTypeVersion,
+        bytes24 _additionalData
+    )
+        external onlyOwner returns (uint)
+    {
+        _deleteDocument(_id);
+
+        _createDocument(
+            _fileHash,
+            _fileEngine,
+            _encryptionAlgorithm,
+            _docType,
+            _docTypeVersion,
+            _additionalData
+        );
+
+        return documentsCounter;
     }
 }
