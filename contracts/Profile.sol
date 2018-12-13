@@ -51,7 +51,7 @@ contract Profile is Tokenized {
         // bytes16 left afther this on SSTORAGE 2.
         bytes16 mobile;
     }
-    PrivateProfile private privateProfile;
+    PrivateProfile internal privateProfile;
 
     /**
      * @dev Get private profile.

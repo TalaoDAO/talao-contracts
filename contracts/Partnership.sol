@@ -37,17 +37,17 @@ contract Partnership is Ownable {
     }
 
     // Partnership contracts information mapping.
-    mapping(address => PartnershipInformation) private partnershipsRegistry;
+    mapping(address => PartnershipInformation) internal partnershipsRegistry;
 
     // Index of Partnership contracts.
-    address[] private partnershipsIndex;
+    address[] internal partnershipsIndex;
 
     /**
      * @dev Owners of Partnership contracts.
      * @dev We want to authorize the owners of the Partnership contracts
      * @dev with which a partnership is established.
      */
-    mapping(address => bool) private authorizedPartnershipsOwners;
+    mapping(address => bool) internal authorizedPartnershipsOwners;
 
     // Event when another Partnership contract has asked partnership.
     event PartnershipRequested();

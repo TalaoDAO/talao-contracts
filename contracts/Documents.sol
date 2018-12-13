@@ -47,13 +47,13 @@ contract Documents is Tokenized {
     }
 
     // Documents registry.
-    mapping(uint => Document) private documents;
+    mapping(uint => Document) internal documents;
 
     // Documents index.
-    uint[] private documentsIndex;
+    uint[] internal documentsIndex;
 
     // Documents counter.
-    uint private documentsCounter;
+    uint internal documentsCounter;
 
     // Event: new document added.
     // Frontend needs to get the document ID after the transaction.
