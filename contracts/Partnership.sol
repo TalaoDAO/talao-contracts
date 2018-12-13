@@ -47,7 +47,11 @@ contract Partnership is Ownable {
      * @dev We want to authorize the owners of the Partnership contracts
      * @dev with which a partnership is established.
      */
-    mapping(address => bool) internal authorizedPartnershipsOwners;
+     struct PartnershipOwner {
+         bool authorized;
+         address contractAddress;
+     }
+     mapping(address => PartnershipOwner) internal partnershipsOwners;
 
     // Event when another Partnership contract has asked partnership.
     event PartnershipRequested();
@@ -68,9 +72,10 @@ contract Partnership is Ownable {
      * @dev which have an established partnership with this contract.
      */
     function isAuthorizedPartnershipOwner() public view returns (bool) {
-        return authorizedPartnershipsOwners[msg.sender];
+        return partnershipsOwners[msg.sender].authorized;
     }
 
+    // TODO: rewrite with direct method thanks to new mapping
     /**
      * @dev Get partnership status in another Partnership contract.
      * @dev Works in pair with _getPartnershipAuthorization.
@@ -100,9 +105,9 @@ contract Partnership is Ownable {
     }
 
     /**
-     * @dev Get a Partnership.
+     * @dev Get a Partnership by it's contract address.
      */
-    function getPartnership(address _address)
+    function getPartnershipByContract(address _address)
         external
         view
         onlyOwner
@@ -114,6 +119,24 @@ contract Partnership is Ownable {
               partnershipMemory.category,
               uint(partnershipMemory.authorization),
               partnershipMemory.owner
+          );
+    }
+
+    /**
+     * @dev Get a Partnership by it's owner address.
+     */
+    function getPartnershipByOwner(address _address)
+        external
+        view
+        onlyOwner
+        returns (uint8, uint, address)
+    {
+          PartnershipInformation memory partnershipMemory = partnershipsRegistry[partnershipsOwners[_address].contractAddress];
+
+          return (
+              partnershipMemory.category,
+              uint(partnershipMemory.authorization),
+              partnershipsOwners[_address].contractAddress
           );
     }
 
@@ -160,7 +183,9 @@ contract Partnership is Ownable {
             partnershipsIndex.push(_address);
 
             // Authorize the contract owner.
-            authorizedPartnershipsOwners[partnershipInterfaceOwner] = true;
+            partnershipsOwners[partnershipInterfaceOwner].authorized = true;
+            // Add the user's contract address.
+            partnershipsOwners[partnershipInterfaceOwner].contractAddress = _address;
         }
     }
 
@@ -181,6 +206,7 @@ contract Partnership is Ownable {
 
         // Read information from it.
         uint partnershipInterfaceCategory = partnershipInterface.partnerCategory();
+        address partnershipInterfaceOwner = partnershipInterface.owner();
 
         require(
             partnershipInterfaceCategory != partnerCategory,
@@ -193,6 +219,9 @@ contract Partnership is Ownable {
 
         // Add the new partnership to our partnerships index.
         partnershipsIndex.push(msg.sender);
+
+        // Add the user's contract address.
+        partnershipsOwners[partnershipInterfaceOwner].contractAddress = msg.sender;
 
         emit PartnershipRequested();
 
@@ -223,7 +252,10 @@ contract Partnership is Ownable {
         partnershipStorage.owner = partnershipInterfaceOwner;
 
         // Authorize the contract owner.
-        authorizedPartnershipsOwners[partnershipInterfaceOwner] = true;
+        partnershipsOwners[partnershipInterfaceOwner].authorized = true;
+
+        // Add the user's contract address.
+        partnershipsOwners[partnershipInterfaceOwner].contractAddress = _address;
 
         // Log an event in the new authorized partner contract.
         partnershipInterface._notifyPartnershipAccepted();
@@ -279,14 +311,19 @@ contract Partnership is Ownable {
 
         // Remove the partner.
         if (success) {
-            // Remove in registry.
-            partnershipStorage.authorization = PartnershipAuthorization.Unknown;
-
-            // Not necessary to update category & owner in registry.
-
-            // Unauthorize owner.
+            // Get owner of removed contract.
             address partnershipInterfaceOwner = partnershipInterface.owner();
-            authorizedPartnershipsOwners[partnershipInterfaceOwner] = false;
+
+            PartnershipOwner storage partnershipOwnerStorage = partnershipsOwners[partnershipInterfaceOwner];
+
+            // Delete in partnershipsOwners.
+            delete partnershipOwnerStorage.authorized;
+            delete partnershipOwnerStorage.contractAddress;
+
+            // Delete in partnershipsRegistry;
+            delete partnershipStorage.category;
+            delete partnershipStorage.authorization;
+            delete partnershipStorage.owner;
         }
     }
 
@@ -295,16 +332,20 @@ contract Partnership is Ownable {
      */
     function _removePartnership() external returns (bool success) {
 
-         PartnershipInformation storage partnershipStorage = partnershipsRegistry[msg.sender];
+         // Get information from calling contract.
          PartnershipInterface partnershipInterface = PartnershipInterface(msg.sender);
-
          address partnershipInterfaceOwner = partnershipInterface.owner();
 
-         // Remove other partnership contract from registry.
-         partnershipStorage.authorization = PartnershipAuthorization.Unknown;
+         // Delete in partnershipsOwners.
+         PartnershipOwner storage partnershipOwnerStorage = partnershipsOwners[partnershipInterfaceOwner];
+         delete partnershipOwnerStorage.authorized;
+         delete partnershipOwnerStorage.contractAddress;
 
-         // Unauthorize owner.
-         authorizedPartnershipsOwners[partnershipInterfaceOwner] = false;
+         // Delete in partnershipsRegistry;
+         PartnershipInformation storage partnershipStorage = partnershipsRegistry[msg.sender];
+         delete partnershipStorage.category;
+         delete partnershipStorage.authorization;
+         delete partnershipStorage.owner;
 
          success = true;
     }
@@ -331,23 +372,30 @@ contract Partnership is Ownable {
      * @dev Symetry of updatePartnershipsOwner.
      */
     function _updatePartnershipsOwner() external {
-        // Storage pointer & init interface.
-        PartnershipInformation storage partnershipStorage = partnershipsRegistry[msg.sender];
-        PartnershipInterface partnershipInterface = PartnershipInterface(msg.sender);
 
-        // Unauthorize previous known owner.
-        authorizedPartnershipsOwners[partnershipStorage.owner] = false;
+        // Storage pointer to calling contract in partnershipsRegistry.
+        PartnershipInformation storage callingContractStorage = partnershipsRegistry[msg.sender];
 
-        // Get current owner.
-        address partnershipInterfaceOwner = partnershipInterface.owner();
+        // Delete previous known owner in partnershipsOwners.
+        PartnershipOwner storage previousOwnerStorage = partnershipsOwners[callingContractStorage.owner];
+        delete previousOwnerStorage.authorized;
+        delete previousOwnerStorage.contractAddress;
 
-        // Update owner in registry.
-        partnershipStorage.owner = partnershipInterfaceOwner;
+        // Get current owner of calling contract.
+        PartnershipInterface callingContractInterface = PartnershipInterface(msg.sender);
+        address currentOwner = callingContractInterface.owner();
+
+        // Update current owner in partnershipsRegistry.
+        callingContractStorage.owner = currentOwner;
+
+        // Associate contract to current owner in partnershipsOwners.
+        PartnershipOwner storage currentOwnerStorage = partnershipsOwners[currentOwner];
+        currentOwnerStorage.contractAddress = msg.sender;
 
         // If partnership is active,
-        if (partnershipsRegistry[msg.sender].authorization == PartnershipAuthorization.Authorized) {
-            // Authorize current owner.
-            authorizedPartnershipsOwners[partnershipInterfaceOwner] = true;
+        if (callingContractStorage.authorization == PartnershipAuthorization.Authorized) {
+            // Authorize current owner in partnershipsOwners.
+            currentOwnerStorage.authorized = true;
         }
     }
 }

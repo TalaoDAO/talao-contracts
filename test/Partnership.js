@@ -75,11 +75,32 @@ contract('Partnership', async (accounts) => {
     assert.equal(result.toString(), [partnership1.address, partnership3.address]);
   });
 
-  it('user2 should get partnership1 information', async() => {
-    result = await partnership2.getPartnership(partnership1.address, { from: user2 });
+  it('user2 should get partnership1 information by its contract address', async() => {
+    result = await partnership2.getPartnershipByContract(partnership1.address, { from: user2 });
     assert.equal(result[0], 1);
     assert.equal(result[1], 1);
     assert.equal(result[2], user1);
+  });
+
+  it('user2 should get partnership1 information by user1\'s Ethereum address', async() => {
+    result = await partnership2.getPartnershipByOwner(user1, { from: user2 });
+    assert.equal(result[0], 1);
+    assert.equal(result[1], 1);
+    assert.equal(result[2], partnership1.address);
+  });
+
+  it('user1 should get partnership2 information by its contract address', async() => {
+    result = await partnership1.getPartnershipByContract(partnership2.address, { from: user1 });
+    assert.equal(result[0], 2);
+    assert.equal(result[1], 1);
+    assert.equal(result[2], user2);
+  });
+
+  it('user1 should get partnership2 information by user2\'s Ethereum address', async() => {
+    result = await partnership1.getPartnershipByOwner(user2, { from: user1 });
+    assert.equal(result[0], 2);
+    assert.equal(result[1], 1);
+    assert.equal(result[2], partnership2.address);
   });
 
   it('user2 should reject partnership3 in his contract partnership2.', async() => {
@@ -141,6 +162,20 @@ contract('Partnership', async (accounts) => {
   it('user3 should be not be an autorized partner owner in partnership2 anymore because he transfered this contract to user5 and user5 did execute updatePartnershipsOwner', async() => {
     result = await partnership2.isAuthorizedPartnershipOwner({ from: user5 });
     assert(result);
+  });
+
+  it('user2 should get partnership3 information by its contract address', async() => {
+    result = await partnership2.getPartnershipByContract(partnership3.address, { from: user2 });
+    assert.equal(result[0], 255);
+    assert.equal(result[1], 1);
+    assert.equal(result[2], user5);
+  });
+
+  it('user2 should get partnership3 information by user5\'s Ethereum address', async() => {
+    result = await partnership2.getPartnershipByOwner(user5, { from: user2 });
+    assert.equal(result[0], 255);
+    assert.equal(result[1], 1);
+    assert.equal(result[2], partnership3.address);
   });
 
 });
