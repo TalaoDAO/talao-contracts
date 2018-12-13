@@ -192,4 +192,26 @@ contract('Documents', async (accounts) => {
     );
   });
 
+  it('user1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
+    result = await documents1.updateDocument(
+      1,
+      otherBytes32,
+      otherFileEngine,
+      otherEncryptionAlgorithm,
+      otherDocType,
+      otherDocTypeVersion,
+      otherBytes24,
+      {from: user1}
+    );
+    assert(result);
+  });
+
+  it('getDocuments should return the correct array of doc IDs [3, 4, 5]', async() => {
+    result = await documents1.getDocuments({from: user1});
+    assert.equal(
+      result.toString(),
+      '3,4,5'
+    );
+  });
+
 });
