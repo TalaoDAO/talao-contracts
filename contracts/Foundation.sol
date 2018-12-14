@@ -96,7 +96,7 @@ contract Foundation is Workspace {
         require(
             (
                 foundationAccounts[msg.sender] == _contract &&
-                foundationContracts[contract] == msg.sender
+                foundationContracts[_contract] == msg.sender
             ),
             'Foundation says you are not the owner'
         );
