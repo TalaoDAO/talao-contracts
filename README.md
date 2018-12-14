@@ -1,3 +1,3 @@
-# Talao Vault
+# Talao smart contracts
 
-TODO: doc
+TODO
