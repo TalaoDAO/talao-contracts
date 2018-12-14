@@ -1,67 +1,91 @@
 pragma solidity ^0.4.24;
 
-import './Filebox.sol';
-import './Tokenized.sol';
-import './Profile.sol';
-import './Documents.sol';
+import './Workspace.sol';
 
 /**
  * @title Foundation contract.
- * @author Talao, Polynomial, SlowSense, Blockchain Partners.
+ * @author Talao, Polynomial.
  */
-contract Foundation is Filebox, Tokenized, Profile, Documents {
+contract Foundation is Workspace {
 
-    // Account addresses => contract addresses.
-    mapping(address => address) public accountsToContracts;
+    // Registered foundation factories.
+    mapping(address => bool) public foundationFactories;
+
+    // Registered accounts to contracts relationships.
+    mapping(address => address) public foundationAccounts;
+
+    // Events for factories.
+    event FoundationFactoryAdded(address _factory);
+    event FoundationFactoryRemoved(address _factory);
 
     /**
      * @dev Constructor.
      */
     constructor(address _token)
         public
-        Tokenized(1, _token)
+        Workspace(1, _token)
     {
         partnerCategory = 1;
         token = TalaoToken(_token);
     }
 
     /**
-     * @dev Called by a user to register his contract address.
+     * @dev Add a factory.
      */
-    function joinFoundation(address _contractAddress) external {
-        accountsToContracts[msg.sender] = _contractAddress;
+    function addFoundationFactory(address _factory) external onlyOwner {
+        foundationFactories[_factory] = true;
+        emit FoundationFactoryAdded(_factory);
     }
 
     /**
-     * @dev Called by a user to remove his contract address.
+     * @dev Remove a factory.
      */
-    function leaveFoundation() external {
-
-        require(
-            accountsToContracts[msg.sender] != address(0),
-            'Account not registered'
-        );
-
-        delete accountsToContracts[msg.sender];
+    function removeFoundationFactory(address _factory) external onlyOwner {
+        foundationFactories[_factory] = false;
+        emit FoundationFactoryRemoved(_factory);
     }
+
+    /**
+     * @dev Modifier for factories.
+     */
+    modifier onlyFoundationFactory() {
+        require(
+            foundationFactories[msg.sender],
+            'Sender is not a registered factory'
+        );
+        _;
+    }
+
+    /**
+     * @dev Add a new account.
+     * @dev All Ethereum user accounts have an associated contract in Foundation.
+     */
+    function addFoundationAccount(
+        address _account,
+        address _contract
+    )
+        external
+        onlyFoundationFactory
+    {
+        require(
+            foundationAccounts[_account] == address(0),
+            'Account already has contract'
+        );
+        foundationAccounts[_account] = _contract;
+    }
+
+    // TODO: update
 
     /**
      * @dev Manually set account => contract for Foundation owner.
      */
-    function setFoundationAccountToContract(
-        address _accountAddress,
-        address _contractAddress
+    function setFoundationAccount(
+        address _account,
+        address _contract
     )
         external
         onlyOwner
     {
-        accountsToContracts[_accountAddress] = _contractAddress;
-    }
-
-    /**
-     * @dev Prevents accidental sending of ether.
-     */
-    function() public {
-        revert();
+        foundationAccounts[_account] = _contract;
     }
 }
