@@ -11,8 +11,8 @@ import './Documents.sol';
  */
 contract Foundation is Filebox, Tokenized, Profile, Documents {
 
-    // Main registry.
-    mapping(address => address) public foundationAccountsToContracts;
+    // Account addresses => contract addresses.
+    mapping(address => address) public accountsToContracts;
 
     /**
      * @dev Constructor.
@@ -26,25 +26,10 @@ contract Foundation is Filebox, Tokenized, Profile, Documents {
     }
 
     /**
-     * @dev Called by a contract to register his owner and himself in Foundation.
+     * @dev Called by a user to register his contract address.
      */
-    function joinFoundation() external {
-
-        // Interface with the calling contract.
-        PartnershipInterface callingContractInterface = PartnershipInterface(msg.sender);
-
-        // Get contract owner.
-        address callingContractOwner = callingContractInterface.owner();
-
-        // This is mandatory, otherwise a contract could fake ownership
-        // and erase someone's mapping.
-        require(
-            foundationAccountsToContracts[callingContractOwner] == address(0),
-            'Owner address already registered'
-        );
-
-        // Register correspondance between account & contract.
-        foundationAccountsToContracts[callingContractOwner] = msg.sender;
+    function joinFoundation(address _contractAddress) external {
+        accountsToContracts[msg.sender] = _contractAddress;
     }
 
     /**
@@ -53,11 +38,11 @@ contract Foundation is Filebox, Tokenized, Profile, Documents {
     function leaveFoundation() external {
 
         require(
-            foundationAccountsToContracts[msg.sender] != address(0),
+            accountsToContracts[msg.sender] != address(0),
             'Account not registered'
         );
 
-        delete foundationAccountsToContracts[msg.sender];
+        delete accountsToContracts[msg.sender];
     }
 
     /**
@@ -70,7 +55,7 @@ contract Foundation is Filebox, Tokenized, Profile, Documents {
         external
         onlyOwner
     {
-        foundationAccountsToContracts[_accountAddress] = _contractAddress;
+        accountsToContracts[_accountAddress] = _contractAddress;
     }
 
     /**
