@@ -6,23 +6,23 @@ import './Profile.sol';
 import './Documents.sol';
 
 /**
- * @title A Freelancer contract.
+ * @title A Workspace contract.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Freelancer is Filebox, Tokenized, Profile, Documents {
+contract Workspace is Filebox, Tokenized, Profile, Documents {
 
     /**
      * @dev Constructor.
      */
-    constructor(address _token)
+    constructor(uint8 _category, address _token)
         public
-        Tokenized(4, _token)
+        Tokenized(_category, _token)
     {
-        partnerCategory = 1;
+        partnerCategory = _category;
         token = TalaoToken(_token);
     }
 
-    //TODO: kill
+    //TODO: kill, ownable + foundation link
 
     /**
      * @dev Prevents accidental sending of ether.
