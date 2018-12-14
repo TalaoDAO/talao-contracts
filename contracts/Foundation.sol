@@ -14,6 +14,9 @@ contract Foundation is Workspace {
     // Registered accounts to contracts relationships.
     mapping(address => address) public foundationAccounts;
 
+    // Registered contracts to accounts relationships.
+    mapping(address => address) public foundationContracts;
+
     // Events for factories.
     event FoundationFactoryAdded(address _factory);
     event FoundationFactoryRemoved(address _factory);
@@ -57,8 +60,7 @@ contract Foundation is Workspace {
     }
 
     /**
-     * @dev Add a new account.
-     * @dev All Ethereum user accounts have an associated contract in Foundation.
+     * @dev Add a new account => contract.
      */
     function addFoundationAccount(
         address _account,
@@ -67,17 +69,46 @@ contract Foundation is Workspace {
         external
         onlyFoundationFactory
     {
+
         require(
             foundationAccounts[_account] == address(0),
             'Account already has contract'
         );
+
+        require(
+            foundationContracts[_contract] == address(0),
+            'Contract already has account'
+        );
+
         foundationAccounts[_account] = _contract;
+        foundationContracts[_contract] = _account;
     }
 
-    // TODO: update
+    /**
+     * @dev Transfer a contract to another account.
+     */
+    function transferOwnershipInFoundation(
+        address _contract,
+        address _newOwner
+    )
+        external
+    {
+        require(
+            (
+                foundationAccounts[msg.sender] == _contract &&
+                foundationContracts[contract] == msg.sender
+            ),
+            'Foundation says you are not the owner'
+        );
+
+        foundationAccounts[msg.sender] = address(0);
+        foundationAccounts[_newOwner] = _contract;
+        foundationContracts[_contract] = _newOwner;
+    }
 
     /**
      * @dev Manually set account => contract for Foundation owner.
+     * // TODO: keep? it allows override of ownership by Talao...
      */
     function setFoundationAccount(
         address _account,
@@ -87,5 +118,6 @@ contract Foundation is Workspace {
         onlyOwner
     {
         foundationAccounts[_account] = _contract;
+        foundationContracts[_contract] = _account;
     }
 }
