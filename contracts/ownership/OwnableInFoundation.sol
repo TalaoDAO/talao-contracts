@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './Foundation.sol';
+import '../Foundation.sol';
 
 /**
  * @title Manages ownership through the Foundation contract.
@@ -9,14 +9,14 @@ import './Foundation.sol';
  */
 contract OwnableInFoundation {
 
-    // Interface with Foundation.
-    FoundationInterface foundation;
+    // Foundation contract.
+    Foundation foundation;
 
     /**
      * @dev Constructor.
      */
     constructor(address _foundation) public {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
     }
 
     /**

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './OwnableInFoundation.sol';
+import '../ownership/OwnableInFoundation.sol';
 
 /**
  * @title Provides partnership features between contracts.
@@ -21,8 +21,8 @@ import './OwnableInFoundation.sol';
  */
 contract Partnership is OwnableInFoundation {
 
-    // Interface with Foundation.
-    FoundationInterface foundation;
+    // Foundation contract.
+    Foundation foundation;
 
     // Our category for partnerships.
     uint public partnerCategory;
@@ -50,7 +50,7 @@ contract Partnership is OwnableInFoundation {
         OwnableInFoundation(_foundation)
         public
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
         partnerCategory = _partnerCategory;
     }
 

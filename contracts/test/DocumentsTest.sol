@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../Tokenized.sol';
-import '../Documents.sol';
+import '../access/Tokenized.sol';
+import '../content/Documents.sol';
 
 /**
  * @title Independent Documents.sol implementation for tests.
@@ -15,7 +15,7 @@ contract DocumentsTest is Tokenized, Documents {
         Tokenized(_foundation, _partnerCategory, _token)
         public
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
     }

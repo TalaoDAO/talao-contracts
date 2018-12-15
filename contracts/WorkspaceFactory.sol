@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './ownership/Ownable.sol';
-import './TalaoToken.sol';
+import './token/TalaoToken.sol';
 import './Foundation.sol';
 import './Workspace.sol';
 
@@ -13,17 +13,17 @@ import './Workspace.sol';
 
 contract WorkspaceFactory is Ownable {
 
-    // Interface with Foundation.
-    FoundationInterface foundation;
+    // Foundation contract.
+    Foundation foundation;
 
-    // TODO: interface
+    // Talao token contract.
     TalaoToken public token;
 
     /**
      * @dev Constructor.
      */
     constructor(address _foundation, address _token) public {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
         token = TalaoToken(_token);
     }
 

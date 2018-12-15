@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import '../OwnableInFoundation.sol';
+import '../ownership/OwnableInFoundation.sol';
 
 /**
  * @title Test onlyOwnerInFoundation in an inherited contract.
@@ -14,7 +14,7 @@ contract OwnableInFoundationTest is OwnableInFoundation {
         OwnableInFoundation(_foundation)
         public
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
     }
 
     function getSecret() external view onlyOwnerInFoundation returns (string) {

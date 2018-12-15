@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../Tokenized.sol';
-import '../Profile.sol';
+import '../access/Tokenized.sol';
+import '../content/Profile.sol';
 
 /**
  * @title Independent Profile.sol implementation for tests.
@@ -15,7 +15,7 @@ contract ProfileTest is Tokenized, Profile {
         Tokenized(_foundation, _partnerCategory, _token)
         public
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
     }

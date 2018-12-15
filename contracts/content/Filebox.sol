@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './OwnableInFoundation.sol';
+import '../ownership/OwnableInFoundation.sol';
 
 /**
  * @title Filebox contract.

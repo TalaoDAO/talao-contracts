@@ -99,22 +99,3 @@ contract Foundation is Ownable {
         revert();
     }
 }
-
-
-/**
- * @title Foundation Interface (only functions used in other contracts).
- */
-interface FoundationInterface {
-    function accountsToContracts(address) external view returns(address);
-    function contractsToAccounts(address) external view returns(address);
-    function setInitialOwnerInFoundation(
-        address _contract,
-        address _account
-    )
-    external;
-    function transferOwnershipInFoundation(
-        address _contract,
-        address _account
-    )
-    external;
-}

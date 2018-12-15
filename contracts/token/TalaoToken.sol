@@ -1,7 +1,13 @@
 pragma solidity ^0.4.24;
 
-import './math/SafeMath.sol';
-import './ownership/Ownable.sol';
+import '../math/SafeMath.sol';
+import '../ownership/Ownable.sol';
+
+/**
+ * This is a modified version of Talao token and all contracts it inherits from,
+ * in order to remove warnings in the now deprecated code of the ICO on mainnet.
+ * ICO mainnet Talao token code: https://github.com/TalaoDAO/talao-crowdsale
+ */
 
 /**
  * @title ERC20Basic

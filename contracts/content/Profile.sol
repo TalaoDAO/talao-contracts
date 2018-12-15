@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './Tokenized.sol';
+import '../access/Tokenized.sol';
 
 /**
  * @title Profile contract.

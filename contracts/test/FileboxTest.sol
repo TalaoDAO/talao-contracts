@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import '../Filebox.sol';
+import '../content/Filebox.sol';
 
 /**
  * @title Filebox contract.
@@ -9,8 +9,8 @@ import '../Filebox.sol';
  */
 contract FileboxTest is Filebox {
 
-    // Interface with Foundation.
-    FoundationInterface foundation;
+    // Foundation contract.
+    Foundation foundation;
 
     /**
      * @dev Constructor.
@@ -19,6 +19,6 @@ contract FileboxTest is Filebox {
         OwnableInFoundation(_foundation)
         public
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
     }
 }

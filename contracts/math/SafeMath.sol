@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
+ * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
  */
 library SafeMath {
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {

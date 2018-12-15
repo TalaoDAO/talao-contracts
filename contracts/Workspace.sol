@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import './Tokenized.sol';
-import './Profile.sol';
-import './Documents.sol';
-import './Filebox.sol';
+import './access/Tokenized.sol';
+import './content/Profile.sol';
+import './content/Documents.sol';
+import './content/Filebox.sol';
 
 /**
  * @title A Workspace contract.
@@ -32,7 +32,7 @@ contract Workspace is Tokenized, Profile, Documents, Filebox {
         Tokenized(_foundation, _partnerCategory, _token)
         public
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
         publicProfile.name1 = _name1;

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import './Partnership.sol';
-import './TalaoToken.sol';
+import '../token/TalaoToken.sol';
 
 /**
  * @title Tokenized contract.
@@ -9,10 +9,10 @@ import './TalaoToken.sol';
  */
 contract Tokenized is Partnership {
 
-    // Interface with Foundation.
-    FoundationInterface foundation;
+    // Foundation contract.
+    Foundation foundation;
 
-    // TODO: interface instead.
+    // Talao token contract.
     TalaoToken public token;
 
     /**
@@ -21,7 +21,7 @@ contract Tokenized is Partnership {
     constructor(address _foundation, uint _partnerCategory, address _token)
         public Partnership(_foundation, _partnerCategory)
     {
-        foundation = FoundationInterface(_foundation);
+        foundation = Foundation(_foundation);
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
     }
