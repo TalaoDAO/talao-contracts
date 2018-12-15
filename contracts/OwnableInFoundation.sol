@@ -20,10 +20,22 @@ contract OwnableInFoundation {
     }
 
     /**
-     * @dev Check in Foundation if msg.sender is the owner of this contract.
+     * @dev Owner of this contract, in the Foundation sense.
+     * @dev We do not allow this to be used externally,
+     * @dev since a contract could fake ownership.
+     * @dev In other contracts, you have to call the Foundation to
+     * @dev know the real owner of this contract.
      */
-    function isOwnerInFoundation() public view returns (bool) {
-        return foundation.contractsToAccounts(address(this)) == msg.sender;
+    function ownerInFoundation() internal view returns (address) {
+        return foundation.contractsToAccounts(address(this));
+    }
+
+    /**
+     * @dev Check in Foundation if msg.sender is the owner of this contract.
+     * @dev Same remark.
+     */
+    function isOwnerInFoundation() internal view returns (bool) {
+        return msg.sender == ownerInFoundation();
     }
 
     /**
