@@ -1,6 +1,6 @@
 const truffleAssert = require('truffle-assertions');
-const Foundation = artifacts.require('Foundation');
 const TalaoToken = artifacts.require('TalaoToken');
+const Foundation = artifacts.require('Foundation');
 const Tokenized = artifacts.require('Tokenized');
 
 contract('Tokenized', async (accounts) => {
@@ -17,18 +17,6 @@ contract('Tokenized', async (accounts) => {
   let tokenized1, tokenized2;
   let result, result1, result2;
 
-  it('Should deploy Foundation contract', async() => {
-    foundation = await Foundation.new();
-    assert(foundation);
-  });
-
-  it('Should register a Factory contract', async() => {
-    // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
-    result = await foundation.addFactory(factory);
-    assert(result);
-    truffleAssert.eventEmitted(result, 'FactoryAdded');
-  });
-
   // Simple init, already fully tested before the ICO.
   it('Should init token with Vault deposit of 100 TALAO and transfer 1000 TALAO to User1, User2 and User3. User1 should create a Vault access with a price of 10 TALAO and User2 should create a free Vault access', async() => {
     token = await TalaoToken.new();
@@ -42,11 +30,20 @@ contract('Tokenized', async (accounts) => {
     await token.createVaultAccess(0, { from: user2 });
   });
 
-  // Simple init, already tested in OwnableInFoundation.js
+  // Already tested in Foundation.js.
+  it('Should deploy Foundation contract and register a Factory contract', async() => {
+    foundation = await Foundation.new();
+    // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
+    await foundation.addFactory(factory);
+  });
+
+  // Simple init for initial owners, already tested in OwnableInFoundation.js
   it('Factory should deploy Tokenized1 (category 1) and Tokenized2 (category 2) and set initial owners to User1 and User2', async() => {
     tokenized1 = await Tokenized.new(foundation.address, 1, token.address, {from: factory});
+    assert(tokenized1);
     await foundation.setInitialOwnerInFoundation(tokenized1.address, user1, {from: factory});
     tokenized2 = await Tokenized.new(foundation.address, 2, token.address, {from: factory});
+    assert(tokenized2);
     await foundation.setInitialOwnerInFoundation(tokenized2.address, user2, {from: factory});
   });
 
