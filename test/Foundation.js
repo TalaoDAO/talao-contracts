@@ -1,7 +1,7 @@
 const truffleAssert = require('truffle-assertions');
 const TalaoToken = artifacts.require('TalaoToken');
 const Foundation = artifacts.require('Foundation');
-const WorkspaceFoundationFactory = artifacts.require('WorkspaceFoundationFactory');
+const WorkspaceFactory = artifacts.require('WorkspaceFactory');
 const Workspace = artifacts.require('Workspace');
 
 // "this string just fills a bytes32"
@@ -17,12 +17,15 @@ contract('Foundation', async (accounts) => {
   const talaoOwner = accounts[0];
   const user1 = accounts[1];
   const user2 = accounts[2];
-  const someone = accounts[3];
+  const user3 = accounts[3];
+  const user4 = accounts[4];
+  const user5 = accounts[5];
+  const someone = accounts[9];
   let token;
   let foundation;
   let factory;
-  let finalContract;
-  let finalContractAddress;
+  let finalContract1, finalContract3;
+  let finalContract1Address, finalContract3Address;
   let result;
 
   it('Should init token', async() => {
@@ -32,7 +35,9 @@ contract('Foundation', async (accounts) => {
     await token.setVaultDeposit(100);
     await token.transfer(user1, 1000);
     await token.transfer(user2, 1000);
+    await token.transfer(user3, 1000);
     await token.createVaultAccess(10, { from: user1 });
+    await token.createVaultAccess(10, { from: user3 });
   });
 
   it('Should deploy Foundation contract', async() => {
@@ -41,19 +46,19 @@ contract('Foundation', async (accounts) => {
   });
 
   it('Should deploy a factory contract', async() => {
-    factory = await WorkspaceFoundationFactory.new(token.address, foundation.address);
+    factory = await WorkspaceFactory.new(foundation.address, token.address);
     assert(factory);
   });
 
   it('Should add the factory to Foundation', async() => {
-    result = await foundation.addFoundationFactory(factory.address);
+    result = await foundation.addFactory(factory.address);
     assert(result);
-    truffleAssert.eventEmitted(result, 'FoundationFactoryAdded');
+    truffleAssert.eventEmitted(result, 'FactoryAdded');
   });
 
-  it('Through the factory, User1 should create a final contract and register its owner account to contract relationship in Foundation', async() => {
+  it('Through the factory, User1 should create a final contract of category1 (Freelancer)', async() => {
     result = await factory.createWorkspace(
-      3,
+      1,
       name1,
       name2,
       tagline,
@@ -67,28 +72,39 @@ contract('Foundation', async (accounts) => {
       {from: user1}
     );
     assert(result);
-    finalContractAddress = result.logs[0].address;
-    assert(finalContractAddress);
   });
 
-  it('Foundation should have the account of User1 to his contract address relationship', async() => {
-    result = await foundation.foundationAccounts(user1, {from: someone});
-    assert.equal(result.toString(), finalContractAddress)
+  it('No events were emitted, but we can now ask the contract address to the Foundation accountsToContrats the contract address. It should be consistent with contractToAccounts', async() => {
+    finalContract1Address = await foundation.accountsToContracts(user1, {from: someone});
+    result = await foundation.contractsToAccounts(finalContract1Address, {from: someone});
+    assert.equal(result.toString(), user1)
   });
 
   it('Should load final contract', async() => {
-    finalContract = await Workspace.at(finalContractAddress);
-    assert(finalContract);
-  })
+    finalContract1 = await Workspace.at(finalContract1Address);
+    assert(finalContract1);
+  });
 
-  it('Final contract should work and be owned by User', async() => {
-    result = await finalContract.owner({from: someone});
-    assert.equal(result.toString(), user1);
+  it('Anyone should be able to read public data from final contract', async() => {
+    result = await finalContract1.publicProfile({from: someone});
+    assert.equal(
+      result.toString(),
+      [
+        name1,
+        name2,
+        tagline,
+        url,
+        publicEmail,
+        fileHash,
+        fileEngine,
+        description,
+      ]
+    );
   });
 
   it('User2 should not have access to private profile', async() => {
     result = await truffleAssert.fails(
-      finalContract.getPrivateProfile({from: user2})
+      finalContract1.getPrivateProfile({from: user2})
     );
     assert(!result);
   });
@@ -99,7 +115,7 @@ contract('Foundation', async (accounts) => {
   });
 
   it('User2 should have access to private profile', async() => {
-    result = await finalContract.getPrivateProfile({from: user2});
+    result = await finalContract1.getPrivateProfile({from: user2});
     assert.equal(
       result.toString(),
       [
@@ -107,6 +123,112 @@ contract('Foundation', async (accounts) => {
         mobile
       ]
     );
-  })
+  });
+
+  it('Through the factory, User3 should create a final contract of category 2 (Marketplace)', async() => {
+    result = await factory.createWorkspace(
+      2,
+      name1,
+      name2,
+      tagline,
+      url,
+      publicEmail,
+      fileHash,
+      fileEngine,
+      description,
+      privateEmail,
+      mobile,
+      {from: user3}
+    );
+    assert(result);
+    finalContract3Address = await foundation.accountsToContracts(user3, {from: someone});
+    finalContract3 = await Workspace.at(finalContract3Address);
+    assert(finalContract3);
+  });
+
+  it('User3 should not have access to private profile of User1\'s contract', async() => {
+    result = await truffleAssert.fails(
+      finalContract1.getPrivateProfile({from: user3})
+    );
+    assert(!result);
+  });
+
+  it('User3 should request partnership of his contract with User1\'s contract', async() => {
+    result = await finalContract3.requestPartnership(finalContract1.address, { from: user3 });
+    assert(result);
+  });
+
+  it('User1 should accept partnership of his contract with User3\'s contract', async() => {
+    result = await finalContract1.authorizePartnership(finalContract3.address, { from: user1 });
+    assert(result);
+  });
+
+  it('User3 should have access to private profile of User1\'s contract', async() => {
+    result = await finalContract1.getPrivateProfile({from: user3});
+    assert.equal(
+      result.toString(),
+      [
+        privateEmail,
+        mobile
+      ]
+    );
+  });
+
+  it('User4 should not have access to private profile of User1\'s contract', async() => {
+    result = await truffleAssert.fails(
+      finalContract1.getPrivateProfile({from: user4})
+    );
+    assert(!result);
+  });
+
+  it('User3 should transfer his contract to User4', async() => {
+    await foundation.transferOwnershipInFoundation(finalContract3.address, user4, { from: user3 });
+    result = await foundation.contractsToAccounts(finalContract3.address, {from: someone});
+    assert.equal(result, user4);
+  });
+
+  it('User4 should have access to private profile of User1\'s contract', async() => {
+    result = await finalContract1.getPrivateProfile({from: user4});
+    assert.equal(
+      result.toString(),
+      [
+        privateEmail,
+        mobile
+      ]
+    );
+  });
+
+  it('User3 should not have access to private profile of User1\'s contract', async() => {
+    result = await truffleAssert.fails(
+      finalContract1.getPrivateProfile({from: user3})
+    );
+    assert(!result);
+  });
+
+  it('Talao owner should remove the Factory in the Foundation', async() => {
+    result = await foundation.removeFactory(factory.address);
+    assert(result);
+    truffleAssert.eventEmitted(result, 'FactoryRemoved');
+  });
+
+  it('User5 should fail to create a contract', async() => {
+    result = await truffleAssert.fails(
+      factory.createWorkspace(
+        2,
+        name1,
+        name2,
+        tagline,
+        url,
+        publicEmail,
+        fileHash,
+        fileEngine,
+        description,
+        privateEmail,
+        mobile,
+        {from: user5}
+      )
+    );
+    assert(!result);
+  });
 
 });

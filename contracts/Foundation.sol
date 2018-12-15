@@ -93,21 +93,6 @@ contract Foundation is Ownable {
     }
 
     /**
-     * @dev Manually set account => contract for Foundation owner.
-     */
-    // TODO: remove? it allows override of ownership by Talao...
-    function setOwnershipInFoundation(
-        address _contract,
-        address _account
-    )
-        external
-        onlyOwner
-    {
-        contractsToAccounts[_contract] = _account;
-        accountsToContracts[_account] = _contract;
-    }
-
-    /**
      * @dev Prevents accidental sending of ether.
      */
     function() public {
@@ -123,6 +108,11 @@ interface FoundationInterface {
     function accountsToContracts(address) external view returns(address);
     function contractsToAccounts(address) external view returns(address);
     function setInitialOwnerInFoundation(
+        address _contract,
+        address _account
+    )
+    external;
+    function transferOwnershipInFoundation(
         address _contract,
         address _account
     )
