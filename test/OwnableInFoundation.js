@@ -1,6 +1,7 @@
 const truffleAssert = require('truffle-assertions');
 const Foundation = artifacts.require('Foundation');
 const OwnableInFoundation = artifacts.require('OwnableInFoundation');
+const OwnableInFoundationTest = artifacts.require('OwnableInFoundationTest');
 
 contract('OwnableInFoundation', async (accounts) => {
   const defaultOwner = accounts[0];
@@ -8,7 +9,7 @@ contract('OwnableInFoundation', async (accounts) => {
   const user2 = accounts[2];
   const factory = accounts[8];
   const someone = accounts[9];
-  let ownableInFoundation;
+  let ownableInFoundation, ownableInFoundationTest;
   let result;
 
   it('Should deploy Foundation contract', async() => {
@@ -60,6 +61,27 @@ contract('OwnableInFoundation', async (accounts) => {
     assert(!result);
     result = await ownableInFoundation.isOwnerInFoundation({from: user2});
     assert(result);
+  });
+
+  it('Factory should deploy a OwnableInFoundationTest contract', async() => {
+    ownableInFoundationTest = await OwnableInFoundationTest.new(foundation.address, {from: factory});
+    assert(ownableInFoundationTest);
+  });
+
+  it('Factory should set User1 as initial owner of OwnableInFoundationTest contract in Foundation', async() => {
+    result = await foundation.setInitialOwnerInFoundation(ownableInFoundationTest.address, user1, {from: factory});
+    assert(result);
+  });
+
+  it('User1 should be able to use a function with onlyOwnerInFoundation modifier', async() => {
+    result = await ownableInFoundationTest.getSecret({from: user1});
+    assert.equal(result.toString(), "This is sort of a secret string");
+  });
+
+  it('User2 should fail to use this function', async() => {
+    result = await truffleAssert.fails(
+      ownableInFoundationTest.getSecret({from: user2})
+    );
   });
 
 });
