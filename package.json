@@ -2,8 +2,7 @@
   "name": "TalaoContracts",
   "version": "5.0.0",
   "private": true,
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "truffle-assertions": "^0.7.1"
   }
