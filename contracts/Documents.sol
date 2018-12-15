@@ -78,14 +78,9 @@ contract Documents is Tokenized {
             bytes24
         )
     {
-        // Memory pointer.
         Document memory doc = documents[_id];
-
-        // Validate parameters.
-        require(_id > 0, 'Document ID must be > 0.');
-        require(doc.published, 'Document does not exist.');
-
-        // Return doc.
+        require(_id > 0, 'Document ID must be > 0');
+        require(doc.published, 'Document does not exist');
         return(
             doc.fileHash,
             doc.fileEngine,
@@ -115,7 +110,7 @@ contract Documents is Tokenized {
         bytes24 _additionalData
     )
         external
-        onlyOwner
+        onlyOwnerInFoundation
         returns (uint)
     {
         _createDocument(
@@ -126,7 +121,6 @@ contract Documents is Tokenized {
             _docTypeVersion,
             _additionalData
         );
-
         return documentsCounter;
     }
 
@@ -143,18 +137,14 @@ contract Documents is Tokenized {
     )
         internal
     {
-        // Validate parameters.
-        require(_fileHash[0] != 0, 'File hash must exist.');
-        require(_fileEngine > 0, 'File engine must be > 0.');
-        require(_docType > 0, 'Type of document must be > 0.');
-        require(_docTypeVersion > 0, 'Version of document type must be > 0.');
-
+        require(_fileHash[0] != 0, 'File hash must exist');
+        require(_fileEngine > 0, 'File engine must be > 0');
+        require(_docType > 0, 'Type of document must be > 0');
+        require(_docTypeVersion > 0, 'Version of document type must be > 0');
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
-
         // Storage pointer.
         Document storage doc = documents[documentsCounter];
-
         // Write data.
         doc.fileHash = _fileHash;
         doc.fileEngine = _fileEngine;
@@ -164,7 +154,6 @@ contract Documents is Tokenized {
         doc.docTypeVersion = _docTypeVersion;
         doc.published = true;
         doc.additionalData = _additionalData;
-
         // Emit event.
         emit DocumentAdded(
             documentsCounter
@@ -174,7 +163,7 @@ contract Documents is Tokenized {
     /**
      * @dev Remove a document.
      */
-    function deleteDocument (uint _id) external onlyOwner {
+    function deleteDocument (uint _id) external onlyOwnerInFoundation {
         _deleteDocument(_id);
     }
 
@@ -182,14 +171,9 @@ contract Documents is Tokenized {
      * @dev Remove a document.
      */
     function _deleteDocument (uint _id) internal {
-
-        // Storage pointer.
         Document storage docToDelete = documents[_id];
-
-        // Validate parameters.
-        require (_id > 0, 'Document ID must be > 0.');
-        require(docToDelete.published, 'Document does not exist.');
-
+        require (_id > 0, 'Document ID must be > 0');
+        require(docToDelete.published, 'Document does not exist');
         // If the removed document is not the last in the index,
         if (docToDelete.index < (documentsIndex.length).sub(1)) {
             // Find the last document of the index.
@@ -221,10 +205,11 @@ contract Documents is Tokenized {
         uint8 _docTypeVersion,
         bytes24 _additionalData
     )
-        external onlyOwner returns (uint)
+        external
+        onlyOwnerInFoundation
+        returns (uint)
     {
         _deleteDocument(_id);
-
         _createDocument(
             _fileHash,
             _fileEngine,
@@ -233,7 +218,6 @@ contract Documents is Tokenized {
             _docTypeVersion,
             _additionalData
         );
-
         return documentsCounter;
     }
 }
