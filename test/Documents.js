@@ -1,6 +1,7 @@
 const truffleAssert = require('truffle-assertions');
 const TalaoToken = artifacts.require('TalaoToken');
-const Documents = artifacts.require('Documents4199');
+const Foundation = artifacts.require('Foundation');
+const Documents = artifacts.require('DocumentsTest');
 
 // "this string just fills a bytes32"
 const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
@@ -28,11 +29,14 @@ contract('Documents', async (accounts) => {
   const user3 = accounts[3];
   const user4 = accounts[4];
   const user5 = accounts[5];
+  const factory = accounts[8];
   let token;
+  let foundation;
   let documents1, documents2, documents3, documents4;
   let result, result1, result2, result3, result4;
 
-  it('Should init token', async() => {
+  // Simple init, already fully tested before the ICO.
+  it('Should init token with Vault deposit of 100 TALAO and transfer 1000 TALAO to User1, User2 and User3. User1 should create a Vault access with a price of 10 TALAO and User2 should create a free Vault access', async() => {
     token = await TalaoToken.new();
     await token.mint(talaoOwner, 150000000000000000000);
     await token.finishMinting();
@@ -44,14 +48,24 @@ contract('Documents', async (accounts) => {
     await token.createVaultAccess(0, { from: user2 });
   });
 
-  it('Should deploy Documents contracts and transfer them to users', async() => {
-    documents1 = await Documents.new(1, token.address);
-    await documents1.transferOwnership(user1);
-    documents2 = await Documents.new(2, token.address);
-    await documents2.transferOwnership(user2);
+  // Already tested in Foundation.js.
+  it('Should deploy Foundation contract and register a Factory contract', async() => {
+    foundation = await Foundation.new();
+    // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
+    await foundation.addFactory(factory);
   });
 
-  it('user1 should add a document ID = 1, index[0]', async() => {
+  // Simple init for initial owners, already tested in OwnableInFoundation.js
+  it('Factory should deploy Documents1 (category 1) and Documents2 (category 2) and set initial owners to User1 and User2', async() => {
+    documents1 = await Documents.new(foundation.address, 1, token.address, {from: factory});
+    assert(documents1);
+    await foundation.setInitialOwnerInFoundation(documents1.address, user1, {from: factory});
+    documents2 = await Documents.new(foundation.address, 2, token.address, {from: factory});
+    assert(documents2);
+    await foundation.setInitialOwnerInFoundation(documents2.address, user2, {from: factory});
+  });
+
+  it('User1 should add a document ID = 1, index[0]', async() => {
     result = await documents1.createDocument(
       bytes32,
       fileEngine,
@@ -64,7 +78,7 @@ contract('Documents', async (accounts) => {
     assert(result);
   });
 
-  it('In document1, user1 be able get documents index, but not user2 and user3', async() => {
+  it('In Document1, User1 be able get documents index, but not User2 and User3', async() => {
     result1 = await documents1.getDocuments({from: user1});
     assert.equal(result1.toString(), 1);
     result2 = await truffleAssert.fails(
@@ -77,7 +91,7 @@ contract('Documents', async (accounts) => {
     assert(!result3);
   });
 
-  it('In document1, user1 be able get document of ID 1, but not user2 and user3', async() => {
+  it('In Document1, User1 be able get document of ID 1, but not User2 and User3', async() => {
     result1 = await documents1.getDocument(1, {from: user1});
     assert.equal(
       result1.toString(),
@@ -100,20 +114,20 @@ contract('Documents', async (accounts) => {
     assert(!result3);
   });
 
-  it('user2 requests partnership of his documents2 contract with documents1 contract, user1 accepts. user3 buys access to user1 in the token', async() => {
+  it('User2 requests partnership of his Documents2 contract with Documents1 contract, User1 accepts. User3 buys access to User1 in the token', async() => {
     await documents2.requestPartnership(documents1.address, {from: user2});
     await documents1.authorizePartnership(documents2.address, {from: user1});
     await token.getVaultAccess(user1, {from: user3});
   });
 
-  it('In document1, user2 and user3 should be able get documents index', async() => {
+  it('In Document1, User2 and User3 should be able get documents index', async() => {
     result1 = await documents1.getDocuments({from: user2});
     assert.equal(result1.toString(), 1);
     result2 = await documents1.getDocuments({from: user3});
     assert.equal(result2.toString(), 1);
   });
 
-  it('In document1, user2 and user3 should be able get document of ID 1', async() => {
+  it('In Document1, User2 and User3 should be able get document of ID 1', async() => {
     result1 = await documents1.getDocument(1, {from: user2});
     assert.equal(
       result1.toString(),
@@ -140,7 +154,7 @@ contract('Documents', async (accounts) => {
     );
   });
 
-  it('user1 should add a new document ID = 2, index[1]', async() => {
+  it('User1 should add a new document ID = 2, index[1]', async() => {
     result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
@@ -153,7 +167,7 @@ contract('Documents', async (accounts) => {
     assert(result);
   });
 
-  it('user1 should add a new document ID = 3, index[2]', async() => {
+  it('User1 should add a new document ID = 3, index[2]', async() => {
     result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
@@ -166,7 +180,7 @@ contract('Documents', async (accounts) => {
     assert(result);
   });
 
-  it('user1 should add a new document ID = 4, index[3]', async() => {
+  it('User1 should add a new document ID = 4, index[3]', async() => {
     result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
@@ -179,7 +193,7 @@ contract('Documents', async (accounts) => {
     assert(result);
   });
 
-  it('user1 should delete document of ID = 2', async() => {
+  it('User1 should delete document of ID = 2', async() => {
     result = await documents1.deleteDocument(2, {from: user1});
     assert(result);
   });
@@ -192,7 +206,7 @@ contract('Documents', async (accounts) => {
     );
   });
 
-  it('user1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
+  it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
     result = await documents1.updateDocument(
       1,
       otherBytes32,
