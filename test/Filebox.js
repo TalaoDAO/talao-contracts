@@ -1,6 +1,6 @@
 const truffleAssert = require('truffle-assertions');
 const Foundation = artifacts.require('Foundation');
-const Filebox = artifacts.require('FileboxDeployable');
+const Filebox = artifacts.require('FileboxTest');
 
 // "this string just fills a bytes32"
 const fileHash = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
