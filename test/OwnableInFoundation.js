@@ -44,22 +44,8 @@ contract('OwnableInFoundation', async (accounts) => {
     assert.equal(result.toString(), user1);
   });
 
-  it('User1 should have true for isOwnerInFoundation, User2 should have false', async() => {
-    result = await ownableInFoundation.isOwnerInFoundation({from: user1});
-    assert(result);
-    result = await ownableInFoundation.isOwnerInFoundation({from: user2});
-    assert(!result);
-  });
-
   it('User1 should transfer isOwnerInFoundation to User2, through Foundation', async() => {
     result = await foundation.transferOwnershipInFoundation(ownableInFoundation.address, user2, {from: user1});
-    assert(result);
-  });
-
-  it('User1 should have false for isOwnerInFoundation, User2 should have true', async() => {
-    result = await ownableInFoundation.isOwnerInFoundation({from: user1});
-    assert(!result);
-    result = await ownableInFoundation.isOwnerInFoundation({from: user2});
     assert(result);
   });
 
