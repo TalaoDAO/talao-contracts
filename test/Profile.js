@@ -1,6 +1,7 @@
 const truffleAssert = require('truffle-assertions');
 const TalaoToken = artifacts.require('TalaoToken');
-const Profile = artifacts.require('Profile4199');
+const Foundation = artifacts.require('Foundation');
+const Profile = artifacts.require('ProfileTest');
 
 // "this string just fills a bytes32"
 const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
@@ -15,13 +16,15 @@ contract('Profile', async (accounts) => {
   const user1 = accounts[1];
   const user2 = accounts[2];
   const user3 = accounts[3];
+  const factory = accounts[8];
   const someone = accounts[9];
   let token;
   let profile1, profile2;
   let result, result1, result2, result3, result4;
   let tx, tx1, tx2, tx3, tx4;
 
-  it('Should init token', async() => {
+  // Simple init, already fully tested before the ICO.
+  it('Should init token with Vault deposit of 100 TALAO and transfer 1000 TALAO to User1, User2 and User3. User1 should create a Vault access with a price of 10 TALAO and User2 should create a free Vault access', async() => {
     token = await TalaoToken.new();
     await token.mint(talaoOwner, 150000000000000000000);
     await token.finishMinting();
@@ -33,14 +36,24 @@ contract('Profile', async (accounts) => {
     await token.createVaultAccess(0, { from: user2 });
   });
 
-  it('Should deploy Profile contracts and transfer them to users', async() => {
-    profile1 = await Profile.new(1, token.address);
-    await profile1.transferOwnership(user1);
-    profile2 = await Profile.new(2, token.address);
-    await profile2.transferOwnership(user2);
+  // Already tested in Foundation.js.
+  it('Should deploy Foundation contract and register a Factory contract', async() => {
+    foundation = await Foundation.new();
+    // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
+    await foundation.addFactory(factory);
   });
-  
-  it('In profile1, user1 should set his public profile', async() => {
+
+  // Simple init for initial owners, already tested in OwnableInFoundation.js
+  it('Factory should deploy Profile1 (category 1) and Profile2 (category 2) and set initial owners to User1 and User2', async() => {
+    profile1 = await Profile.new(foundation.address, 1, token.address, {from: factory});
+    assert(profile1);
+    await foundation.setInitialOwnerInFoundation(profile1.address, user1, {from: factory});
+    profile2 = await Profile.new(foundation.address, 2, token.address, {from: factory});
+    assert(profile2);
+    await foundation.setInitialOwnerInFoundation(profile2.address, user2, {from: factory});
+  });
+
+  it('In profile1, User1 should set his public profile', async() => {
     tx = await profile1.setPublicProfile(
       bytes32,
       bytes32,

@@ -8,6 +8,7 @@ import './Tokenized.sol';
  */
 contract Profile is Tokenized {
 
+    // Public profile.
     struct PublicProfile {
         // Name1 (First name, company name, ...)
         // SSTORAGE 1 filled after this.
@@ -42,6 +43,8 @@ contract Profile is Tokenized {
     }
     PublicProfile public publicProfile;
 
+    // "Private" profile.
+    // Nothing is really private on the blockchain.
     struct PrivateProfile {
         // Private email.
         // SSTORAGE 1 full after this.
@@ -77,7 +80,8 @@ contract Profile is Tokenized {
         uint16 _pictureEngine,
         string _description
     )
-        external onlyOwner
+        external
+        onlyOwnerInFoundation
     {
         publicProfile.name1 = _name1;
         publicProfile.name2 = _name2;
@@ -92,7 +96,10 @@ contract Profile is Tokenized {
     /**
      * @dev Set private profile.
      */
-    function setPrivateProfile(bytes32 _email, bytes16 _mobile) external onlyOwner {
+    function setPrivateProfile(bytes32 _email, bytes16 _mobile)
+        external
+        onlyOwnerInFoundation
+    {
         privateProfile.email = _email;
         privateProfile.mobile = _mobile;
     }
