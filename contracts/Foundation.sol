@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
-import './Workspace.sol';
+import './ownership/Ownable.sol';
 
 /**
  * @title Foundation contract.
  * @author Talao, Polynomial.
  */
-contract Foundation is Workspace {
+contract Foundation is Ownable {
 
     // Registered foundation factories.
     mapping(address => bool) public foundationFactories;
@@ -22,20 +22,10 @@ contract Foundation is Workspace {
     event FoundationFactoryRemoved(address _factory);
 
     /**
-     * @dev Constructor.
-     */
-    constructor(address _token)
-        public
-        Workspace(1, _token)
-    {
-        partnerCategory = 1;
-        token = TalaoToken(_token);
-    }
-
-    /**
      * @dev Add a factory.
      */
     function addFoundationFactory(address _factory) external onlyOwner {
+
         foundationFactories[_factory] = true;
         emit FoundationFactoryAdded(_factory);
     }
@@ -44,6 +34,7 @@ contract Foundation is Workspace {
      * @dev Remove a factory.
      */
     function removeFoundationFactory(address _factory) external onlyOwner {
+
         foundationFactories[_factory] = false;
         emit FoundationFactoryRemoved(_factory);
     }
@@ -52,11 +43,14 @@ contract Foundation is Workspace {
      * @dev Modifier for factories.
      */
     modifier onlyFoundationFactory() {
+
         require(
             foundationFactories[msg.sender],
             'Sender is not a registered factory'
         );
+
         _;
+
     }
 
     /**
@@ -93,6 +87,7 @@ contract Foundation is Workspace {
     )
         external
     {
+
         require(
             (
                 foundationAccounts[msg.sender] == _contract &&
@@ -117,6 +112,7 @@ contract Foundation is Workspace {
         external
         onlyOwner
     {
+
         foundationAccounts[_account] = _contract;
         foundationContracts[_contract] = _account;
     }

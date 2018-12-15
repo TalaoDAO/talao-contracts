@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+import './FoundationInterface.sol';
+
 /**
  * @title Manages ownership through the Foundation contract.
  * @notice See transferOwnershipInFoundation in Foundation.sol.
@@ -14,6 +16,7 @@ contract OwnableInFoundation {
      * @dev Constructor.
      */
     constructor(address _foundation) public {
+
         foundation = FoundationInterface(_foundation);
     }
 
@@ -21,6 +24,7 @@ contract OwnableInFoundation {
      * @dev Check in Foundation if msg.sender is the owner of this contract.
      */
     function isOwnerInFoundation() public view returns (bool) {
+
         return foundation.foundationContracts(address(this)) == msg.sender;
     }
 
@@ -28,17 +32,12 @@ contract OwnableInFoundation {
      * @dev Modifier version of isOwnerInFoundation.
      */
     modifier onlyOwnerInFoundation() {
+
         require(
            isOwnerInFoundation(),
            'Foundation says you are not the owner'
         );
+
         _;
     }
-}
-
-/**
- * @dev Interface with Foundation.
- */
-interface FoundationInterface {
-    function foundationContracts(address) external view returns(address);
 }
