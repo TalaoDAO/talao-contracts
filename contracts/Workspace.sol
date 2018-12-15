@@ -9,20 +9,21 @@ import './Documents.sol';
  * @title A Workspace contract.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Workspace is Filebox, Tokenized, Profile, Documents {
+contract Workspace is Tokenized, Profile, Documents, Filebox {
 
     /**
      * @dev Constructor.
      */
-    constructor(uint8 _category, address _token)
+    constructor(address _foundation, uint8 _partnerCategory, address _token)
+        Tokenized(_foundation, _partnerCategory, _token)
         public
-        Tokenized(_category, _token)
     {
-        partnerCategory = _category;
+        foundation = FoundationInterface(_foundation);
+        partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
     }
 
-    //TODO: kill, ownable + foundation link
+    // TODO: kill
 
     /**
      * @dev Prevents accidental sending of ether.

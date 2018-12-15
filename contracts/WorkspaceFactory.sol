@@ -11,7 +11,7 @@ import './Workspace.sol';
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
 
-contract WorkspaceFoundationFactory is Ownable {
+contract WorkspaceFactory is Ownable {
 
     // Talao token.
     TalaoToken public token;
@@ -22,16 +22,16 @@ contract WorkspaceFoundationFactory is Ownable {
     /**
      * @dev Constructor.
      */
-    constructor(address _token, address _foundation) public {
-        token = TalaoToken(_token);
+    constructor(address _foundation, address _token) public {
         foundation = FoundationInterface(_foundation);
+        token = TalaoToken(_token);
     }
 
     /**
      * @dev Create a Workspace contract.
      */
     function createWorkspace (
-        uint8 _category,
+        uint8 _partnerCategory,
         bytes32 _name1,
         bytes32 _name2,
         bytes32 _tagline,
@@ -43,18 +43,20 @@ contract WorkspaceFoundationFactory is Ownable {
         bytes32 _privateEmail,
         bytes16 _mobile
     )
-        external returns (address)
+        external
+        returns (address)
     {
-
         // Sender must have access to his Vault in the Token.
         require(
             token.hasVaultAccess(msg.sender, msg.sender),
             'Sender has no access to Vault.'
         );
-
         // Create contract.
-        Workspace newWorkspace = new Workspace(_category, token);
-
+        Workspace newWorkspace = new Workspace(
+            address(foundation),
+            _partnerCategory,
+            address(token)
+        );
         // Set Public Profile.
         newWorkspace.setPublicProfile(
             _name1,
@@ -66,19 +68,13 @@ contract WorkspaceFoundationFactory is Ownable {
             _pictureEngine,
             _description
         );
-
         // Set Private Profile.
         newWorkspace.setPrivateProfile(
             _privateEmail,
             _mobile
         );
-
-        // Register account to contract relationship in Foundation.
-        foundation.addFoundationAccount(msg.sender, address(newWorkspace));
-
-        // Transfer contract to user.
-        newWorkspace.transferOwnership(msg.sender);
-
+        // Set initial owner in Foundation.
+        foundation.setInitialOwnerInFoundation(address(newWorkspace), msg.sender);
         // Return new contract address.
         return address(newWorkspace);
     }
@@ -89,11 +85,4 @@ contract WorkspaceFoundationFactory is Ownable {
     function() public {
         revert();
     }
-}
-
-/**
- * @title Interface with Foundation.
- */
-interface FoundationInterface {
-    function addFoundationAccount(address _account, address _contract) external;
 }

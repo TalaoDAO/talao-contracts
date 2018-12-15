@@ -106,6 +106,13 @@ contract Foundation is Ownable {
         contractsToAccounts[_contract] = _account;
         accountsToContracts[_account] = _contract;
     }
+
+    /**
+     * @dev Prevents accidental sending of ether.
+     */
+    function() public {
+        revert();
+    }
 }
 
 
