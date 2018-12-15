@@ -7,7 +7,7 @@ contract('OwnableInFoundation', async (accounts) => {
   const user1 = accounts[1];
   const user2 = accounts[2];
   const factory = accounts[8];
-  const someone = accounts[9]
+  const someone = accounts[9];
   let ownableInFoundation;
   let result;
 
@@ -17,9 +17,10 @@ contract('OwnableInFoundation', async (accounts) => {
   });
 
   it('Should register a Factory contract', async() => {
-    result = await foundation.addFoundationFactory(factory);
+    // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
+    result = await foundation.addFactory(factory);
     assert(result);
-    truffleAssert.eventEmitted(result, 'FoundationFactoryAdded');
+    truffleAssert.eventEmitted(result, 'FactoryAdded');
   });
 
   it('Factory should deploy a OwnableInFoundation contract', async() => {
@@ -27,18 +28,18 @@ contract('OwnableInFoundation', async (accounts) => {
     assert(ownableInFoundation);
   });
 
-  it('Factory should set User1 as owner of OwnableInFoundation contract in Foundation', async() => {
-    result = await foundation.addFoundationAccount(user1, ownableInFoundation.address, {from: factory});
+  it('Factory should set User1 as initial owner of OwnableInFoundation contract in Foundation', async() => {
+    result = await foundation.setInitialOwnerInFoundation(ownableInFoundation.address, user1, {from: factory});
     assert(result);
   })
 
   it('Foundation should show link from User1 account to OwnableInFoundation contract', async() => {
-    result = await foundation.foundationAccounts(user1, {from: someone});
+    result = await foundation.accountsToContracts(user1, {from: someone});
     assert.equal(result.toString(), ownableInFoundation.address)
   });
 
   it('Foundation should show link from OwnableInFoundation contract to User1', async() => {
-    result = await foundation.foundationContracts(ownableInFoundation.address, {from: someone});
+    result = await foundation.contractsToAccounts(ownableInFoundation.address, {from: someone});
     assert.equal(result.toString(), user1);
   });
 

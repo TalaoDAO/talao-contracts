@@ -9,73 +9,65 @@ import './ownership/Ownable.sol';
 contract Foundation is Ownable {
 
     // Registered foundation factories.
-    mapping(address => bool) public foundationFactories;
+    mapping(address => bool) public factories;
 
     // Registered accounts to contracts relationships.
-    mapping(address => address) public foundationAccounts;
+    mapping(address => address) public accountsToContracts;
 
     // Registered contracts to accounts relationships.
-    mapping(address => address) public foundationContracts;
+    mapping(address => address) public contractsToAccounts;
 
     // Events for factories.
-    event FoundationFactoryAdded(address _factory);
-    event FoundationFactoryRemoved(address _factory);
+    event FactoryAdded(address _factory);
+    event FactoryRemoved(address _factory);
 
     /**
      * @dev Add a factory.
      */
-    function addFoundationFactory(address _factory) external onlyOwner {
-
-        foundationFactories[_factory] = true;
-        emit FoundationFactoryAdded(_factory);
+    function addFactory(address _factory) external onlyOwner {
+        factories[_factory] = true;
+        emit FactoryAdded(_factory);
     }
 
     /**
      * @dev Remove a factory.
      */
-    function removeFoundationFactory(address _factory) external onlyOwner {
-
-        foundationFactories[_factory] = false;
-        emit FoundationFactoryRemoved(_factory);
+    function removeFactory(address _factory) external onlyOwner {
+        factories[_factory] = false;
+        emit FactoryRemoved(_factory);
     }
 
     /**
      * @dev Modifier for factories.
      */
-    modifier onlyFoundationFactory() {
-
+    modifier onlyFactory() {
         require(
-            foundationFactories[msg.sender],
-            'Sender is not a registered factory'
+            factories[msg.sender],
+            'You are not a factory'
         );
-
         _;
-
     }
 
     /**
-     * @dev Add a new account => contract.
+     * @dev Set initial owner of a contract.
      */
-    function addFoundationAccount(
-        address _account,
-        address _contract
+    function setInitialOwnerInFoundation(
+        address _contract,
+        address _account
     )
         external
-        onlyFoundationFactory
+        onlyFactory
     {
-
         require(
-            foundationAccounts[_account] == address(0),
+            contractsToAccounts[_contract] == address(0),
+            'Contract already has owner'
+        );
+        require(
+            accountsToContracts[_account] == address(0),
             'Account already has contract'
         );
-
-        require(
-            foundationContracts[_contract] == address(0),
-            'Contract already has account'
-        );
-
-        foundationAccounts[_account] = _contract;
-        foundationContracts[_contract] = _account;
+        contractsToAccounts[_contract] = _account;
+        accountsToContracts[_account] = _contract;
     }
 
     /**
@@ -83,37 +75,49 @@ contract Foundation is Ownable {
      */
     function transferOwnershipInFoundation(
         address _contract,
-        address _newOwner
+        address _newAccount
     )
         external
     {
-
         require(
             (
-                foundationAccounts[msg.sender] == _contract &&
-                foundationContracts[_contract] == msg.sender
+                accountsToContracts[msg.sender] == _contract &&
+                contractsToAccounts[_contract] == msg.sender
             ),
-            'Foundation says you are not the owner'
+            'You are not the owner'
         );
 
-        foundationAccounts[msg.sender] = address(0);
-        foundationAccounts[_newOwner] = _contract;
-        foundationContracts[_contract] = _newOwner;
+        accountsToContracts[msg.sender] = address(0);
+        accountsToContracts[_newAccount] = _contract;
+        contractsToAccounts[_contract] = _newAccount;
     }
 
     /**
      * @dev Manually set account => contract for Foundation owner.
-     * // TODO: keep? it allows override of ownership by Talao...
      */
-    function setFoundationAccount(
-        address _account,
-        address _contract
+    // TODO: remove? it allows override of ownership by Talao...
+    function setOwnershipInFoundation(
+        address _contract,
+        address _account
     )
         external
         onlyOwner
     {
-
-        foundationAccounts[_account] = _contract;
-        foundationContracts[_contract] = _account;
+        contractsToAccounts[_contract] = _account;
+        accountsToContracts[_account] = _contract;
     }
+}
+
+
+/**
+ * @title Foundation Interface (only functions used in other contracts).
+ */
+interface FoundationInterface {
+    function accountsToContracts(address) external view returns(address);
+    function contractsToAccounts(address) external view returns(address);
+    function setInitialOwnerInFoundation(
+        address _contract,
+        address _account
+    )
+    external;
 }

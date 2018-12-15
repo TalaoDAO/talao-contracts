@@ -1,15 +1,14 @@
 pragma solidity ^0.4.24;
 
-import './ownership/Ownable.sol';
+import './OwnableInFoundation.sol';
 
 /**
  * @title Filebox contract.
  * @notice Contract to "send" and "receive" decentralized encrypted files.
  * @author Talao, Polynomial.
  */
-contract Filebox is Ownable {
+contract Filebox is OwnableInFoundation {
 
-    // Settings.
     struct FileboxSettings {
       // Public encryption key.
       // Any file notified to us should have been encrypted with this key,
@@ -24,7 +23,7 @@ contract Filebox is Ownable {
     FileboxSettings public fileboxSettings;
 
     // Blacklisted addresses.
-    mapping(address => bool) public fileboxBlacklisted;
+    mapping(address => bool) public fileboxBlacklist;
 
     // Event emitted when someone left us an decentralized encrypted file.
     event FileboxReceived (
@@ -36,15 +35,9 @@ contract Filebox is Ownable {
     /**
      * @dev "Send" a "file" to the owner.
      */
-    function sendFilebox
-    (
-        bytes32 _fileHash,
-        uint16 _fileEngine
-    )
-        external
-    {
+    function sendFilebox(bytes32 _fileHash, uint16 _fileEngine) external {
         require(
-            !fileboxBlacklisted[msg.sender],
+            !fileboxBlacklist[msg.sender],
             'You are blacklisted'
         );
         emit FileboxReceived(
@@ -55,13 +48,14 @@ contract Filebox is Ownable {
     }
 
     /**
-     * @dev Configure.
+     * @dev Set filebox.
      */
-    function configureFilebox(
+    function setFilebox(
         bytes32 _publicEncryptionKey,
         uint16 _encryptionKeyAlgorithm
     )
-        external onlyOwner
+        external
+        onlyOwnerInFoundation
     {
         fileboxSettings.publicEncryptionKey = _publicEncryptionKey;
         fileboxSettings.encryptionKeyAlgorithm = _encryptionKeyAlgorithm;
@@ -70,14 +64,20 @@ contract Filebox is Ownable {
     /**
      * @dev Blacklist.
      */
-    function blacklistAddressInFilebox(address _address) external onlyOwner {
-        fileboxBlacklisted[_address] = true;
+    function blacklistAddressInFilebox(address _address)
+        external
+        onlyOwnerInFoundation
+    {
+        fileboxBlacklist[_address] = true;
     }
 
     /**
      * @dev Unblacklist.
      */
-    function unblacklistAddressInFilebox(address _address) external onlyOwner {
-        fileboxBlacklisted[_address] = false;
+    function unblacklistAddressInFilebox(address _address)
+        external
+        onlyOwnerInFoundation
+    {
+        fileboxBlacklist[_address] = false;
     }
 }
