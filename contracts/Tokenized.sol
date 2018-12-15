@@ -18,7 +18,7 @@ contract Tokenized is Partnership {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, uint8 _partnerCategory, address _token)
+    constructor(address _foundation, uint _partnerCategory, address _token)
         public Partnership(_foundation, _partnerCategory)
     {
         foundation = FoundationInterface(_foundation);

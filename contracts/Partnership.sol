@@ -46,7 +46,7 @@ contract Partnership is OwnableInFoundation {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, uint8 _partnerCategory)
+    constructor(address _foundation, uint _partnerCategory)
         OwnableInFoundation(_foundation)
         public
     {

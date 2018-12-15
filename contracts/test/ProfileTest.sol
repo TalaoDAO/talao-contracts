@@ -11,7 +11,7 @@ contract ProfileTest is Tokenized, Profile {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, uint8 _partnerCategory, address _token)
+    constructor(address _foundation, uint _partnerCategory, address _token)
         Tokenized(_foundation, _partnerCategory, _token)
         public
     {
