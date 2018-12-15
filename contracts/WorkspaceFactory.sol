@@ -13,11 +13,11 @@ import './Workspace.sol';
 
 contract WorkspaceFactory is Ownable {
 
-    // Talao token.
-    TalaoToken public token;
-
     // Interface with Foundation.
     FoundationInterface foundation;
+
+    // TODO: interface
+    TalaoToken public token;
 
     /**
      * @dev Constructor.
@@ -31,7 +31,7 @@ contract WorkspaceFactory is Ownable {
      * @dev Create a Workspace contract.
      */
     function createWorkspace (
-        uint8 _partnerCategory,
+        uint _partnerCategory,
         bytes32 _name1,
         bytes32 _name2,
         bytes32 _tagline,
@@ -55,10 +55,7 @@ contract WorkspaceFactory is Ownable {
         Workspace newWorkspace = new Workspace(
             address(foundation),
             _partnerCategory,
-            address(token)
-        );
-        // Set Public Profile.
-        newWorkspace.setPublicProfile(
+            address(token),
             _name1,
             _name2,
             _tagline,
@@ -66,14 +63,11 @@ contract WorkspaceFactory is Ownable {
             _publicEmail,
             _pictureHash,
             _pictureEngine,
-            _description
-        );
-        // Set Private Profile.
-        newWorkspace.setPrivateProfile(
+            _description,
             _privateEmail,
             _mobile
         );
-        // Set initial owner in Foundation.
+        // Set initial owner in Foundation to msg.sender.
         foundation.setInitialOwnerInFoundation(address(newWorkspace), msg.sender);
         // Return new contract address.
         return address(newWorkspace);
