@@ -134,6 +134,10 @@ contract Foundation is Ownable {
             ownersToContracts[msg.sender] != address(0),
             'You own no contract'
         );
+        require(
+            membersToContracts[_member] == address(0),
+            'Address is already member of a contract'
+        );
         membersToContracts[_member] = ownersToContracts[msg.sender];
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
     }
@@ -146,6 +150,11 @@ contract Foundation is Ownable {
             ownersToContracts[msg.sender] != address(0),
             'You own no contract'
         );
+        require(
+            membersToContracts[_member] == ownersToContracts[msg.sender],
+            'Address is not member of this contract'
+        );
+        membersToContracts[_member] = address(0);
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
     }
 

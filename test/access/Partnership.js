@@ -163,7 +163,7 @@ contract('Partnership', async (accounts) => {
 
   it('User5 is not a member of User3\'s contract any more, so he should not be recognized any more as a partnership member in Partnership2', async() => {
     result = await partnership2.isPartnershipMember({from: user5});
-    assert(result);
+    assert(!result);
   });
 
   it('user3 should transfer partnership3 contract to user6', async() => {
