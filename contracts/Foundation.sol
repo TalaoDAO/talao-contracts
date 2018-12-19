@@ -11,11 +11,21 @@ contract Foundation is Ownable {
     // Registered foundation factories.
     mapping(address => bool) public factories;
 
-    // Registered accounts to contracts relationships.
-    mapping(address => address) public accountsToContracts;
+    // Owners (EOA) to contract addresses relationships.
+    mapping(address => address) public ownersToContracts;
 
-    // Registered contracts to accounts relationships.
-    mapping(address => address) public contractsToAccounts;
+    // Contract addresses to owners relationships.
+    mapping(address => address) public contractsToOwners;
+
+    // Members (EOA) to contract addresses relationships.
+    // In a Partnership.sol inherited contract, this allows us to create a
+    // modifier for most read functions in this contract that will authorize
+    // any account associated with an authorized Partnership contract.
+    mapping(address => address) public membersToContracts;
+
+    // Index of known members for each contract.
+    // These are EOAs that were added once, even if removed now.
+    mapping(address => address[]) public contractsToKnownMembersIndexes;
 
     // Events for factories.
     event FactoryAdded(address _factory);
@@ -59,15 +69,16 @@ contract Foundation is Ownable {
         onlyFactory
     {
         require(
-            contractsToAccounts[_contract] == address(0),
+            contractsToOwners[_contract] == address(0),
             'Contract already has owner'
         );
         require(
-            accountsToContracts[_account] == address(0),
+            ownersToContracts[_account] == address(0),
             'Account already has contract'
         );
-        contractsToAccounts[_contract] = _account;
-        accountsToContracts[_account] = _contract;
+        contractsToOwners[_contract] = _account;
+        ownersToContracts[_account] = _contract;
+        membersToContracts[_account] = _contract;
     }
 
     /**
@@ -81,15 +92,18 @@ contract Foundation is Ownable {
     {
         require(
             (
-                accountsToContracts[msg.sender] == _contract &&
-                contractsToAccounts[_contract] == msg.sender
+                ownersToContracts[msg.sender] == _contract &&
+                contractsToOwners[_contract] == msg.sender
             ),
             'You are not the owner'
         );
-
-        accountsToContracts[msg.sender] = address(0);
-        accountsToContracts[_newAccount] = _contract;
-        contractsToAccounts[_contract] = _newAccount;
+        ownersToContracts[msg.sender] = address(0);
+        membersToContracts[msg.sender] = address(0);
+        ownersToContracts[_newAccount] = _contract;
+        membersToContracts[_newAccount] = _contract;
+        contractsToOwners[_contract] = _newAccount;
+        // Remark: we do not update the contracts members.
+        // It's the new owner's responsability to remove members, if needed.
     }
 
     /**
@@ -101,15 +115,38 @@ contract Foundation is Ownable {
     function renounceOwnershipInFoundation(address _contract) external {
         require(
             (
-                accountsToContracts[msg.sender] == _contract &&
-                contractsToAccounts[_contract] == msg.sender
+                ownersToContracts[msg.sender] == _contract &&
+                contractsToOwners[_contract] == msg.sender
             ),
             'You are not the owner'
         );
         // Free the EOA, so he can become owner of a new contract.
-        delete(accountsToContracts[msg.sender]);
+        delete(ownersToContracts[msg.sender]);
         // Assign the contract to no one.
-        delete(contractsToAccounts[_contract]);
+        delete(contractsToOwners[_contract]);
+    }
+
+    /**
+     * @dev Add a member EOA to a contract.
+     */
+    function addMember(address _member) external {
+        require(
+            ownersToContracts[msg.sender] != address(0),
+            'You own no contract'
+        );
+        membersToContracts[_member] = ownersToContracts[msg.sender];
+        contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
+    }
+
+    /**
+     * @dev Remove a member EOA to a contract.
+     */
+    function removeMember(address _member) external {
+        require(
+            ownersToContracts[msg.sender] != address(0),
+            'You own no contract'
+        );
+        contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
     }
 
     /**

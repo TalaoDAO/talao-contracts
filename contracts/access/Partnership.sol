@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+// TODO: add compteur de partenaires acceptés
+
 import '../ownership/OwnableInFoundation.sol';
 
 /**
@@ -7,7 +9,7 @@ import '../ownership/OwnableInFoundation.sol';
  * @notice If msg.sender is the owner, in the Foundation sense
  * (see OwnableInFoundation), of another partnership contract that is
  * authorized in this partnership contract,
- * then he passes isAuthorizedPartnershipOwner().
+ * then he passes isPartnershipMember().
  * Obviously this function is meant to be used in modifiers
  * in contrats that inherit of this one and provide "restricted" content.
  * Partnerships are symetrical: when you request a partnership,
@@ -56,21 +58,21 @@ contract Partnership is OwnableInFoundation {
 
     /**
      * @dev This function will be used in inherited contracts,
-     * @dev to restrict read access to owners of Partnership contracts
+     * @dev to restrict read access to members of Partnership contracts
      * @dev which are authorized in this contract.
      */
-    function isAuthorizedPartnershipOwner() public view returns (bool) {
-        return partnershipAuthorizations[foundation.accountsToContracts(msg.sender)] == PartnershipAuthorization.Authorized;
+    function isPartnershipMember() public view returns (bool) {
+        return partnershipAuthorizations[foundation.membersToContracts(msg.sender)] == PartnershipAuthorization.Authorized;
     }
 
     /**
-     * @dev Modifier version of isAuthorizedPartnershipOwner.
-     * @dev Not used for now, but could proove usefull.
+     * @dev Modifier version of isPartnershipMember.
+     * @dev Not used for now, but could be useful.
      */
-    modifier onlyAuthorizedPartnershipOwner() {
+    modifier onlyPartnershipMember() {
         require(
-          isAuthorizedPartnershipOwner(),
-          'You have no authorized partnership'
+          isPartnershipMember(),
+          'You are not member of a partnership'
         );
         _;
     }
@@ -84,10 +86,10 @@ contract Partnership is OwnableInFoundation {
         returns (uint authorization)
     {
         // If msg.sender has no Partnership contract, return Unknown (0).
-        if (foundation.accountsToContracts(msg.sender) == address(0)) {
+        if (foundation.membersToContracts(msg.sender) == address(0)) {
             return uint(PartnershipAuthorization.Unknown);
         } else {
-            return uint(partnershipAuthorizations[foundation.accountsToContracts(msg.sender)]);
+            return uint(partnershipAuthorizations[foundation.membersToContracts(msg.sender)]);
         }
     }
 
@@ -114,7 +116,7 @@ contract Partnership is OwnableInFoundation {
     {
           PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
           return (
-              foundation.contractsToAccounts(_hisContract),
+              foundation.contractsToOwners(_hisContract),
               hisInterface.partnerCategory(),
               uint(partnershipAuthorizations[_hisContract])
           );

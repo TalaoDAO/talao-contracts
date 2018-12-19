@@ -34,17 +34,17 @@ contract Tokenized is Partnership {
         // in the Foundation sense.
         (uint accessPrice,,,) = token.data(ownerInFoundation());
         // OR conditions for Reader:
-        // 1) Sender is this contract owner.
-        // 2) Sender has vaultAccess to this contract owner in the token.
-        // 3) Sender is the owner of an authorized Partner contract and
+        // 1) Same code for:
+        // 1.1) Sender is this contract owner and has an open Vault in the token.
+        // 1.2) Sender has vaultAccess to this contract owner in the token.
+        // 2) Sender is a member of an authorized Partner contract and owner
         // has an open Vault in the token.
-        // 4) The owner has a free vaultAccess in the token and
+        // 3) Owner has a free vaultAccess in the token and
         // has an open Vault in the token.
         return(
-            isOwnerInFoundation() ||
             token.hasVaultAccess(ownerInFoundation(), msg.sender) ||
             (
-                isAuthorizedPartnershipOwner() &&
+                isPartnershipMember() &&
                 token.hasVaultAccess(ownerInFoundation(), ownerInFoundation())
             ) ||
             (
@@ -61,4 +61,21 @@ contract Tokenized is Partnership {
         require(isReader(), 'Access denied');
         _;
     }
+
+    /**
+     * @dev Owner functions require open Vault in token.
+     */
+    function isOwnerInFoundationWithOpenVault() public view returns (bool) {
+        return isOwnerInFoundation() && token.hasVaultAccess(msg.sender, msg.sender);
+    }
+
+    /**
+     * @dev Modifier version of isWriter.
+     */
+     modifier onlyOwnerInFoundationWithOpenVault() {
+         require(isReader(), 'Access denied');
+         _;
+     }
+
+     // TODO: modifier for Managers ERC 725
 }

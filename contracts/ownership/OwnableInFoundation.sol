@@ -27,7 +27,7 @@ contract OwnableInFoundation {
      * @dev know the real owner of this contract.
      */
     function ownerInFoundation() internal view returns (address) {
-        return foundation.contractsToAccounts(address(this));
+        return foundation.contractsToOwners(address(this));
     }
 
     /**

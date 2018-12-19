@@ -9,16 +9,15 @@ import '../content/Filebox.sol';
  */
 contract FileboxTest is Filebox {
 
-    // Foundation contract.
-    Foundation foundation;
-
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation)
-        OwnableInFoundation(_foundation)
+    constructor(address _foundation, uint _partnerCategory, address _token)
+        Tokenized(_foundation, _partnerCategory, _token)
         public
     {
         foundation = Foundation(_foundation);
+        partnerCategory = _partnerCategory;
+        token = TalaoToken(_token);
     }
 }

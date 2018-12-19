@@ -9,6 +9,7 @@ contract('Partnership', async (accounts) => {
   const user3 = accounts[3];
   const user4 = accounts[4];
   const user5 = accounts[5];
+  const user6 = accounts[6];
   const someone = accounts[8];
   const factory = accounts[9];
   let foundation;
@@ -33,16 +34,16 @@ contract('Partnership', async (accounts) => {
 
   it('Should register them to user1, user2, user3 and user4', async() => {
     await foundation.setInitialOwnerInFoundation(partnership1.address, user1, {from: factory});
-    result1 = await foundation.contractsToAccounts(partnership1.address);
+    result1 = await foundation.contractsToOwners(partnership1.address);
     assert.equal(result1, user1);
     await foundation.setInitialOwnerInFoundation(partnership2.address, user2, {from: factory});
-    result2 = await foundation.contractsToAccounts(partnership2.address);
+    result2 = await foundation.contractsToOwners(partnership2.address);
     assert.equal(result2, user2);
     await foundation.setInitialOwnerInFoundation(partnership3.address, user3, {from: factory});
-    result3 = await foundation.contractsToAccounts(partnership3.address);
+    result3 = await foundation.contractsToOwners(partnership3.address);
     assert.equal(result3, user3);
     await foundation.setInitialOwnerInFoundation(partnership4.address, user4, {from: factory});
-    result4 = await foundation.contractsToAccounts(partnership4.address);
+    result4 = await foundation.contractsToOwners(partnership4.address);
     assert.equal(result4, user4);
   });
 
@@ -61,7 +62,7 @@ contract('Partnership', async (accounts) => {
   });
 
   it('user2 should be recognized as an authorized partner owner in partnership1.', async() => {
-    result = await partnership1.isAuthorizedPartnershipOwner({ from: user2 });
+    result = await partnership1.isPartnershipMember({ from: user2 });
     assert(result);
   });
 
@@ -75,7 +76,7 @@ contract('Partnership', async (accounts) => {
   });
 
   it('user1 should now be recognized as an authorized partner owner in partnership2.', async() => {
-    result = await partnership2.isAuthorizedPartnershipOwner({ from: user1 });
+    result = await partnership2.isPartnershipMember({ from: user1 });
     assert(result);
   });
 
@@ -108,7 +109,7 @@ contract('Partnership', async (accounts) => {
   });
 
   it('user3 should not be an authorized partner owner in partnership2.', async() => {
-    result = await partnership2.isAuthorizedPartnershipOwner({ from: user3 });
+    result = await partnership2.isPartnershipMember({ from: user3 });
     assert(!result);
   });
 
@@ -131,7 +132,7 @@ contract('Partnership', async (accounts) => {
   });
 
   it('user3 should be recognized as an authorized partner owner in partnership2.', async() => {
-    result = await partnership2.isAuthorizedPartnershipOwner({ from: user3 });
+    result = await partnership2.isPartnershipMember({ from: user3 });
     assert(result);
   });
 
@@ -142,25 +143,48 @@ contract('Partnership', async (accounts) => {
     assert(!result);
   });
 
-  it('user3 should transfer partnership3 contract to user5', async() => {
-    await foundation.transferOwnershipInFoundation(partnership3.address, user5, { from: user3 });
-    result = await foundation.contractsToAccounts(partnership3.address, {from: someone});
-    assert.equal(result, user5);
+  it('User5 is not a member of User3\'s contract, so he should not be recognized as a partnership member in Partnership2', async() => {
+    result = await partnership2.isPartnershipMember({from: user4});
+    assert(!result);
   });
 
-  it('user5 should be recognized as an autorized partner owner in partnership2, because partnership3 that was transfered to him is a partner of partnership2', async() => {
-    result = await partnership2.isAuthorizedPartnershipOwner({ from: user5 });
+  it('User3 is a marketplace owner, he should add User5 as a member of his contract', async() => {
+    await foundation.addMember(user5, {from: user3});
+  });
+
+  it('User5 is a member of User3\'s contract, so he should be recognized as a partnership member in Partnership2', async() => {
+    result = await partnership2.isPartnershipMember({from: user5});
     assert(result);
   });
 
-  it('user3 should be not be an autorized partner owner in partnership2 anymore because he transfered this contract to user5 and user5 did execute updatePartnershipsOwner', async() => {
-    result = await partnership2.isAuthorizedPartnershipOwner({ from: user5 });
+  it('User3 should remove User5 as a member of his contract', async() => {
+    await foundation.removeMember(user5, {from: user3});
+  });
+
+  it('User5 is not a member of User3\'s contract any more, so he should not be recognized any more as a partnership member in Partnership2', async() => {
+    result = await partnership2.isPartnershipMember({from: user5});
     assert(result);
+  });
+
+  it('user3 should transfer partnership3 contract to user6', async() => {
+    await foundation.transferOwnershipInFoundation(partnership3.address, user6, { from: user3 });
+    result = await foundation.contractsToOwners(partnership3.address, {from: someone});
+    assert.equal(result, user6);
+  });
+
+  it('User6 should be recognized as an autorized partner member in partnership2, because partnership3 that was transfered to him is a partner of partnership2', async() => {
+    result = await partnership2.isPartnershipMember({ from: user6 });
+    assert(result);
+  });
+
+  it('user3 should be not be an autorized partner member in partnership2 anymore because he transfered this contract to User6', async() => {
+    result = await partnership2.isPartnershipMember({ from: user3 });
+    assert(!result);
   });
 
   it('user2 should get partnership3 information by its contract address', async() => {
     result = await partnership2.getPartnership(partnership3.address, { from: user2 });
-    assert.equal(result[0], user5);
+    assert.equal(result[0], user6);
     assert.equal(result[1], 255);
     assert.equal(result[2], 1);
   });

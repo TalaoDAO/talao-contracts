@@ -81,7 +81,7 @@ contract Profile is Tokenized {
         string _description
     )
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
     {
         publicProfile.name1 = _name1;
         publicProfile.name2 = _name2;
@@ -98,7 +98,7 @@ contract Profile is Tokenized {
      */
     function setPrivateProfile(bytes32 _email, bytes16 _mobile)
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
     {
         privateProfile.email = _email;
         privateProfile.mobile = _mobile;

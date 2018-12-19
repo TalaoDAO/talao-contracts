@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import '../ownership/OwnableInFoundation.sol';
+import '../access/Tokenized.sol';
 
 /**
  * @title Filebox contract.
  * @notice Contract to "send" and "receive" decentralized encrypted files.
  * @author Talao, Polynomial.
  */
-contract Filebox is OwnableInFoundation {
+contract Filebox is Tokenized {
 
     struct FileboxSettings {
       // Public encryption key.
@@ -55,7 +55,7 @@ contract Filebox is OwnableInFoundation {
         uint16 _encryptionKeyAlgorithm
     )
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
     {
         fileboxSettings.publicEncryptionKey = _publicEncryptionKey;
         fileboxSettings.encryptionKeyAlgorithm = _encryptionKeyAlgorithm;
@@ -66,7 +66,7 @@ contract Filebox is OwnableInFoundation {
      */
     function blacklistAddressInFilebox(address _address)
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
     {
         fileboxBlacklist[_address] = true;
     }
@@ -76,7 +76,7 @@ contract Filebox is OwnableInFoundation {
      */
     function unblacklistAddressInFilebox(address _address)
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
     {
         fileboxBlacklist[_address] = false;
     }

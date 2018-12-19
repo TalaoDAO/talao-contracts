@@ -85,7 +85,7 @@ contract('Workspace Factory', async (accounts) => {
   });
 
   it('Since no events were emitted, we ask to the Foundation registry the contract address', async() => {
-    workspace1address = await foundation.accountsToContracts(user1, {from: someone});
+    workspace1address = await foundation.ownersToContracts(user1, {from: someone});
   });
 
   it('Should load final contract Workspace1', async() => {

@@ -35,12 +35,12 @@ contract('OwnableInFoundation', async (accounts) => {
   })
 
   it('Foundation should show link from User1 account to OwnableInFoundation contract', async() => {
-    result = await foundation.accountsToContracts(user1, {from: someone});
+    result = await foundation.ownersToContracts(user1, {from: someone});
     assert.equal(result.toString(), ownableInFoundation.address)
   });
 
   it('Foundation should show link from OwnableInFoundation contract to User1', async() => {
-    result = await foundation.contractsToAccounts(ownableInFoundation.address, {from: someone});
+    result = await foundation.contractsToOwners(ownableInFoundation.address, {from: someone});
     assert.equal(result.toString(), user1);
   });
 

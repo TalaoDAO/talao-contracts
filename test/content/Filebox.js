@@ -1,4 +1,5 @@
 const truffleAssert = require('truffle-assertions');
+const TalaoToken = artifacts.require('TalaoToken');
 const Foundation = artifacts.require('Foundation');
 const Filebox = artifacts.require('FileboxTest');
 
@@ -9,29 +10,39 @@ const fileEngine = 1;
 const encryptionAlgorithm = 1;
 
 contract('Filebox', async (accounts) => {
-  const defaultOwner = accounts[0];
+  const talaoOwner = accounts[0];
   const user1 = accounts[1];
   const user2 = accounts[2];
+  const user3 = accounts[3];
   const factory = accounts[9];
+  let token;
   let foundation;
   let filebox;
   let result;
   let event;
 
-  it('Should deploy Foundation contract', async() => {
-    foundation = await Foundation.new();
-    assert(foundation);
+  // Simple init, already fully tested before the ICO.
+  it('Should init token with Vault deposit of 100 TALAO and transfer 1000 TALAO to User1, User2 and User3. User1 should create a Vault access with a price of 10 TALAO and User2 should create a free Vault access', async() => {
+    token = await TalaoToken.new();
+    await token.mint(talaoOwner, 150000000000000000000);
+    await token.finishMinting();
+    await token.setVaultDeposit(100);
+    await token.transfer(user1, 1000);
+    await token.transfer(user2, 1000);
+    await token.transfer(user3, 1000);
+    await token.createVaultAccess(10, { from: user1 });
+    await token.createVaultAccess(0, { from: user2 });
   });
 
-  it('Should register a Factory contract', async() => {
+  // Already tested in Foundation.js.
+  it('Should deploy Foundation contract and register a Factory contract', async() => {
+    foundation = await Foundation.new();
     // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
-    result = await foundation.addFactory(factory);
-    assert(result);
-    truffleAssert.eventEmitted(result, 'FactoryAdded');
+    await foundation.addFactory(factory);
   });
 
   it('Should create a Filebox contract and assign it to User1', async() => {
-    filebox = await Filebox.new(foundation.address, {from: factory});
+    filebox = await Filebox.new(foundation.address, 1, token.address, {from: factory});
     await foundation.setInitialOwnerInFoundation(filebox.address, user1, {from: factory});
   });
 

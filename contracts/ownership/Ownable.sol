@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 /**
  * @title Ownable
+ * @notice Implementation by OpenZeppelin
  * @dev The Ownable contract has an owner address, and provides basic authorization control
  * functions, this simplifies the implementation of "user permissions".
  * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/ownership/Ownable.sol

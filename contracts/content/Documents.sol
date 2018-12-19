@@ -110,7 +110,7 @@ contract Documents is Tokenized {
         bytes24 _additionalData
     )
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
         returns (uint)
     {
         _createDocument(
@@ -161,7 +161,7 @@ contract Documents is Tokenized {
     /**
      * @dev Remove a document.
      */
-    function deleteDocument (uint _id) external onlyOwnerInFoundation {
+    function deleteDocument (uint _id) external onlyOwnerInFoundationWithOpenVault {
         _deleteDocument(_id);
     }
 
@@ -206,7 +206,7 @@ contract Documents is Tokenized {
         bytes24 _additionalData
     )
         external
-        onlyOwnerInFoundation
+        onlyOwnerInFoundationWithOpenVault
         returns (uint)
     {
         _deleteDocument(_id);

@@ -76,9 +76,9 @@ contract('Foundation', async (accounts) => {
     assert(result);
   });
 
-  it('No events were emitted, but we can now ask the contract address to the Foundation accountsToContrats the contract address. It should be consistent with contractToAccounts', async() => {
-    finalContract1Address = await foundation.accountsToContracts(user1, {from: someone});
-    result = await foundation.contractsToAccounts(finalContract1Address, {from: someone});
+  it('No events were emitted, but we can now ask the contract address to the Foundation ownersToContracts the contract address. It should be consistent with contractToOwners', async() => {
+    finalContract1Address = await foundation.ownersToContracts(user1, {from: someone});
+    result = await foundation.contractsToOwners(finalContract1Address, {from: someone});
     assert.equal(result.toString(), user1)
   });
 
@@ -143,7 +143,7 @@ contract('Foundation', async (accounts) => {
       {from: user3}
     );
     assert(result);
-    finalContract3Address = await foundation.accountsToContracts(user3, {from: someone});
+    finalContract3Address = await foundation.ownersToContracts(user3, {from: someone});
     finalContract3 = await Workspace.at(finalContract3Address);
     assert(finalContract3);
   });
@@ -185,7 +185,7 @@ contract('Foundation', async (accounts) => {
 
   it('User3 should transfer his contract to User4', async() => {
     await foundation.transferOwnershipInFoundation(finalContract3.address, user4, { from: user3 });
-    result = await foundation.contractsToAccounts(finalContract3.address, {from: someone});
+    result = await foundation.contractsToOwners(finalContract3.address, {from: someone});
     assert.equal(result, user4);
   });
 
@@ -231,8 +231,8 @@ contract('Foundation', async (accounts) => {
   });
 
   it('finalContract4 should be owned by User4', async() => {
-    finalContract4Address = await foundation.accountsToContracts(user4, {from: someone});
-    result = await foundation.contractsToAccounts(finalContract4Address, {from: someone});
+    finalContract4Address = await foundation.ownersToContracts(user4, {from: someone});
+    result = await foundation.contractsToOwners(finalContract4Address, {from: someone});
     assert.equal(result.toString(), user4)
   });
 
