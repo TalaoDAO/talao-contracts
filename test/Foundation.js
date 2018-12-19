@@ -24,8 +24,8 @@ contract('Foundation', async (accounts) => {
   let token;
   let foundation;
   let factory;
-  let finalContract1, finalContract3;
-  let finalContract1Address, finalContract3Address;
+  let finalContract1, finalContract3, finalContract4;
+  let finalContract1Address, finalContract3Address, finalContract4Address;
   let result;
 
   it('Should init token', async() => {
@@ -36,8 +36,10 @@ contract('Foundation', async (accounts) => {
     await token.transfer(user1, 1000);
     await token.transfer(user2, 1000);
     await token.transfer(user3, 1000);
+    await token.transfer(user4, 1000);
     await token.createVaultAccess(10, { from: user1 });
     await token.createVaultAccess(10, { from: user3 });
+    await token.createVaultAccess(10, { from: user4 });
   });
 
   it('Should deploy Foundation contract', async() => {
@@ -203,6 +205,40 @@ contract('Foundation', async (accounts) => {
       finalContract1.getPrivateProfile({from: user3})
     );
     assert(!result);
+  });
+
+  it('User4 should renounce to ownership of his contract in the Foundation', async() => {
+    result = await foundation.renounceOwnershipInFoundation(finalContract3.address, {from: user4});
+    assert(result);
+  });
+
+  it('User4 should be able to create a new contract finalContract4', async() => {
+    result = await factory.createWorkspace(
+      2,
+      name1,
+      name2,
+      tagline,
+      url,
+      publicEmail,
+      fileHash,
+      fileEngine,
+      description,
+      privateEmail,
+      mobile,
+      {from: user4}
+    );
+    assert(result);
+  });
+
+  it('finalContract4 should be owned by User4', async() => {
+    finalContract4Address = await foundation.accountsToContracts(user4, {from: someone});
+    result = await foundation.contractsToAccounts(finalContract4Address, {from: someone});
+    assert.equal(result.toString(), user4)
+  });
+
+  it('Should load finalContract4', async() => {
+    finalContract4 = await Workspace.at(finalContract4Address);
+    assert(finalContract4);
   });
 
   it('Talao owner should remove the Factory in the Foundation', async() => {

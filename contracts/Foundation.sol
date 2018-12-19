@@ -93,6 +93,26 @@ contract Foundation is Ownable {
     }
 
     /**
+     * @dev Allows the current owner to relinquish control of the contract.
+     * @notice Renouncing to ownership will leave the contract without an owner.
+     * It will not be possible to call the functions with the `onlyOwnerInFoundation`
+     * modifier anymore.
+     */
+    function renounceOwnershipInFoundation(address _contract) external {
+        require(
+            (
+                accountsToContracts[msg.sender] == _contract &&
+                contractsToAccounts[_contract] == msg.sender
+            ),
+            'You are not the owner'
+        );
+        // Free the EOA, so he can become owner of a new contract.
+        delete(accountsToContracts[msg.sender]);
+        // Assign the contract to no one.
+        delete(contractsToAccounts[_contract]);
+    }
+
+    /**
      * @dev Prevents accidental sending of ether.
      */
     function() public {
