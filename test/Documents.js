@@ -196,6 +196,7 @@ contract('Documents', async (accounts) => {
   it('User1 should delete document of ID = 2', async() => {
     result = await documents1.deleteDocument(2, {from: user1});
     assert(result);
+    truffleAssert.eventEmitted(result, 'DocumentRemoved');
   });
 
   it('getDocuments should return the correct array of doc IDs [1, 4, 3]', async() => {
@@ -218,6 +219,8 @@ contract('Documents', async (accounts) => {
       {from: user1}
     );
     assert(result);
+    truffleAssert.eventEmitted(result, 'DocumentAdded');
+    truffleAssert.eventEmitted(result, 'DocumentRemoved');
   });
 
   it('getDocuments should return the correct array of doc IDs [3, 4, 5]', async() => {

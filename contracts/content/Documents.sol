@@ -56,10 +56,10 @@ contract Documents is Tokenized {
     uint internal documentsCounter;
 
     // Event: new document added.
-    // Frontend needs to get the document ID after the transaction.
-    event DocumentAdded (
-        uint id
-    );
+    event DocumentAdded (uint id);
+
+    // Event: document removed.
+    event DocumentRemoved (uint id);
 
     /**
      * @dev Document getter.
@@ -155,9 +155,7 @@ contract Documents is Tokenized {
         doc.published = true;
         doc.additionalData = _additionalData;
         // Emit event.
-        emit DocumentAdded(
-            documentsCounter
-        );
+        emit DocumentAdded(documentsCounter);
     }
 
     /**
@@ -188,6 +186,8 @@ contract Documents is Tokenized {
         documentsIndex.length --;
         // Unpublish document.
         docToDelete.published = false;
+        // Emit event.
+        emit DocumentRemoved(_id);
     }
 
     /**
