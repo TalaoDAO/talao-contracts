@@ -1,4 +1,6 @@
 const truffleAssert = require('truffle-assertions');
+const truffleCost = require('truffle-cost');
+
 const TalaoToken = artifacts.require('TalaoToken');
 const Foundation = artifacts.require('Foundation');
 const WorkspaceFactory = artifacts.require('WorkspaceFactory');
@@ -62,19 +64,22 @@ contract('Workspace Factory', async (accounts) => {
   });
 
   it('Through the factory, User1 should create Workspace1 final contract of category1 (Freelancer).', async() => {
-    result = await workspaceFactory.createWorkspace(
-      1,
-      name1,
-      name2,
-      tagline,
-      url,
-      publicEmail,
-      fileHash,
-      fileEngine,
-      description,
-      privateEmail,
-      mobile,
-      {from: user1}
+    result = await truffleCost.log(
+      workspaceFactory.createWorkspace(
+        1,
+        name1,
+        name2,
+        tagline,
+        url,
+        publicEmail,
+        fileHash,
+        fileEngine,
+        description,
+        privateEmail,
+        mobile,
+        {from: user1}
+      ),
+      'EUR'
     );
     assert(result);
   });

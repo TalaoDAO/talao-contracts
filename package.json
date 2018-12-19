@@ -2,8 +2,10 @@
   "name": "TalaoContracts",
   "version": "5.0.0",
   "private": true,
-  "dependencies": {},
-  "devDependencies": {
-    "truffle-assertions": "^0.7.1"
-  }
+  "dependencies": {
+    "mocha-truffle-reporter": "^1.0.1",
+    "truffle-assertions": "^0.7.1",
+    "truffle-cost": "^1.0.1"
+  },
+  "devDependencies": {}
 }

@@ -21,5 +21,8 @@ module.exports = {
       port: 7545,
       network_id: "5777"
     }
+  },
+  mocha: {
+    reporter: "mocha-truffle-reporter"
   }
 }
