@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import '../access/Tokenized.sol';
+import "../access/Tokenized.sol";
 
 /**
  * @title Filebox contract.

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../access/Tokenized.sol';
-import '../content/Documents.sol';
+import "../access/Tokenized.sol";
+import "../content/Documents.sol";
 
 /**
  * @title Independent Documents.sol implementation for tests.

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import '../content/Filebox.sol';
+import "../content/Filebox.sol";
 
 /**
  * @title Filebox contract.

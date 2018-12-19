@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import './Partnership.sol';
-import '../token/TalaoToken.sol';
+import "./Partnership.sol";
+import "../token/TalaoToken.sol";
 
 /**
  * @title Tokenized contract.

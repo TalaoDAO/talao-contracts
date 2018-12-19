@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import '../ownership/OwnableInFoundation.sol';
+import "../ownership/OwnableInFoundation.sol";
 
 /**
  * @title Test onlyOwnerInFoundation in an inherited contract.

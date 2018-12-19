@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../math/SafeMath.sol';
-import '../access/Tokenized.sol';
+import "../math/SafeMath.sol";
+import "../access/Tokenized.sol";
 
 /**
  * @title A Documents contract allows to manage documents and share them.

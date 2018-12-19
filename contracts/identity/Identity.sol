@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import './KeyHolder.sol';
+import "./KeyHolder.sol";
 
 /**
  * @title TalaoIdentity provides an ERC 725 identity.

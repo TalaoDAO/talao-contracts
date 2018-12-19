@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../access/Tokenized.sol';
-import '../content/Profile.sol';
+import "../access/Tokenized.sol";
+import "../content/Profile.sol";
 
 /**
  * @title Independent Profile.sol implementation for tests.

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import '../math/SafeMath.sol';
-import '../ownership/Ownable.sol';
+import "../math/SafeMath.sol";
+import "../ownership/Ownable.sol";
 
 /**
  * This is a modified version of Talao token and all contracts it inherits from,

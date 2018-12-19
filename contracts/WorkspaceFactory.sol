@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import './ownership/Ownable.sol';
-import './token/TalaoToken.sol';
-import './Foundation.sol';
-import './Workspace.sol';
+import "./ownership/Ownable.sol";
+import "./token/TalaoToken.sol";
+import "./Foundation.sol";
+import "./Workspace.sol";
 
 /**
  * @title WorkspaceFactory contract.

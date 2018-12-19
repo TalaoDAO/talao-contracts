@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import './access/Tokenized.sol';
-import './content/Profile.sol';
-import './content/Documents.sol';
-import './content/Filebox.sol';
+import "./access/Tokenized.sol";
+import "./content/Profile.sol";
+import "./content/Documents.sol";
+import "./content/Filebox.sol";
 
 /**
  * @title A Workspace contract.

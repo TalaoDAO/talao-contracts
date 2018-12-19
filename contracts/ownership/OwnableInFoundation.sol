@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import '../Foundation.sol';
+import "../Foundation.sol";
 
 /**
  * @title Manages ownership through the Foundation contract.

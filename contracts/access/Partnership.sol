@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 // TODO: add compteur de partenaires acceptés
 
-import '../ownership/OwnableInFoundation.sol';
+import "../ownership/OwnableInFoundation.sol";
 
 /**
  * @title Provides partnership features between contracts.
