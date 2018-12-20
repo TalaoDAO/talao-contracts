@@ -15,12 +15,12 @@ const otherString = 'Eius populus ab incunabulis primis ad usque pueritiae tempu
 // Variables for contracts.
 const fileEngine = 1;
 const otherFileEngine = 11;
-const encryptionAlgorithm = 2;
-const otherEncryptionAlgorithm = 12;
 const docType = 3;
 const otherDocType = 13;
 const docTypeVersion = 4;
 const otherDocTypeVersion = 14;
+const encrypted = true;
+const otherEncrypted = false;
 
 contract('Documents', async (accounts) => {
   const talaoOwner = accounts[0];
@@ -69,9 +69,9 @@ contract('Documents', async (accounts) => {
     result = await documents1.createDocument(
       bytes32,
       fileEngine,
-      encryptionAlgorithm,
       docType,
       docTypeVersion,
+      encrypted,
       bytes24,
       {from: user1}
     );
@@ -98,10 +98,10 @@ contract('Documents', async (accounts) => {
       [
         bytes32,
         fileEngine,
-        encryptionAlgorithm,
         docType,
         docTypeVersion,
-        bytes24,
+        encrypted,
+        bytes24
       ]
     );
     result2 = await truffleAssert.fails(
@@ -134,10 +134,10 @@ contract('Documents', async (accounts) => {
       [
         bytes32,
         fileEngine,
-        encryptionAlgorithm,
         docType,
         docTypeVersion,
-        bytes24,
+        encrypted,
+        bytes24
       ]
     );
     result2 = await documents1.getDocument(1, {from: user3});
@@ -146,10 +146,10 @@ contract('Documents', async (accounts) => {
       [
         bytes32,
         fileEngine,
-        encryptionAlgorithm,
         docType,
         docTypeVersion,
-        bytes24,
+        encrypted,
+        bytes24
       ]
     );
   });
@@ -158,9 +158,9 @@ contract('Documents', async (accounts) => {
     result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
-      otherEncryptionAlgorithm,
       otherDocType,
       otherDocTypeVersion,
+      otherEncrypted,
       otherBytes24,
       {from: user1}
     );
@@ -171,9 +171,9 @@ contract('Documents', async (accounts) => {
     result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
-      otherEncryptionAlgorithm,
       otherDocType,
       otherDocTypeVersion,
+      otherEncrypted,
       otherBytes24,
       {from: user1}
     );
@@ -184,9 +184,9 @@ contract('Documents', async (accounts) => {
     result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
-      otherEncryptionAlgorithm,
       otherDocType,
       otherDocTypeVersion,
+      otherEncrypted,
       otherBytes24,
       {from: user1}
     );
@@ -212,9 +212,9 @@ contract('Documents', async (accounts) => {
       1,
       otherBytes32,
       otherFileEngine,
-      otherEncryptionAlgorithm,
       otherDocType,
       otherDocTypeVersion,
+      otherEncrypted,
       otherBytes24,
       {from: user1}
     );

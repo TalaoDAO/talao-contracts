@@ -22,25 +22,25 @@ contract Documents is Tokenized {
         // 30 bytes remaining in SSTORAGE 2 after this.
         uint16 fileEngine;
 
-        // Encryption algorithm.
-        // 28 bytes remaining in SSTORAGE 2 after this.
-        uint16 encryptionAlgorithm;
-
         // Position in index.
-        // 26 bytes remaining in SSTORAGE 2 after this.
+        // 28 bytes remaining in SSTORAGE 2 after this.
         uint16 index;
 
         // Type of document: 1 = work experience, ...
-        // 25 bytes remaining in SSTORAGE 2 after this.
+        // 27 bytes remaining in SSTORAGE 2 after this.
         uint8 docType;
 
         // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
-        // 24 bytes remaining in SSTORAGE 2 after this.
+        // 26 bytes remaining in SSTORAGE 2 after this.
         uint8 docTypeVersion;
 
         // True if "published", false if "unpublished".
-        // 23 bytes remaining in SSTORAGE 2 after this.
+        // 25 bytes remaining in SSTORAGE 2 after this.
         bool published;
+
+        // True if doc is encrypted.
+        // 24 bytes remaining in SSTORAGE 2 after this.
+        bool encrypted;
 
         // To fill the 2nd SSTORAGE.
         bytes24 additionalData;
@@ -72,9 +72,9 @@ contract Documents is Tokenized {
         returns (
             bytes32,
             uint16,
-            uint16,
             uint8,
             uint8,
+            bool,
             bytes24
         )
     {
@@ -84,9 +84,9 @@ contract Documents is Tokenized {
         return(
             doc.fileHash,
             doc.fileEngine,
-            doc.encryptionAlgorithm,
             doc.docType,
             doc.docTypeVersion,
+            doc.encrypted,
             doc.additionalData
         );
     }
@@ -104,9 +104,9 @@ contract Documents is Tokenized {
     function createDocument(
         bytes32 _fileHash,
         uint16 _fileEngine,
-        uint16 _encryptionAlgorithm,
         uint8 _docType,
         uint8 _docTypeVersion,
+        bool _encrypted,
         bytes24 _additionalData
     )
         external
@@ -116,9 +116,9 @@ contract Documents is Tokenized {
         _createDocument(
             _fileHash,
             _fileEngine,
-            _encryptionAlgorithm,
             _docType,
             _docTypeVersion,
+            _encrypted,
             _additionalData
         );
         return documentsCounter;
@@ -130,9 +130,9 @@ contract Documents is Tokenized {
     function _createDocument(
         bytes32 _fileHash,
         uint16 _fileEngine,
-        uint16 _encryptionAlgorithm,
         uint8 _docType,
         uint8 _docTypeVersion,
+        bool _encrypted,
         bytes24 _additionalData
     )
         internal
@@ -148,11 +148,11 @@ contract Documents is Tokenized {
         // Write data.
         doc.fileHash = _fileHash;
         doc.fileEngine = _fileEngine;
-        doc.encryptionAlgorithm = _encryptionAlgorithm;
         doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
         doc.docType = _docType;
         doc.docTypeVersion = _docTypeVersion;
         doc.published = true;
+        doc.encrypted = _encrypted;
         doc.additionalData = _additionalData;
         // Emit event.
         emit DocumentAdded(documentsCounter);
@@ -200,9 +200,9 @@ contract Documents is Tokenized {
         uint _id,
         bytes32 _fileHash,
         uint16 _fileEngine,
-        uint16 _encryptionAlgorithm,
         uint8 _docType,
         uint8 _docTypeVersion,
+        bool _encrypted,
         bytes24 _additionalData
     )
         external
@@ -213,9 +213,9 @@ contract Documents is Tokenized {
         _createDocument(
             _fileHash,
             _fileEngine,
-            _encryptionAlgorithm,
             _docType,
             _docTypeVersion,
+            _encrypted,
             _additionalData
         );
         return documentsCounter;

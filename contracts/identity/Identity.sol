@@ -1,11 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "./KeyHolder.sol";
+import "./ClaimHolder.sol";
 
 /**
- * @title TalaoIdentity provides an ERC 725 identity.
+ * @title Identity provides ERC 725 and ERC 35 Implementation.
  * @author Talao, Polynomial.
  */
-contract TalaoIdentity is KeyHolder {
-
-}
+contract Identity is ClaimHolder {}
