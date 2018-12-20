@@ -11,5 +11,5 @@ module.exports = function(deployer) {
    deployer.link(KeyHolderLibrary, [ClaimHolderLibrary, WorkspaceFactory]);
    deployer.deploy(ClaimHolderLibrary);
    deployer.link(ClaimHolderLibrary, WorkspaceFactory);
-   // deployer.deploy(WorkspaceFactory, Foundation.address, TalaoToken.address);
+   deployer.deploy(WorkspaceFactory, Foundation.address, TalaoToken.address);
 };

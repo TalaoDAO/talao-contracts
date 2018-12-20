@@ -22,6 +22,11 @@ module.exports = {
       network_id: "5777"
     }
   },
+  solc: {
+    optimizer: {
+      enabled: true
+    }
+  },
   mocha: {
     reporter: "mocha-truffle-reporter"
   }
