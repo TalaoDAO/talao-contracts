@@ -106,10 +106,21 @@ contract('Permissions', async (accounts) => {
     assert(!result2);
   });
 
-  it('User1 opens Vault access again', async() => {
+  it('User1 opens Vault access again for ERC 725 tests', async() => {
     await token.createVaultAccess(10, {from:user1});
     result = await permissions1.isReader({from: user1});
     assert(result);
+  });
+
+  it('Factory should have staff purpose 1', async() => {
+    result = permissions1.hasStaffPurpose(1, {from: factory});
+    assert(result);
+  });
+
+  it('User1 should not have staff purpose 1 even though he is owner in the sense of the Foundation: because Permissions1 was created by a virtual factory which is in fact an EOA', async() => {
+    result = await permissions1.hasStaffPurpose(1, {from: user1});
+    console.log(result)
+    assert(!result);
   });
 
 });

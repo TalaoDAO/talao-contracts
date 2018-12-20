@@ -66,17 +66,31 @@ contract Permissions is Partnership, ClaimHolder {
     /**
      * @dev Owner functions require open Vault in token.
      */
-    function isOwnerInFoundationWithOpenVault() public view returns (bool) {
+    function isActiveOwner() public view returns (bool) {
         return isOwnerInFoundation() && token.hasVaultAccess(msg.sender, msg.sender);
     }
 
     /**
-     * @dev Modifier version of isWriter.
+     * @dev Modifier version of isActiveOwner.
      */
-     modifier onlyOwnerInFoundationWithOpenVault() {
-         require(isReader(), 'Access denied');
-         _;
-     }
+    modifier onlyActiveOwner() {
+        require(isActiveOwner(), 'Access denied');
+        _;
+    }
 
-     // TODO: modifier for Managers ERC 725
+    /**
+     * @dev Does msg.sender belong to the "staff" of this contract with a
+     * certain key purpose, and does the contract owner an open Vault?
+     */
+    function hasStaffPurpose(uint256 _purpose) public view returns (bool) {
+        return keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), _purpose) && token.hasVaultAccess(foundation.contractsToOwners(address(this)), foundation.contractsToOwners(address(this)));
+    }
+
+    /**
+     * @dev Modifier version of hasStaffPurpose
+     */
+    modifier onlyStaffPurpose(uint256 _purpose) {
+        require(hasStaffPurpose(_purpose), 'Access denied');
+        _;
+    }
 }
