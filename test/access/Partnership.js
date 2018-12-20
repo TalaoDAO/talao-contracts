@@ -126,7 +126,7 @@ contract('Partnership', async (accounts) => {
     await partnership3.requestPartnership(partnership2.address, { from: user3 });
   });
 
-  it('user2 should authorize partnership3 in his contract partnership2.', async() => {
+  it('User2 should authorize Partnership3 in his contract Partnership2.', async() => {
     result = await partnership2.authorizePartnership(partnership3.address, { from: user2 });
     assert(result);
   });
@@ -187,6 +187,21 @@ contract('Partnership', async (accounts) => {
     assert.equal(result[0], user6);
     assert.equal(result[1], 255);
     assert.equal(result[2], 1);
+  });
+
+  it('User2 should have 2 partnerships', async() => {
+    result = await partnership2.partnershipsNumber();
+    assert.equal(result.toNumber(), 2);
+  });
+
+  it('User2 should remove partnership with Partnership3', async() => {
+    result = await partnership2.removePartnership(partnership3.address, {from: user2});
+    assert(result);
+  });
+
+  it('User2 should have 1 partnerships', async() => {
+    result = await partnership2.partnershipsNumber();
+    assert.equal(result.toNumber(), 1);
   });
 
 });

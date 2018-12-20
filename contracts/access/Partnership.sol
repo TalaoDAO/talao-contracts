@@ -1,8 +1,7 @@
 pragma solidity ^0.4.24;
 
-// TODO: add compteur de partenaires acceptés
-
 import "../ownership/OwnableInFoundation.sol";
+import "../math/SafeMath.sol";
 
 /**
  * @title Provides partnership features between contracts.
@@ -23,6 +22,8 @@ import "../ownership/OwnableInFoundation.sol";
  */
 contract Partnership is OwnableInFoundation {
 
+    using SafeMath for uint;
+
     // Foundation contract.
     Foundation foundation;
 
@@ -38,6 +39,9 @@ contract Partnership is OwnableInFoundation {
 
     // Index of known partnerships (contracts have interacted at least once).
     address[] internal knownPartnershipContracts;
+
+    // Total of authorized Partnerships contracts.
+    uint public partnershipsNumber;
 
     // Event when another Partnership contract has asked partnership.
     event PartnershipRequested();
@@ -165,6 +169,8 @@ contract Partnership is OwnableInFoundation {
             }
             // Authorize Partnership contract in our contract.
             partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Authorized;
+            // Increment our number of partnerships.
+            partnershipsNumber = partnershipsNumber.add(1);
         }
     }
 
@@ -213,6 +219,8 @@ contract Partnership is OwnableInFoundation {
         );
         // Authorize the Partnership contract in our contract.
         partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Authorized;
+        // Increment our number of partnerships.
+        partnershipsNumber = partnershipsNumber.add(1);
         // Log an event in the new authorized partner contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
         hisInterface._authorizePartnership();
@@ -262,6 +270,11 @@ contract Partnership is OwnableInFoundation {
         bool success = hisInterface._removePartnership();
         // If success,
         if (success) {
+            // If it was an authorized partnership,
+            if (partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Authorized) {
+                // Decrement our number of partnerships.
+                partnershipsNumber = partnershipsNumber.sub(1);
+            }
             // Change his partnership to Removed in our contract.
             // We want to have Removed instead of resetting to Unknown,
             // otherwise if partnership is initiated again with him,
@@ -275,10 +288,15 @@ contract Partnership is OwnableInFoundation {
      * @dev Called by Partnership contract breaking partnership with us.
      */
     function _removePartnership() external returns (bool success) {
-         // He wants to break partnership with us,
-         // so we are breaking partnership with him,
+         // He wants to break partnership with us, so we break too.
+         // If it was an authorized partnership,
+         if (partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Authorized) {
+             // Decrement our number of partnerships.
+             partnershipsNumber = partnershipsNumber.sub(1);
+         }
+         // Remove his authorization.
          partnershipAuthorizations[msg.sender] = PartnershipAuthorization.Removed;
-         // and telling him it's done.
+         // We return to the calling contract that it's done.
          success = true;
     }
 }
