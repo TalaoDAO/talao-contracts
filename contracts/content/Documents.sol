@@ -110,7 +110,7 @@ contract Documents is Permissions {
         bytes24 _additionalData
     )
         external
-        onlyOwnerInFoundationWithOpenVault
+        onlyActiveOwner
         returns (uint)
     {
         _createDocument(
@@ -161,7 +161,7 @@ contract Documents is Permissions {
     /**
      * @dev Remove a document.
      */
-    function deleteDocument (uint _id) external onlyOwnerInFoundationWithOpenVault {
+    function deleteDocument (uint _id) external onlyActiveOwner {
         _deleteDocument(_id);
     }
 
@@ -206,7 +206,7 @@ contract Documents is Permissions {
         bytes24 _additionalData
     )
         external
-        onlyOwnerInFoundationWithOpenVault
+        onlyActiveOwner
         returns (uint)
     {
         _deleteDocument(_id);

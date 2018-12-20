@@ -55,7 +55,7 @@ contract Filebox is Permissions {
         uint16 _encryptionKeyAlgorithm
     )
         external
-        onlyOwnerInFoundationWithOpenVault
+        onlyActiveOwner
     {
         fileboxSettings.publicEncryptionKey = _publicEncryptionKey;
         fileboxSettings.encryptionKeyAlgorithm = _encryptionKeyAlgorithm;
@@ -66,7 +66,7 @@ contract Filebox is Permissions {
      */
     function blacklistAddressInFilebox(address _address)
         external
-        onlyOwnerInFoundationWithOpenVault
+        onlyActiveOwner
     {
         fileboxBlacklist[_address] = true;
     }
@@ -76,7 +76,7 @@ contract Filebox is Permissions {
      */
     function unblacklistAddressInFilebox(address _address)
         external
-        onlyOwnerInFoundationWithOpenVault
+        onlyActiveOwner
     {
         fileboxBlacklist[_address] = false;
     }
