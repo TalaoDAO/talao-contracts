@@ -1,4 +1,7 @@
 const truffleAssert = require('truffle-assertions');
+
+const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
+const ClaimHolderLibrary = artifacts.require('./identity/ClaimHolderLibrary.sol');
 const TalaoToken = artifacts.require('TalaoToken');
 const Foundation = artifacts.require('Foundation');
 const Filebox = artifacts.require('FileboxTest');
@@ -20,6 +23,14 @@ contract('Filebox', async (accounts) => {
   let filebox;
   let result;
   let event;
+
+  it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Filebox', async() => {
+    keyHolderLibrary = await KeyHolderLibrary.new();
+    await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
+    claimHolderLibrary = await ClaimHolderLibrary.new();
+    await Filebox.link(KeyHolderLibrary, keyHolderLibrary.address);
+    await Filebox.link(ClaimHolderLibrary, claimHolderLibrary.address);
+  });
 
   // Simple init, already fully tested before the ICO.
   it('Should init token with Vault deposit of 100 TALAO and transfer 1000 TALAO to User1, User2 and User3. User1 should create a Vault access with a price of 10 TALAO and User2 should create a free Vault access', async() => {
