@@ -13,7 +13,7 @@ contract FileboxTest is Filebox {
      * @dev Constructor.
      */
     constructor(address _foundation, uint _partnerCategory, address _token)
-        Tokenized(_foundation, _partnerCategory, _token)
+        Permissions(_foundation, _partnerCategory, _token)
         public
     {
         foundation = Foundation(_foundation);

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./access/Tokenized.sol";
+import "./access/Permissions.sol";
 import "./content/Profile.sol";
 import "./content/Documents.sol";
 import "./content/Filebox.sol";
@@ -9,7 +9,7 @@ import "./content/Filebox.sol";
  * @title A Workspace contract.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Workspace is Tokenized, Profile, Documents, Filebox {
+contract Workspace is Permissions, Profile, Documents, Filebox {
 
     /**
      * @dev Constructor.
@@ -29,7 +29,7 @@ contract Workspace is Tokenized, Profile, Documents, Filebox {
         bytes32 _privateEmail,
         bytes16 _mobile
     )
-        Tokenized(_foundation, _partnerCategory, _token)
+        Permissions(_foundation, _partnerCategory, _token)
         public
     {
         foundation = Foundation(_foundation);

@@ -5,10 +5,10 @@ import "../token/TalaoToken.sol";
 import "../identity/ClaimHolder.sol";
 
 /**
- * @title Tokenized contract.
- * @author Talao, Polynomial, Slowsense, Blockchain Partner.
+ * @title Permissions contract.
+ * @author Talao, Polynomial.
  */
-contract Tokenized is Partnership, ClaimHolder {
+contract Permissions is Partnership, ClaimHolder {
 
     // Foundation contract.
     Foundation foundation;

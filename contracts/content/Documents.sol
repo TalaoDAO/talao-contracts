@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "../math/SafeMath.sol";
-import "../access/Tokenized.sol";
+import "../access/Permissions.sol";
 
 /**
  * @title A Documents contract allows to manage documents and share them.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Documents is Tokenized {
+contract Documents is Permissions {
 
     using SafeMath for uint;
 

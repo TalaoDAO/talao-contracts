@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "../access/Tokenized.sol";
+import "../access/Permissions.sol";
 
 /**
  * @title Profile contract.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
-contract Profile is Tokenized {
+contract Profile is Permissions {
 
     // Public profile.
     struct PublicProfile {

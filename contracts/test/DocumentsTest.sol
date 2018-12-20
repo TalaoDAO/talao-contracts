@@ -1,18 +1,18 @@
 pragma solidity ^0.4.24;
 
-import "../access/Tokenized.sol";
+import "../access/Permissions.sol";
 import "../content/Documents.sol";
 
 /**
  * @title Independent Documents.sol implementation for tests.
  */
-contract DocumentsTest is Tokenized, Documents {
+contract DocumentsTest is Permissions, Documents {
 
     /**
      * @dev Constructor.
      */
     constructor(address _foundation, uint _partnerCategory, address _token)
-        Tokenized(_foundation, _partnerCategory, _token)
+        Permissions(_foundation, _partnerCategory, _token)
         public
     {
         foundation = Foundation(_foundation);

@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "../access/Tokenized.sol";
+import "../access/Permissions.sol";
 
 /**
  * @title Filebox contract.
  * @notice Contract to "send" and "receive" decentralized encrypted files.
  * @author Talao, Polynomial.
  */
-contract Filebox is Tokenized {
+contract Filebox is Permissions {
 
     struct FileboxSettings {
       // Public encryption key.
