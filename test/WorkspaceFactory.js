@@ -122,15 +122,15 @@ contract('Workspace Factory', async (accounts) => {
     );
   });
 
-  it('User1 should have staff purpose 1 (ERC 725 MANAGEMENT)', async() => {
-    result = workspace1.hasStaffPurpose(1, {from: user1});
+  it('User1 should have staff purpose 1 (ERC 725 MANAGER)', async() => {
+    result = workspace1.hasKeyForPurpose(1, {from: user1});
     assert(result);
   });
 
-  it('workspaceFactory and Someone should not have staff purpose 1 (ERC 725 MANAGEMENT)', async() => {
-    result = await workspace1.hasStaffPurpose(1, {from: workspaceFactory.address});
+  it('workspaceFactory and Someone should not have staff purpose 1 (ERC 725 MANAGER)', async() => {
+    result = await workspace1.hasKeyForPurpose(1, {from: workspaceFactory.address});
     assert(!result);
-    result = await workspace1.hasStaffPurpose(1, {from: someone});
+    result = await workspace1.hasKeyForPurpose(1, {from: someone});
     assert(!result);
   });
 

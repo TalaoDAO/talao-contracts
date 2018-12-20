@@ -113,12 +113,12 @@ contract('Permissions', async (accounts) => {
   });
 
   it('Factory should have staff purpose 1', async() => {
-    result = permissions1.hasStaffPurpose(1, {from: factory});
+    result = permissions1.hasKeyForPurpose(1, {from: factory});
     assert(result);
   });
 
   it('User1 should not have staff purpose 1 even though he is owner in the sense of the Foundation: because Permissions1 was created by a virtual factory which is in fact an EOA', async() => {
-    result = await permissions1.hasStaffPurpose(1, {from: user1});
+    result = await permissions1.hasKeyForPurpose(1, {from: user1});
     assert(!result);
   });
 

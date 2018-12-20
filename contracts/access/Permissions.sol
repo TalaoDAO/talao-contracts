@@ -82,15 +82,21 @@ contract Permissions is Partnership, ClaimHolder {
      * @dev Does msg.sender belong to the "staff" of this contract with a
      * certain key purpose, and does the contract owner an open Vault?
      */
-    function hasStaffPurpose(uint256 _purpose) public view returns (bool) {
-        return keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), _purpose) && token.hasVaultAccess(foundation.contractsToOwners(address(this)), foundation.contractsToOwners(address(this)));
+    function hasKeyForPurpose(uint256 _purpose) public view returns (bool) {
+        return (
+            (
+                keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), 1) ||
+                keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), _purpose)
+            ) &&
+            token.hasVaultAccess(foundation.contractsToOwners(address(this)), foundation.contractsToOwners(address(this)))
+        );
     }
 
     /**
-     * @dev Modifier version of hasStaffPurpose
+     * @dev Modifier version of hasKeyForPurpose
      */
-    modifier onlyStaffPurpose(uint256 _purpose) {
-        require(hasStaffPurpose(_purpose), 'Access denied');
+    modifier onlyHasKeyForPurpose(uint256 _purpose) {
+        require(hasKeyForPurpose(_purpose), 'Access denied');
         _;
     }
 }
