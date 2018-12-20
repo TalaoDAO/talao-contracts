@@ -2,12 +2,13 @@ pragma solidity ^0.4.24;
 
 import "./Partnership.sol";
 import "../token/TalaoToken.sol";
+import "../identity/ClaimHolder.sol";
 
 /**
  * @title Tokenized contract.
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
-contract Tokenized is Partnership {
+contract Tokenized is Partnership, ClaimHolder {
 
     // Foundation contract.
     Foundation foundation;
