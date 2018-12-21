@@ -19,6 +19,7 @@ contract('Profile', async (accounts) => {
   const user1 = accounts[1];
   const user2 = accounts[2];
   const user3 = accounts[3];
+  const user4 = accounts[4];
   const factory = accounts[8];
   const someone = accounts[9];
   let token;
@@ -153,6 +154,26 @@ contract('Profile', async (accounts) => {
         bytes16
       ]
     );
+  });
+
+  it('User1 gives key to User4 for profile & documents (ERC 725 10002)', async() => {
+    const result = await profile1.addKeyFromAddress(user4, 10002, 1, {from: factory});
+    assert(result);
+  });
+
+  it('User4 changes public profile', async() => {
+    const result = await profile1.setPublicProfile(
+      bytes32,
+      bytes32,
+      bytes32,
+      bytes32,
+      bytes32,
+      bytes32,
+      fileEngine,
+      'Another string',
+      {from:user4}
+    );
+    assert(result);
   });
 
 });

@@ -81,7 +81,7 @@ contract Profile is Permissions {
         string _description
     )
         external
-        onlyActiveOwner
+        onlyHasKeyForPurpose(10002)
     {
         publicProfile.name1 = _name1;
         publicProfile.name2 = _name2;
@@ -98,7 +98,7 @@ contract Profile is Permissions {
      */
     function setPrivateProfile(bytes32 _email, bytes16 _mobile)
         external
-        onlyActiveOwner
+        onlyHasKeyForPurpose(10002)
     {
         privateProfile.email = _email;
         privateProfile.mobile = _mobile;
