@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "./Partnership.sol";
-import "../token/TalaoToken.sol";
 
 /**
  * @title Permissions contract.
@@ -18,12 +17,12 @@ contract Permissions is Partnership {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, uint _partnerCategory, address _token)
-        public Partnership(_foundation, _partnerCategory)
+    constructor(address _foundation, address _token, uint _partnerCategory)
+        public Partnership(_foundation, _token, _partnerCategory)
     {
         foundation = Foundation(_foundation);
-        partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
+        partnerCategory = _partnerCategory;
     }
 
     /**
@@ -66,43 +65,6 @@ contract Permissions is Partnership {
      */
     modifier onlyReader() {
         require(isReader(), 'Access denied');
-        _;
-    }
-
-    /**
-     * @dev Owner functions require open Vault in token.
-     */
-    function isActiveOwner() public view returns (bool) {
-        return isOwnerInFoundation() && token.hasVaultAccess(msg.sender, msg.sender);
-    }
-
-    /**
-     * @dev Modifier version of isActiveOwner.
-     */
-    modifier onlyActiveOwner() {
-        require(isActiveOwner(), 'Access denied');
-        _;
-    }
-
-    /**
-     * @dev Does msg.sender have an ERC 725 key with certain purpose,
-     * and does the contract owner an open Vault?
-     */
-    function hasKeyForPurpose(uint256 _purpose) public view returns (bool) {
-        return (
-            (
-                keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), 1) ||
-                keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), _purpose)
-            ) &&
-            token.hasVaultAccess(foundation.contractsToOwners(address(this)), foundation.contractsToOwners(address(this)))
-        );
-    }
-
-    /**
-     * @dev Modifier version of hasKeyForPurpose
-     */
-    modifier onlyHasKeyForPurpose(uint256 _purpose) {
-        require(hasKeyForPurpose(_purpose), 'Access denied');
         _;
     }
 }
