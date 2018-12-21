@@ -157,7 +157,7 @@ contract('Profile', async (accounts) => {
   });
 
   it('User1 gives key to User4 for profile & documents (ERC 725 10002)', async() => {
-    const result = await profile1.addKeyFromAddress(user4, 10002, 1, {from: factory});
+    const result = await profile1.addKeyFromAddress(user4, 10002, 1, {from: user1});
     assert(result);
   });
 
