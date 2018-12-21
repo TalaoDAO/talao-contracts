@@ -100,9 +100,14 @@ contract('Workspace Factory', async (accounts) => {
     workspace1address = await foundation.ownersToContracts(user1, {from: someone});
   });
 
-  it('Should load final contract Workspace1', async() => {
+  it('Should load final contract WorkspaceFactory', async() => {
     workspace1 = await Workspace.at(workspace1address);
     assert(workspace1);
+  });
+
+  it('Workspace 1 should have Factory as creator', async() =>  {
+    result = await workspace1.creator();
+    assert.equal(result.toString(), workspaceFactory.address);
   });
 
   it('In Workspace1, anyone should get public profile', async() => {
@@ -122,12 +127,12 @@ contract('Workspace Factory', async (accounts) => {
     );
   });
 
-  it('User1 should have staff purpose 1 (ERC 725 MANAGER)', async() => {
+  it('User1 should have ERC 725 key with purpose 1 (Manager)', async() => {
     result = workspace1.hasKeyForPurpose(1, {from: user1});
     assert(result);
   });
 
-  it('workspaceFactory and Someone should not have staff purpose 1 (ERC 725 MANAGER)', async() => {
+  it('workspaceFactory and Someone should not have ERC 725 key with purpose 1 (Manager)', async() => {
     result = await workspace1.hasKeyForPurpose(1, {from: workspaceFactory.address});
     assert(!result);
     result = await workspace1.hasKeyForPurpose(1, {from: someone});

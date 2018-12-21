@@ -96,53 +96,9 @@ contract('Workspace', async (accounts) => {
     await foundation.setInitialOwnerInFoundation(workspace2.address, user2, {from: factory});
   });
 
-  // it('Should add WorkspaceFactory to Foundation', async() => {
-  //   result = await foundation.addFactory(factory.address);
-  //   assert(result);
-  //   truffleAssert.eventEmitted(result, 'FactoryAdded');
-  // });
-  //
-  // it('Should add WorkspaceFactory to Foundation', async() => {
-  //   result = await foundation.addFactory(factory.address);
-  //   assert(result);
-  //   truffleAssert.eventEmitted(result, 'FactoryAdded');
-  // });
-  //
-  // it('Through the factory, User1 should create a Workspace1 final contract of category1 (Freelancer) and register its owner account to contract relationship in Foundation', async() => {
-  //   result = await factory.createWorkspace(
-  //     1,
-  //     name1,
-  //     name2,
-  //     tagline,
-  //     url,
-  //     publicEmail,
-  //     fileHash,
-  //     fileEngine,
-  //     description,
-  //     privateEmail,
-  //     mobile,
-  //     {from: user1}
-  //   );
-  //   assert(result);
-  //   console.log(result)
-  //   workspace1 = result.logs[0].address;
-  //   assert(workspace1);
-  // });
-  //
-  // it('Foundation registry should link the account of User1 to his Workspace1 address relationship', async() => {
-  //   result = await foundation.accountsToContracts(user1, {from: someone});
-  //   console.log(result)
-  //   assert.equal(result.toString(), workspace1)
-  // });
-  //
-  // it('Should load final contract', async() => {
-  //   finalContract = await Workspace.at(workspace1);
-  //   assert(finalContract);
-  // })
-  //
-  // it('Final contract should work and be owned by User', async() => {
-  //   result = await finalContract.owner({from: someone});
-  //   assert.equal(result.toString(), user1);
-  // });
+  it('Workspace 1 should have Factory as creator', async() =>  {
+    result = await workspace1.creator();
+    assert.equal(result.toString(), factory);
+  });
 
 });

@@ -11,6 +11,9 @@ import "./content/Filebox.sol";
  */
 contract Workspace is Permissions, Profile, Documents, Filebox {
 
+    // Creator factory address.
+    address public creator;
+
     /**
      * @dev Constructor.
      */
@@ -32,6 +35,7 @@ contract Workspace is Permissions, Profile, Documents, Filebox {
         Permissions(_foundation, _partnerCategory, _token)
         public
     {
+        creator = msg.sender;
         foundation = Foundation(_foundation);
         partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
