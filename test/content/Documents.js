@@ -32,6 +32,7 @@ contract('Documents', async (accounts) => {
   const user3 = accounts[3];
   const user4 = accounts[4];
   const user5 = accounts[5];
+  const user6 = accounts[6];
   const factory = accounts[8];
   let token;
   let foundation;
@@ -241,6 +242,24 @@ contract('Documents', async (accounts) => {
       result.toString(),
       '3,4,5'
     );
+  });
+
+  it('User1 gives key to User6 for profile & documents (ERC 725 10002)', async() => {
+    const result = await documents1.addKeyFromAddress(user6, 10002, 1, {from: user1});
+    assert(result);
+  });
+
+  it('User6 should add a new document', async() => {
+    const result = await documents1.createDocument(
+      otherBytes32,
+      otherFileEngine,
+      otherDocType,
+      otherDocTypeVersion,
+      otherEncrypted,
+      otherBytes24,
+      {from: user6}
+    );
+    assert(result);
   });
 
 });

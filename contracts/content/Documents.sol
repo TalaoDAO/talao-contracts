@@ -110,7 +110,7 @@ contract Documents is Permissions {
         bytes24 _additionalData
     )
         external
-        onlyActiveOwner
+        onlyHasKeyForPurpose(10002)
         returns (uint)
     {
         _createDocument(
@@ -161,7 +161,7 @@ contract Documents is Permissions {
     /**
      * @dev Remove a document.
      */
-    function deleteDocument (uint _id) external onlyActiveOwner {
+    function deleteDocument (uint _id) external onlyHasKeyForPurpose(10002) {
         _deleteDocument(_id);
     }
 
@@ -206,7 +206,7 @@ contract Documents is Permissions {
         bytes24 _additionalData
     )
         external
-        onlyActiveOwner
+        onlyHasKeyForPurpose(10002)
         returns (uint)
     {
         _deleteDocument(_id);
