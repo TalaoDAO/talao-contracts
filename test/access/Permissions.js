@@ -106,18 +106,38 @@ contract('Permissions', async (accounts) => {
     assert(!result2);
   });
 
-  it('User1 opens Vault access again for ERC 725 tests', async() => {
+  it('User2 opens Vault access again', async() => {
+    await token.createVaultAccess(10, {from:user2});
+    assert(result);
+  });
+
+  it('User4 is not a member of Permissions2, he should not be able to read its "private" content', async() => {
+    result = await permissions2.isReader({from: user4});
+    assert(!result);
+  });
+
+  it('User2 adds User4 as a member', async() => {
+    result = await foundation.addMember(user4, {from: user2});
+    assert(result);
+  });
+
+  it('User4 is a member of Permissions2, he should be able to read its "private" content', async() => {
+    result = await permissions2.isReader({from: user4});
+    assert(result);
+  });
+
+  it('User1 opens Vault access again', async() => {
     await token.createVaultAccess(10, {from:user1});
     result = await permissions1.isReader({from: user1});
     assert(result);
   });
 
-  it('Factory should have staff purpose 1', async() => {
+  it('Factory should have ERC 725 key with purpose 1 (Manager)', async() => {
     result = permissions1.hasKeyForPurpose(1, {from: factory});
     assert(result);
   });
 
-  it('User1 should not have staff purpose 1 even though he is owner in the sense of the Foundation: because Permissions1 was created by a virtual factory which is in fact an EOA', async() => {
+  it('User1 should not have ERC 725 key with purpose 1 (Manager) even though he is owner in the sense of the Foundation: because Permissions1 was created by a virtual factory which is in fact an EOA', async() => {
     result = await permissions1.hasKeyForPurpose(1, {from: user1});
     assert(!result);
   });

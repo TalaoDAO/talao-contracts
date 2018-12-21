@@ -28,6 +28,13 @@ contract Permissions is Partnership, ClaimHolder {
     }
 
     /**
+     * @dev Is msg.sender a "member" of this contract, in the Foundation sense?
+     */
+    function isMember() public view returns (bool) {
+        return foundation.membersToContracts(msg.sender) == address(this);
+    }
+
+    /**
      * @dev Read authorization for inherited contracts "private" data.
      */
     function isReader() public view returns (bool) {
@@ -35,22 +42,22 @@ contract Permissions is Partnership, ClaimHolder {
         // in the Foundation sense.
         (uint accessPrice,,,) = token.data(ownerInFoundation());
         // OR conditions for Reader:
-        // 1) Same code for:
+        // 1) Same code for
         // 1.1) Sender is this contract owner and has an open Vault in the token.
         // 1.2) Sender has vaultAccess to this contract owner in the token.
-        // 2) Sender is a member of an authorized Partner contract and owner
-        // has an open Vault in the token.
-        // 3) Owner has a free vaultAccess in the token and
-        // has an open Vault in the token.
+        // 2) Owner has open Vault in the token and:
+        // 2.1) Sender is a member of this contract,
+        // 2.2) Sender is a member of an authorized Partner contract
+        // 2.3) Owner has a free vaultAccess in the token
         return(
             token.hasVaultAccess(ownerInFoundation(), msg.sender) ||
             (
-                isPartnershipMember() &&
-                token.hasVaultAccess(ownerInFoundation(), ownerInFoundation())
-            ) ||
-            (
-                accessPrice == 0 &&
-                token.hasVaultAccess(ownerInFoundation(), ownerInFoundation())
+                token.hasVaultAccess(ownerInFoundation(), ownerInFoundation()) &&
+                (
+                    isMember() ||
+                    isPartnershipMember() ||
+                    accessPrice == 0
+                )
             )
         );
     }
@@ -79,8 +86,8 @@ contract Permissions is Partnership, ClaimHolder {
     }
 
     /**
-     * @dev Does msg.sender belong to the "staff" of this contract with a
-     * certain key purpose, and does the contract owner an open Vault?
+     * @dev Does msg.sender have an ERC 725 key with certain purpose,
+     * and does the contract owner an open Vault?
      */
     function hasKeyForPurpose(uint256 _purpose) public view returns (bool) {
         return (
