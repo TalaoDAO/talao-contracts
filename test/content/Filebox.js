@@ -21,8 +21,6 @@ contract('Filebox', async (accounts) => {
   let token;
   let foundation;
   let filebox;
-  let result;
-  let event;
 
   it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Filebox', async() => {
     keyHolderLibrary = await KeyHolderLibrary.new();
@@ -53,12 +51,12 @@ contract('Filebox', async (accounts) => {
   });
 
   it('Should create a Filebox contract and assign it to User1', async() => {
-    filebox = await Filebox.new(foundation.address, 1, token.address, {from: factory});
+    filebox = await Filebox.new(foundation.address, token.address, 1, {from: factory});
     await foundation.setInitialOwnerInFoundation(filebox.address, user1, {from: factory});
   });
 
   it('User1 should set his filebox', async() => {
-    result = await filebox.setFilebox(
+    const result = await filebox.setFilebox(
       publicEncryptionKey,
       encryptionAlgorithm,
       {from: user1}
@@ -67,7 +65,7 @@ contract('Filebox', async (accounts) => {
   });
 
   it('User2 should be able to get filebox public encryption key and encryption algorithm', async() => {
-    result = await filebox.fileboxSettings({from: user2});
+    const result = await filebox.fileboxSettings({from: user2});
     assert.equal(
       result.toString(),
       [
@@ -78,7 +76,7 @@ contract('Filebox', async (accounts) => {
   });
 
   it('User2 should be able to notify an encrypted decentralized file in filebox', async() => {
-    result = await filebox.sendFilebox(
+    const result = await filebox.sendFilebox(
       fileHash,
       fileEngine,
       {from: user2}
@@ -88,19 +86,19 @@ contract('Filebox', async (accounts) => {
         event.sender === user2
       );
     });
-    event = result.logs[0].args;
+    const event = result.logs[0].args;
     assert.equal(event.sender, user2);
     assert.equal(event.fileHash, fileHash);
     assert.equal(event.fileEngine, fileEngine);
   });
 
   it('User1 should blacklist user2', async() => {
-    result = filebox.blacklistAddressInFilebox(user2, {from: user1});
+    const result = filebox.blacklistAddressInFilebox(user2, {from: user1});
     assert(result);
   });
 
   it('User2 should not be able to "send a file" to filebox any more', async() => {
-    result = await truffleAssert.fails(
+    const result = await truffleAssert.fails(
       filebox.sendFilebox(
         fileHash,
         fileEngine,
@@ -111,14 +109,14 @@ contract('Filebox', async (accounts) => {
   });
 
   it('User1 should unblacklist user2', async() => {
-    result = await filebox.unblacklistAddressInFilebox(user2, {from: user1});
-    assert(result);
-    result = await filebox.fileboxBlacklist(user2, {from: user2});
-    assert(!result);
+    const result1 = await filebox.unblacklistAddressInFilebox(user2, {from: user1});
+    assert(result1);
+    const result2 = await filebox.fileboxBlacklist(user2, {from: user2});
+    assert(!result2);
   });
 
   it('User2 should be able to notify an encrypted decentralized file in filebox', async() => {
-    result = await filebox.sendFilebox(
+    const result = await filebox.sendFilebox(
       fileHash,
       fileEngine,
       {from: user2}
@@ -128,7 +126,7 @@ contract('Filebox', async (accounts) => {
         event.sender === user2
       );
     });
-    event = result.logs[0].args;
+    const event = result.logs[0].args;
     assert.equal(event.sender, user2);
     assert.equal(event.fileHash, fileHash);
     assert.equal(event.fileEngine, fileEngine);
