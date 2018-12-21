@@ -49,13 +49,15 @@ contract('Permissions', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Permissions1 (category 1) and Permissions2 (category 2) and set initial owners to User1 and User2', async() => {
+  it('Factory should deploy Permissions1 (category 1) and Permissions2 (category 2), set initial owners to User1 and User2, , and add an ERC 725 key 1 = management for each of them', async() => {
     permissions1 = await Permissions.new(foundation.address, token.address, 1, {from: factory});
     assert(permissions1);
     await foundation.setInitialOwnerInFoundation(permissions1.address, user1, {from: factory});
+    await permissions1.addKeyFromAddress(user1, 1, 1, {from: factory});
     permissions2 = await Permissions.new(foundation.address, token.address, 2, {from: factory});
     assert(permissions2);
     await foundation.setInitialOwnerInFoundation(permissions2.address, user2, {from: factory});
+    await permissions2.addKeyFromAddress(user2, 1, 1, {from: factory});
   });
 
   it('User1 should be able to read from Permissions1', async() => {
@@ -134,11 +136,6 @@ contract('Permissions', async (accounts) => {
   it('Factory should have ERC 725 key with purpose 1 (Manager)', async() => {
     const result = permissions1.hasKeyForPurpose(1, {from: factory});
     assert(result);
-  });
-
-  it('User1 should not have ERC 725 key with purpose 1 (Manager) even though he is owner in the sense of the Foundation: because Permissions1 was created by a virtual factory which is in fact an EOA', async() => {
-    const result = await permissions1.hasKeyForPurpose(1, {from: user1});
-    assert(!result);
   });
 
 });

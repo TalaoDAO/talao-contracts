@@ -53,13 +53,15 @@ contract('Profile', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Profile1 (category 1) and Profile2 (category 2) and set initial owners to User1 and User2', async() => {
+  it('Factory should deploy Profile1 (category 1) and Profile2 (category 2), set initial owners and give them ERC 725 Management keys', async() => {
     profile1 = await Profile.new(foundation.address, token.address, 1, {from: factory});
     assert(profile1);
     await foundation.setInitialOwnerInFoundation(profile1.address, user1, {from: factory});
+    await profile1.addKeyFromAddress(user1, 1, 1, {from: factory});
     profile2 = await Profile.new(foundation.address, token.address, 2, {from: factory});
     assert(profile2);
     await foundation.setInitialOwnerInFoundation(profile2.address, user2, {from: factory});
+    await profile2.addKeyFromAddress(user2, 1, 1, {from: factory});
   });
 
   it('In profile1, User1 should set his public profile', async() => {

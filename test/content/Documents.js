@@ -66,13 +66,15 @@ contract('Documents', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Documents1 (category 1) and Documents2 (category 2) and set initial owners to User1 and User2', async() => {
+  it('Factory should deploy Documents1 (category 1) and Documents2 (category 2) and set initial owners to User1 and User2 and give them ERC 725 Management keys', async() => {
     documents1 = await Documents.new(foundation.address, token.address, 1, {from: factory});
     assert(documents1);
     await foundation.setInitialOwnerInFoundation(documents1.address, user1, {from: factory});
+    await documents1.addKeyFromAddress(user1, 1, 1, {from: factory});
     documents2 = await Documents.new(foundation.address, token.address, 2, {from: factory});
     assert(documents2);
     await foundation.setInitialOwnerInFoundation(documents2.address, user2, {from: factory});
+    await documents2.addKeyFromAddress(user2, 1, 1, {from: factory});
   });
 
   it('User1 should add a document ID = 1, index[0]', async() => {
