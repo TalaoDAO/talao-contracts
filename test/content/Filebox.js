@@ -50,9 +50,10 @@ contract('Filebox', async (accounts) => {
     await foundation.addFactory(factory);
   });
 
-  it('Should create a Filebox contract and assign it to User1', async() => {
+  it('Should create a Filebox contract, assign it to User1 and gim ERC 725 Management key', async() => {
     filebox = await Filebox.new(foundation.address, token.address, 1, {from: factory});
     await foundation.setInitialOwnerInFoundation(filebox.address, user1, {from: factory});
+    const result = await filebox.addKeyFromAddress(user1, 1, 1, {from: factory});
   });
 
   it('User1 should set his filebox', async() => {
@@ -130,6 +131,16 @@ contract('Filebox', async (accounts) => {
     assert.equal(event.sender, user2);
     assert.equal(event.fileHash, fileHash);
     assert.equal(event.fileEngine, fileEngine);
+  });
+
+  it('User1 gives key to User3 for Filebox (ERC 725 10004)', async() => {
+    const result = await filebox.addKeyFromAddress(user3, 10004, 1, {from: user1});
+    assert(result);
+  });
+
+  it('User3 should be able to use restricted functions, like blacklist user2', async() => {
+    const result = filebox.blacklistAddressInFilebox(user2, {from: user3});
+    assert(result);
   });
 
 });
