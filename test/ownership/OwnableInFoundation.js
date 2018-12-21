@@ -10,7 +10,6 @@ contract('OwnableInFoundation', async (accounts) => {
   const factory = accounts[8];
   const someone = accounts[9];
   let ownableInFoundation, ownableInFoundationTest;
-  let result;
 
   it('Should deploy Foundation contract', async() => {
     foundation = await Foundation.new();
@@ -19,7 +18,7 @@ contract('OwnableInFoundation', async (accounts) => {
 
   it('Should register a Factory contract', async() => {
     // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
-    result = await foundation.addFactory(factory);
+    const result = await foundation.addFactory(factory);
     assert(result);
     truffleAssert.eventEmitted(result, 'FactoryAdded');
   });
@@ -30,22 +29,22 @@ contract('OwnableInFoundation', async (accounts) => {
   });
 
   it('Factory should set User1 as initial owner of OwnableInFoundation contract in Foundation', async() => {
-    result = await foundation.setInitialOwnerInFoundation(ownableInFoundation.address, user1, {from: factory});
+    const result = await foundation.setInitialOwnerInFoundation(ownableInFoundation.address, user1, {from: factory});
     assert(result);
   })
 
   it('Foundation should show link from User1 account to OwnableInFoundation contract', async() => {
-    result = await foundation.ownersToContracts(user1, {from: someone});
+    const result = await foundation.ownersToContracts(user1, {from: someone});
     assert.equal(result.toString(), ownableInFoundation.address)
   });
 
   it('Foundation should show link from OwnableInFoundation contract to User1', async() => {
-    result = await foundation.contractsToOwners(ownableInFoundation.address, {from: someone});
+    const result = await foundation.contractsToOwners(ownableInFoundation.address, {from: someone});
     assert.equal(result.toString(), user1);
   });
 
   it('User1 should transfer isOwnerInFoundation to User2, through Foundation', async() => {
-    result = await foundation.transferOwnershipInFoundation(ownableInFoundation.address, user2, {from: user1});
+    const result = await foundation.transferOwnershipInFoundation(ownableInFoundation.address, user2, {from: user1});
     assert(result);
   });
 
@@ -55,17 +54,17 @@ contract('OwnableInFoundation', async (accounts) => {
   });
 
   it('Factory should set User1 as initial owner of OwnableInFoundationTest contract in Foundation', async() => {
-    result = await foundation.setInitialOwnerInFoundation(ownableInFoundationTest.address, user1, {from: factory});
+    const result = await foundation.setInitialOwnerInFoundation(ownableInFoundationTest.address, user1, {from: factory});
     assert(result);
   });
 
   it('User1 should be able to use a function with onlyOwnerInFoundation modifier', async() => {
-    result = await ownableInFoundationTest.getSecret({from: user1});
+    const result = await ownableInFoundationTest.getSecret({from: user1});
     assert.equal(result.toString(), "This is sort of a secret string");
   });
 
   it('User2 should fail to use this function', async() => {
-    result = await truffleAssert.fails(
+    const result = await truffleAssert.fails(
       ownableInFoundationTest.getSecret({from: user2})
     );
   });
