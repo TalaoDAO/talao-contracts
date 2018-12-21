@@ -23,8 +23,6 @@ contract('Profile', async (accounts) => {
   const someone = accounts[9];
   let token;
   let profile1, profile2;
-  let result, result1, result2, result3, result4;
-  let tx, tx1, tx2, tx3, tx4;
 
   it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Profile', async() => {
     keyHolderLibrary = await KeyHolderLibrary.new();
@@ -56,16 +54,16 @@ contract('Profile', async (accounts) => {
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
   it('Factory should deploy Profile1 (category 1) and Profile2 (category 2) and set initial owners to User1 and User2', async() => {
-    profile1 = await Profile.new(foundation.address, 1, token.address, {from: factory});
+    profile1 = await Profile.new(foundation.address, token.address, 1, {from: factory});
     assert(profile1);
     await foundation.setInitialOwnerInFoundation(profile1.address, user1, {from: factory});
-    profile2 = await Profile.new(foundation.address, 2, token.address, {from: factory});
+    profile2 = await Profile.new(foundation.address, token.address, 2, {from: factory});
     assert(profile2);
     await foundation.setInitialOwnerInFoundation(profile2.address, user2, {from: factory});
   });
 
   it('In profile1, User1 should set his public profile', async() => {
-    tx = await profile1.setPublicProfile(
+    const result = await profile1.setPublicProfile(
       bytes32,
       bytes32,
       bytes32,
@@ -75,11 +73,12 @@ contract('Profile', async (accounts) => {
       fileEngine,
       string,
       {from:user1}
-    )
+    );
+    assert(result);
   });
 
   it('In profile1, anyone should get public profile', async() => {
-    result = await profile1.publicProfile({from: someone});
+    const result = await profile1.publicProfile({from: someone});
     assert.equal(
       result.toString(),
       [
@@ -96,15 +95,16 @@ contract('Profile', async (accounts) => {
   });
 
   it('In profile1, user1 should set his private profile', async() => {
-    tx = await profile1.setPrivateProfile(
+    const result = await profile1.setPrivateProfile(
       bytes32,
       bytes16,
-      {from:user1}
-    )
+      {from: user1}
+    );
+    assert(result);
   });
 
   it('In profile1, user1 should get his private profile', async() => {
-    result = await profile1.getPrivateProfile({from:user1});
+    const result = await profile1.getPrivateProfile({from:user1});
     assert.equal(
       result.toString(),
       [
@@ -115,7 +115,7 @@ contract('Profile', async (accounts) => {
   });
 
   it('In profile1, user2 should not be able to get private profile', async() => {
-    result = await truffleAssert.fails(
+    const result = await truffleAssert.fails(
       profile1.getPrivateProfile({ from: user2 })
     );
     assert(!result);
@@ -124,7 +124,7 @@ contract('Profile', async (accounts) => {
   it('user2 requests partnership of his profile2 contract with profile1 contract, user1 accepts, and then user2 should be able to get private profile of profile1', async() => {
     await profile2.requestPartnership(profile1.address, {from:user2});
     await profile1.authorizePartnership(profile2.address, {from:user1});
-    result = await profile1.getPrivateProfile({from:user2});
+    const result = await profile1.getPrivateProfile({from:user2});
     assert.equal(
       result.toString(),
       [
@@ -135,7 +135,7 @@ contract('Profile', async (accounts) => {
   });
 
   it('In profile1, user3 should not be able to get private profile', async() => {
-    result = await truffleAssert.fails(
+    const result = await truffleAssert.fails(
       profile1.getPrivateProfile({ from: user3 })
     );
     assert(!result);
@@ -143,7 +143,7 @@ contract('Profile', async (accounts) => {
 
   it('user3 buys Vault access to user1 in the token, and then user3 should be able to get private profile in profile1', async() => {
     await token.getVaultAccess(user1, {from:user3});
-    result = await profile1.getPrivateProfile({from:user3});
+    const result = await profile1.getPrivateProfile({from:user3});
     assert.equal(
       result.toString(),
       [
