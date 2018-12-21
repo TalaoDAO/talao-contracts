@@ -7,17 +7,17 @@ import "../content/Filebox.sol";
  * @notice Contract to "send" and "receive" decentralized encrypted files.
  * @author Talao, Polynomial.
  */
-contract FileboxTest is Filebox {
+contract FileboxTest is Permissions, Filebox {
 
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, uint _partnerCategory, address _token)
-        Permissions(_foundation, _partnerCategory, _token)
+    constructor(address _foundation, address _token, uint _partnerCategory)
+        Permissions(_foundation, _token, _partnerCategory)
         public
     {
         foundation = Foundation(_foundation);
-        partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
+        partnerCategory = _partnerCategory;
     }
 }
