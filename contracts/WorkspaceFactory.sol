@@ -60,8 +60,8 @@ contract WorkspaceFactory is Ownable {
         // Create contract.
         Workspace newWorkspace = new Workspace(
             address(foundation),
-            _partnerCategory,
             address(token),
+            _partnerCategory,
             _name1,
             _name2,
             _tagline,
