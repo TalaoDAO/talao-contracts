@@ -76,7 +76,7 @@ contract('Workspace Factory', async (accounts) => {
   it('Through the factory, User1 should create Workspace1 final contract of category1 (Freelancer).', async() => {
     const result = await truffleCost.log(
       workspaceFactory.createWorkspace(
-        1,
+        10001,
         name1,
         name2,
         tagline,

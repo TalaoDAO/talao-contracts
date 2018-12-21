@@ -57,6 +57,16 @@ contract WorkspaceFactory is Ownable {
             token.hasVaultAccess(msg.sender, msg.sender),
             'Sender has no access to Vault.'
         );
+        require(
+            (
+                _partnerCategory == 10001 ||
+                _partnerCategory == 20001 ||
+                _partnerCategory == 30001 ||
+                _partnerCategory == 40001 ||
+                _partnerCategory == 50001
+            ),
+            'Invalid category'
+        );
         // Create contract.
         Workspace newWorkspace = new Workspace(
             address(foundation),
