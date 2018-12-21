@@ -1,8 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "../ownership/OwnableInFoundation.sol";
+import "../tokenized/Tokenized.sol";
 import "../math/SafeMath.sol";
-import "../identity/ClaimHolder.sol";
 
 /**
  * @title Provides partnership features between contracts.
@@ -21,7 +20,7 @@ import "../identity/ClaimHolder.sol";
  * @author Talao, Polynomial.
  * @dev Convention here: _function = to be called by another partnership contract.
  */
-contract Partnership is OwnableInFoundation, ClaimHolder {
+contract Partnership is Tokenized {
 
     using SafeMath for uint;
 
@@ -53,11 +52,12 @@ contract Partnership is OwnableInFoundation, ClaimHolder {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, uint _partnerCategory)
-        OwnableInFoundation(_foundation)
+    constructor(address _foundation, address _token, uint _partnerCategory)
+        Tokenized(_foundation, _token)
         public
     {
         foundation = Foundation(_foundation);
+        token = TalaoToken(_token);
         partnerCategory = _partnerCategory;
     }
 
