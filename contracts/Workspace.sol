@@ -19,8 +19,8 @@ contract Workspace is Permissions, Profile, Documents, Filebox {
      */
     constructor(
         address _foundation,
-        uint _partnerCategory,
         address _token,
+        uint _partnerCategory,
         bytes32 _name1,
         bytes32 _name2,
         bytes32 _tagline,
@@ -32,13 +32,13 @@ contract Workspace is Permissions, Profile, Documents, Filebox {
         bytes32 _privateEmail,
         bytes16 _mobile
     )
-        Permissions(_foundation, _partnerCategory, _token)
+        Permissions(_foundation, _token, _partnerCategory)
         public
     {
         creator = msg.sender;
         foundation = Foundation(_foundation);
-        partnerCategory = _partnerCategory;
         token = TalaoToken(_token);
+        partnerCategory = _partnerCategory;
         publicProfile.name1 = _name1;
         publicProfile.name2 = _name2;
         publicProfile.tagline = _tagline;
