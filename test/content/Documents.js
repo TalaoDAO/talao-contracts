@@ -36,7 +36,6 @@ contract('Documents', async (accounts) => {
   let token;
   let foundation;
   let documents1, documents2, documents3, documents4;
-  let result, result1, result2, result3, result4;
 
   it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Documents', async() => {
     keyHolderLibrary = await KeyHolderLibrary.new();
@@ -68,16 +67,16 @@ contract('Documents', async (accounts) => {
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
   it('Factory should deploy Documents1 (category 1) and Documents2 (category 2) and set initial owners to User1 and User2', async() => {
-    documents1 = await Documents.new(foundation.address, 1, token.address, {from: factory});
+    documents1 = await Documents.new(foundation.address, token.address, 1, {from: factory});
     assert(documents1);
     await foundation.setInitialOwnerInFoundation(documents1.address, user1, {from: factory});
-    documents2 = await Documents.new(foundation.address, 2, token.address, {from: factory});
+    documents2 = await Documents.new(foundation.address, token.address, 2, {from: factory});
     assert(documents2);
     await foundation.setInitialOwnerInFoundation(documents2.address, user2, {from: factory});
   });
 
   it('User1 should add a document ID = 1, index[0]', async() => {
-    result = await documents1.createDocument(
+    const result = await documents1.createDocument(
       bytes32,
       fileEngine,
       docType,
@@ -90,20 +89,20 @@ contract('Documents', async (accounts) => {
   });
 
   it('In Document1, User1 be able get documents index, but not User2 and User3', async() => {
-    result1 = await documents1.getDocuments({from: user1});
+    const result1 = await documents1.getDocuments({from: user1});
     assert.equal(result1.toString(), 1);
-    result2 = await truffleAssert.fails(
+    const result2 = await truffleAssert.fails(
       documents1.getDocuments({ from: user2 })
     );
     assert(!result2);
-    result3 = await truffleAssert.fails(
+    const result3 = await truffleAssert.fails(
       documents1.getDocuments({ from: user3 })
     );
     assert(!result3);
   });
 
   it('In Document1, User1 be able get document of ID 1, but not User2 and User3', async() => {
-    result1 = await documents1.getDocument(1, {from: user1});
+    const result1 = await documents1.getDocument(1, {from: user1});
     assert.equal(
       result1.toString(),
       [
@@ -115,11 +114,11 @@ contract('Documents', async (accounts) => {
         bytes24
       ]
     );
-    result2 = await truffleAssert.fails(
+    const result2 = await truffleAssert.fails(
       documents1.getDocument(1, { from: user2 })
     );
     assert(!result2);
-    result3 = await truffleAssert.fails(
+    const result3 = await truffleAssert.fails(
       documents1.getDocuments(1, { from: user3 })
     );
     assert(!result3);
@@ -132,14 +131,14 @@ contract('Documents', async (accounts) => {
   });
 
   it('In Document1, User2 and User3 should be able get documents index', async() => {
-    result1 = await documents1.getDocuments({from: user2});
+    const result1 = await documents1.getDocuments({from: user2});
     assert.equal(result1.toString(), 1);
-    result2 = await documents1.getDocuments({from: user3});
+    const result2 = await documents1.getDocuments({from: user3});
     assert.equal(result2.toString(), 1);
   });
 
   it('In Document1, User2 and User3 should be able get document of ID 1', async() => {
-    result1 = await documents1.getDocument(1, {from: user2});
+    const result1 = await documents1.getDocument(1, {from: user2});
     assert.equal(
       result1.toString(),
       [
@@ -151,7 +150,7 @@ contract('Documents', async (accounts) => {
         bytes24
       ]
     );
-    result2 = await documents1.getDocument(1, {from: user3});
+    const result2 = await documents1.getDocument(1, {from: user3});
     assert.equal(
       result2.toString(),
       [
@@ -166,7 +165,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should add a new document ID = 2, index[1]', async() => {
-    result = await documents1.createDocument(
+    const result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
@@ -179,7 +178,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should add a new document ID = 3, index[2]', async() => {
-    result = await documents1.createDocument(
+    const result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
@@ -192,7 +191,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should add a new document ID = 4, index[3]', async() => {
-    result = await documents1.createDocument(
+    const result = await documents1.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
@@ -205,13 +204,13 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should delete document of ID = 2', async() => {
-    result = await documents1.deleteDocument(2, {from: user1});
+    const result = await documents1.deleteDocument(2, {from: user1});
     assert(result);
     truffleAssert.eventEmitted(result, 'DocumentRemoved');
   });
 
   it('getDocuments should return the correct array of doc IDs [1, 4, 3]', async() => {
-    result = await documents1.getDocuments({from: user1});
+    const result = await documents1.getDocuments({from: user1});
     assert.equal(
       result.toString(),
       '1,4,3'
@@ -219,7 +218,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
-    result = await documents1.updateDocument(
+    const result = await documents1.updateDocument(
       1,
       otherBytes32,
       otherFileEngine,
@@ -235,7 +234,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('getDocuments should return the correct array of doc IDs [3, 4, 5]', async() => {
-    result = await documents1.getDocuments({from: user1});
+    const result = await documents1.getDocuments({from: user1});
     assert.equal(
       result.toString(),
       '3,4,5'
