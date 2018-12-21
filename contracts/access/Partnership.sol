@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../ownership/OwnableInFoundation.sol";
 import "../math/SafeMath.sol";
+import "../identity/ClaimHolder.sol";
 
 /**
  * @title Provides partnership features between contracts.
@@ -20,7 +21,7 @@ import "../math/SafeMath.sol";
  * @author Talao, Polynomial.
  * @dev Convention here: _function = to be called by another partnership contract.
  */
-contract Partnership is OwnableInFoundation {
+contract Partnership is OwnableInFoundation, ClaimHolder {
 
     using SafeMath for uint;
 

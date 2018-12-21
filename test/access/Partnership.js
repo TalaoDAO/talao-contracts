@@ -1,4 +1,7 @@
 const truffleAssert = require('truffle-assertions');
+
+const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
+const ClaimHolderLibrary = artifacts.require('./identity/ClaimHolderLibrary.sol');
 const Foundation = artifacts.require('Foundation');
 const Partnership = artifacts.require('Partnership');
 
@@ -15,6 +18,14 @@ contract('Partnership', async (accounts) => {
   let foundation;
   let partnership1, partnership2, partnership3, partnership4;
   let result, result1, result2, result3, result4;
+
+  it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Partnership', async() => {
+    keyHolderLibrary = await KeyHolderLibrary.new();
+    await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
+    claimHolderLibrary = await ClaimHolderLibrary.new();
+    await Partnership.link(KeyHolderLibrary, keyHolderLibrary.address);
+    await Partnership.link(ClaimHolderLibrary, claimHolderLibrary.address);
+  });
 
   it('Should deploy Foundation contract and register a Factory contract', async() => {
     foundation = await Foundation.new();

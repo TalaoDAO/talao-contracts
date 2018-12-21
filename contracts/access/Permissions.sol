@@ -2,13 +2,12 @@ pragma solidity ^0.4.24;
 
 import "./Partnership.sol";
 import "../token/TalaoToken.sol";
-import "../identity/ClaimHolder.sol";
 
 /**
  * @title Permissions contract.
  * @author Talao, Polynomial.
  */
-contract Permissions is Partnership, ClaimHolder {
+contract Permissions is Partnership {
 
     // Foundation contract.
     Foundation foundation;
