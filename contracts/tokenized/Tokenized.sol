@@ -70,4 +70,24 @@ contract Tokenized is OwnableInFoundation, ClaimHolder {
         require(hasKeyForPurpose(_purpose), 'Access denied');
         _;
     }
+
+    /**
+     * @dev Helper to add ERC 725 keys.
+     */
+    function addKeyFromAddress(address _address, uint _purpose, uint _type)
+        external
+        returns (bool success)
+    {
+        success = addKey(keccak256(abi.encodePacked(_address)), _purpose, _type);
+    }
+
+    /**
+     * @dev Helper to remove ERC 725 keys.
+     */
+    function removeKeyFromAddress(address _address, uint _purpose)
+        external
+        returns (bool success)
+    {
+        success = removeKey(keccak256(abi.encodePacked(_address)), _purpose);
+    }
 }
