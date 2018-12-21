@@ -25,8 +25,6 @@ contract('Workspace', async (accounts) => {
   let token;
   let foundation;
   let workspace1, workspace2;
-  let result, result1, result2, result3, result4;
-  let tx, tx1, tx2, tx3, tx4;
 
   it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Profile', async() => {
     keyHolderLibrary = await KeyHolderLibrary.new();
@@ -60,8 +58,8 @@ contract('Workspace', async (accounts) => {
   it('Factory should deploy Workspace1 (category 1 = Freelancer) and Workspace2 (category 2 = Marketplace) and set initial owners to User1 and User2', async() => {
     workspace1 = await Workspace.new(
       foundation.address,
-      1,
       token.address,
+      1,
       name1,
       name2,
       tagline,
@@ -78,8 +76,8 @@ contract('Workspace', async (accounts) => {
     await foundation.setInitialOwnerInFoundation(workspace1.address, user1, {from: factory});
     workspace2 = await Workspace.new(
       foundation.address,
-      1,
       token.address,
+      1,
       name1,
       name2,
       tagline,
@@ -97,7 +95,7 @@ contract('Workspace', async (accounts) => {
   });
 
   it('Workspace 1 should have Factory as creator', async() =>  {
-    result = await workspace1.creator();
+    const result = await workspace1.creator();
     assert.equal(result.toString(), factory);
   });
 
