@@ -19,7 +19,6 @@ contract('Permissions', async (accounts) => {
   let token;
   let keyHolderLibrary, claimHolderLibrary;
   let permissions1, permissions2;
-  let result, result1, result2;
 
   it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Permissions', async() => {
     keyHolderLibrary = await KeyHolderLibrary.new();
@@ -51,94 +50,94 @@ contract('Permissions', async (accounts) => {
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
   it('Factory should deploy Permissions1 (category 1) and Permissions2 (category 2) and set initial owners to User1 and User2', async() => {
-    permissions1 = await Permissions.new(foundation.address, 1, token.address, {from: factory});
+    permissions1 = await Permissions.new(foundation.address, token.address, 1, {from: factory});
     assert(permissions1);
     await foundation.setInitialOwnerInFoundation(permissions1.address, user1, {from: factory});
-    permissions2 = await Permissions.new(foundation.address, 2, token.address, {from: factory});
+    permissions2 = await Permissions.new(foundation.address, token.address, 2, {from: factory});
     assert(permissions2);
     await foundation.setInitialOwnerInFoundation(permissions2.address, user2, {from: factory});
   });
 
   it('User1 should be able to read from Permissions1', async() => {
-    result = await permissions1.isReader({from: user1});
+    const result = await permissions1.isReader({from: user1});
     assert(result);
   });
 
   it('User3 should not be able to read from Permissions1', async() => {
-    result = await permissions1.isReader({from: user3});
+    const result = await permissions1.isReader({from: user3});
     assert(!result);
   });
 
   it('User3 buys Vault access for User1 and then, should be able to read from Permissions1', async() => {
     await token.getVaultAccess(user1, {from: user3});
-    result = await permissions1.isReader({from: user3});
+    const result = await permissions1.isReader({from: user3});
     assert(result);
   });
 
   it('User2 should not be able to read from Permissions1', async() => {
-    result = await permissions1.isReader({from: user2});
+    const result = await permissions1.isReader({from: user2});
     assert(!result);
   });
 
   it('User2 asks partnership with Permissions1, User1 accepts, and then User2 should be able to read from Permissions1', async() => {
     await permissions2.requestPartnership(permissions1.address, {from: user2});
     await permissions1.authorizePartnership(permissions2.address, {from: user1});
-    result = await permissions1.isReader({from: user2});
+    const result = await permissions1.isReader({from: user2});
     assert(result);
   });
 
   it('User1 closes Vault access, and User2 should not be able to read from Permissions1 anymore', async() => {
     await token.closeVaultAccess({from:user1});
-    result = await permissions1.isReader({from: user2});
+    const result = await permissions1.isReader({from: user2});
     assert(!result);
   });
 
   it('Anyone should be able to read from Permissions2 because access if free and User2 has open Vault', async() => {
-    result = await permissions2.isReader({from: someone});
+    const result = await permissions2.isReader({from: someone});
     assert(result);
   });
 
   it('User2 closes Vault access, no one except User2 should be able to read from Permissions2 anymore, even partners', async() => {
     await token.closeVaultAccess({from:user2});
-    result1 = await permissions2.isReader({from: someone});
+    const result1 = await permissions2.isReader({from: someone});
     assert(!result1);
-    result2 = await permissions2.isReader({from: user1});
+    const result2 = await permissions2.isReader({from: user1});
     assert(!result2);
   });
 
   it('User2 opens Vault access again', async() => {
-    await token.createVaultAccess(10, {from:user2});
+    const result = await token.createVaultAccess(10, {from:user2});
     assert(result);
   });
 
   it('User4 is not a member of Permissions2, he should not be able to read its "private" content', async() => {
-    result = await permissions2.isReader({from: user4});
+    const result = await permissions2.isReader({from: user4});
     assert(!result);
   });
 
   it('User2 adds User4 as a member', async() => {
-    result = await foundation.addMember(user4, {from: user2});
+    const result = await foundation.addMember(user4, {from: user2});
     assert(result);
   });
 
   it('User4 is a member of Permissions2, he should be able to read its "private" content', async() => {
-    result = await permissions2.isReader({from: user4});
+    const result = await permissions2.isReader({from: user4});
     assert(result);
   });
 
   it('User1 opens Vault access again', async() => {
     await token.createVaultAccess(10, {from:user1});
-    result = await permissions1.isReader({from: user1});
+    const result = await permissions1.isReader({from: user1});
     assert(result);
   });
 
   it('Factory should have ERC 725 key with purpose 1 (Manager)', async() => {
-    result = permissions1.hasKeyForPurpose(1, {from: factory});
+    const result = permissions1.hasKeyForPurpose(1, {from: factory});
     assert(result);
   });
 
   it('User1 should not have ERC 725 key with purpose 1 (Manager) even though he is owner in the sense of the Foundation: because Permissions1 was created by a virtual factory which is in fact an EOA', async() => {
-    result = await permissions1.hasKeyForPurpose(1, {from: user1});
+    const result = await permissions1.hasKeyForPurpose(1, {from: user1});
     assert(!result);
   });
 
