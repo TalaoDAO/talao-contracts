@@ -28,9 +28,7 @@ contract Workspace is Permissions, Profile, Documents, Filebox {
         bytes32 _publicEmail,
         bytes32 _pictureHash,
         uint16 _pictureEngine,
-        string _description,
-        bytes32 _privateEmail,
-        bytes16 _mobile
+        string _description
     )
         Permissions(_foundation, _token, _partnerCategory)
         public
@@ -47,8 +45,6 @@ contract Workspace is Permissions, Profile, Documents, Filebox {
         publicProfile.pictureHash = _pictureHash;
         publicProfile.pictureEngine = _pictureEngine;
         publicProfile.description = _description;
-        privateProfile.email = _privateEmail;
-        privateProfile.mobile = _mobile;
     }
 
     // TODO: kill

@@ -19,12 +19,6 @@ contract WorkspaceFactory is Ownable {
     // Talao token contract.
     TalaoToken public token;
 
-    // ERC 725 purpose: MANAGER
-    uint constant erc725Manager = 1;
-
-    // ERC 725 key type: ECDSA
-    uint constant erc725Ecdsa = 1;
-
     /**
      * @dev Constructor.
      */
@@ -45,9 +39,7 @@ contract WorkspaceFactory is Ownable {
         bytes32 _publicEmail,
         bytes32 _pictureHash,
         uint16 _pictureEngine,
-        string _description,
-        bytes32 _privateEmail,
-        bytes16 _mobile
+        string _description
     )
         external
         returns (address)
@@ -79,14 +71,12 @@ contract WorkspaceFactory is Ownable {
             _publicEmail,
             _pictureHash,
             _pictureEngine,
-            _description,
-            _privateEmail,
-            _mobile
+            _description
         );
-        // Add an ERC 725 key for initial owner with MANAGER purpose.
-        newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), erc725Manager, erc725Ecdsa);
+        // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
+        newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);
         // Remove this factory ERC 725 MANAGER key.
-        newWorkspace.removeKey(keccak256(abi.encodePacked(address(this))), erc725Manager);
+        newWorkspace.removeKey(keccak256(abi.encodePacked(address(this))), 1);
         // Set initial owner in Foundation to msg.sender.
         foundation.setInitialOwnerInFoundation(address(newWorkspace), msg.sender);
         // Return new contract address.

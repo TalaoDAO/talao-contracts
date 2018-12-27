@@ -11,12 +11,22 @@ contract ProfileTest is Permissions, Profile {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, address _token, uint _partnerCategory)
+    constructor(
+        address _foundation,
+        address _token,
+        uint _partnerCategory,
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        bytes _symetricEncryptionKeyData
+    )
         Permissions(_foundation, _token, _partnerCategory)
         public
     {
         foundation = Foundation(_foundation);
         token = TalaoToken(_token);
         partnerCategory = _partnerCategory;
+        privateProfile.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
+        privateProfile.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
+        privateProfile.symetricEncryptionKeyData = _symetricEncryptionKeyData;
     }
 }
