@@ -170,6 +170,9 @@ contract Partnership is Tokenized {
             }
             // Authorize Partnership contract in our contract.
             partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Authorized;
+            // Give the Partnership contrat's owner an ERC 725 "Claim" key.
+            // So he can submit claims on our contract (certificate of work, ...).
+            addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
             // Increment our number of partnerships.
             partnershipsNumber = partnershipsNumber.add(1);
         }
@@ -220,6 +223,9 @@ contract Partnership is Tokenized {
         );
         // Authorize the Partnership contract in our contract.
         partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Authorized;
+        // Give the Partnership contrat's owner an ERC 725 "Claim" key.
+        // So he can submit claims on our contract (certificate of work, ...).
+        addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
         // Increment our number of partnerships.
         partnershipsNumber = partnershipsNumber.add(1);
         // Log an event in the new authorized partner contract.
@@ -276,6 +282,10 @@ contract Partnership is Tokenized {
                 // Decrement our number of partnerships.
                 partnershipsNumber = partnershipsNumber.sub(1);
             }
+            // If there is one, remove ERC 725 "Claim" key for Partnership contract owner.
+            if (keyHasPurpose(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3)) {
+                removeKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3);
+            }
             // Change his partnership to Removed in our contract.
             // We want to have Removed instead of resetting to Unknown,
             // otherwise if partnership is initiated again with him,
@@ -289,16 +299,23 @@ contract Partnership is Tokenized {
      * @dev Called by Partnership contract breaking partnership with us.
      */
     function _removePartnership() external returns (bool success) {
-         // He wants to break partnership with us, so we break too.
-         // If it was an authorized partnership,
-         if (partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Authorized) {
-             // Decrement our number of partnerships.
-             partnershipsNumber = partnershipsNumber.sub(1);
-         }
-         // Remove his authorization.
-         partnershipAuthorizations[msg.sender] = PartnershipAuthorization.Removed;
-         // We return to the calling contract that it's done.
-         success = true;
+        // He wants to break partnership with us, so we break too.
+        // If it was an authorized partnership,
+        if (partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Authorized) {
+            // Decrement our number of partnerships.
+            partnershipsNumber = partnershipsNumber.sub(1);
+        }
+        // If there is one, remove ERC 725 "Claim" key for Partnership contract owner.
+        // TODO: unfortunately we can not automate this. Indeed it would require
+        // the Partnership contract to have an ERC 725 Management key,
+        // In order to remove a key.
+        /* if (keyHasPurpose(keccak256(abi.encodePacked(foundation.contractsToOwners(msg.sender))), 3)) {
+            removeKey(keccak256(abi.encodePacked(foundation.contractsToOwners(msg.sender))), 3);
+        } */
+        // Remove his authorization.
+        partnershipAuthorizations[msg.sender] = PartnershipAuthorization.Removed;
+        // We return to the calling contract that it's done.
+        success = true;
     }
 }
 

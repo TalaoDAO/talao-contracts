@@ -52,11 +52,11 @@ contract('Partnership', async (accounts) => {
     truffleAssert.eventEmitted(result, 'FactoryAdded');
   });
 
-  it('Factory should deploy partnership1 (category 1), partnership2 (category 2), partnership3 (category 255 = max) and partnership4 (category 2) contracts', async() => {
-    partnership1 = await Partnership.new(foundation.address, token.address, 1, {from: factory});
-    partnership2 = await Partnership.new(foundation.address, token.address, 2, {from: factory});
-    partnership3 = await Partnership.new(foundation.address, token.address, 255, {from: factory});
-    partnership4 = await Partnership.new(foundation.address, token.address, 2, {from: factory});
+  it('Factory should deploy partnership1 (category 10001), partnership2 (category 20001), partnership3 (category 30001) and partnership4 (category 20001) contracts', async() => {
+    partnership1 = await Partnership.new(foundation.address, token.address, 10001, {from: factory});
+    partnership2 = await Partnership.new(foundation.address, token.address, 20001, {from: factory});
+    partnership3 = await Partnership.new(foundation.address, token.address, 30001, {from: factory});
+    partnership4 = await Partnership.new(foundation.address, token.address, 20001, {from: factory});
   });
 
   it('Should register to User1, User2, User3 and User4, and add an ERC 725 key 1 = management for each of them', async() => {
@@ -102,6 +102,14 @@ contract('Partnership', async (accounts) => {
     assert(result);
   });
 
+  it('User2 should have an ERC 725 "Claim" key in partnership1', async() => {
+    const user2key = web3.utils.keccak256(user2);
+    const result = await partnership1.getKeyPurposes(user2key, {from: someone});
+    assert.equal(result.toString(), [
+      3
+    ]);
+  });
+
   it('User2 should authorize partnership1 in his contract partnership2, PartnershipAccepted event should have been emitted by partner1 contract, triggered by partner2', async() => {
     const result = await partnership2.authorizePartnership(partnership1.address, { from: user2 });
     assert(result);
@@ -113,8 +121,17 @@ contract('Partnership', async (accounts) => {
     assert(result);
   });
 
+  it('User1 should have an ERC 725 "Claim" key in partnership2', async() => {
+    const user1key = web3.utils.keccak256(user1);
+    const result = await partnership2.getKeyPurposes(user1key, {from: someone});
+    assert.equal(result.toString(), [
+      3
+    ]);
+  });
+
   it('User3 should request partnership of his contract partnership3 to the partnership2 contract', async() => {
-    await partnership3.requestPartnership(partnership2.address, { from: user3 });
+    const result = await partnership3.requestPartnership(partnership2.address, { from: user3 });
+    assert(result);
   });
 
   it('User2 should get his knowns partners and the result should be an array of partnership1 & partnership3 addresses', async() => {
@@ -125,14 +142,14 @@ contract('Partnership', async (accounts) => {
   it('User2 should get partnership1 information in his contract', async() => {
     const result = await partnership2.getPartnership(partnership1.address, { from: user2 });
     assert.equal(result[0], user1);
-    assert.equal(result[1], 1);
+    assert.equal(result[1], 10001);
     assert.equal(result[2], 1);
   });
 
   it('User1 should get partnership2 information in his contract', async() => {
     const result = await partnership1.getPartnership(partnership2.address, { from: user1 });
     assert.equal(result[0], user2);
-    assert.equal(result[1], 2);
+    assert.equal(result[1], 20001);
     assert.equal(result[2], 1);
   });
 
@@ -156,7 +173,8 @@ contract('Partnership', async (accounts) => {
   });
 
   it('User3 should request partnership of his contract partnership3 to the partnership2 contract', async() => {
-    await partnership3.requestPartnership(partnership2.address, { from: user3 });
+    const result = await partnership3.requestPartnership(partnership2.address, { from: user3 });
+    assert(result);
   });
 
   it('User2 should authorize Partnership3 in his contract Partnership2.', async() => {
@@ -218,7 +236,7 @@ contract('Partnership', async (accounts) => {
   it('User2 should get partnership3 information by its contract address', async() => {
     const result = await partnership2.getPartnership(partnership3.address, { from: user2 });
     assert.equal(result[0], user6);
-    assert.equal(result[1], 255);
+    assert.equal(result[1], 30001);
     assert.equal(result[2], 1);
   });
 
