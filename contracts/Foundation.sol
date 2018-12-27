@@ -17,6 +17,9 @@ contract Foundation is Ownable {
     // Contract addresses to owners relationships.
     mapping(address => address) public contractsToOwners;
 
+    // Index of known contract addresses.
+    address[] public contractsIndex;
+
     // Members (EOA) to contract addresses relationships.
     // In a Partnership.sol inherited contract, this allows us to create a
     // modifier for most read functions in this contract that will authorize
@@ -77,6 +80,7 @@ contract Foundation is Ownable {
             'Account already has contract'
         );
         contractsToOwners[_contract] = _account;
+        contractsIndex.push(_contract);
         ownersToContracts[_account] = _contract;
         membersToContracts[_account] = _contract;
     }
@@ -156,6 +160,14 @@ contract Foundation is Ownable {
         );
         membersToContracts[_member] = address(0);
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
+    }
+
+    /**
+     * @dev Getter for contractsIndex.
+     * The automatic getter can not return array.
+     */
+    function getContractsIndex() external view returns (address[]) {
+        return contractsIndex;
     }
 
     /**

@@ -57,9 +57,9 @@ contract('Foundation', async (accounts) => {
     truffleAssert.eventEmitted(result, 'FactoryAdded');
   });
 
-  it('Through the factory, User1 should create a final contract of category1 (Freelancer)', async() => {
+  it('Through the factory, User1 should create a final contract of category 10001 (Freelancer)', async() => {
     const result = await factory.createWorkspace(
-      1,
+      10001,
       name1,
       name2,
       tagline,
@@ -126,9 +126,9 @@ contract('Foundation', async (accounts) => {
     );
   });
 
-  it('Through the factory, User3 should create a final contract of category 2 (Marketplace)', async() => {
+  it('Through the factory, User3 should create a final contract of category 20001 (Marketplace)', async() => {
     const result = await factory.createWorkspace(
-      2,
+      20001,
       name1,
       name2,
       tagline,
@@ -213,7 +213,7 @@ contract('Foundation', async (accounts) => {
 
   it('User4 should be able to create a new contract finalContract4', async() => {
     const result = await factory.createWorkspace(
-      2,
+      20001,
       name1,
       name2,
       tagline,
@@ -249,7 +249,7 @@ contract('Foundation', async (accounts) => {
   it('User5 should fail to create a contract', async() => {
     const result = await truffleAssert.fails(
       factory.createWorkspace(
-        2,
+        20001,
         name1,
         name2,
         tagline,
@@ -264,6 +264,15 @@ contract('Foundation', async (accounts) => {
       )
     );
     assert(!result);
+  });
+
+  it('contractsIndex should contain 3 contract addresses', async() => {
+    const result = await foundation.getContractsIndex({from: someone});
+    assert.equal(result.toString(), [
+      finalContract1.address,
+      finalContract3.address,
+      finalContract4.address
+    ]);
   });
 
 });
