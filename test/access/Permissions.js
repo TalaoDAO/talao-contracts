@@ -1,3 +1,4 @@
+const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -53,11 +54,13 @@ contract('Permissions', async (accounts) => {
     permissions1 = await Permissions.new(foundation.address, token.address, 1, {from: factory});
     assert(permissions1);
     await foundation.setInitialOwnerInFoundation(permissions1.address, user1, {from: factory});
-    await permissions1.addKeyFromAddress(user1, 1, 1, {from: factory});
+    const user1key = web3.utils.keccak256(user1);
+    await permissions1.addKey(user1key, 1, 1, {from: factory});
     permissions2 = await Permissions.new(foundation.address, token.address, 2, {from: factory});
     assert(permissions2);
     await foundation.setInitialOwnerInFoundation(permissions2.address, user2, {from: factory});
-    await permissions2.addKeyFromAddress(user2, 1, 1, {from: factory});
+    const user2key = web3.utils.keccak256(user2);
+    await permissions2.addKey(user2key, 1, 1, {from: factory});
   });
 
   it('User1 should be able to read from Permissions1', async() => {

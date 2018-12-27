@@ -1,3 +1,4 @@
+const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -58,11 +59,13 @@ contract('Profile', async (accounts) => {
     profile1 = await Profile.new(foundation.address, token.address, 1, {from: factory});
     assert(profile1);
     await foundation.setInitialOwnerInFoundation(profile1.address, user1, {from: factory});
-    await profile1.addKeyFromAddress(user1, 1, 1, {from: factory});
+    const user1key = web3.utils.keccak256(user1);
+    await profile1.addKey(user1key, 1, 1, {from: factory});
     profile2 = await Profile.new(foundation.address, token.address, 2, {from: factory});
     assert(profile2);
     await foundation.setInitialOwnerInFoundation(profile2.address, user2, {from: factory});
-    await profile2.addKeyFromAddress(user2, 1, 1, {from: factory});
+    const user2key = web3.utils.keccak256(user2);
+    await profile2.addKey(user2key, 1, 1, {from: factory});
   });
 
   it('In profile1, User1 should set his public profile', async() => {
@@ -157,7 +160,8 @@ contract('Profile', async (accounts) => {
   });
 
   it('User1 gives key to User4 for profile & documents (ERC 725 10002)', async() => {
-    const result = await profile1.addKeyFromAddress(user4, 10002, 1, {from: user1});
+    const user4key = web3.utils.keccak256(user4);
+    const result = await profile1.addKey(user4key, 10002, 1, {from: user1});
     assert(result);
   });
 

@@ -1,3 +1,4 @@
+const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -71,11 +72,13 @@ contract('Documents', async (accounts) => {
     documents1 = await Documents.new(foundation.address, token.address, 1, {from: factory});
     assert(documents1);
     await foundation.setInitialOwnerInFoundation(documents1.address, user1, {from: factory});
-    await documents1.addKeyFromAddress(user1, 1, 1, {from: factory});
+    const user1key = web3.utils.keccak256(user1);
+    await documents1.addKey(user1key, 1, 1, {from: factory});
     documents2 = await Documents.new(foundation.address, token.address, 2, {from: factory});
     assert(documents2);
     await foundation.setInitialOwnerInFoundation(documents2.address, user2, {from: factory});
-    await documents2.addKeyFromAddress(user2, 1, 1, {from: factory});
+    const user2key = web3.utils.keccak256(user2);
+    await documents2.addKey(user2key, 1, 1, {from: factory});
   });
 
   it('User1 should add a document ID = 1, index[0]', async() => {
@@ -245,7 +248,8 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 gives key to User6 for profile & documents (ERC 725 10002)', async() => {
-    const result = await documents1.addKeyFromAddress(user6, 10002, 1, {from: user1});
+    const user6key = web3.utils.keccak256(user6);
+    const result = await documents1.addKey(user6key, 10002, 1, {from: user1});
     assert(result);
   });
 

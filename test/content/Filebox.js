@@ -1,3 +1,4 @@
+const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -53,7 +54,8 @@ contract('Filebox', async (accounts) => {
   it('Should create a Filebox contract, assign it to User1 and gim ERC 725 Management key', async() => {
     filebox = await Filebox.new(foundation.address, token.address, 1, {from: factory});
     await foundation.setInitialOwnerInFoundation(filebox.address, user1, {from: factory});
-    const result = await filebox.addKeyFromAddress(user1, 1, 1, {from: factory});
+    const user1key = web3.utils.keccak256(user1);
+    const result = await filebox.addKey(user1key, 1, 1, {from: factory});
   });
 
   it('User1 should set his filebox', async() => {
@@ -134,7 +136,8 @@ contract('Filebox', async (accounts) => {
   });
 
   it('User1 gives key to User3 for Filebox (ERC 725 10004)', async() => {
-    const result = await filebox.addKeyFromAddress(user3, 10004, 1, {from: user1});
+    const user3key = web3.utils.keccak256(user3);
+    const result = await filebox.addKey(user3key, 10004, 1, {from: user1});
     assert(result);
   });
 

@@ -1,3 +1,4 @@
+const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -62,22 +63,26 @@ contract('Partnership', async (accounts) => {
     await foundation.setInitialOwnerInFoundation(partnership1.address, user1, {from: factory});
     const result1 = await foundation.contractsToOwners(partnership1.address);
     assert.equal(result1, user1);
-    const result1b = await partnership1.addKeyFromAddress(user1, 1, 1, {from: factory});
+    const user1key = web3.utils.keccak256(user1);
+    const result1b = await partnership1.addKey(user1key, 1, 1, {from: factory});
     assert(result1b);
     await foundation.setInitialOwnerInFoundation(partnership2.address, user2, {from: factory});
     const result2 = await foundation.contractsToOwners(partnership2.address);
     assert.equal(result2, user2);
-    const result2b = await partnership2.addKeyFromAddress(user2, 1, 1, {from: factory});
+    const user2key = web3.utils.keccak256(user2);
+    const result2b = await partnership2.addKey(user2key, 1, 1, {from: factory});
     assert(result2b);
     await foundation.setInitialOwnerInFoundation(partnership3.address, user3, {from: factory});
     const result3 = await foundation.contractsToOwners(partnership3.address);
     assert.equal(result3, user3);
-    const result3b = await partnership3.addKeyFromAddress(user3, 1, 1, {from: factory});
+    const user3key = web3.utils.keccak256(user3);
+    const result3b = await partnership3.addKey(user3key, 1, 1, {from: factory});
     assert(result3b);
     await foundation.setInitialOwnerInFoundation(partnership4.address, user4, {from: factory});
     const result4 = await foundation.contractsToOwners(partnership4.address);
     assert.equal(result4, user4);
-    const result4b = await partnership4.addKeyFromAddress(user4, 1, 1, {from: factory});
+    const user4key = web3.utils.keccak256(user4);
+    const result4b = await partnership4.addKey(user4key, 1, 1, {from: factory});
     assert(result4b);
   });
 
