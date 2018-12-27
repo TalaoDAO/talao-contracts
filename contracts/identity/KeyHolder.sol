@@ -7,6 +7,11 @@ import "./KeyHolderLibrary.sol";
  * @title Manages an ERC 725 identity keys.
  * @notice Implementation by Origin Protocol
  * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolder.sol
+ * We defined our own set of "sub-ACTION" keys:
+ * - 20002 = write Profile & Documents
+ * - 20003 = manage Partnerships
+ * - 20004 = use Filebox
+ * - 20005 = buy Services
  */
 contract KeyHolder is ERC725 {
     KeyHolderLibrary.KeyHolderData keyHolderData;
