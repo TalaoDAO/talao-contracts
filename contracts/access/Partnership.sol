@@ -161,17 +161,10 @@ contract Partnership is Tokenized {
             ,
             'Partnership contract must be Unknown or Removed'
         );
-        // Get his partner category and check we have not the same.
-        PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
-        uint hisCategory = hisInterface.partnerCategory();
-        require(
-            partnerCategory != hisCategory,
-            'Contracts of same category can not partnership'
-        );
         // Request partnership in the other contract.
-        // Other contract can trust us on partnerCategory because all
-        // contracts are registred in Foundation by factories.
-        bool success = hisInterface._requestPartnership(partnerCategory);
+        // Open interface on his contract.
+        PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
+        bool success = hisInterface._requestPartnership();
         // If partnership request was a success,
         if (success) {
             // If we do not know the Partnership contract yet,
@@ -195,20 +188,13 @@ contract Partnership is Tokenized {
      * @dev Symetry of requestPartnership.
      * @dev Called by Partnership contract wanting to partnership.
      */
-    function _requestPartnership(uint _hisPartnerCategory)
-        external
-        returns (bool success)
-    {
+    function _requestPartnership() external returns (bool success) {
         require(
             (
                 partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
                 partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Removed
             ),
             'Partnership already pending, authorized or rejected'
-        );
-        require(
-            partnerCategory != _hisPartnerCategory,
-            'Contracts of same category can not partnership'
         );
         // If this Partnership contract is Unknown,
         if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown) {
@@ -343,10 +329,7 @@ contract Partnership is Tokenized {
  * @title Interface with clones or inherited contracts.
  */
 interface PartnershipInterface {
-  function _requestPartnership(uint _hisPartnerCategory)
-      external
-      view
-      returns (bool);
+  function _requestPartnership() external view returns (bool);
   function _authorizePartnership() external;
   function _removePartnership() external returns (bool success);
   function partnerCategory() external view returns (uint);
