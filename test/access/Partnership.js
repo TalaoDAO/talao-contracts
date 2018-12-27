@@ -238,6 +238,8 @@ contract('Partnership', async (accounts) => {
     assert.equal(result[0], user6);
     assert.equal(result[1], 30001);
     assert.equal(result[2], 1);
+    const now = Date.now();
+    assert.isBelow(result[3].toNumber(), now);
   });
 
   it('User2 should have 2 partnerships', async() => {

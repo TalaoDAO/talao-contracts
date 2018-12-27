@@ -33,11 +33,21 @@ contract Partnership is Tokenized {
     // Authorization status.
     enum PartnershipAuthorization { Unknown, Authorized, Pending, Rejected, Removed }
 
-    // Other Partnership contracts authorization status in this contract.
-    // Our main registry if you will.
-    mapping(address => PartnershipAuthorization) internal partnershipAuthorizations;
+    // Other Partnership contract information.
+    struct PartnershipContract {
+        // Authorization of this contract.
+        // bytes31 left after this on SSTORAGE 1.
+        PartnershipAuthorization authorization;
+        // Date of partnership creation.
+        // Let's avoid the 2038 year bug, even if this contract will be dead
+        // a lot sooner! It costs nothing, so...
+        // bytes26 left after this on SSTORAGE 1.
+        uint40 createdAt;
+    }
+    // Our main registry of Partnership contracts.
+    mapping(address => PartnershipContract) internal partnershipContracts;
 
-    // Index of known partnerships (contracts have interacted at least once).
+    // Index of known partnerships (contracts which interacted at least once).
     address[] internal knownPartnershipContracts;
 
     // Total of authorized Partnerships contracts.
@@ -67,7 +77,7 @@ contract Partnership is Tokenized {
      * @dev which are authorized in this contract.
      */
     function isPartnershipMember() public view returns (bool) {
-        return partnershipAuthorizations[foundation.membersToContracts(msg.sender)] == PartnershipAuthorization.Authorized;
+        return partnershipContracts[foundation.membersToContracts(msg.sender)].authorization == PartnershipAuthorization.Authorized;
     }
 
     /**
@@ -94,7 +104,7 @@ contract Partnership is Tokenized {
         if (foundation.membersToContracts(msg.sender) == address(0)) {
             return uint(PartnershipAuthorization.Unknown);
         } else {
-            return uint(partnershipAuthorizations[foundation.membersToContracts(msg.sender)]);
+            return uint(partnershipContracts[foundation.membersToContracts(msg.sender)].authorization);
         }
     }
 
@@ -117,13 +127,14 @@ contract Partnership is Tokenized {
         external
         view
         onlyHasKeyForPurpose(10003)
-        returns (address, uint, uint)
+        returns (address, uint, uint, uint40)
     {
           PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
           return (
               foundation.contractsToOwners(_hisContract),
               hisInterface.partnerCategory(),
-              uint(partnershipAuthorizations[_hisContract])
+              uint(partnershipContracts[_hisContract].authorization),
+              partnershipContracts[_hisContract].createdAt
           );
     }
 
@@ -144,8 +155,8 @@ contract Partnership is Tokenized {
         // he added us in authorized partnerships.
         require(
             (
-                partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Unknown ||
-                partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Removed
+                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Unknown ||
+                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Removed
             )
             ,
             'Partnership contract must be Unknown or Removed'
@@ -164,12 +175,14 @@ contract Partnership is Tokenized {
         // If partnership request was a success,
         if (success) {
             // If we do not know the Partnership contract yet,
-            if (partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Unknown) {
+            if (partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Unknown) {
                 // Then add it to our partnerships index.
                 knownPartnershipContracts.push(_hisContract);
             }
             // Authorize Partnership contract in our contract.
-            partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Authorized;
+            partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Authorized;
+            // Record date of partnership creation.
+            partnershipContracts[_hisContract].createdAt = uint40(now);
             // Give the Partnership contrat's owner an ERC 725 "Claim" key.
             // So he can submit claims on our contract (certificate of work, ...).
             addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
@@ -188,8 +201,8 @@ contract Partnership is Tokenized {
     {
         require(
             (
-                partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Unknown ||
-                partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Removed
+                partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
+                partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Removed
             ),
             'Partnership already pending, authorized or rejected'
         );
@@ -198,12 +211,12 @@ contract Partnership is Tokenized {
             'Contracts of same category can not partnership'
         );
         // If this Partnership contract is Unknown,
-        if (partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Unknown) {
+        if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown) {
             // Add the new partnership to our partnerships index.
             knownPartnershipContracts.push(msg.sender);
         }
         // Write Pending to our partnerships contract registry.
-        partnershipAuthorizations[msg.sender] = PartnershipAuthorization.Pending;
+        partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Pending;
         // Event for this contrat owner's UI.
         emit PartnershipRequested();
         // Return success.
@@ -218,11 +231,13 @@ contract Partnership is Tokenized {
         onlyHasKeyForPurpose(10003)
     {
         require(
-            partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Pending,
+            partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
             'Partnership must be Pending'
         );
         // Authorize the Partnership contract in our contract.
-        partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Authorized;
+        partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Authorized;
+        // Record the date of partnership creation.
+        partnershipContracts[_hisContract].createdAt = uint40(now);
         // Give the Partnership contrat's owner an ERC 725 "Claim" key.
         // So he can submit claims on our contract (certificate of work, ...).
         addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
@@ -238,7 +253,7 @@ contract Partnership is Tokenized {
      */
     function _authorizePartnership() external {
         require(
-            partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Authorized,
+            partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized,
             'You have no authorized partnership'
         );
         emit PartnershipAccepted();
@@ -252,10 +267,10 @@ contract Partnership is Tokenized {
         onlyHasKeyForPurpose(10003)
     {
         require(
-            partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Pending,
+            partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
             'Partner must be Pending'
         );
-        partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Rejected;
+        partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Rejected;
     }
 
     /**
@@ -267,8 +282,8 @@ contract Partnership is Tokenized {
     {
         require(
             (
-                partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Authorized ||
-                partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Rejected
+                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized ||
+                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Rejected
             ),
             'Partnership must be Authorized or Rejected'
         );
@@ -278,7 +293,9 @@ contract Partnership is Tokenized {
         // If success,
         if (success) {
             // If it was an authorized partnership,
-            if (partnershipAuthorizations[_hisContract] == PartnershipAuthorization.Authorized) {
+            if (partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized) {
+                // Remove the partnership creation date.
+                delete partnershipContracts[_hisContract].createdAt;
                 // Decrement our number of partnerships.
                 partnershipsNumber = partnershipsNumber.sub(1);
             }
@@ -290,7 +307,7 @@ contract Partnership is Tokenized {
             // We want to have Removed instead of resetting to Unknown,
             // otherwise if partnership is initiated again with him,
             // our knownPartnershipContracts would have a duplicate entry.
-            partnershipAuthorizations[_hisContract] = PartnershipAuthorization.Removed;
+            partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Removed;
         }
     }
 
@@ -301,7 +318,9 @@ contract Partnership is Tokenized {
     function _removePartnership() external returns (bool success) {
         // He wants to break partnership with us, so we break too.
         // If it was an authorized partnership,
-        if (partnershipAuthorizations[msg.sender] == PartnershipAuthorization.Authorized) {
+        if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized) {
+            // Remove date of partnership creation.
+            delete partnershipContracts[msg.sender].createdAt;
             // Decrement our number of partnerships.
             partnershipsNumber = partnershipsNumber.sub(1);
         }
@@ -313,7 +332,7 @@ contract Partnership is Tokenized {
             removeKey(keccak256(abi.encodePacked(foundation.contractsToOwners(msg.sender))), 3);
         } */
         // Remove his authorization.
-        partnershipAuthorizations[msg.sender] = PartnershipAuthorization.Removed;
+        partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Removed;
         // We return to the calling contract that it's done.
         success = true;
     }
