@@ -135,9 +135,9 @@ contract('Filebox', async (accounts) => {
     assert.equal(event.fileEngine, fileEngine);
   });
 
-  it('User1 gives key to User3 for Filebox (ERC 725 10004)', async() => {
+  it('User1 gives key to User3 for Filebox (ERC 725 20004)', async() => {
     const user3key = web3.utils.keccak256(user3);
-    const result = await filebox.addKey(user3key, 10004, 1, {from: user1});
+    const result = await filebox.addKey(user3key, 20004, 1, {from: user1});
     assert(result);
   });
 

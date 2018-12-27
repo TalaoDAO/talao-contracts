@@ -247,9 +247,9 @@ contract('Documents', async (accounts) => {
     );
   });
 
-  it('User1 gives key to User6 for profile & documents (ERC 725 10002)', async() => {
+  it('User1 gives key to User6 for profile & documents (ERC 725 20002)', async() => {
     const user6key = web3.utils.keccak256(user6);
-    const result = await documents1.addKey(user6key, 10002, 1, {from: user1});
+    const result = await documents1.addKey(user6key, 20002, 1, {from: user1});
     assert(result);
   });
 

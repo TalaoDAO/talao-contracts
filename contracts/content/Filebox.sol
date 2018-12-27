@@ -55,7 +55,7 @@ contract Filebox is Permissions {
         uint16 _encryptionKeyAlgorithm
     )
         external
-        onlyHasKeyForPurpose(10004)
+        onlyHasKeyForPurpose(20004)
     {
         fileboxSettings.publicEncryptionKey = _publicEncryptionKey;
         fileboxSettings.encryptionKeyAlgorithm = _encryptionKeyAlgorithm;
@@ -66,7 +66,7 @@ contract Filebox is Permissions {
      */
     function blacklistAddressInFilebox(address _address)
         external
-        onlyHasKeyForPurpose(10004)
+        onlyHasKeyForPurpose(20004)
     {
         fileboxBlacklist[_address] = true;
     }
@@ -76,7 +76,7 @@ contract Filebox is Permissions {
      */
     function unblacklistAddressInFilebox(address _address)
         external
-        onlyHasKeyForPurpose(10004)
+        onlyHasKeyForPurpose(20004)
     {
         fileboxBlacklist[_address] = false;
     }

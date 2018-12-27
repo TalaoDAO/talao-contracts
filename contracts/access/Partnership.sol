@@ -114,7 +114,7 @@ contract Partnership is Tokenized {
     function getKnownPartnershipsContracts()
         external
         view
-        onlyHasKeyForPurpose(10003)
+        onlyHasKeyForPurpose(20003)
         returns (address[])
     {
         return knownPartnershipContracts;
@@ -126,7 +126,7 @@ contract Partnership is Tokenized {
     function getPartnership(address _hisContract)
         external
         view
-        onlyHasKeyForPurpose(10003)
+        onlyHasKeyForPurpose(20003)
         returns (address, uint, uint, uint40)
     {
           PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
@@ -146,7 +146,7 @@ contract Partnership is Tokenized {
      */
     function requestPartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(10003)
+        onlyHasKeyForPurpose(20003)
     {
         // We can only request partnership with a contract
         // if he's not already Known or Removed in our registry.
@@ -214,7 +214,7 @@ contract Partnership is Tokenized {
      */
     function authorizePartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(10003)
+        onlyHasKeyForPurpose(20003)
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
@@ -250,7 +250,7 @@ contract Partnership is Tokenized {
      */
     function rejectPartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(10003)
+        onlyHasKeyForPurpose(20003)
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
@@ -264,7 +264,7 @@ contract Partnership is Tokenized {
      */
     function removePartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(10003)
+        onlyHasKeyForPurpose(20003)
     {
         require(
             (
