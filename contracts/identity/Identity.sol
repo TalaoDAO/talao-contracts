@@ -5,8 +5,11 @@ import "../Foundation.sol";
 import "../token/TalaoToken.sol";
 
 /**
- * @title Identity = ERC 725/735 + fondation + token + creator + category + encryption keys
+ * @title The Identity is where ERC 725/735 and our custom code meet.
  * @author Talao, Polynomial.
+ * @notice Mixes ERC 725/735, foundation, token,
+ * constructor values that never change (creator, category, encryption keys)
+ * and provides a box to receive decentralized files and texts.
  */
 contract Identity is ClaimHolder {
 
@@ -61,14 +64,22 @@ contract Identity is ClaimHolder {
     // This contract Identity information.
     IdentityInformation public identityInformation;
 
-    // Blacklisted addresses.
-    mapping(address => bool) public fileboxBlacklist;
+    // Identity box: blacklisted addresses.
+    mapping(address => bool) public identityboxBlacklisted;
 
-    // Event emitted when someone left us an decentralized encrypted file.
-    event FileboxReceived (
+    // Identity box: event when someone sent us an decentralized file.
+    event FileReceived (
         address indexed sender,
-        bytes32 fileHash,
-        uint16 fileEngine
+        uint indexed filetype,
+        uint fileEngine,
+        bytes fileHash
+    );
+
+    // Identity box: event when someone sent us a text.
+    event TextReceived (
+        address indexed sender,
+        uint indexed category,
+        bytes text
     );
 
     /**
@@ -167,31 +178,48 @@ contract Identity is ClaimHolder {
     }
 
     /**
-     * @dev "Send" a "file" to the owner.
+     * @dev "Send" a "file" to this contract.
+     * File should be encrypted on this contract asymetricEncryptionPublickey,
+     * before upload on decentralized file storage,
+     * before submitting a TX here.
      */
-    function sendFilebox(bytes32 _fileHash, uint16 _fileEngine) external {
-        require(!fileboxBlacklist[msg.sender], 'You are blacklisted');
-        emit FileboxReceived(msg.sender, _fileHash, _fileEngine);
+    function identityboxSendfile(
+        uint _fileType, uint _fileEngine, bytes _fileHash
+    )
+        external
+    {
+        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        emit FileReceived(msg.sender, _fileType, _fileEngine, _fileHash);
     }
 
     /**
-     * @dev Blacklist.
+     * @dev "Send" a text to this contract.
+     * Text should be encrypted on this contract asymetricEncryptionPublickey,
+     * before submitting a TX here.
      */
-    function blacklistAddressInFilebox(address _address)
+    function identityboxSendtext(uint _category, bytes _text) external {
+        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        emit TextReceived(msg.sender, _category, _text);
+    }
+
+    /**
+     * @dev Blacklist an address in this Identity box.
+     */
+    function identityboxBlacklist(address _address)
         external
         onlyIdentityPurpose(20004)
     {
-        fileboxBlacklist[_address] = true;
+        identityboxBlacklisted[_address] = true;
     }
 
     /**
      * @dev Unblacklist.
      */
-    function unblacklistAddressInFilebox(address _address)
+    function identityboxUnblacklist(address _address)
         external
         onlyIdentityPurpose(20004)
     {
-        fileboxBlacklist[_address] = false;
+        identityboxBlacklisted[_address] = false;
     }
 }
 
