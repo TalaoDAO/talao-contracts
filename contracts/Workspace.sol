@@ -3,13 +3,12 @@ pragma solidity ^0.4.24;
 import "./access/Permissions.sol";
 import "./content/Profile.sol";
 import "./content/Documents.sol";
-import "./content/Filebox.sol";
 
 /**
  * @title A Workspace contract.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
-contract Workspace is Permissions, Profile, Documents, Filebox {
+contract Workspace is Permissions, Profile, Documents {
 
     /**
      * @dev Constructor.
