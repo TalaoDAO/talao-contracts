@@ -29,47 +29,34 @@ contract Identity is ClaimHolder {
         // 4001 => 4999: Public marketplace.
         // 5001 => 5999: Service provider.
         // ..
-        // 640001 => 649999: ?
+        // 64001 => 64999: ?
         // bytes14 left after this on SSTORAGE 1.
         uint16 category;
 
         // Asymetric encryption key algorithm.
-        // We use integers to store algo and have offchain references,
-        // otherwise we would need another SSTORAGE.
-        // bytes8 left after this on SSTORAGE 1.
-        uint16 asymetricEncryptionKeyAlgorithm;
-
-        // Asymetric encryption key length.
-        // bytes6 left after this on SSTORAGE 1.
-        uint16 asymetricEncryptionKeyLength;
+        // We use an integer to store algo with offchain references.
+        // 1 => RSA
+        // bytes12 left after this on SSTORAGE 1.
+        uint16 asymetricEncryptionAlgorithm;
 
         // Symetric encryption key algorithm.
-        // We use integers to store algo and have offchain references,
-        // otherwise we would need another SSTORAGE.
-        // bytes12 left after this on SSTORAGE 1.
-        uint16 symetricEncryptionKeyAlgorithm;
-
-        // Symetric encryption key length.
+        // We use an integer to store algo with offchain references.
+        // 1 => AES 256
         // bytes10 left after this on SSTORAGE 1.
-        uint16 symetricEncryptionKeyLength;
+        uint16 symetricEncryptionAlgorithm;
 
-        // Asymetric public encryption key.
+        // Asymetric encryption public key.
         // This one can be used to encrypt content especially for this
         // contract owner, which is the only one to have the private key,
         // offchain of course.
-        bytes asymetricEncryptionKeyPublic;
+        bytes asymetricEncryptionPublickey;
 
-        // Encrypted symetric encryption key.
-        // This key encrypts and decrypts all sensible data.
-        // Set in constructor (see final contract or ProfileTest.sol).
-        // It is stored here encrypted with the public asymetric encryption key,
-        // so the Managers who have it can get this one back.
-        // It is sent to someone after offchain encryption on his
-        // public asymetric encryption key.
-        // We can leave it here even if third parties can access private profile,
-        // because it's encrypted.
-        // Uses 1 full SSTORAGE if AES 256.
-        bytes symetricEncryptionKeyEncrypted;
+        // Encrypted symetric encryption passphrase.
+        // When decrypted, this passphrase can regenerate
+        // the symetric encryption key.
+        // This key encrypts and decrypts data to be shared with many people.
+        // Uses 1 full SSTORAGE for AES 256.
+        bytes symetricEncryptionEncryptedPassphrase;
     }
     // This contract Identity information.
     IdentityInformation public identityInformation;
@@ -81,12 +68,10 @@ contract Identity is ClaimHolder {
         address _foundation,
         address _token,
         uint16 _category,
-        uint16 _asymetricEncryptionKeyAlgorithm,
-        uint16 _asymetricEncryptionKeyLength,
-        uint16 _symetricEncryptionKeyAlgorithm,
-        uint16 _symetricEncryptionKeyLength,
-        bytes _asymetricEncryptionKeyPublic,
-        bytes _symetricEncryptionKeyEncrypted
+        uint16 _asymetricEncryptionAlgorithm,
+        uint16 _symetricEncryptionAlgorithm,
+        bytes _asymetricEncryptionPublickey,
+        bytes symetricEncryptionEncryptedpassphrase
     )
         public
     {
@@ -94,12 +79,10 @@ contract Identity is ClaimHolder {
         token = TalaoToken(_token);
         identityInformation.creator = msg.sender;
         identityInformation.category = _category;
-        identityInformation.asymetricEncryptionKeyAlgorithm = _asymetricEncryptionKeyAlgorithm;
-        identityInformation.asymetricEncryptionKeyLength = _asymetricEncryptionKeyLength;
-        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
-        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
-        identityInformation.asymetricEncryptionKeyPublic = _asymetricEncryptionKeyPublic;
-        identityInformation.symetricEncryptionKeyEncrypted = _symetricEncryptionKeyEncrypted;
+        identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
+        identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
+        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
+        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
     }
 
     /**
