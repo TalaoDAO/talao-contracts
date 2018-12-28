@@ -57,19 +57,15 @@ contract('Foundation', async (accounts) => {
     truffleAssert.eventEmitted(result, 'FactoryAdded');
   });
 
-  it('Through the factory, User1 should create a final contract of category 10001 (Freelancer)', async() => {
+  it('Through the factory, User1 should create a final contract of category 1001 (Freelancer)', async() => {
     const result = await factory.createWorkspace(
-      10001,
-      name1,
-      name2,
-      tagline,
-      url,
-      publicEmail,
-      fileHash,
-      fileEngine,
-      description,
-      privateEmail,
-      mobile,
+      1001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
       {from: user1}
     );
     assert(result);
@@ -86,6 +82,22 @@ contract('Foundation', async (accounts) => {
     assert(finalContract1);
   });
 
+  it('User1 should set his profile', async() => {
+    const result = await finalContract1.setProfile(
+      name1,
+      name2,
+      tagline,
+      url,
+      publicEmail,
+      fileHash,
+      fileEngine,
+      description,
+      '0x',
+      '0x',
+      {from: user1}
+    );
+  });
+
   it('Anyone should be able to read public data from final contract', async() => {
     const result = await finalContract1.publicProfile({from: someone});
     assert.equal(
@@ -98,7 +110,7 @@ contract('Foundation', async (accounts) => {
         publicEmail,
         fileHash,
         fileEngine,
-        description,
+        description
       ]
     );
   });
@@ -117,28 +129,19 @@ contract('Foundation', async (accounts) => {
 
   it('User2 should have access to private profile', async() => {
     const result = await finalContract1.getPrivateProfile({from: user2});
-    assert.equal(
-      result.toString(),
-      [
-        privateEmail,
-        mobile
-      ]
-    );
+    assert.equal(result[0], '0x');
+    assert.equal(result[1], '0x');
   });
 
-  it('Through the factory, User3 should create a final contract of category 20001 (Marketplace)', async() => {
+  it('Through the factory, User3 should create a final contract of category 2001 (Marketplace)', async() => {
     const result = await factory.createWorkspace(
-      20001,
-      name1,
-      name2,
-      tagline,
-      url,
-      publicEmail,
-      fileHash,
-      fileEngine,
-      description,
-      privateEmail,
-      mobile,
+      2001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
       {from: user3}
     );
     assert(result);
@@ -164,15 +167,10 @@ contract('Foundation', async (accounts) => {
     assert(result);
   });
 
-  it('User3 should have access to private profile of User1\'s contract', async() => {
+  it('User3 should have access to private profile', async() => {
     const result = await finalContract1.getPrivateProfile({from: user3});
-    assert.equal(
-      result.toString(),
-      [
-        privateEmail,
-        mobile
-      ]
-    );
+    assert.equal(result[0], '0x');
+    assert.equal(result[1], '0x');
   });
 
   it('User4 should not have access to private profile of User1\'s contract', async() => {
@@ -188,15 +186,10 @@ contract('Foundation', async (accounts) => {
     assert.equal(result, user4);
   });
 
-  it('User4 should have access to private profile of User1\'s contract', async() => {
+  it('User4 should have access to private profile', async() => {
     const result = await finalContract1.getPrivateProfile({from: user4});
-    assert.equal(
-      result.toString(),
-      [
-        privateEmail,
-        mobile
-      ]
-    );
+    assert.equal(result[0], '0x');
+    assert.equal(result[1], '0x');
   });
 
   it('User3 should not have access to private profile of User1\'s contract', async() => {
@@ -213,17 +206,13 @@ contract('Foundation', async (accounts) => {
 
   it('User4 should be able to create a new contract finalContract4', async() => {
     const result = await factory.createWorkspace(
-      20001,
-      name1,
-      name2,
-      tagline,
-      url,
-      publicEmail,
-      fileHash,
-      fileEngine,
-      description,
-      privateEmail,
-      mobile,
+      2001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
       {from: user4}
     );
     assert(result);
@@ -249,17 +238,13 @@ contract('Foundation', async (accounts) => {
   it('User5 should fail to create a contract', async() => {
     const result = await truffleAssert.fails(
       factory.createWorkspace(
-        20001,
-        name1,
-        name2,
-        tagline,
-        url,
-        publicEmail,
-        fileHash,
-        fileEngine,
-        description,
-        privateEmail,
-        mobile,
+        2001,
+        0,
+        0,
+        0,
+        0,
+        '0x',
+        '0x',
         {from: user5}
       )
     );
