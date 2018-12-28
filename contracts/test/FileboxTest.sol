@@ -16,23 +16,19 @@ contract FileboxTest is Permissions, Filebox {
         address _foundation,
         address _token,
         uint16 _category,
-        uint16 _asymetricEncryptionKeyAlgorithm,
-        uint16 _asymetricEncryptionKeyLength,
-        uint16 _symetricEncryptionKeyAlgorithm,
-        uint16 _symetricEncryptionKeyLength,
-        bytes _asymetricEncryptionKeyPublic,
-        bytes _symetricEncryptionKeyEncrypted
+        uint16 _asymetricEncryptionAlgorithm,
+        uint16 _symetricEncryptionAlgorithm,
+        bytes _asymetricEncryptionPublickey,
+        bytes symetricEncryptionEncryptedpassphrase
     )
         Permissions(
             _foundation,
             _token,
             _category,
-            _asymetricEncryptionKeyAlgorithm,
-            _asymetricEncryptionKeyLength,
-            _symetricEncryptionKeyAlgorithm,
-            _symetricEncryptionKeyLength,
-            _asymetricEncryptionKeyPublic,
-            _symetricEncryptionKeyEncrypted
+            _asymetricEncryptionAlgorithm,
+            _symetricEncryptionAlgorithm,
+            _asymetricEncryptionPublickey,
+            symetricEncryptionEncryptedpassphrase
         )
         public
     {
@@ -40,11 +36,9 @@ contract FileboxTest is Permissions, Filebox {
         token = TalaoToken(_token);
         identityInformation.creator = msg.sender;
         identityInformation.category = _category;
-        identityInformation.asymetricEncryptionKeyAlgorithm = _asymetricEncryptionKeyAlgorithm;
-        identityInformation.asymetricEncryptionKeyLength = _asymetricEncryptionKeyLength;
-        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
-        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
-        identityInformation.asymetricEncryptionKeyPublic = _asymetricEncryptionKeyPublic;
-        identityInformation.symetricEncryptionKeyEncrypted = _symetricEncryptionKeyEncrypted;
+        identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
+        identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
+        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
+        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
     }
 }
