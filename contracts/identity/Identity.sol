@@ -202,5 +202,5 @@ interface IdentityInterface {
     function identityInformation()
         external
         view
-        returns (address, uint16, uint16, uint16, uint16, uint16, bytes, bytes);
+        returns (address, uint16, uint16, uint16, bytes, bytes);
 }

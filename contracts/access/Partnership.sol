@@ -148,7 +148,7 @@ contract Partnership is Identity {
         returns (address, uint, uint, uint40)
     {
           IdentityInterface hisInterface = IdentityInterface(_hisContract);
-          (,uint16 hisCategory,,,,,,) = hisInterface.identityInformation();
+          (,uint16 hisCategory,,,,) = hisInterface.identityInformation();
           return (
               foundation.contractsToOwners(_hisContract),
               hisCategory,
