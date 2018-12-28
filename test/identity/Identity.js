@@ -1,10 +1,11 @@
 const NodeRSA = require('node-rsa');
+const pbkdf2 = require('pbkdf2');
 const crypto = require('crypto');
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
 const symetricEncrypt = text => {
-  const cipher = crypto.createCipher('aes-256-ctr', symetricEncryptionKeyPassphrase);
+  const cipher = crypto.createCipher('aes-256-ctr', symetricEncryptionPassphrase);
   let crypted = cipher.update(text, 'utf8', 'hex');
   crypted += cipher.final('hex');
   // Add 0x because BC wants it.
@@ -15,7 +16,7 @@ const symetricEncrypt = text => {
 const symetricDecrypt = text => {
   // Remove 0x BC wanted.
   text = text.substr(2);
-  const decipher = crypto.createDecipher(symetricEncryptionKeyAlgorithmNames[1], symetricEncryptionKeyPassphrase);
+  const decipher = crypto.createDecipher(symetricEncryptionAlgorithmNames[1], symetricEncryptionPassphrase);
   let dec = decipher.update(text, 'hex', 'utf8');
   dec += decipher.final('utf8');
   return dec;
@@ -32,17 +33,14 @@ const Identity = artifacts.require('Identity');
 let token, identity;
 
 // Asymetric encryption key.
-const asymetricEncryptionKeyAlgorithm = 1; // RSA 2048 with defaults from https://github.com/rzcoder/node-rsa
+const asymetricEncryptionAlgorithm = 1; // RSA 2048 with defaults from https://github.com/rzcoder/node-rsa
 const asymetricEncryptionKeyLength = 1; // TODO in theory we do not need to store this any more on the BC, we can "consider" the algo to include the length and various options used in reference librairies.
-let asymetricEncryptionKey, asymetricEncryptionKeyPublic, asymetricEncryptionKeyPrivate;
+let asymetricEncryptionKey, asymetricEncryptionPublickey, asymetricEncryptionPrivatekey;
 
 // Symetric encryption key.
-const symetricEncryptionKeyPassphrase = 'This is the passphrase for the symetric key I chose at contract creation.';
-let symetricEncryptionKeyPassphraseEncrypted;
-const symetricEncryptionKeyAlgorithm = 1; // aes-256-ctr
-const symetricEncryptionKeyAlgorithmNames = {
-  1: 'aes-256-ctr'
-};
+const symetricEncryptionPassphrase = 'This is the passphrase for the symetric key I chose at contract creation.';
+let symetricEncryptionPassphraseEncrypted;
+const symetricEncryptionAlgorithm = 1; // aes-256-ctr
 const symetricEncryptionKeyLength = 256;
 
 // Data samples.
@@ -66,10 +64,10 @@ contract('Identity', async (accounts) => {
   before(async () => {
     // Generate asymetric encryption key RSA 2048.
     asymetricEncryptionKey = new NodeRSA({b: 2048});
-    asymetricEncryptionKeyPublic = asymetricEncryptionKey.exportKey('public');
-    asymetricEncryptionKeyPrivate = asymetricEncryptionKey.exportKey('private');
-    // Encrypt symetric key with public asymetric key.
-    symetricEncryptionKeyPassphraseEncrypted = asymetricEncryptionKey.encrypt(symetricEncryptionKeyPassphrase, 'base64');
+    asymetricEncryptionPublickey = asymetricEncryptionKey.exportKey('public');
+    asymetricEncryptionPrivatekey = asymetricEncryptionKey.exportKey('private');
+    // Encrypt symetric key passphrase with public asymetric key.
+    symetricEncryptionPassphraseEncrypted = asymetricEncryptionKey.encrypt(symetricEncryptionPassphrase, 'base64');
     // Deploy & link librairies.
     keyHolderLibrary = await KeyHolderLibrary.new();
     await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
@@ -96,12 +94,12 @@ contract('Identity', async (accounts) => {
       foundation.address,
       token.address,
       category,
-      asymetricEncryptionKeyAlgorithm,
+      asymetricEncryptionAlgorithm,
       asymetricEncryptionKeyLength,
-      0,
-      0,
-      web3.utils.asciiToHex(asymetricEncryptionKeyPublic),
-      '0x',
+      symetricEncryptionAlgorithm,
+      symetricEncryptionKeyLength,
+      web3.utils.asciiToHex(asymetricEncryptionPublickey),
+      web3.utils.asciiToHex(symetricEncryptionPassphraseEncrypted),
       {from: factory}
     );
     assert(identity);
@@ -120,16 +118,31 @@ contract('Identity', async (accounts) => {
     assert.equal(result[1].toNumber(), category);
   });
 
-  it('Asymetric encryption algorithm should be RSA 2048', async() => {
+  it('Asymetric encryption key algorithm should be RSA 2048', async() => {
     const result = await identity.identityInformation({from: someone});
-    assert.equal(result[2].toNumber(), asymetricEncryptionKeyAlgorithm);
+    assert.equal(result[2].toNumber(), asymetricEncryptionAlgorithm);
   });
 
-  // TODO remove asym length
+  it('Symetric encryption key algorithm should be AES 256', async() => {
+    const result = await identity.identityInformation({from: someone});
+    assert.equal(result[4].toNumber(), symetricEncryptionAlgorithm);
+  });
+
+  // TODO remove asym + sym length?
 
   it('Anyone should be able to get the public asymetric encryption key', async() => {
     const result = await identity.identityInformation({from: someone});
-    assert.equal(web3.utils.hexToAscii(result[6]), asymetricEncryptionKeyPublic);
+    assert.equal(web3.utils.hexToAscii(result[6]), asymetricEncryptionPublickey);
+  });
+
+  it('Anyone should get the encrypted symetric encryption passphrase, but only User1 should decipher it with his asymetric encryption private key', async() => {
+    const result = await identity.identityInformation({from: someone});
+    const symKeyPassphraseEncrypted = web3.utils.hexToAscii(result[7]);
+    assert.equal(symKeyPassphraseEncrypted, symetricEncryptionPassphraseEncrypted);
+    // Regenerate the asymetric key from the private PEM.
+    const asymKey = new NodeRSA(asymetricEncryptionPrivatekey);
+    const symKeyPassphrase = asymKey.decrypt(symKeyPassphraseEncrypted);
+    assert.equal(symKeyPassphrase, symetricEncryptionPassphrase);
   });
 
 });
