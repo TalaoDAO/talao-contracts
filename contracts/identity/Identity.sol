@@ -67,19 +67,19 @@ contract Identity is ClaimHolder {
     // Identity box: blacklisted addresses.
     mapping(address => bool) public identityboxBlacklisted;
 
-    // Identity box: event when someone sent us an decentralized file.
-    event FileReceived (
-        address indexed sender,
-        uint indexed filetype,
-        uint fileEngine,
-        bytes fileHash
-    );
-
     // Identity box: event when someone sent us a text.
     event TextReceived (
         address indexed sender,
         uint indexed category,
         bytes text
+    );
+
+    // Identity box: event when someone sent us an decentralized file.
+    event FileReceived (
+        address indexed sender,
+        uint indexed fileType,
+        uint fileEngine,
+        bytes fileHash
     );
 
     /**
@@ -178,6 +178,16 @@ contract Identity is ClaimHolder {
     }
 
     /**
+     * @dev "Send" a text to this contract.
+     * Text should be encrypted on this contract asymetricEncryptionPublickey,
+     * before submitting a TX here.
+     */
+    function identityboxSendtext(uint _category, bytes _text) external {
+        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        emit TextReceived(msg.sender, _category, _text);
+    }
+
+    /**
      * @dev "Send" a "file" to this contract.
      * File should be encrypted on this contract asymetricEncryptionPublickey,
      * before upload on decentralized file storage,
@@ -190,16 +200,6 @@ contract Identity is ClaimHolder {
     {
         require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
         emit FileReceived(msg.sender, _fileType, _fileEngine, _fileHash);
-    }
-
-    /**
-     * @dev "Send" a text to this contract.
-     * Text should be encrypted on this contract asymetricEncryptionPublickey,
-     * before submitting a TX here.
-     */
-    function identityboxSendtext(uint _category, bytes _text) external {
-        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
-        emit TextReceived(msg.sender, _category, _text);
     }
 
     /**
