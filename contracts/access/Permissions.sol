@@ -17,12 +17,40 @@ contract Permissions is Partnership {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, address _token, uint _partnerCategory)
-        public Partnership(_foundation, _token, _partnerCategory)
+    constructor(
+        address _foundation,
+        address _token,
+        uint16 _category,
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        uint16 _asymetricEncryptionKeyAlgorithm,
+        uint16 _asymetricEncryptionKeyLength,
+        bytes _symetricEncryptionKeyEncrypted,
+        bytes _asymetricPublicEncryptionKey
+    )
+        Partnership(
+            _foundation,
+            _token,
+            _category,
+            _symetricEncryptionKeyAlgorithm,
+            _symetricEncryptionKeyLength,
+            _asymetricEncryptionKeyAlgorithm,
+            _asymetricEncryptionKeyLength,
+            _symetricEncryptionKeyEncrypted,
+            _asymetricPublicEncryptionKey
+        )
+        public
     {
         foundation = Foundation(_foundation);
         token = TalaoToken(_token);
-        partnerCategory = _partnerCategory;
+        identityInformation.creator = msg.sender;
+        identityInformation.category = _category;
+        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
+        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
+        identityInformation.asymetricEncryptionKeyAlgorithm = _asymetricEncryptionKeyAlgorithm;
+        identityInformation.asymetricEncryptionKeyLength = _asymetricEncryptionKeyLength;
+        identityInformation.symetricEncryptionKeyEncrypted = _symetricEncryptionKeyEncrypted;
+        identityInformation.asymetricPublicEncryptionKey = _asymetricPublicEncryptionKey;
     }
 
     /**
@@ -38,7 +66,7 @@ contract Permissions is Partnership {
     function isReader() public view returns (bool) {
         // Get Vault access price in the token for this contract owner,
         // in the Foundation sense.
-        (uint accessPrice,,,) = token.data(ownerInFoundation());
+        (uint accessPrice,,,) = token.data(identityOwner());
         // OR conditions for Reader:
         // 1) Same code for
         // 1.1) Sender is this contract owner and has an open Vault in the token.
@@ -48,9 +76,9 @@ contract Permissions is Partnership {
         // 2.2) Sender is a member of an authorized Partner contract
         // 2.3) Owner has a free vaultAccess in the token
         return(
-            token.hasVaultAccess(ownerInFoundation(), msg.sender) ||
+            token.hasVaultAccess(identityOwner(), msg.sender) ||
             (
-                token.hasVaultAccess(ownerInFoundation(), ownerInFoundation()) &&
+                token.hasVaultAccess(identityOwner(), identityOwner()) &&
                 (
                     isMember() ||
                     isPartnershipMember() ||

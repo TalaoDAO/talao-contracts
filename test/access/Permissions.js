@@ -50,13 +50,35 @@ contract('Permissions', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Permissions1 (category 1) and Permissions2 (category 2), set initial owners to User1 and User2, , and add an ERC 725 key 1 = management for each of them', async() => {
-    permissions1 = await Permissions.new(foundation.address, token.address, 1, {from: factory});
+  it('Factory should deploy Permissions1 (category 1001) and Permissions2 (category 2001), set initial owners to User1 and User2, , and add an ERC 725 key 1 = management for each of them', async() => {
+    permissions1 = await Permissions.new(
+      foundation.address,
+      token.address,
+      1001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
+      {from: factory}
+    );
     assert(permissions1);
     await foundation.setInitialOwnerInFoundation(permissions1.address, user1, {from: factory});
     const user1key = web3.utils.keccak256(user1);
     await permissions1.addKey(user1key, 1, 1, {from: factory});
-    permissions2 = await Permissions.new(foundation.address, token.address, 2, {from: factory});
+    permissions2 = await Permissions.new(
+      foundation.address,
+      token.address,
+      2001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
+      {from: factory}
+    );
     assert(permissions2);
     await foundation.setInitialOwnerInFoundation(permissions2.address, user2, {from: factory});
     const user2key = web3.utils.keccak256(user2);
@@ -137,7 +159,7 @@ contract('Permissions', async (accounts) => {
   });
 
   it('Factory should have ERC 725 key with purpose 1 (Manager)', async() => {
-    const result = permissions1.hasKeyForPurpose(1, {from: factory});
+    const result = permissions1.hasIdentityPurpose(1, {from: factory});
     assert(result);
   });
 
