@@ -34,14 +34,12 @@ let token, identity;
 
 // Asymetric encryption key.
 const asymetricEncryptionAlgorithm = 1; // RSA 2048 with defaults from https://github.com/rzcoder/node-rsa
-const asymetricEncryptionKeyLength = 1; // TODO in theory we do not need to store this any more on the BC, we can "consider" the algo to include the length and various options used in reference librairies.
 let asymetricEncryptionKey, asymetricEncryptionPublickey, asymetricEncryptionPrivatekey;
 
 // Symetric encryption key.
 const symetricEncryptionPassphrase = 'This is the passphrase for the symetric key I chose at contract creation.';
-let symetricEncryptionPassphraseEncrypted;
+let symetricEncryptionEncryptedpassphrase;
 const symetricEncryptionAlgorithm = 1; // aes-256-ctr
-const symetricEncryptionKeyLength = 256;
 
 // Data samples.
 const category = 1001;
@@ -67,7 +65,7 @@ contract('Identity', async (accounts) => {
     asymetricEncryptionPublickey = asymetricEncryptionKey.exportKey('public');
     asymetricEncryptionPrivatekey = asymetricEncryptionKey.exportKey('private');
     // Encrypt symetric key passphrase with public asymetric key.
-    symetricEncryptionPassphraseEncrypted = asymetricEncryptionKey.encrypt(symetricEncryptionPassphrase, 'base64');
+    symetricEncryptionEncryptedpassphrase = asymetricEncryptionKey.encrypt(symetricEncryptionPassphrase, 'base64');
     // Deploy & link librairies.
     keyHolderLibrary = await KeyHolderLibrary.new();
     await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
@@ -95,11 +93,9 @@ contract('Identity', async (accounts) => {
       token.address,
       category,
       asymetricEncryptionAlgorithm,
-      asymetricEncryptionKeyLength,
       symetricEncryptionAlgorithm,
-      symetricEncryptionKeyLength,
       web3.utils.asciiToHex(asymetricEncryptionPublickey),
-      web3.utils.asciiToHex(symetricEncryptionPassphraseEncrypted),
+      web3.utils.asciiToHex(symetricEncryptionEncryptedpassphrase),
       {from: factory}
     );
     assert(identity);
@@ -113,36 +109,71 @@ contract('Identity', async (accounts) => {
     assert.equal(result[0], factory);
   });
 
-  it('Contract category should be Freelancer', async() => {
+  it('Anyone should get contract category: Freelancer', async() => {
     const result = await identity.identityInformation({from: someone});
     assert.equal(result[1].toNumber(), category);
   });
 
-  it('Asymetric encryption key algorithm should be RSA 2048', async() => {
+  it('Anyone should get asymetric encryption algorithm: RSA 2048', async() => {
     const result = await identity.identityInformation({from: someone});
     assert.equal(result[2].toNumber(), asymetricEncryptionAlgorithm);
   });
 
-  it('Symetric encryption key algorithm should be AES 256', async() => {
+  it('Anyone should get symetric encryption algorithm: AES 256', async() => {
     const result = await identity.identityInformation({from: someone});
-    assert.equal(result[4].toNumber(), symetricEncryptionAlgorithm);
+    assert.equal(result[3].toNumber(), symetricEncryptionAlgorithm);
   });
 
-  // TODO remove asym + sym length?
-
-  it('Anyone should be able to get the public asymetric encryption key', async() => {
+  it('Anyone should be able to get the asymetric encryption public key', async() => {
     const result = await identity.identityInformation({from: someone});
-    assert.equal(web3.utils.hexToAscii(result[6]), asymetricEncryptionPublickey);
+    assert.equal(web3.utils.hexToAscii(result[4]), asymetricEncryptionPublickey);
   });
 
-  it('Anyone should get the encrypted symetric encryption passphrase, but only User1 should decipher it with his asymetric encryption private key', async() => {
+  it('Anyone should get the encrypted symetric encryption passphrase, but only those who have User1\'s asymetric encryption private key should decipher it', async() => {
     const result = await identity.identityInformation({from: someone});
-    const symKeyPassphraseEncrypted = web3.utils.hexToAscii(result[7]);
-    assert.equal(symKeyPassphraseEncrypted, symetricEncryptionPassphraseEncrypted);
-    // Regenerate the asymetric key from the private PEM.
+    const symKeyPassphraseEncrypted = web3.utils.hexToAscii(result[5]);
+    assert.equal(symKeyPassphraseEncrypted, symetricEncryptionEncryptedpassphrase);
+    // Regenerate the asymetric key from the private PEM, only User1 has it.
     const asymKey = new NodeRSA(asymetricEncryptionPrivatekey);
     const symKeyPassphrase = asymKey.decrypt(symKeyPassphraseEncrypted);
     assert.equal(symKeyPassphrase, symetricEncryptionPassphrase);
+  });
+
+  // TODO Filebox
+
+  it('User1 should be the Active Identity Owner', async() => {
+    const result = await identity.isActiveIdentityOwner({from: user1});
+    assert(result);
+  });
+
+  it('User1 should have Identity purpose for Management and therefore any Identity purpose', async() => {
+    const result1 = await identity.hasIdentityPurpose(1, {from: user1});
+    assert(result1);
+    const result2 = await identity.hasIdentityPurpose(12345689, {from: user1});
+    assert(result2);
+  });
+
+  it('Anyone should see that Identity is active', async() => {
+    const result = await identity.isActiveIdentity({from: someone});
+    assert(result);
+  });
+
+  it('User1 closes his Vault access in the token, he should not be the Active Identity Owner', async() => {
+    await token.closeVaultAccess({from: user1});
+    const result = await identity.isActiveIdentityOwner({from: user1});
+    assert(!result);
+  });
+
+  it('User1 should not have Identity purpose at all anymore', async() => {
+    const result1 = await identity.hasIdentityPurpose(1, {from: user1});
+    assert(!result1);
+    const result2 = await identity.hasIdentityPurpose(123456789, {from: user1});
+    assert(!result2);
+  });
+
+  it('Anyone can see that Identity is not Active', async() => {
+    const result = await identity.isActiveIdentity({from: someone});
+    assert(!result);
   });
 
 });
