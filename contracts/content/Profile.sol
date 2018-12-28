@@ -52,29 +52,6 @@ contract Profile is Permissions {
 
         // Mobile number.
         bytes mobile;
-
-        // Symetric encryption key algorithm.
-        // We use integers to store algo and have offchain references,
-        // otherwise we would need another SSTORAGE.
-        // bytes14 left after this on SSTORAGE 2.
-        uint16 symetricEncryptionKeyAlgorithm;
-
-        // Symetric encryption key length.
-        // bytes12 left after this on SSTORAGE 2.
-        uint16 symetricEncryptionKeyLength;
-
-        // Encrypted symetric encryption key.
-        // This key encrypts and decrypts all sensible data.
-        // Set in constructor (see final contract or ProfileTest.sol).
-        // It is stored here encrypted with the public asymetric encryption key,
-        // so the Managers who have it can get this one back.
-        // It is sent to someone after offchain encryption on his
-        // public asymetric encryption key.
-        // We can leave it here even if third parties can access private profile,
-        // because it's encrypted.
-        // We could use AES128 but it would start SSTORAGE 3 anyways (16 bytes),
-        // so we will probably use AES256 most of the time.
-        bytes symetricEncryptionKeyData;
     }
     PrivateProfile internal privateProfile;
 
@@ -85,13 +62,11 @@ contract Profile is Permissions {
         external
         view
         onlyReader
-        returns (bytes, bytes, uint16, uint16, bytes) {
+        returns (bytes, bytes)
+    {
         return (
             privateProfile.email,
-            privateProfile.mobile,
-            privateProfile.symetricEncryptionKeyAlgorithm,
-            privateProfile.symetricEncryptionKeyLength,
-            privateProfile.symetricEncryptionKeyData
+            privateProfile.mobile
         );
     }
 
@@ -111,7 +86,7 @@ contract Profile is Permissions {
         bytes _mobile
     )
         external
-        onlyHasKeyForPurpose(20002)
+        onlyIdentityPurpose(20002)
     {
         publicProfile.name1 = _name1;
         publicProfile.name2 = _name2;
