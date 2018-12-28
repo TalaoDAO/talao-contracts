@@ -33,6 +33,16 @@ contract Identity is ClaimHolder {
         // bytes14 left after this on SSTORAGE 1.
         uint16 category;
 
+        // Asymetric encryption key algorithm.
+        // We use integers to store algo and have offchain references,
+        // otherwise we would need another SSTORAGE.
+        // bytes8 left after this on SSTORAGE 1.
+        uint16 asymetricEncryptionKeyAlgorithm;
+
+        // Asymetric encryption key length.
+        // bytes6 left after this on SSTORAGE 1.
+        uint16 asymetricEncryptionKeyLength;
+
         // Symetric encryption key algorithm.
         // We use integers to store algo and have offchain references,
         // otherwise we would need another SSTORAGE.
@@ -43,15 +53,11 @@ contract Identity is ClaimHolder {
         // bytes10 left after this on SSTORAGE 1.
         uint16 symetricEncryptionKeyLength;
 
-        // Asymetric encryption key algorithm.
-        // We use integers to store algo and have offchain references,
-        // otherwise we would need another SSTORAGE.
-        // bytes8 left after this on SSTORAGE 1.
-        uint16 asymetricEncryptionKeyAlgorithm;
-
-        // Asymetric encryption key length.
-        // bytes6 left after this on SSTORAGE 1.
-        uint16 asymetricEncryptionKeyLength;
+        // Asymetric public encryption key.
+        // This one can be used to encrypt content especially for this
+        // contract owner, which is the only one to have the private key,
+        // offchain of course.
+        bytes asymetricEncryptionKeyPublic;
 
         // Encrypted symetric encryption key.
         // This key encrypts and decrypts all sensible data.
@@ -64,12 +70,6 @@ contract Identity is ClaimHolder {
         // because it's encrypted.
         // Uses 1 full SSTORAGE if AES 256.
         bytes symetricEncryptionKeyEncrypted;
-
-        // Asymetric public encryption key.
-        // This one can be used to encrypt content especially for this
-        // contract owner, which is the only one to have the private key,
-        // offchain of course.
-        bytes asymetricPublicEncryptionKey;
     }
     // This contract Identity information.
     IdentityInformation public identityInformation;
@@ -81,12 +81,12 @@ contract Identity is ClaimHolder {
         address _foundation,
         address _token,
         uint16 _category,
-        uint16 _symetricEncryptionKeyAlgorithm,
-        uint16 _symetricEncryptionKeyLength,
         uint16 _asymetricEncryptionKeyAlgorithm,
         uint16 _asymetricEncryptionKeyLength,
-        bytes _symetricEncryptionKeyEncrypted,
-        bytes _asymetricPublicEncryptionKey
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        bytes _asymetricEncryptionKeyPublic,
+        bytes _symetricEncryptionKeyEncrypted
     )
         public
     {
@@ -94,12 +94,12 @@ contract Identity is ClaimHolder {
         token = TalaoToken(_token);
         identityInformation.creator = msg.sender;
         identityInformation.category = _category;
-        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
-        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
         identityInformation.asymetricEncryptionKeyAlgorithm = _asymetricEncryptionKeyAlgorithm;
         identityInformation.asymetricEncryptionKeyLength = _asymetricEncryptionKeyLength;
+        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
+        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
+        identityInformation.asymetricEncryptionKeyPublic = _asymetricEncryptionKeyPublic;
         identityInformation.symetricEncryptionKeyEncrypted = _symetricEncryptionKeyEncrypted;
-        identityInformation.asymetricPublicEncryptionKey = _asymetricPublicEncryptionKey;
     }
 
     /**
