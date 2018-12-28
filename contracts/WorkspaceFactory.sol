@@ -32,12 +32,12 @@ contract WorkspaceFactory is Ownable {
      */
     function createWorkspace (
         uint16 _category,
-        uint16 _symetricEncryptionKeyAlgorithm,
-        uint16 _symetricEncryptionKeyLength,
         uint16 _asymetricEncryptionKeyAlgorithm,
         uint16 _asymetricEncryptionKeyLength,
-        bytes _symetricEncryptionKeyEncrypted,
-        bytes _asymetricPublicEncryptionKey
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        bytes _asymetricEncryptionKeyPublic,
+        bytes _symetricEncryptionKeyEncrypted
     )
         external
         returns (address)
@@ -62,12 +62,12 @@ contract WorkspaceFactory is Ownable {
             address(foundation),
             address(token),
             _category,
-            _symetricEncryptionKeyAlgorithm,
-            _symetricEncryptionKeyLength,
             _asymetricEncryptionKeyAlgorithm,
             _asymetricEncryptionKeyLength,
-            _symetricEncryptionKeyEncrypted,
-            _asymetricPublicEncryptionKey
+            _symetricEncryptionKeyAlgorithm,
+            _symetricEncryptionKeyLength,
+            _asymetricEncryptionKeyPublic,
+            _symetricEncryptionKeyEncrypted
         );
         // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
         newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);
@@ -78,62 +78,6 @@ contract WorkspaceFactory is Ownable {
         // Return new contract address.
         return address(newWorkspace);
     }
-
-    /**
-     * @dev Create a Workspace contract.
-     */
-    /* function createWorkspace (
-        uint _partnerCategory,
-        bytes32 _name1,
-        bytes32 _name2,
-        bytes32 _tagline,
-        bytes32 _url,
-        bytes32 _publicEmail,
-        bytes32 _pictureHash,
-        uint16 _pictureEngine,
-        string _description
-    )
-        external
-        returns (address)
-    {
-        // Sender must have access to his Vault in the Token.
-        require(
-            token.hasVaultAccess(msg.sender, msg.sender),
-            'Sender has no access to Vault.'
-        );
-        require(
-            (
-                _partnerCategory == 10001 ||
-                _partnerCategory == 20001 ||
-                _partnerCategory == 30001 ||
-                _partnerCategory == 40001 ||
-                _partnerCategory == 50001
-            ),
-            'Invalid category'
-        );
-        // Create contract.
-        Workspace newWorkspace = new Workspace(
-            address(foundation),
-            address(token),
-            _partnerCategory,
-            _name1,
-            _name2,
-            _tagline,
-            _url,
-            _publicEmail,
-            _pictureHash,
-            _pictureEngine,
-            _description
-        );
-        // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
-        newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);
-        // Remove this factory ERC 725 MANAGER key.
-        newWorkspace.removeKey(keccak256(abi.encodePacked(address(this))), 1);
-        // Set initial owner in Foundation to msg.sender.
-        foundation.setInitialOwnerInFoundation(address(newWorkspace), msg.sender);
-        // Return new contract address.
-        return address(newWorkspace);
-    } */
 
     /**
      * @dev Prevents accidental sending of ether.

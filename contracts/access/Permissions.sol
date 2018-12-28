@@ -21,23 +21,23 @@ contract Permissions is Partnership {
         address _foundation,
         address _token,
         uint16 _category,
-        uint16 _symetricEncryptionKeyAlgorithm,
-        uint16 _symetricEncryptionKeyLength,
         uint16 _asymetricEncryptionKeyAlgorithm,
         uint16 _asymetricEncryptionKeyLength,
-        bytes _symetricEncryptionKeyEncrypted,
-        bytes _asymetricPublicEncryptionKey
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        bytes _asymetricEncryptionKeyPublic,
+        bytes _symetricEncryptionKeyEncrypted
     )
         Partnership(
             _foundation,
             _token,
             _category,
-            _symetricEncryptionKeyAlgorithm,
-            _symetricEncryptionKeyLength,
             _asymetricEncryptionKeyAlgorithm,
             _asymetricEncryptionKeyLength,
-            _symetricEncryptionKeyEncrypted,
-            _asymetricPublicEncryptionKey
+            _symetricEncryptionKeyAlgorithm,
+            _symetricEncryptionKeyLength,
+            _asymetricEncryptionKeyPublic,
+            _symetricEncryptionKeyEncrypted
         )
         public
     {
@@ -45,12 +45,12 @@ contract Permissions is Partnership {
         token = TalaoToken(_token);
         identityInformation.creator = msg.sender;
         identityInformation.category = _category;
-        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
-        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
         identityInformation.asymetricEncryptionKeyAlgorithm = _asymetricEncryptionKeyAlgorithm;
         identityInformation.asymetricEncryptionKeyLength = _asymetricEncryptionKeyLength;
+        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
+        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
+        identityInformation.asymetricEncryptionKeyPublic = _asymetricEncryptionKeyPublic;
         identityInformation.symetricEncryptionKeyEncrypted = _symetricEncryptionKeyEncrypted;
-        identityInformation.asymetricPublicEncryptionKey = _asymetricPublicEncryptionKey;
     }
 
     /**
