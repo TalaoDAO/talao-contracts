@@ -62,8 +62,6 @@ contract('Workspace', async (accounts) => {
       1001,
       0,
       0,
-      0,
-      0,
       '0x',
       '0x',
       {from: factory}
@@ -74,8 +72,6 @@ contract('Workspace', async (accounts) => {
       foundation.address,
       token.address,
       2001,
-      0,
-      0,
       0,
       0,
       '0x',

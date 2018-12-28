@@ -176,7 +176,7 @@ contract('Partnership', async (accounts) => {
   });
 
   it('User2 should get partnership1 information in his contract', async() => {
-    const result = await partnership2.getPartnership(partnership1.address, { from: user2 });
+    const result = await partnership2.getPartnership(partnership1.address, {from: user2});
     assert.equal(result[0], user1);
     assert.equal(result[1], 1001);
     assert.equal(result[2], 1);

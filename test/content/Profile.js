@@ -92,8 +92,6 @@ contract('Profile', async (accounts) => {
       1001,
       0,
       0,
-      0,
-      0,
       '0x',
       '0x',
       {from: factory}
@@ -106,8 +104,6 @@ contract('Profile', async (accounts) => {
       foundation.address,
       token.address,
       2001,
-      0,
-      0,
       0,
       0,
       '0x',

@@ -62,8 +62,6 @@ contract('Foundation', async (accounts) => {
       1001,
       0,
       0,
-      0,
-      0,
       '0x',
       '0x',
       {from: user1}
@@ -138,8 +136,6 @@ contract('Foundation', async (accounts) => {
       2001,
       0,
       0,
-      0,
-      0,
       '0x',
       '0x',
       {from: user3}
@@ -209,8 +205,6 @@ contract('Foundation', async (accounts) => {
       2001,
       0,
       0,
-      0,
-      0,
       '0x',
       '0x',
       {from: user4}
@@ -239,8 +233,6 @@ contract('Foundation', async (accounts) => {
     const result = await truffleAssert.fails(
       factory.createWorkspace(
         2001,
-        0,
-        0,
         0,
         0,
         '0x',

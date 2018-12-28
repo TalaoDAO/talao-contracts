@@ -79,8 +79,6 @@ contract('Workspace Factory', async (accounts) => {
         1001,
         0,
         0,
-        0,
-        0,
         '0x',
         '0x',
         {from: user1}
