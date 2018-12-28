@@ -52,30 +52,21 @@ contract('Filebox', async (accounts) => {
   });
 
   it('Should create a Filebox contract, assign it to User1 and gim ERC 725 Management key', async() => {
-    filebox = await Filebox.new(foundation.address, token.address, 1, {from: factory});
+    filebox = await Filebox.new(
+      foundation.address,
+      token.address,
+      1001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
+      {from: factory}
+    );
     await foundation.setInitialOwnerInFoundation(filebox.address, user1, {from: factory});
     const user1key = web3.utils.keccak256(user1);
     const result = await filebox.addKey(user1key, 1, 1, {from: factory});
-  });
-
-  it('User1 should set his filebox', async() => {
-    const result = await filebox.setFilebox(
-      publicEncryptionKey,
-      encryptionAlgorithm,
-      {from: user1}
-    );
-    assert(result);
-  });
-
-  it('User2 should be able to get filebox public encryption key and encryption algorithm', async() => {
-    const result = await filebox.fileboxSettings({from: user2});
-    assert.equal(
-      result.toString(),
-      [
-        publicEncryptionKey,
-        encryptionAlgorithm
-      ]
-    );
   });
 
   it('User2 should be able to notify an encrypted decentralized file in filebox', async() => {

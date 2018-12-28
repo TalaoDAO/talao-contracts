@@ -9,19 +9,6 @@ import "../access/Permissions.sol";
  */
 contract Filebox is Permissions {
 
-    struct FileboxSettings {
-      // Public encryption key.
-      // Any file notified to us should have been encrypted with this key,
-      // before uploading it to the decentralized files engine.
-      // SSTORAGE 1 full after this.
-      bytes32 publicEncryptionKey;
-
-      // The encryption algorithm we want to be used to interact with us.
-      // bytes30 left after this.
-      uint16 encryptionKeyAlgorithm;
-    }
-    FileboxSettings public fileboxSettings;
-
     // Blacklisted addresses.
     mapping(address => bool) public fileboxBlacklist;
 
@@ -48,25 +35,11 @@ contract Filebox is Permissions {
     }
 
     /**
-     * @dev Set filebox.
-     */
-    function setFilebox(
-        bytes32 _publicEncryptionKey,
-        uint16 _encryptionKeyAlgorithm
-    )
-        external
-        onlyHasKeyForPurpose(20004)
-    {
-        fileboxSettings.publicEncryptionKey = _publicEncryptionKey;
-        fileboxSettings.encryptionKeyAlgorithm = _encryptionKeyAlgorithm;
-    }
-
-    /**
      * @dev Blacklist.
      */
     function blacklistAddressInFilebox(address _address)
         external
-        onlyHasKeyForPurpose(20004)
+        onlyIdentityPurpose(20004)
     {
         fileboxBlacklist[_address] = true;
     }
@@ -76,7 +49,7 @@ contract Filebox is Permissions {
      */
     function unblacklistAddressInFilebox(address _address)
         external
-        onlyHasKeyForPurpose(20004)
+        onlyIdentityPurpose(20004)
     {
         fileboxBlacklist[_address] = false;
     }
