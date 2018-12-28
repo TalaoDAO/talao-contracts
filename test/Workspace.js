@@ -55,21 +55,17 @@ contract('Workspace', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Workspace1 (category 1 = Freelancer) and Workspace2 (category 2 = Marketplace) and set initial owners to User1 and User2', async() => {
+  it('Factory should deploy Workspace1 (category 1001 = Freelancer) and Workspace2 (category 2001 = Marketplace) and set initial owners to User1 and User2', async() => {
     workspace1 = await Workspace.new(
       foundation.address,
       token.address,
-      1,
-      name1,
-      name2,
-      tagline,
-      url,
-      publicEmail,
-      fileHash,
-      fileEngine,
-      description,
-      privateEmail,
-      mobile,
+      1001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
       {from: factory}
     );
     assert(workspace1);
@@ -77,17 +73,13 @@ contract('Workspace', async (accounts) => {
     workspace2 = await Workspace.new(
       foundation.address,
       token.address,
-      1,
-      name1,
-      name2,
-      tagline,
-      url,
-      publicEmail,
-      fileHash,
-      fileEngine,
-      description,
-      privateEmail,
-      mobile,
+      2001,
+      0,
+      0,
+      0,
+      0,
+      '0x',
+      '0x',
       {from: factory}
     );
     assert(workspace2);
@@ -95,8 +87,8 @@ contract('Workspace', async (accounts) => {
   });
 
   it('Workspace 1 should have Factory as creator', async() =>  {
-    const result = await workspace1.creator();
-    assert.equal(result.toString(), factory);
+    const result = await workspace1.identityInformation();
+    assert.equal(result[0], factory);
   });
 
 });
