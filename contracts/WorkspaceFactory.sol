@@ -31,6 +31,58 @@ contract WorkspaceFactory is Ownable {
      * @dev Create a Workspace contract.
      */
     function createWorkspace (
+        uint16 _category,
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        uint16 _asymetricEncryptionKeyAlgorithm,
+        uint16 _asymetricEncryptionKeyLength,
+        bytes _symetricEncryptionKeyEncrypted,
+        bytes _asymetricPublicEncryptionKey
+    )
+        external
+        returns (address)
+    {
+        // Sender must have access to his Vault in the Token.
+        require(
+            token.hasVaultAccess(msg.sender, msg.sender),
+            'Sender has no access to Vault.'
+        );
+        require(
+            (
+                _category == 1001 ||
+                _category == 2001 ||
+                _category == 3001 ||
+                _category == 4001 ||
+                _category == 5001
+            ),
+            'Invalid category'
+        );
+        // Create contract.
+        Workspace newWorkspace = new Workspace(
+            address(foundation),
+            address(token),
+            _category,
+            _symetricEncryptionKeyAlgorithm,
+            _symetricEncryptionKeyLength,
+            _asymetricEncryptionKeyAlgorithm,
+            _asymetricEncryptionKeyLength,
+            _symetricEncryptionKeyEncrypted,
+            _asymetricPublicEncryptionKey
+        );
+        // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
+        newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);
+        // Remove this factory ERC 725 MANAGER key.
+        newWorkspace.removeKey(keccak256(abi.encodePacked(address(this))), 1);
+        // Set initial owner in Foundation to msg.sender.
+        foundation.setInitialOwnerInFoundation(address(newWorkspace), msg.sender);
+        // Return new contract address.
+        return address(newWorkspace);
+    }
+
+    /**
+     * @dev Create a Workspace contract.
+     */
+    /* function createWorkspace (
         uint _partnerCategory,
         bytes32 _name1,
         bytes32 _name2,
@@ -81,7 +133,7 @@ contract WorkspaceFactory is Ownable {
         foundation.setInitialOwnerInFoundation(address(newWorkspace), msg.sender);
         // Return new contract address.
         return address(newWorkspace);
-    }
+    } */
 
     /**
      * @dev Prevents accidental sending of ether.

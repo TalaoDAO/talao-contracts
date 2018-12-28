@@ -76,17 +76,13 @@ contract('Workspace Factory', async (accounts) => {
   it('Through the factory, User1 should create Workspace1 final contract of category1 (Freelancer).', async() => {
     const result = await truffleCost.log(
       workspaceFactory.createWorkspace(
-        10001,
-        name1,
-        name2,
-        tagline,
-        url,
-        publicEmail,
-        fileHash,
-        fileEngine,
-        description,
-        privateEmail,
-        mobile,
+        1001,
+        0,
+        0,
+        0,
+        0,
+        '0x',
+        '0x',
         {from: user1}
       ),
       'EUR'
@@ -104,19 +100,19 @@ contract('Workspace Factory', async (accounts) => {
   });
 
   it('Workspace 1 should have Factory as creator', async() =>  {
-    const result = await workspace1.creator();
-    assert.equal(result.toString(), workspaceFactory.address);
+    const result = await workspace1.identityInformation();
+    assert.equal(result[0], workspaceFactory.address);
   });
 
   it('User1 should have ERC 725 key with purpose 1 (Manager)', async() => {
-    const result = workspace1.hasKeyForPurpose(1, {from: user1});
+    const result = workspace1.hasIdentityPurpose(1, {from: user1});
     assert(result);
   });
 
   it('workspaceFactory and Someone should not have ERC 725 key with purpose 1 (Manager)', async() => {
-    const result1 = await workspace1.hasKeyForPurpose(1, {from: workspaceFactory.address});
+    const result1 = await workspace1.hasIdentityPurpose(1, {from: workspaceFactory.address});
     assert(!result1);
-    const result2 = await workspace1.hasKeyForPurpose(1, {from: someone});
+    const result2 = await workspace1.hasIdentityPurpose(1, {from: someone});
     assert(!result2);
   });
 
