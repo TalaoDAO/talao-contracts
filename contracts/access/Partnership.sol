@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../tokenized/Tokenized.sol";
+import "../identity/Identity.sol";
 import "../math/SafeMath.sol";
 
 /**
@@ -20,15 +20,12 @@ import "../math/SafeMath.sol";
  * @author Talao, Polynomial.
  * @dev Convention here: _function = to be called by another partnership contract.
  */
-contract Partnership is Tokenized {
+contract Partnership is Identity {
 
     using SafeMath for uint;
 
     // Foundation contract.
     Foundation foundation;
-
-    // Our category for partnerships.
-    uint public partnerCategory;
 
     // Authorization status.
     enum PartnershipAuthorization { Unknown, Authorized, Pending, Rejected, Removed }
@@ -42,7 +39,7 @@ contract Partnership is Tokenized {
         // Let's avoid the 2038 year bug, even if this contract will be dead
         // a lot sooner! It costs nothing, so...
         // bytes26 left after this on SSTORAGE 1.
-        uint40 createdAt;
+        uint40 created;
     }
     // Our main registry of Partnership contracts.
     mapping(address => PartnershipContract) internal partnershipContracts;
@@ -62,13 +59,40 @@ contract Partnership is Tokenized {
     /**
      * @dev Constructor.
      */
-    constructor(address _foundation, address _token, uint _partnerCategory)
-        Tokenized(_foundation, _token)
+    constructor(
+        address _foundation,
+        address _token,
+        uint16 _category,
+        uint16 _symetricEncryptionKeyAlgorithm,
+        uint16 _symetricEncryptionKeyLength,
+        uint16 _asymetricEncryptionKeyAlgorithm,
+        uint16 _asymetricEncryptionKeyLength,
+        bytes _symetricEncryptionKeyEncrypted,
+        bytes _asymetricPublicEncryptionKey
+    )
+        Identity(
+            _foundation,
+            _token,
+            _category,
+            _symetricEncryptionKeyAlgorithm,
+            _symetricEncryptionKeyLength,
+            _asymetricEncryptionKeyAlgorithm,
+            _asymetricEncryptionKeyLength,
+            _symetricEncryptionKeyEncrypted,
+            _asymetricPublicEncryptionKey
+        )
         public
     {
         foundation = Foundation(_foundation);
         token = TalaoToken(_token);
-        partnerCategory = _partnerCategory;
+        identityInformation.creator = msg.sender;
+        identityInformation.category = _category;
+        identityInformation.symetricEncryptionKeyAlgorithm = _symetricEncryptionKeyAlgorithm;
+        identityInformation.symetricEncryptionKeyLength = _symetricEncryptionKeyLength;
+        identityInformation.asymetricEncryptionKeyAlgorithm = _asymetricEncryptionKeyAlgorithm;
+        identityInformation.asymetricEncryptionKeyLength = _asymetricEncryptionKeyLength;
+        identityInformation.symetricEncryptionKeyEncrypted = _symetricEncryptionKeyEncrypted;
+        identityInformation.asymetricPublicEncryptionKey = _asymetricPublicEncryptionKey;
     }
 
     /**
@@ -114,7 +138,7 @@ contract Partnership is Tokenized {
     function getKnownPartnershipsContracts()
         external
         view
-        onlyHasKeyForPurpose(20003)
+        onlyIdentityPurpose(20003)
         returns (address[])
     {
         return knownPartnershipContracts;
@@ -126,15 +150,16 @@ contract Partnership is Tokenized {
     function getPartnership(address _hisContract)
         external
         view
-        onlyHasKeyForPurpose(20003)
+        onlyIdentityPurpose(20003)
         returns (address, uint, uint, uint40)
     {
-          PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
+          IdentityInterface hisInterface = IdentityInterface(_hisContract);
+          (,uint16 hisCategory,,,,,,) = hisInterface.identityInformation();
           return (
               foundation.contractsToOwners(_hisContract),
-              hisInterface.partnerCategory(),
+              hisCategory,
               uint(partnershipContracts[_hisContract].authorization),
-              partnershipContracts[_hisContract].createdAt
+              partnershipContracts[_hisContract].created
           );
     }
 
@@ -146,7 +171,7 @@ contract Partnership is Tokenized {
      */
     function requestPartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(20003)
+        onlyIdentityPurpose(20003)
     {
         // We can only request partnership with a contract
         // if he's not already Known or Removed in our registry.
@@ -175,7 +200,7 @@ contract Partnership is Tokenized {
             // Authorize Partnership contract in our contract.
             partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Authorized;
             // Record date of partnership creation.
-            partnershipContracts[_hisContract].createdAt = uint40(now);
+            partnershipContracts[_hisContract].created = uint40(now);
             // Give the Partnership contrat's owner an ERC 725 "Claim" key.
             // So he can submit claims on our contract (certificate of work, ...).
             addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
@@ -214,7 +239,7 @@ contract Partnership is Tokenized {
      */
     function authorizePartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(20003)
+        onlyIdentityPurpose(20003)
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
@@ -223,7 +248,7 @@ contract Partnership is Tokenized {
         // Authorize the Partnership contract in our contract.
         partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Authorized;
         // Record the date of partnership creation.
-        partnershipContracts[_hisContract].createdAt = uint40(now);
+        partnershipContracts[_hisContract].created = uint40(now);
         // Give the Partnership contrat's owner an ERC 725 "Claim" key.
         // So he can submit claims on our contract (certificate of work, ...).
         addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
@@ -250,7 +275,7 @@ contract Partnership is Tokenized {
      */
     function rejectPartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(20003)
+        onlyIdentityPurpose(20003)
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
@@ -264,7 +289,7 @@ contract Partnership is Tokenized {
      */
     function removePartnership(address _hisContract)
         external
-        onlyHasKeyForPurpose(20003)
+        onlyIdentityPurpose(20003)
     {
         require(
             (
@@ -281,7 +306,7 @@ contract Partnership is Tokenized {
             // If it was an authorized partnership,
             if (partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized) {
                 // Remove the partnership creation date.
-                delete partnershipContracts[_hisContract].createdAt;
+                delete partnershipContracts[_hisContract].created;
                 // Decrement our number of partnerships.
                 partnershipsNumber = partnershipsNumber.sub(1);
             }
@@ -306,7 +331,7 @@ contract Partnership is Tokenized {
         // If it was an authorized partnership,
         if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized) {
             // Remove date of partnership creation.
-            delete partnershipContracts[msg.sender].createdAt;
+            delete partnershipContracts[msg.sender].created;
             // Decrement our number of partnerships.
             partnershipsNumber = partnershipsNumber.sub(1);
         }
@@ -332,5 +357,4 @@ interface PartnershipInterface {
   function _requestPartnership() external view returns (bool);
   function _authorizePartnership() external;
   function _removePartnership() external returns (bool success);
-  function partnerCategory() external view returns (uint);
 }
