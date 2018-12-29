@@ -44,7 +44,7 @@ contract Identity is ClaimHolder {
 
         // Symetric encryption key algorithm.
         // We use an integer to store algo with offchain references.
-        // 1 => AES 256
+        // 1 => AES 128
         // bytes10 left after this on SSTORAGE 1.
         uint16 symetricEncryptionAlgorithm;
 
@@ -58,7 +58,7 @@ contract Identity is ClaimHolder {
         // When decrypted, this passphrase can regenerate
         // the symetric encryption key.
         // This key encrypts and decrypts data to be shared with many people.
-        // Uses 1 full SSTORAGE for AES 256.
+        // Uses 0.5 SSTORAGE for AES 128.
         bytes symetricEncryptionEncryptedPassphrase;
     }
     // This contract Identity information.

@@ -20,7 +20,7 @@ let asymetricEncryptionKey, asymetricEncryptionPublickey, asymetricEncryptionPri
 
 // Symetric encryption key.
 const symetricEncryptionPassphrase = 'This is the passphrase for the symetric key I chose at contract creation.';
-const symetricEncryptionAlgorithm = 1; // aes-256-ctr
+const symetricEncryptionAlgorithm = 1; // aes-128-ctr
 
 // Data samples.
 const category = 1001;
@@ -101,7 +101,7 @@ contract('Identity', async (accounts) => {
     assert.equal(result[2].toNumber(), asymetricEncryptionAlgorithm);
   });
 
-  it('Anyone should get symetric encryption algorithm: AES 256', async() => {
+  it('Anyone should get symetric encryption algorithm: AES 128', async() => {
     const result = await identity.identityInformation({from: someone});
     assert.equal(result[3].toNumber(), symetricEncryptionAlgorithm);
   });
@@ -124,7 +124,7 @@ contract('Identity', async (accounts) => {
   it('User1 should encrypt something with symetric key and someone who has the passphrase should be able to decipher it. This concerns for instance all encryptions of content available to Partner Members and users that bought his Vault access in the token. User1 can send his symetric key encrypted on the public encryption key of another user who has an Identity contract, as well', async() => {
     // 1. User1 encrypts some text.
     // First, derive key from passphrase. TODO: use salt, which one?
-    const symetricEncryptionKey = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 32, new Buffer(''));
+    const symetricEncryptionKey = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 16, new Buffer(''));
     // Convert text to encrypt to bytes.
     const textBytes = aesjs.utils.utf8.toBytes(textToEncrypt);
     // Counter.
@@ -140,7 +140,7 @@ contract('Identity', async (accounts) => {
     // so we just test encryption and decryption here.
     // 2. User2 decrypts the text.
     // User2 has the passphrase, let's generate the key.
-    const symetricEncryptionKey2 = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 32, new Buffer(''));
+    const symetricEncryptionKey2 = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 16, new Buffer(''));
     // Remove 0x from BC encrypted text.
     const encryptedHex2 = bcEncryptedHex.substr(2);
     // To bytes.
