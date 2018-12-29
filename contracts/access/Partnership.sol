@@ -40,6 +40,9 @@ contract Partnership is Identity {
         // a lot sooner! It costs nothing, so...
         // bytes26 left after this on SSTORAGE 1.
         uint40 created;
+        // His symetric encryption passphrase,
+        // encrypted on our asymetric encryption public key.
+        bytes passphrase;
     }
     // Our main registry of Partnership contracts.
     mapping(address => PartnershipContract) internal partnershipContracts;
@@ -145,7 +148,7 @@ contract Partnership is Identity {
         external
         view
         onlyIdentityPurpose(20003)
-        returns (address, uint, uint, uint40)
+        returns (address, uint, uint, uint40, bytes)
     {
           IdentityInterface hisInterface = IdentityInterface(_hisContract);
           (,uint16 hisCategory,,,,) = hisInterface.identityInformation();
@@ -153,17 +156,21 @@ contract Partnership is Identity {
               foundation.contractsToOwners(_hisContract),
               hisCategory,
               uint(partnershipContracts[_hisContract].authorization),
-              partnershipContracts[_hisContract].created
+              partnershipContracts[_hisContract].created,
+              partnershipContracts[_hisContract].passphrase
           );
     }
 
     /**
      * @dev Request partnership.
-     * @dev The owner of this contract requests a partnership
-     * @dev with another Partnership contract
-     * @dev through THIS contract.
+     * The owner of this contract requests a partnership
+     * with another Partnership contract
+     * through THIS contract.
+     * We send him our symetric encryption passphrase as well,
+     * encrypted on his symetric encryption public key.
+     * Encryption done offchain before submitting this TX.
      */
-    function requestPartnership(address _hisContract)
+    function requestPartnership(address _hisContract, bytes _ourPassphrase)
         external
         onlyIdentityPurpose(20003)
     {
@@ -183,7 +190,7 @@ contract Partnership is Identity {
         // Request partnership in the other contract.
         // Open interface on his contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
-        bool success = hisInterface._requestPartnership();
+        bool success = hisInterface._requestPartnership(_ourPassphrase);
         // If partnership request was a success,
         if (success) {
             // If we do not know the Partnership contract yet,
@@ -205,9 +212,15 @@ contract Partnership is Identity {
 
     /**
      * @dev Symetry of requestPartnership.
-     * @dev Called by Partnership contract wanting to partnership.
+     * Called by Partnership contract wanting to partnership.
+     * He sends us his symetric encryption passphrase as well,
+     * encrypted on our symetric encryption public key.
+     * So we can decipher all his content.
      */
-    function _requestPartnership() external returns (bool success) {
+    function _requestPartnership(bytes _hisPassphrase)
+        external
+        returns (bool success)
+    {
         require(
             (
                 partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
@@ -222,6 +235,9 @@ contract Partnership is Identity {
         }
         // Write Pending to our partnerships contract registry.
         partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Pending;
+        // Record his symetric encryption passphrase,
+        // encrypted on our asymetric encryption public key.
+        partnershipContracts[msg.sender].passphrase = _hisPassphrase;
         // Event for this contrat owner's UI.
         emit PartnershipRequested();
         // Return success.
@@ -230,8 +246,11 @@ contract Partnership is Identity {
 
     /**
      * @dev Authorize Partnership.
+     * Before submitting this TX, we must have encrypted our
+     * symetric encryption passphrase
+     * on his asymetric encryption public key.
      */
-    function authorizePartnership(address _hisContract)
+    function authorizePartnership(address _hisContract, bytes _ourPassphrase)
         external
         onlyIdentityPurpose(20003)
     {
@@ -250,17 +269,20 @@ contract Partnership is Identity {
         partnershipsNumber = partnershipsNumber.add(1);
         // Log an event in the new authorized partner contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
-        hisInterface._authorizePartnership();
+        hisInterface._authorizePartnership(_ourPassphrase);
     }
 
     /**
      * @dev Allows other Partnership contract to send an event when authorizing.
+     * He sends us also his symetric encryption passphrase,
+     * encrypted on our asymetric encryption public key.
      */
-    function _authorizePartnership() external {
+    function _authorizePartnership(bytes _hisPassphrase) external {
         require(
             partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized,
             'You have no authorized partnership'
         );
+        partnershipContracts[msg.sender].passphrase = _hisPassphrase;
         emit PartnershipAccepted();
     }
 
@@ -301,6 +323,8 @@ contract Partnership is Identity {
             if (partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized) {
                 // Remove the partnership creation date.
                 delete partnershipContracts[_hisContract].created;
+                // Remove his passphrase.
+                delete partnershipContracts[_hisContract].passphrase;
                 // Decrement our number of partnerships.
                 partnershipsNumber = partnershipsNumber.sub(1);
             }
@@ -326,6 +350,8 @@ contract Partnership is Identity {
         if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized) {
             // Remove date of partnership creation.
             delete partnershipContracts[msg.sender].created;
+            // Remove his passphrase.
+            delete partnershipContracts[msg.sender].passphrase;
             // Decrement our number of partnerships.
             partnershipsNumber = partnershipsNumber.sub(1);
         }
@@ -348,7 +374,7 @@ contract Partnership is Identity {
  * @title Interface with clones or inherited contracts.
  */
 interface PartnershipInterface {
-  function _requestPartnership() external view returns (bool);
-  function _authorizePartnership() external;
+  function _requestPartnership(bytes) external view returns (bool);
+  function _authorizePartnership(bytes) external;
   function _removePartnership() external returns (bool success);
 }

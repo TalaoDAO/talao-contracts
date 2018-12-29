@@ -46,6 +46,9 @@ contract('Partnership', async (accounts) => {
     await foundation.addFactory(factory);
   });
 
+  // Note: encryptions are simulated here because they would clutter the test.
+  // See Identity.js for full encryption tests.
+
   it('Factory should deploy partnership1 (category 1001), partnership2 (category 2001), partnership3 (category 3001) and partnership4 (category 2001) contracts', async() => {
     partnership1 = await Partnership.new(
       foundation.address,
@@ -117,7 +120,12 @@ contract('Partnership', async (accounts) => {
   });
 
   it('User1 should request partnership of his contract partnership1 to the contract partnership2, PartnershipRequested event should have been emitted by partnership2 contract', async() => {
-    const result = await partnership1.requestPartnership(partnership2.address, { from: user1 });
+    // 0x91 is a simulation of encrypted passphrase.
+    const result = await partnership1.requestPartnership(
+      partnership2.address,
+      '0x91',
+      { from: user1 }
+    );
     assert(result);
     truffleAssert.eventEmitted(result, 'PartnershipRequested');
   });
@@ -141,7 +149,12 @@ contract('Partnership', async (accounts) => {
   });
 
   it('User2 should authorize partnership1 in his contract partnership2, PartnershipAccepted event should have been emitted by partner1 contract, triggered by partner2', async() => {
-    const result = await partnership2.authorizePartnership(partnership1.address, { from: user2 });
+    // 0x92 is a simulation of encrypted passphrase.
+    const result = await partnership2.authorizePartnership(
+      partnership1.address,
+      '0x92',
+      { from: user2 }
+    );
     assert(result);
     truffleAssert.eventEmitted(result, 'PartnershipAccepted');
   });
@@ -160,7 +173,11 @@ contract('Partnership', async (accounts) => {
   });
 
   it('User3 should request partnership of his contract partnership3 to the partnership2 contract', async() => {
-    const result = await partnership3.requestPartnership(partnership2.address, { from: user3 });
+    const result = await partnership3.requestPartnership(
+      partnership2.address,
+      '0x93',
+      { from: user3 }
+    );
     assert(result);
   });
 
@@ -174,6 +191,9 @@ contract('Partnership', async (accounts) => {
     assert.equal(result[0], user1);
     assert.equal(result[1], 1001);
     assert.equal(result[2], 1);
+    const now = Date.now();
+    assert.isBelow(result[3].toNumber(), now);
+    assert.equal(result[4], '0x91');
   });
 
   it('User1 should get partnership2 information in his contract', async() => {
@@ -181,6 +201,9 @@ contract('Partnership', async (accounts) => {
     assert.equal(result[0], user2);
     assert.equal(result[1], 2001);
     assert.equal(result[2], 1);
+    const now = Date.now();
+    assert.isBelow(result[3].toNumber(), now);
+    assert.equal(result[4], '0x92');
   });
 
   it('User2 should reject partnership3 in his contract partnership2.', async() => {
@@ -203,12 +226,20 @@ contract('Partnership', async (accounts) => {
   });
 
   it('User3 should request partnership of his contract partnership3 to the partnership2 contract', async() => {
-    const result = await partnership3.requestPartnership(partnership2.address, { from: user3 });
+    const result = await partnership3.requestPartnership(
+      partnership2.address,
+      '0x93',
+      {from: user3}
+    );
     assert(result);
   });
 
   it('User2 should authorize Partnership3 in his contract Partnership2.', async() => {
-    const result = await partnership2.authorizePartnership(partnership3.address, { from: user2 });
+    const result = await partnership2.authorizePartnership(
+      partnership3.address,
+      '0x92',
+      { from: user2 }
+    );
     assert(result);
   });
 
@@ -219,7 +250,11 @@ contract('Partnership', async (accounts) => {
 
   it('User4 should not be able to request partnership of his contract partnership4 to the contract partnership2 because they have the same category', async() => {
     const result = await truffleAssert.fails(
-      partnership4.requestPartnership(partnership2.address, { from: user4 })
+      partnership4.requestPartnership(
+        partnership2.address,
+        '0x94',
+        { from: user4 }
+      )
     )
     assert(!result);
   });
@@ -270,6 +305,7 @@ contract('Partnership', async (accounts) => {
     assert.equal(result[2], 1);
     const now = Date.now();
     assert.isBelow(result[3].toNumber(), now);
+    assert.equal(result[4], '0x93');
   });
 
   it('User2 should have 2 partnerships', async() => {
