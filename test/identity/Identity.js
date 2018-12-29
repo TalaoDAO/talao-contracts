@@ -1,27 +1,8 @@
 const NodeRSA = require('node-rsa');
-const pbkdf2 = require('pbkdf2');
-const crypto = require('crypto');
+const scrypt = require('scrypt'); //TODO: move to Node core, scrypt is now inside
+const aesjs = require('aes-js');
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
-
-// TODO: move symEnc tests to Profile
-const symetricEncrypt = text => {
-  const cipher = crypto.createCipher('aes-256-ctr', symetricEncryptionPassphrase);
-  let crypted = cipher.update(text, 'utf8', 'hex');
-  crypted += cipher.final('hex');
-  // Add 0x because BC wants it.
-  return '0x' + crypted;
-  return crypted;
-}
-
-const symetricDecrypt = text => {
-  // Remove 0x BC wanted.
-  text = text.substr(2);
-  const decipher = crypto.createDecipher(symetricEncryptionAlgorithmNames[1], symetricEncryptionPassphrase);
-  let dec = decipher.update(text, 'hex', 'utf8');
-  dec += decipher.final('utf8');
-  return dec;
-}
 
 // Contract artifacts.
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -39,22 +20,15 @@ let asymetricEncryptionKey, asymetricEncryptionPublickey, asymetricEncryptionPri
 
 // Symetric encryption key.
 const symetricEncryptionPassphrase = 'This is the passphrase for the symetric key I chose at contract creation.';
-let symetricEncryptionEncryptedpassphrase;
 const symetricEncryptionAlgorithm = 1; // aes-256-ctr
 
 // Data samples.
 const category = 1001;
 const textCategory = 8;
-const textContent = 'Hi, here is a message for your eyes only!';
+const textToEncrypt = 'Hi, here is a message for your eyes only!';
 const fileEngine = 1;
 const fileType = 12;
 const fileHash = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
-
-// TODO remove
-const privateEmail = 'private@email.com';
-const privateMobile = '0123456789';
-const encryptedPrivateEmail = symetricEncrypt(privateEmail);
-const encryptedPrivateMobile = symetricEncrypt(privateMobile);
 
 // Tests.
 contract('Identity', async (accounts) => {
@@ -68,19 +42,19 @@ contract('Identity', async (accounts) => {
 
   // Init.
   before(async () => {
-    // Generate asymetric encryption key RSA 2048.
+    // 1. Generate asymetric encryption key RSA 2048.
     asymetricEncryptionKey = new NodeRSA({b: 2048});
     asymetricEncryptionPublickey = asymetricEncryptionKey.exportKey('public');
     asymetricEncryptionPrivatekey = asymetricEncryptionKey.exportKey('private');
-    // Encrypt symetric key passphrase with public asymetric key.
+    // 2. Encrypt symetric key passphrase with public asymetric key.
     symetricEncryptionEncryptedpassphrase = asymetricEncryptionKey.encrypt(symetricEncryptionPassphrase, 'base64');
-    // Deploy & link librairies.
+    // 3. Deploy & link librairies.
     keyHolderLibrary = await KeyHolderLibrary.new();
     await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
     claimHolderLibrary = await ClaimHolderLibrary.new();
     await Identity.link(KeyHolderLibrary, keyHolderLibrary.address);
     await Identity.link(ClaimHolderLibrary, claimHolderLibrary.address);
-    // Deploy Talao token, set it, transfer TALAOs and open Vault access.
+    // 4. Deploy Talao token, set it, transfer TALAOs and open Vault access.
     token = await TalaoToken.new();
     await token.mint(defaultUser, 150000000000000000000);
     await token.finishMinting();
@@ -90,7 +64,7 @@ contract('Identity', async (accounts) => {
     await token.transfer(user3, 1000);
     await token.createVaultAccess(10, { from: user1 });
     await token.createVaultAccess(0, { from: user2 });
-    // Deploy Foundation & register a Factory.
+    // 5. Deploy Foundation & register a Factory.
     foundation = await Foundation.new();
     await foundation.addFactory(factory);
   });
@@ -147,6 +121,38 @@ contract('Identity', async (accounts) => {
     assert.equal(symKeyPassphrase, symetricEncryptionPassphrase);
   });
 
+  it('User1 should encrypt something with symetric key and someone who has the passphrase should be able to decipher it. This concerns for instance all encryptions of content available to Partner Members and users that bought his Vault access in the token. User1 can send his symetric key encrypted on the public encryption key of another user who has an Identity contract, as well', async() => {
+    // 1. User1 encrypts some text.
+    // First, derive key from passphrase. TODO: use salt, which one?
+    const symetricEncryptionKey = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 32, new Buffer(''));
+    // Convert text to encrypt to bytes.
+    const textBytes = aesjs.utils.utf8.toBytes(textToEncrypt);
+    // Counter.
+    const aesCtr = new aesjs.ModeOfOperation.ctr(symetricEncryptionKey, new aesjs.Counter(5));
+    // Encrypt.
+    const encryptedBytes = aesCtr.encrypt(textBytes);
+    // To hex.
+    const encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+    // To blockchain.
+    const bcEncryptedHex = '0x' + encryptedHex;
+    // We will not write and read to BC here, because Identity has no storage to do this.
+    // We should do it in Profile contract for instance but it's a bit a pain to init everything,
+    // so we just test encryption and decryption here.
+    // 2. User2 decrypts the text.
+    // User2 has the passphrase, let's generate the key.
+    const symetricEncryptionKey2 = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 32, new Buffer(''));
+    // Remove 0x from BC encrypted text.
+    const encryptedHex2 = bcEncryptedHex.substr(2);
+    // To bytes.
+    const encryptedBytes2 = aesjs.utils.hex.toBytes(encryptedHex2);
+    // Init counter.
+    const aesCtr2 = new aesjs.ModeOfOperation.ctr(symetricEncryptionKey2, new aesjs.Counter(5));
+    // Decrypt.
+    const decryptedBytes2 = aesCtr2.decrypt(encryptedBytes2);
+    const decryptedText2 = aesjs.utils.utf8.fromBytes(decryptedBytes2);
+    assert.equal(decryptedText2, textToEncrypt);
+  });
+
   it('User2 should be able to send an encrypted text, anyone should be able to retrieve it, but only User1 should decipher it', async() => {
     // Get asym pub key.
     const result1 = await identity.identityInformation({from: user2});
@@ -156,7 +162,7 @@ contract('Identity', async (accounts) => {
     // Key must have public pair value only.
     assert(asymPubKey.isPublic(true));
     // Encrypt text.
-    const encryptedText = asymPubKey.encrypt(textContent, 'base64');
+    const encryptedText = asymPubKey.encrypt(textToEncrypt, 'base64');
     // Send text.
     const result2 = await identity.identityboxSendtext(
       textCategory,
@@ -177,7 +183,7 @@ contract('Identity', async (accounts) => {
     // User1 deciphers text.
     const decipheredText = asymPrivKey.decrypt(receivedEncryptedText);
     // Is it the original message?
-    assert.equal(decipheredText, textContent);
+    assert.equal(decipheredText, textToEncrypt);
     // Someone else tries to decipher and fails.
     try {
       asymPubKey.decrypt(receivedEncryptedText);
@@ -215,7 +221,7 @@ contract('Identity', async (accounts) => {
     truffleAssert.fails(
       identity.identityboxSendtext(
         textCategory,
-        textContent,
+        textToEncrypt,
         {from: user2}
       )
     );
@@ -229,7 +235,7 @@ contract('Identity', async (accounts) => {
   it('User2 should send a text', async() => {
     const result = await identity.identityboxSendtext(
       textCategory,
-      textContent,
+      textToEncrypt,
       {from: user2}
     );
     // Check event.
