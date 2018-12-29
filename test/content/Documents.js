@@ -9,7 +9,7 @@ const Foundation = artifacts.require('Foundation');
 const Documents = artifacts.require('DocumentsTest');
 
 // Contract instances.
-let token, foundation, documents1, documents2, documents3, documents4;
+let token, foundation, documents;
 
 // Sample data.
 // "this string just fills a bytes32"
@@ -21,7 +21,6 @@ const otherBytes24 = '0x846869732069732065786163746c79203234206279746573';
 // String.
 const string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tristique quam iaculis quam accumsan, in sollicitudin arcu pulvinar. Morbi malesuada metus a hendrerit tempor. Quisque egestas eros tellus. Maecenas in nisi eu orci tempor accumsan quis non sapien. Morbi nec efficitur leo. Aliquam porta mauris in eleifend faucibus. Vestibulum pulvinar quis lorem tempor vestibulum. Proin semper mattis commodo. Nam sagittis maximus elementum. Integer in porta orci. Donec eu porta odio, sit amet rutrum urna.';
 const otherString = 'Eius populus ab incunabulis primis ad usque pueritiae tempus extremum, quod annis circumcluditur fere trecentis, circummurana pertulit bella, deinde aetatem ingressus adultam post multiplices bellorum aerumnas Alpes transcendit et fretum, in iuvenem erectus et virum ex omni plaga quam orbis ambit inmensus, reportavit laureas et triumphos, iamque vergens in senium et nomine solo aliquotiens vincens ad tranquilliora vitae discessit.';
-// Variables for contracts.
 const fileEngine = 1;
 const otherFileEngine = 11;
 const docType = 3;
@@ -40,6 +39,7 @@ contract('Documents', async (accounts) => {
   const user5 = accounts[5];
   const user6 = accounts[6];
   const factory = accounts[8];
+  const someone = accounts[9];
 
   // Init.
   before(async () => {
@@ -66,8 +66,8 @@ contract('Documents', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Documents1 (category 1001) and Documents2 (category 2001) and set initial owners to User1 and User2 and give them ERC 725 Management keys', async() => {
-    documents1 = await Documents.new(
+  it('Factory should deploy Documents (category 1001), set initial owner and give him ERC 725 Management key', async() => {
+    documents = await Documents.new(
       foundation.address,
       token.address,
       1001,
@@ -77,28 +77,14 @@ contract('Documents', async (accounts) => {
       '0x12',
       {from: factory}
     );
-    assert(documents1);
-    await foundation.setInitialOwnerInFoundation(documents1.address, user1, {from: factory});
+    assert(documents);
+    await foundation.setInitialOwnerInFoundation(documents.address, user1, {from: factory});
     const user1key = web3.utils.keccak256(user1);
-    await documents1.addKey(user1key, 1, 1, {from: factory});
-    documents2 = await Documents.new(
-      foundation.address,
-      token.address,
-      2001,
-      1,
-      1,
-      '0x21',
-      '0x22',
-      {from: factory}
-    );
-    assert(documents2);
-    await foundation.setInitialOwnerInFoundation(documents2.address, user2, {from: factory});
-    const user2key = web3.utils.keccak256(user2);
-    await documents2.addKey(user2key, 1, 1, {from: factory});
+    await documents.addKey(user1key, 1, 1, {from: factory});
   });
 
   it('User1 should add a document ID = 1, index[0]', async() => {
-    const result = await documents1.createDocument(
+    const result = await documents.createDocument(
       bytes32,
       fileEngine,
       docType,
@@ -110,21 +96,17 @@ contract('Documents', async (accounts) => {
     assert(result);
   });
 
-  it('In Document1, User1 be able get documents index, but not User2 and User3', async() => {
-    const result1 = await documents1.getDocuments({from: user1});
+  it('In Document1, User1 be able get documents index, but not someone else', async() => {
+    const result1 = await documents.getDocuments({from: user1});
     assert.equal(result1.toString(), 1);
     const result2 = await truffleAssert.fails(
-      documents1.getDocuments({ from: user2 })
+      documents.getDocuments({ from: someone })
     );
     assert(!result2);
-    const result3 = await truffleAssert.fails(
-      documents1.getDocuments({ from: user3 })
-    );
-    assert(!result3);
   });
 
-  it('In Document1, User1 be able get document of ID 1, but not User2 and User3', async() => {
-    const result1 = await documents1.getDocument(1, {from: user1});
+  it('In Document1, User1 be able get document of ID 1, but not someone else', async() => {
+    const result1 = await documents.getDocument(1, {from: user1});
     assert.equal(
       result1.toString(),
       [
@@ -137,65 +119,13 @@ contract('Documents', async (accounts) => {
       ]
     );
     const result2 = await truffleAssert.fails(
-      documents1.getDocument(1, { from: user2 })
+      documents.getDocument(1, { from: someone })
     );
     assert(!result2);
-    const result3 = await truffleAssert.fails(
-      documents1.getDocuments(1, { from: user3 })
-    );
-    assert(!result3);
-  });
-
-  it('User2 requests partnership of his Documents2 contract with Documents1 contract, User1 accepts. User3 buys access to User1 in the token', async() => {
-    await documents2.requestPartnership(
-      documents1.address,
-      '0x92',
-      {from: user2}
-    );
-    await documents1.authorizePartnership(
-      documents2.address,
-      '0x91',
-      {from: user1}
-    );
-    await token.getVaultAccess(user1, {from: user3});
-  });
-
-  it('In Document1, User2 and User3 should be able get documents index', async() => {
-    const result1 = await documents1.getDocuments({from: user2});
-    assert.equal(result1.toString(), 1);
-    const result2 = await documents1.getDocuments({from: user3});
-    assert.equal(result2.toString(), 1);
-  });
-
-  it('In Document1, User2 and User3 should be able get document of ID 1', async() => {
-    const result1 = await documents1.getDocument(1, {from: user2});
-    assert.equal(
-      result1.toString(),
-      [
-        bytes32,
-        fileEngine,
-        docType,
-        docTypeVersion,
-        encrypted,
-        bytes24
-      ]
-    );
-    const result2 = await documents1.getDocument(1, {from: user3});
-    assert.equal(
-      result2.toString(),
-      [
-        bytes32,
-        fileEngine,
-        docType,
-        docTypeVersion,
-        encrypted,
-        bytes24
-      ]
-    );
   });
 
   it('User1 should add a new document ID = 2, index[1]', async() => {
-    const result = await documents1.createDocument(
+    const result = await documents.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
@@ -208,7 +138,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should add a new document ID = 3, index[2]', async() => {
-    const result = await documents1.createDocument(
+    const result = await documents.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
@@ -221,7 +151,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should add a new document ID = 4, index[3]', async() => {
-    const result = await documents1.createDocument(
+    const result = await documents.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
@@ -234,13 +164,13 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should delete document of ID = 2', async() => {
-    const result = await documents1.deleteDocument(2, {from: user1});
+    const result = await documents.deleteDocument(2, {from: user1});
     assert(result);
     truffleAssert.eventEmitted(result, 'DocumentRemoved');
   });
 
   it('getDocuments should return the correct array of doc IDs [1, 4, 3]', async() => {
-    const result = await documents1.getDocuments({from: user1});
+    const result = await documents.getDocuments({from: user1});
     assert.equal(
       result.toString(),
       '1,4,3'
@@ -248,7 +178,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
-    const result = await documents1.updateDocument(
+    const result = await documents.updateDocument(
       1,
       otherBytes32,
       otherFileEngine,
@@ -264,7 +194,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('getDocuments should return the correct array of doc IDs [3, 4, 5]', async() => {
-    const result = await documents1.getDocuments({from: user1});
+    const result = await documents.getDocuments({from: user1});
     assert.equal(
       result.toString(),
       '3,4,5'
@@ -273,12 +203,12 @@ contract('Documents', async (accounts) => {
 
   it('User1 gives key to User6 for profile & documents (ERC 725 20002)', async() => {
     const user6key = web3.utils.keccak256(user6);
-    const result = await documents1.addKey(user6key, 20002, 1, {from: user1});
+    const result = await documents.addKey(user6key, 20002, 1, {from: user1});
     assert(result);
   });
 
   it('User6 should add a new document', async() => {
-    const result = await documents1.createDocument(
+    const result = await documents.createDocument(
       otherBytes32,
       otherFileEngine,
       otherDocType,
