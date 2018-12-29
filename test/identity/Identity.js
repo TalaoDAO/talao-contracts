@@ -1,5 +1,5 @@
+const crypto = require('crypto');
 const NodeRSA = require('node-rsa');
-const scrypt = require('scrypt'); //TODO: move to Node core, scrypt is now inside
 const aesjs = require('aes-js');
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
@@ -124,7 +124,7 @@ contract('Identity', async (accounts) => {
   it('User1 should encrypt something with symetric key and someone who has the passphrase should be able to decipher it. This concerns for instance all encryptions of content available to Partner Members and users that bought his Vault access in the token. User1 can send his symetric key encrypted on the public encryption key of another user who has an Identity contract, as well', async() => {
     // 1. User1 encrypts some text.
     // First, derive key from passphrase. TODO: use salt, which one?
-    const symetricEncryptionKey = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 16, new Buffer(''));
+    const symetricEncryptionKey = crypto.scryptSync(symetricEncryptionPassphrase, '', 16);
     // Convert text to encrypt to bytes.
     const textBytes = aesjs.utils.utf8.toBytes(textToEncrypt);
     // Counter.
@@ -140,7 +140,7 @@ contract('Identity', async (accounts) => {
     // so we just test encryption and decryption here.
     // 2. User2 decrypts the text.
     // User2 has the passphrase, let's generate the key.
-    const symetricEncryptionKey2 = scrypt.hashSync(new Buffer(symetricEncryptionPassphrase), {"N":16,"r":1,"p":1}, 16, new Buffer(''));
+    const symetricEncryptionKey2 = crypto.scryptSync(symetricEncryptionPassphrase, '', 16);
     // Remove 0x from BC encrypted text.
     const encryptedHex2 = bcEncryptedHex.substr(2);
     // To bytes.
