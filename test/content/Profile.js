@@ -9,7 +9,7 @@ const Foundation = artifacts.require('Foundation');
 const Profile = artifacts.require('ProfileTest');
 
 // Contract instances.
-let token, profile1, profile2;
+let token, foundation, profile;
 
 // Sample data.
 // "this string just fills a bytes32"
@@ -56,8 +56,8 @@ contract('Profile', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Profile1 (category 1001) and Profile2 (category 2001), set initial owners and give them ERC 725 Management keys', async() => {
-    profile1 = await Profile.new(
+  it('Factory should deploy Profile1 (category 1001), set initial owner and give him ERC 725 Management key', async() => {
+    profile = await Profile.new(
       foundation.address,
       token.address,
       1001,
@@ -67,28 +67,14 @@ contract('Profile', async (accounts) => {
       '0x12',
       {from: factory}
     );
-    assert(profile1);
-    await foundation.setInitialOwnerInFoundation(profile1.address, user1, {from: factory});
+    assert(profile);
+    await foundation.setInitialOwnerInFoundation(profile.address, user1, {from: factory});
     const user1key = web3.utils.keccak256(user1);
-    await profile1.addKey(user1key, 1, 1, {from: factory});
-    profile2 = await Profile.new(
-      foundation.address,
-      token.address,
-      2001,
-      1,
-      1,
-      '0x21',
-      '0x22',
-      {from: factory}
-    );
-    assert(profile2);
-    await foundation.setInitialOwnerInFoundation(profile2.address, user2, {from: factory});
-    const user2key = web3.utils.keccak256(user2);
-    await profile2.addKey(user2key, 1, 1, {from: factory});
+    await profile.addKey(user1key, 1, 1, {from: factory});
   });
 
-  it('In profile1, User1 should set his profile', async() => {
-    const result = await profile1.setProfile(
+  it('User1 should set his profile', async() => {
+    const result = await profile.setProfile(
       bytes32,
       bytes32,
       bytes32,
@@ -104,8 +90,8 @@ contract('Profile', async (accounts) => {
     assert(result);
   });
 
-  it('In profile1, anyone should get public profile', async() => {
-    const result = await profile1.publicProfile({from: someone});
+  it('In profile, anyone should get public profile', async() => {
+    const result = await profile.publicProfile({from: someone});
     assert.equal(
       result.toString(),
       [
@@ -121,57 +107,34 @@ contract('Profile', async (accounts) => {
     );
   });
 
-  it('In profile1, user1 should get his private profile', async() => {
-    const result = await profile1.getPrivateProfile({from:user1});
+  it('In profile, user1 should get his private profile', async() => {
+    const result = await profile.getPrivateProfile({from:user1});
     assert.equal(result[0], privateEmail);
     assert.equal(result[1], privateMobile);
   });
 
-  it('In profile1, user2 should not be able to get private profile', async() => {
+  it('In profile, user3 should not be able to get private profile', async() => {
     const result = await truffleAssert.fails(
-      profile1.getPrivateProfile({ from: user2 })
+      profile.getPrivateProfile({ from: user3 })
     );
     assert(!result);
   });
 
-  it('user2 requests partnership of his profile2 contract with profile1 contract, user1 accepts, and then user2 should be able to get private profile of profile1', async() => {
-    await profile2.requestPartnership(
-      profile1.address,
-      '0x92',
-      {from:user2}
-    );
-    await profile1.authorizePartnership(
-      profile2.address,
-      '0x91',
-      {from:user1}
-    );
-    const result = await profile1.getPrivateProfile({from:user2});
-    assert.equal(result[0], privateEmail);
-    assert.equal(result[1], privateMobile);
-  });
-
-  it('In profile1, user3 should not be able to get private profile', async() => {
-    const result = await truffleAssert.fails(
-      profile1.getPrivateProfile({ from: user3 })
-    );
-    assert(!result);
-  });
-
-  it('user3 buys Vault access to user1 in the token, and then user3 should be able to get private profile in profile1', async() => {
+  it('user3 buys Vault access to user1 in the token, and then user3 should be able to get private profile in profile', async() => {
     await token.getVaultAccess(user1, {from:user3});
-    const result = await profile1.getPrivateProfile({from:user3});
+    const result = await profile.getPrivateProfile({from:user3});
     assert.equal(result[0], privateEmail);
     assert.equal(result[1], privateMobile);
   });
 
   it('User1 gives key to User4 for profile & documents (ERC 725 20002)', async() => {
     const user4key = web3.utils.keccak256(user4);
-    const result = await profile1.addKey(user4key, 20002, 1, {from: user1});
+    const result = await profile.addKey(user4key, 20002, 1, {from: user1});
     assert(result);
   });
 
   it('User4 changes public profile', async() => {
-    const result = await profile1.setProfile(
+    const result = await profile.setProfile(
       bytes32,
       bytes32,
       bytes32,
