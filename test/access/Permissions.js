@@ -1,14 +1,18 @@
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 
+// Contract artifacts.
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
 const ClaimHolderLibrary = artifacts.require('./identity/ClaimHolderLibrary.sol');
 const TalaoToken = artifacts.require('TalaoToken');
 const Foundation = artifacts.require('Foundation');
 const Permissions = artifacts.require('Permissions');
 
+// Contract instances.
+let foundation, token, keyHolderLibrary, claimHolderLibrary, permissions1, permissions2;
+
 contract('Permissions', async (accounts) => {
-  const talaoOwner = accounts[0];
+  const defaultUser = accounts[0];
   const user1 = accounts[1];
   const user2 = accounts[2];
   const user3 = accounts[3];
@@ -16,23 +20,18 @@ contract('Permissions', async (accounts) => {
   const user5 = accounts[5];
   const factory = accounts[8];
   const someone = accounts[9];
-  let foundation;
-  let token;
-  let keyHolderLibrary, claimHolderLibrary;
-  let permissions1, permissions2;
 
-  it('Should deploy keyHolderLibrary, link it in ClaimHolderLibrary, deploy claimHolderLibrary, link both libs in Permissions', async() => {
+  // Init.
+  before(async () => {
+    // 1. Deploy & link librairies.
     keyHolderLibrary = await KeyHolderLibrary.new();
     await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
     claimHolderLibrary = await ClaimHolderLibrary.new();
     await Permissions.link(KeyHolderLibrary, keyHolderLibrary.address);
     await Permissions.link(ClaimHolderLibrary, claimHolderLibrary.address);
-  });
-
-  // Simple init, already fully tested before the ICO.
-  it('Should init token with Vault deposit of 100 TALAO and transfer 1000 TALAO to User1, User2 and User3. User1 should create a Vault access with a price of 10 TALAO and User2 should create a free Vault access', async() => {
+    // 2. Deploy Talao token, set it, transfer TALAOs and open Vault access.
     token = await TalaoToken.new();
-    await token.mint(talaoOwner, 150000000000000000000);
+    await token.mint(defaultUser, 150000000000000000000);
     await token.finishMinting();
     await token.setVaultDeposit(100);
     await token.transfer(user1, 1000);
@@ -40,12 +39,9 @@ contract('Permissions', async (accounts) => {
     await token.transfer(user3, 1000);
     await token.createVaultAccess(10, { from: user1 });
     await token.createVaultAccess(0, { from: user2 });
-  });
-
-  // Already tested in Foundation.js.
-  it('Should deploy Foundation contract and register a Factory contract', async() => {
+    await token.createVaultAccess(50, { from: user3 });
+    // 3. Deploy Foundation & register a Factory.
     foundation = await Foundation.new();
-    // It's only a simulation of a factory contract, otherwise I would have to create one just for this test.
     await foundation.addFactory(factory);
   });
 
@@ -55,10 +51,10 @@ contract('Permissions', async (accounts) => {
       foundation.address,
       token.address,
       1001,
-      0,
-      0,
-      '0x',
-      '0x',
+      1,
+      1,
+      '0x11',
+      '0x12',
       {from: factory}
     );
     assert(permissions1);
@@ -69,10 +65,10 @@ contract('Permissions', async (accounts) => {
       foundation.address,
       token.address,
       2001,
-      0,
-      0,
-      '0x',
-      '0x',
+      1,
+      1,
+      '0x21',
+      '0x22',
       {from: factory}
     );
     assert(permissions2);
@@ -103,8 +99,16 @@ contract('Permissions', async (accounts) => {
   });
 
   it('User2 asks partnership with Permissions1, User1 accepts, and then User2 should be able to read from Permissions1', async() => {
-    await permissions2.requestPartnership(permissions1.address, {from: user2});
-    await permissions1.authorizePartnership(permissions2.address, {from: user1});
+    await permissions2.requestPartnership(
+      permissions1.address,
+      '0x92',
+      {from: user2}
+    );
+    await permissions1.authorizePartnership(
+      permissions2.address,
+      '0x91',
+      {from: user1}
+    );
     const result = await permissions1.isReader({from: user2});
     assert(result);
   });
