@@ -3,7 +3,6 @@ const NodeRSA = require('node-rsa');
 const aesjs = require('aes-js');
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
-const erc735js = require('erc735js');
 
 // Contract artifacts.
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -30,17 +29,6 @@ const textToEncrypt = 'Hi, here is a message for your eyes only!';
 const fileEngine = 1;
 const fileType = 12;
 const fileHash = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
-
-// "Profile" as ERC 735 self-claims.
-// See https://github.com/ethereum/EIPs/issues/735#issuecomment-450647097
-const profile = {
-  givenName: "John",
-  familyName: "Doe",
-  jobTitle: "Solidity developer",
-  url: "https://johndoe.com",
-  email: "john@doe.com",
-  description: "I love building dApps"
-}
 
 // Tests.
 contract('Identity', async (accounts) => {
@@ -285,150 +273,6 @@ contract('Identity', async (accounts) => {
     const result = await identity.isActiveIdentity({from: someone});
     assert(result);
   });
-
-  it('User1 should set his "Profile" with ERC 735 self-claims in 1 call to addClaims', async() => {
-    const result = await identity.addClaims(
-      [
-        erc735js.asciiToTopic('givenName'),
-        erc735js.asciiToTopic('familyName'),
-        erc735js.asciiToTopic('jobTitle'),
-        erc735js.asciiToTopic('url'),
-        erc735js.asciiToTopic('email'),
-        erc735js.asciiToTopic('description')
-      ],
-      [
-        user1,
-        user1,
-        user1,
-        user1,
-        user1,
-        user1
-      ],
-      '',
-      '0x'
-      + web3.utils.asciiToHex(profile.givenName).substr(2)
-      + web3.utils.asciiToHex(profile.familyName).substr(2)
-      + web3.utils.asciiToHex(profile.jobTitle).substr(2)
-      + web3.utils.asciiToHex(profile.url).substr(2)
-      + web3.utils.asciiToHex(profile.email).substr(2)
-      + web3.utils.asciiToHex(profile.description).substr(2),
-      [
-        profile.givenName.length,
-        profile.familyName.length,
-        profile.jobTitle.length,
-        profile.url.length,
-        profile.email.length,
-        profile.description.length
-      ],
-      {from: user1}
-    );
-    assert(result);
-  });
-
-  it('User1 should set his image', async() => {
-    const result = await identity.addClaim(
-      erc735js.asciiToTopic('image'),
-      1,
-      user1,
-      '',
-      web3.utils.asciiToHex(fileEngine.toString()),
-      fileHash,
-      {from: user1}
-    );
-    assert(result);
-  });
-
-  it('User1 self claims for his "Profile" should exist and have correct data', async() => {
-    let result;
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('givenName')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('givenName'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.givenName);
-    assert.equal(result[5], '');
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('familyName')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('familyName'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.familyName);
-    assert.equal(result[5], '');
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('jobTitle')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('jobTitle'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.jobTitle);
-    assert.equal(result[5], '');
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('url')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('url'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.url);
-    assert.equal(result[5], '');
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('email')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('email'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.email);
-    assert.equal(result[5], '');
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('description')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('description'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.description);
-    assert.equal(result[5], '');
-
-    result = await identity.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('image')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('image'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), fileEngine);
-    assert.equal(result[5], fileHash);
-  });
-
-  it('User1 should update his profile ERC 735 self-claims in 1 call to updateSelfClaims', async() => {
-    const result = await identity.updateSelfClaims(
-      [
-        erc735js.asciiToTopic('givenName'),
-        erc735js.asciiToTopic('familyName'),
-        erc735js.asciiToTopic('jobTitle'),
-        erc735js.asciiToTopic('url'),
-        erc735js.asciiToTopic('email'),
-        erc735js.asciiToTopic('description')
-      ],
-      '0x'
-      + web3.utils.asciiToHex('Johnny').substr(2)
-      + web3.utils.asciiToHex('D').substr(2)
-      + web3.utils.asciiToHex('Developer').substr(2)
-      + web3.utils.asciiToHex('https://mynewsite.com').substr(2)
-      + web3.utils.asciiToHex('contact@mynewsite.com').substr(2)
-      + web3.utils.asciiToHex('Lorem ipsum').substr(2),
-      [
-        'Johnny'.length,
-        'D'.length,
-        'Developer'.length,
-        'https://mynewsite.com'.length,
-        'contact@mynewsite.com'.length,
-        'Lorem ipsum'.length
-      ],
-      {from: user1}
-    );
-    assert(result);
-  });
-
-  // Claims: see also https://github.com/guix77/erc735example/blob/master/test/Identity.js
 
   it('User1 closes his Vault access in the token, he should not be the Active Identity Owner', async() => {
     await token.closeVaultAccess({from: user1});

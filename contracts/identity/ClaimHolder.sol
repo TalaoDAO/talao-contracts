@@ -6,8 +6,9 @@ import "./ClaimHolderLibrary.sol";
 
 /**
  * @title Manages ERC 735 claims.
- * @notice Implementation by Origin Protocol
- * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/ClaimHolder.sol
+ * @notice Fork of Origin Protocol's implementation at
+ * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/ClaimHolder.sol
+ * @author Talao, Polynomial.
  */
 contract ClaimHolder is KeyHolder, ERC735 {
 

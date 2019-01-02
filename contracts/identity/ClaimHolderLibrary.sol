@@ -4,8 +4,9 @@ import "./KeyHolderLibrary.sol";
 
 /**
  * @title Library for ClaimHolder.
- * @notice Slightly modified from Origin Protocol's implementation
- * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/ClaimHolderLibrary.sol
+ * @notice Fork of Origin Protocol's implementation at
+ * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/ClaimHolderLibrary.sol
+ * @author Talao, Polynomial.
  */
 library ClaimHolderLibrary {
     event ClaimAdded(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);

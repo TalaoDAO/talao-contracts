@@ -66,6 +66,9 @@ contract('Profile', async (accounts) => {
     await profile.addKey(user1key, 1, 1, {from: factory});
   });
 
+  // Public profile managed as ERC 735 self-claims.
+  // See '../identity/ClaimHolder.js'
+
   it('User1 should set his private profile', async() => {
     const result = await profile.setPrivateProfile(
       privateEmail,
