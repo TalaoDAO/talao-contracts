@@ -12,13 +12,6 @@ const Profile = artifacts.require('ProfileTest');
 let token, foundation, profile;
 
 // Sample data.
-// "this string just fills a bytes32"
-const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
-// "this is 16 bytes"
-const bytes16 = '0x74686973206973203136206279746573';
-// String.
-const string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tristique quam iaculis quam accumsan, in sollicitudin arcu pulvinar. Morbi malesuada metus a hendrerit tempor. Quisque egestas eros tellus. Maecenas in nisi eu orci tempor accumsan quis non sapien. Morbi nec efficitur leo. Aliquam porta mauris in eleifend faucibus. Vestibulum pulvinar quis lorem tempor vestibulum. Proin semper mattis commodo. Nam sagittis maximus elementum. Integer in porta orci. Donec eu porta odio, sit amet rutrum urna.';
-const fileEngine = 1;
 const privateEmail = '0x71';
 const privateMobile = '0x81';
 
@@ -73,38 +66,13 @@ contract('Profile', async (accounts) => {
     await profile.addKey(user1key, 1, 1, {from: factory});
   });
 
-  it('User1 should set his profile', async() => {
-    const result = await profile.setProfile(
-      bytes32,
-      bytes32,
-      bytes32,
-      bytes32,
-      bytes32,
-      bytes32,
-      fileEngine,
-      string,
+  it('User1 should set his private profile', async() => {
+    const result = await profile.setPrivateProfile(
       privateEmail,
       privateMobile,
       {from:user1}
     );
     assert(result);
-  });
-
-  it('In profile, anyone should get public profile', async() => {
-    const result = await profile.publicProfile({from: someone});
-    assert.equal(
-      result.toString(),
-      [
-        bytes32,
-        bytes32,
-        bytes32,
-        bytes32,
-        bytes32,
-        bytes32,
-        fileEngine,
-        string
-      ]
-    );
   });
 
   it('In profile, user1 should get his private profile', async() => {
@@ -127,22 +95,14 @@ contract('Profile', async (accounts) => {
     assert.equal(result[1], privateMobile);
   });
 
-  it('User1 gives key to User4 for profile & documents (ERC 725 20002)', async() => {
+  it('User1 gives key to User4 for private profile & documents (ERC 725 20002)', async() => {
     const user4key = web3.utils.keccak256(user4);
     const result = await profile.addKey(user4key, 20002, 1, {from: user1});
     assert(result);
   });
 
-  it('User4 changes public profile', async() => {
-    const result = await profile.setProfile(
-      bytes32,
-      bytes32,
-      bytes32,
-      bytes32,
-      bytes32,
-      bytes32,
-      fileEngine,
-      'Another string',
+  it('User4 changes private profile', async() => {
+    const result = await profile.setPrivateProfile(
       privateEmail,
       privateMobile,
       {from:user4}

@@ -140,6 +140,39 @@ library ClaimHolderLibrary {
         return true;
     }
 
+    /**
+     * @dev "Update" self-claims.
+     */
+    function updateSelfClaims(
+        KeyHolderLibrary.KeyHolderData storage _keyHolderData,
+        Claims storage _claims,
+        uint256[] _topic,
+        bytes _data,
+        uint256[] _offsets
+    )
+        public
+    {
+        uint offset = 0;
+        for (uint16 i = 0; i < _topic.length; i++) {
+            removeClaim(
+                _keyHolderData,
+                _claims,
+                keccak256(abi.encodePacked(msg.sender, _topic[i]))
+            );
+            addClaim(
+                _keyHolderData,
+                _claims,
+                _topic[i],
+                1,
+                msg.sender,
+                "",
+                getBytes(_data, offset, _offsets[i]),
+                ""
+            );
+            offset += _offsets[i];
+        }
+    }
+
     function getClaim(Claims storage _claims, bytes32 _claimId)
         public
         view

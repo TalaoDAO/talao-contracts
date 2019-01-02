@@ -398,6 +398,36 @@ contract('Identity', async (accounts) => {
     assert.equal(result[5], fileHash);
   });
 
+  it('User1 should update his profile ERC 735 self-claims in 1 call to updateSelfClaims', async() => {
+    const result = await identity.updateSelfClaims(
+      [
+        erc735js.asciiToTopic('givenName'),
+        erc735js.asciiToTopic('familyName'),
+        erc735js.asciiToTopic('jobTitle'),
+        erc735js.asciiToTopic('url'),
+        erc735js.asciiToTopic('email'),
+        erc735js.asciiToTopic('description')
+      ],
+      '0x'
+      + web3.utils.asciiToHex('Johnny').substr(2)
+      + web3.utils.asciiToHex('D').substr(2)
+      + web3.utils.asciiToHex('Developer').substr(2)
+      + web3.utils.asciiToHex('https://mynewsite.com').substr(2)
+      + web3.utils.asciiToHex('contact@mynewsite.com').substr(2)
+      + web3.utils.asciiToHex('Lorem ipsum').substr(2),
+      [
+        'Johnny'.length,
+        'D'.length,
+        'Developer'.length,
+        'https://mynewsite.com'.length,
+        'contact@mynewsite.com'.length,
+        'Lorem ipsum'.length
+      ],
+      {from: user1}
+    );
+    assert(result);
+  });
+
   // Claims: see also https://github.com/guix77/erc735example/blob/master/test/Identity.js
 
   it('User1 closes his Vault access in the token, he should not be the Active Identity Owner', async() => {

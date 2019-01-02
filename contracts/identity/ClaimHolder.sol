@@ -60,6 +60,22 @@ contract ClaimHolder is KeyHolder, ERC735 {
         return ClaimHolderLibrary.removeClaim(keyHolderData, claims, _claimId);
     }
 
+    function updateSelfClaims(
+        uint256[] _topic,
+        bytes _data,
+        uint256[] _offsets
+    )
+        public
+    {
+        ClaimHolderLibrary.updateSelfClaims(
+            keyHolderData,
+            claims,
+            _topic,
+            _data,
+            _offsets
+        );
+    }
+
     function getClaim(bytes32 _claimId)
         public
         view
