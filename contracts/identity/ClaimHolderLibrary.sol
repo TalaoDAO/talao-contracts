@@ -4,7 +4,7 @@ import "./KeyHolderLibrary.sol";
 
 /**
  * @title Library for ClaimHolder.
- * @notice Implementation by Origin Protocol
+ * @notice Slighlty modified from Origin Protocol's implementation
  * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/ClaimHolderLibrary.sol
  */
 library ClaimHolderLibrary {
@@ -68,6 +68,11 @@ library ClaimHolderLibrary {
         return claimId;
     }
 
+    /**
+     * @dev Slightly modified version of Origin Protocol's implementation.
+     * getBytes for signature was originally getBytes(_signature, (i * 65), 65)
+     * and now isgetBytes(_signature, (i * 32), 32)
+     */
     function addClaims(
         KeyHolderLibrary.KeyHolderData storage _keyHolderData,
         Claims storage _claims,
@@ -87,7 +92,7 @@ library ClaimHolderLibrary {
                 _topic[i],
                 1,
                 _issuer[i],
-                getBytes(_signature, (i * 65), 65),
+                getBytes(_signature, (i * 32), 32),
                 getBytes(_data, offset, _offsets[i]),
                 ""
             );
