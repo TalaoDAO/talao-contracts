@@ -4,7 +4,7 @@ import "./KeyHolderLibrary.sol";
 
 /**
  * @title Library for ClaimHolder.
- * @notice Slighlty modified from Origin Protocol's implementation
+ * @notice Slightly modified from Origin Protocol's implementation
  * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/ClaimHolderLibrary.sol
  */
 library ClaimHolderLibrary {
@@ -72,6 +72,7 @@ library ClaimHolderLibrary {
      * @dev Slightly modified version of Origin Protocol's implementation.
      * getBytes for signature was originally getBytes(_signature, (i * 65), 65)
      * and now isgetBytes(_signature, (i * 32), 32)
+     * and if signature is empty, just return empty.
      */
     function addClaims(
         KeyHolderLibrary.KeyHolderData storage _keyHolderData,
@@ -86,16 +87,29 @@ library ClaimHolderLibrary {
     {
         uint offset = 0;
         for (uint16 i = 0; i < _topic.length; i++) {
-            addClaim(
-                _keyHolderData,
-                _claims,
-                _topic[i],
-                1,
-                _issuer[i],
-                getBytes(_signature, (i * 32), 32),
-                getBytes(_data, offset, _offsets[i]),
-                ""
-            );
+            if (_signature.length > 0) {
+                addClaim(
+                    _keyHolderData,
+                    _claims,
+                    _topic[i],
+                    1,
+                    _issuer[i],
+                    getBytes(_signature, (i * 32), 32),
+                    getBytes(_data, offset, _offsets[i]),
+                    ""
+                );
+            } else {
+                addClaim(
+                    _keyHolderData,
+                    _claims,
+                    _topic[i],
+                    1,
+                    _issuer[i],
+                    "",
+                    getBytes(_data, offset, _offsets[i]),
+                    ""
+                );
+            }
             offset += _offsets[i];
         }
     }
