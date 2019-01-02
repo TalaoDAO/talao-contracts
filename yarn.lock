@@ -610,6 +610,11 @@ end-of-stream@^1.0.0:
   dependencies:
     once "^1.4.0"
 
+erc735js@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/erc735js/-/erc735js-0.0.2.tgz#e3b7233cbdf5e9569a8f2004fadafea79f797a16"
+  integrity sha512-4w373tAydIL9CqTJL/IULtX5d6cMk/FQdQ+ziHRvSwMk7ohD7p9FCrSOrj3jzLiNXK3GPHnoQMqzKEGv/Hhi3w==
+
 escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
