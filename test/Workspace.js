@@ -9,7 +9,7 @@ const Foundation = artifacts.require('Foundation');
 const Workspace = artifacts.require('Workspace');
 
 // Contract instances.
-let token, foundation, workspace;
+let token, foundation, workspace1, workspace2;
 
 // "this string just fills a bytes32"
 let name1, name2, tagline, url, publicEmail, privateEmail, fileHash;
@@ -52,8 +52,9 @@ contract('Workspace', async (accounts) => {
     await foundation.addFactory(factory);
   });
 
-  it('Factory should deploy Workspace (category 1001 = Freelancer), set initial owner and give him ERC 725 Management key', async() => {
-    workspace = await Workspace.new(
+  it('Factory should deploy Workspace1 (category 1001 = Freelancer), Workspace2 (category 2001 = MPP, set initial owners to User1 and User2 and give them ERC 725 Management key', async() => {
+    // Workspace1
+    workspace1 = await Workspace.new(
       foundation.address,
       token.address,
       1001,
@@ -63,12 +64,54 @@ contract('Workspace', async (accounts) => {
       '0x',
       {from: factory}
     );
-    assert(workspace);
-    await foundation.setInitialOwnerInFoundation(workspace.address, user1, {from: factory});
-    const user1key = web3.utils.keccak256(user1);
-    await workspace.addKey(user1key, 1, 1, {from: factory});
+    assert(workspace1);
+    await foundation.setInitialOwnerInFoundation(workspace1.address, user1, {from: factory});
+    await workspace1.addKey(web3.utils.keccak256(user1), 1, 1, {from: factory});
+    // Workspace2
+    workspace2 = await Workspace.new(
+      foundation.address,
+      token.address,
+      2001,
+      0,
+      0,
+      '0x',
+      '0x',
+      {from: factory}
+    );
+    assert(workspace2);
+    await foundation.setInitialOwnerInFoundation(workspace2.address, user2, {from: factory});
+    await workspace2.addKey(web3.utils.keccak256(user2), 1, 1, {from: factory});
   });
 
-  // TODO: kill
+  it('User1 should ask Workspace2 in partnership && User2 should accept', async() => {
+    await workspace1.requestPartnership(
+      workspace2.address,
+      '0x91',
+      { from: user1 }
+    );
+    await workspace2.authorizePartnership(
+      workspace1.address,
+      '0x92',
+      { from: user2 }
+    );
+    const result1 = await workspace2.isPartnershipMember({ from: user1 });
+    assert(result1);
+    const result2 = await workspace1.isPartnershipMember({ from: user2 });
+    assert(result2);
+  });
+
+  it('User1 should destroy his Workspace', async() => {
+    const result = await workspace1.destroyWorkspace({from: user1});
+    assert(result);
+  });
+
+  it('Workspace1 should not exist any more', async() => {
+    truffleAssert.fails(workspace1.identityInformation());
+  });
+
+  it('User1 should not be recognized as a partnership member in Workspace2', async() => {
+    const result1 = await workspace2.isPartnershipMember({ from: user1 });
+    assert(!result1);
+  });
 
 });

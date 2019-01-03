@@ -93,11 +93,6 @@ contract('Foundation', async (accounts) => {
     assert.equal(result, user2);
   });
 
-  it('User2 should renounce to ownership of his contract in the Foundation', async() => {
-    const result = await foundation.renounceOwnershipInFoundation(finalContract.address, {from: user2});
-    assert(result);
-  });
-
   it('Talao owner should remove the Factory in the Foundation', async() => {
     const result = await foundation.removeFactory(factory.address);
     assert(result);

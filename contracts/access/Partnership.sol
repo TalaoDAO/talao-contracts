@@ -367,6 +367,22 @@ contract Partnership is Identity {
         // We return to the calling contract that it's done.
         success = true;
     }
+
+    /**
+     * @dev Internal function to remove partnerships before selfdestruct.
+     */
+    function cleanupPartnership() internal returns (bool success) {
+        // For each known Partnership contract
+        for (uint i = 0; i < knownPartnershipContracts.length; i++) {
+            // If it was an authorized partnership,
+            if (partnershipContracts[knownPartnershipContracts[i]].authorization == PartnershipAuthorization.Authorized) {
+                // Remove ourselves in the other Partnership contract.
+                PartnershipInterface hisInterface = PartnershipInterface(knownPartnershipContracts[i]);
+                hisInterface._removePartnership();
+            }
+        }
+        success = true;
+    }
 }
 
 

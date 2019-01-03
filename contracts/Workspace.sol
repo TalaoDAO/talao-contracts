@@ -43,7 +43,14 @@ contract Workspace is Permissions, Profile, Documents {
         identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
     }
 
-    // TODO: kill
+    /**
+     * @dev Destroy contract.
+     */
+    function destroyWorkspace() external onlyIdentityOwner {
+        if (cleanupPartnership() && foundation.renounceOwnershipInFoundation()) {
+            selfdestruct(msg.sender);
+        }
+    }
 
     /**
      * @dev Prevents accidental sending of ether.
