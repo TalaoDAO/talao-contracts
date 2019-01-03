@@ -52,7 +52,7 @@ contract('ClaimHolder', async (accounts) => {
       1,
       user1,
       '',
-      web3.utils.asciiToHex(profile.givenName),
+      web3.utils.utf8ToHex(profile.givenName),
       'https://user1.com/about',
       {from: user1}
     );
@@ -74,7 +74,7 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user1);
     assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.givenName);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.givenName);
     assert.equal(result[5], 'https://user1.com/about');
   });
 
@@ -118,12 +118,12 @@ contract('ClaimHolder', async (accounts) => {
       ],
       '',
       '0x'
-      + web3.utils.asciiToHex(profile.givenName).substr(2)
-      + web3.utils.asciiToHex(profile.familyName).substr(2)
-      + web3.utils.asciiToHex(profile.jobTitle).substr(2)
-      + web3.utils.asciiToHex(profile.url).substr(2)
-      + web3.utils.asciiToHex(profile.email).substr(2)
-      + web3.utils.asciiToHex(profile.description).substr(2),
+      + web3.utils.utf8ToHex(profile.givenName).substr(2)
+      + web3.utils.utf8ToHex(profile.familyName).substr(2)
+      + web3.utils.utf8ToHex(profile.jobTitle).substr(2)
+      + web3.utils.utf8ToHex(profile.url).substr(2)
+      + web3.utils.utf8ToHex(profile.email).substr(2)
+      + web3.utils.utf8ToHex(profile.description).substr(2),
       [
         profile.givenName.length,
         profile.familyName.length,
@@ -143,7 +143,7 @@ contract('ClaimHolder', async (accounts) => {
       1,
       user1,
       '',
-      web3.utils.asciiToHex(fileEngine.toString()),
+      web3.utils.utf8ToHex(fileEngine.toString()),
       fileHash,
       {from: user1}
     );
@@ -151,63 +151,61 @@ contract('ClaimHolder', async (accounts) => {
   });
 
   it('User1 self claims for his "Profile" should exist and have correct data', async() => {
-    let result;
+    const result1 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('givenName')), {from: someone});
+    assert.equal(result1[0].toNumber(), erc735js.asciiToTopic('givenName'));
+    assert.equal(result1[1].toNumber(), 1);
+    assert.equal(result1[2], user1);
+    assert.equal(result1[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result1[4]), profile.givenName);
+    assert.equal(result1[5], '');
 
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('givenName')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('givenName'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.givenName);
-    assert.equal(result[5], '');
+    const result2 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('familyName')), {from: someone});
+    assert.equal(result2[0].toNumber(), erc735js.asciiToTopic('familyName'));
+    assert.equal(result2[1].toNumber(), 1);
+    assert.equal(result2[2], user1);
+    assert.equal(result2[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result2[4]), profile.familyName);
+    assert.equal(result2[5], '');
 
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('familyName')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('familyName'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.familyName);
-    assert.equal(result[5], '');
+    const result3 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('jobTitle')), {from: someone});
+    assert.equal(result3[0].toNumber(), erc735js.asciiToTopic('jobTitle'));
+    assert.equal(result3[1].toNumber(), 1);
+    assert.equal(result3[2], user1);
+    assert.equal(result3[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result3[4]), profile.jobTitle);
+    assert.equal(result3[5], '');
 
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('jobTitle')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('jobTitle'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.jobTitle);
-    assert.equal(result[5], '');
+    const result4 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('url')), {from: someone});
+    assert.equal(result4[0].toNumber(), erc735js.asciiToTopic('url'));
+    assert.equal(result4[1].toNumber(), 1);
+    assert.equal(result4[2], user1);
+    assert.equal(result4[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result4[4]), profile.url);
+    assert.equal(result4[5], '');
 
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('url')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('url'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.url);
-    assert.equal(result[5], '');
+    const result5 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('email')), {from: someone});
+    assert.equal(result5[0].toNumber(), erc735js.asciiToTopic('email'));
+    assert.equal(result5[1].toNumber(), 1);
+    assert.equal(result5[2], user1);
+    assert.equal(result5[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result5[4]), profile.email);
+    assert.equal(result5[5], '');
 
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('email')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('email'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.email);
-    assert.equal(result[5], '');
+    const result6 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('description')), {from: someone});
+    assert.equal(result6[0].toNumber(), erc735js.asciiToTopic('description'));
+    assert.equal(result6[1].toNumber(), 1);
+    assert.equal(result6[2], user1);
+    assert.equal(result6[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result6[4]), profile.description);
+    assert.equal(result6[5], '');
 
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('description')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('description'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.description);
-    assert.equal(result[5], '');
-
-    result = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('image')), {from: someone});
-    assert.equal(result[0].toNumber(), erc735js.asciiToTopic('image'));
-    assert.equal(result[1].toNumber(), 1);
-    assert.equal(result[2], user1);
-    assert.equal(result[3], '0x');
-    assert.equal(web3.utils.hexToAscii(result[4]), fileEngine);
-    assert.equal(result[5], fileHash);
+    const result7 = await claimHolder.getClaim(web3.utils.soliditySha3(user1, erc735js.asciiToTopic('image')), {from: someone});
+    assert.equal(result7[0].toNumber(), erc735js.asciiToTopic('image'));
+    assert.equal(result7[1].toNumber(), 1);
+    assert.equal(result7[2], user1);
+    assert.equal(result7[3], '0x');
+    assert.equal(web3.utils.hexToUtf8(result7[4]), fileEngine);
+    assert.equal(result7[5], fileHash);
   });
 
   it('User1 should update his profile ERC 735 self-claims in 1 call to updateSelfClaims', async() => {
@@ -221,12 +219,12 @@ contract('ClaimHolder', async (accounts) => {
         erc735js.asciiToTopic('description')
       ],
       '0x'
-      + web3.utils.asciiToHex('Johnny').substr(2)
-      + web3.utils.asciiToHex('D').substr(2)
-      + web3.utils.asciiToHex('Developer').substr(2)
-      + web3.utils.asciiToHex('https://mynewsite.com').substr(2)
-      + web3.utils.asciiToHex('contact@mynewsite.com').substr(2)
-      + web3.utils.asciiToHex('Lorem ipsum').substr(2),
+      + web3.utils.utf8ToHex('Johnny').substr(2)
+      + web3.utils.utf8ToHex('D').substr(2)
+      + web3.utils.utf8ToHex('Developer').substr(2)
+      + web3.utils.utf8ToHex('https://mynewsite.com').substr(2)
+      + web3.utils.utf8ToHex('contact@mynewsite.com').substr(2)
+      + web3.utils.utf8ToHex('Lorem ipsum').substr(2),
       [
         'Johnny'.length,
         'D'.length,
@@ -267,12 +265,12 @@ contract('ClaimHolder', async (accounts) => {
       +  web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('email'), profile.email).substr(2)
       +  web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('description'), profile.description).substr(2),
       '0x'
-      + web3.utils.asciiToHex(profile.givenName).substr(2)
-      + web3.utils.asciiToHex(profile.familyName).substr(2)
-      + web3.utils.asciiToHex(profile.jobTitle).substr(2)
-      + web3.utils.asciiToHex(profile.url).substr(2)
-      + web3.utils.asciiToHex(profile.email).substr(2)
-      + web3.utils.asciiToHex(profile.description).substr(2),
+      + web3.utils.utf8ToHex(profile.givenName).substr(2)
+      + web3.utils.utf8ToHex(profile.familyName).substr(2)
+      + web3.utils.utf8ToHex(profile.jobTitle).substr(2)
+      + web3.utils.utf8ToHex(profile.url).substr(2)
+      + web3.utils.utf8ToHex(profile.email).substr(2)
+      + web3.utils.utf8ToHex(profile.description).substr(2),
       [
         profile.givenName.length,
         profile.familyName.length,
@@ -294,7 +292,7 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user2);
     assert.equal(result[3], web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('givenName'), profile.givenName));
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.givenName);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.givenName);
     assert.equal(result[5], '');
 
     result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, erc735js.asciiToTopic('familyName')), {from: someone});
@@ -302,7 +300,7 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user2);
     assert.equal(result[3], web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('familyName'), profile.familyName));
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.familyName);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.familyName);
     assert.equal(result[5], '');
 
     result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, erc735js.asciiToTopic('jobTitle')), {from: someone});
@@ -310,7 +308,7 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user2);
     assert.equal(result[3], web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('jobTitle'), profile.jobTitle));
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.jobTitle);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.jobTitle);
     assert.equal(result[5], '');
 
     result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, erc735js.asciiToTopic('url')), {from: someone});
@@ -318,7 +316,7 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user2);
     assert.equal(result[3], web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('url'), profile.url));
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.url);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.url);
     assert.equal(result[5], '');
 
     result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, erc735js.asciiToTopic('email')), {from: someone});
@@ -326,7 +324,7 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user2);
     assert.equal(result[3], web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('email'), profile.email));
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.email);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.email);
     assert.equal(result[5], '');
 
     result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, erc735js.asciiToTopic('description')), {from: someone});
@@ -334,8 +332,64 @@ contract('ClaimHolder', async (accounts) => {
     assert.equal(result[1].toNumber(), 1);
     assert.equal(result[2], user2);
     assert.equal(result[3], web3.utils.keccak256(claimHolder.address, erc735js.asciiToTopic('description'), profile.description));
-    assert.equal(web3.utils.hexToAscii(result[4]), profile.description);
+    assert.equal(web3.utils.hexToUtf8(result[4]), profile.description);
     assert.equal(result[5], '');
+  });
+
+  it('Should be possible to add a claim encoded in any UTF-8 set', async() => {
+    const result = await claimHolder.addClaim(
+      123,
+      1,
+      user2,
+      web3.utils.keccak256(claimHolder.address, 123, web3.utils.utf8ToHex('你好')),
+      web3.utils.utf8ToHex('你好'),
+      '',
+      {from: user2}
+    );
+    assert(result);
+  });
+
+  it('Data should be decoded to UTF-8', async() => {
+    const claimId = web3.utils.soliditySha3(user2, 123);
+    const result = await claimHolder.getClaim(claimId, {from: someone});
+    assert.equal(result[3], web3.utils.keccak256(claimHolder.address, 123, web3.utils.utf8ToHex('你好')));
+    assert.equal(web3.utils.hexToUtf8(result[4]), '你好');
+  });
+
+  it('Should be possible to add claims encoded in any UTF-8 set', async() => {
+    const result = await claimHolder.addClaims(
+      [
+        456,
+        789
+      ],
+      [
+        user2,
+        user2
+      ],
+      '0x'
+      + web3.utils.keccak256(claimHolder.address, 456, web3.utils.utf8ToHex('你好')).substr(2)
+      + web3.utils.keccak256(claimHolder.address, 789, web3.utils.utf8ToHex('안녕하세요')).substr(2),
+      '0x'
+      + web3.utils.utf8ToHex('你好').substr(2)
+      + web3.utils.utf8ToHex('안녕하세요').substr(2),
+      [
+        web3.utils.utf8ToHex('你好').length / 2 - 1,
+        web3.utils.utf8ToHex('안녕하세요').length / 2 - 1
+      ],
+      {from: user2}
+    );
+    assert(result);
+  });
+
+  it('Data should be decoded to UTF-8', async() => {
+    let result;
+
+    result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, 456), {from: someone});
+    assert.equal(result[3], web3.utils.keccak256(claimHolder.address, 456, web3.utils.utf8ToHex('你好')));
+    assert.equal(web3.utils.hexToUtf8(result[4]), '你好');
+
+    result = await claimHolder.getClaim(web3.utils.soliditySha3(user2, 789), {from: someone});
+    assert.equal(web3.utils.hexToUtf8(result[4]), '안녕하세요');
   });
 
 });
