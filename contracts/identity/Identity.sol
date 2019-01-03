@@ -161,10 +161,7 @@ contract Identity is ClaimHolder {
      */
     function hasIdentityPurpose(uint256 _purpose) public view returns (bool) {
         return (
-            (
-                keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), 1) ||
-                keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), _purpose)
-            ) &&
+            keyHasPurpose(keccak256(abi.encodePacked(msg.sender)), _purpose) &&
             isActiveIdentity()
         );
     }
