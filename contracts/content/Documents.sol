@@ -72,6 +72,9 @@ contract Documents is Permissions {
     // Event: document removed.
     event DocumentRemoved (uint id);
 
+    // Event: document issued.
+    event DocumentIssued (bytes32 indexed checksum, address indexed issuer);
+
     /**
      * @dev Document getter.
      * @param _id uint Document ID.
@@ -168,6 +171,7 @@ contract Documents is Permissions {
             _fileLocationHash,
             _encrypted
         );
+        emit DocumentIssued(_fileChecksum, foundation.membersToContracts(msg.sender));
         return documentsCounter;
     }
 
