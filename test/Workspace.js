@@ -1,5 +1,6 @@
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
+const truffleCost = require('truffle-cost');
 
 // Contract artifacts.
 const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
@@ -109,7 +110,10 @@ contract('Workspace', async (accounts) => {
   });
 
   it('User1 should destroy his Workspace', async() => {
-    const result = await workspace1.destroyWorkspace({from: user1});
+    const result = await truffleCost.log(
+      workspace1.destroyWorkspace({from: user1}),
+      'EUR'
+    );
     assert(result);
   });
 
