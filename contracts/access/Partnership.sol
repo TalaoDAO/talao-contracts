@@ -389,10 +389,14 @@ contract Partnership is Identity {
 
 
 /**
- * @title Interface with clones or inherited contracts.
+ * @title Interface with clones, inherited contracts or services.
  */
 interface PartnershipInterface {
-  function _requestPartnership(bytes) external view returns (bool);
-  function _authorizePartnership(bytes) external;
-  function _removePartnership() external returns (bool success);
+    function _requestPartnership(bytes) external view returns (bool);
+    function _authorizePartnership(bytes) external;
+    function _removePartnership() external returns (bool success);
+    function getKnownPartnershipsContracts() external returns (address[]);
+    function getPartnership(address)
+        external
+        returns (address, uint, uint, uint40, bytes);
 }

@@ -176,7 +176,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev "Send" a text to this contract.
-     * Text should be encrypted on this contract asymetricEncryptionPublickey,
+     * Text can be encrypted on this contract asymetricEncryptionPublickey,
      * before submitting a TX here.
      */
     function identityboxSendtext(uint _category, bytes _text) external {
@@ -228,4 +228,5 @@ interface IdentityInterface {
         external
         view
         returns (address, uint16, uint16, uint16, bytes, bytes);
+    function identityboxSendtext(uint, bytes) external;
 }
