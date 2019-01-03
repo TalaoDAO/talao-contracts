@@ -147,12 +147,11 @@ contract Documents is Permissions {
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
-        bool _encrypted,
+        bool _encrypted
     )
         external
         returns (uint)
     {
-        require(_docType == 1, 'Only doc type 1');
         require(
             (
                 keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
@@ -181,7 +180,7 @@ contract Documents is Permissions {
         address _issuer,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
-        bytes32 _fileLocationHash,
+        bytes _fileLocationHash,
         bool _encrypted
     )
         internal
@@ -253,7 +252,7 @@ contract Documents is Permissions {
         uint8 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
-        bytes32 _fileLocationHash,
+        bytes _fileLocationHash,
         bool _encrypted
     )
         external
@@ -265,6 +264,7 @@ contract Documents is Permissions {
         _createDocument(
             _docType,
             _docTypeVersion,
+            msg.sender,
             _fileChecksum,
             _fileLocationEngine,
             _fileLocationHash,

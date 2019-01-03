@@ -9,26 +9,17 @@ const Foundation = artifacts.require('Foundation');
 const Documents = artifacts.require('DocumentsTest');
 
 // Contract instances.
-let token, foundation, documents;
+let token, foundation, documents1;
 
 // Sample data.
-// "this string just fills a bytes32"
 const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
 const otherBytes32 = '0x8468697320737472696e67206a7573742066696c6c7320612062797465733332';
-// "this is exactly 24 bytes"
-const bytes24 = '0x746869732069732065786163746c79203234206279746573';
-const otherBytes24 = '0x846869732069732065786163746c79203234206279746573';
-// String.
-const string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tristique quam iaculis quam accumsan, in sollicitudin arcu pulvinar. Morbi malesuada metus a hendrerit tempor. Quisque egestas eros tellus. Maecenas in nisi eu orci tempor accumsan quis non sapien. Morbi nec efficitur leo. Aliquam porta mauris in eleifend faucibus. Vestibulum pulvinar quis lorem tempor vestibulum. Proin semper mattis commodo. Nam sagittis maximus elementum. Integer in porta orci. Donec eu porta odio, sit amet rutrum urna.';
-const otherString = 'Eius populus ab incunabulis primis ad usque pueritiae tempus extremum, quod annis circumcluditur fere trecentis, circummurana pertulit bella, deinde aetatem ingressus adultam post multiplices bellorum aerumnas Alpes transcendit et fretum, in iuvenem erectus et virum ex omni plaga quam orbis ambit inmensus, reportavit laureas et triumphos, iamque vergens in senium et nomine solo aliquotiens vincens ad tranquilliora vitae discessit.';
-const fileEngine = 1;
-const otherFileEngine = 11;
-const docType = 3;
-const otherDocType = 13;
-const docTypeVersion = 4;
-const otherDocTypeVersion = 14;
-const encrypted = true;
-const otherEncrypted = false;
+const issuedDocType = 1; const docType = 2; const otherDocType = 3;
+const docTypeVersion = 1; const otherDocTypeVersion = 2;
+const fileChecksum = bytes32; const otherFileChecksum = otherBytes32;
+const fileLocationEngine = 1; const otherFileLocationEngine = 2;
+const fileLocationHash = bytes32; const otherFileLocationHash = otherBytes32;
+const encrypted = true; const otherEncrypted = false;
 
 contract('Documents', async (accounts) => {
   const defaultUser = accounts[0];
@@ -66,8 +57,9 @@ contract('Documents', async (accounts) => {
   });
 
   // Simple init for initial owners, already tested in OwnableInFoundation.js
-  it('Factory should deploy Documents (category 1001), set initial owner and give him ERC 725 Management key', async() => {
-    documents = await Documents.new(
+  it('Factory should deploy Documents1 (category 1001 Freelance), Documents2 (category 2001 Marketplace), set initial owners to User1 and User2 and give them ERC 725 Management key', async() => {
+    // Documents1
+    documents1 = await Documents.new(
       foundation.address,
       token.address,
       1001,
@@ -77,100 +69,114 @@ contract('Documents', async (accounts) => {
       '0x12',
       {from: factory}
     );
-    assert(documents);
-    await foundation.setInitialOwnerInFoundation(documents.address, user1, {from: factory});
-    const user1key = web3.utils.keccak256(user1);
-    await documents.addKey(user1key, 1, 1, {from: factory});
+    assert(documents1);
+    await foundation.setInitialOwnerInFoundation(documents1.address, user1, {from: factory});
+    await documents1.addKey(web3.utils.keccak256(user1), 1, 1, {from: factory});
+    // Documents2.
+    documents2 = await Documents.new(
+      foundation.address,
+      token.address,
+      2001,
+      1,
+      1,
+      '0x11',
+      '0x12',
+      {from: factory}
+    );
+    assert(documents2);
+    await foundation.setInitialOwnerInFoundation(documents2.address, user2, {from: factory});
+    await documents2.addKey(web3.utils.keccak256(user2), 1, 1, {from: factory});
   });
 
   it('User1 should add a document ID = 1, index[0]', async() => {
-    const result = await documents.createDocument(
-      bytes32,
-      fileEngine,
+    const result = await documents1.createDocument(
       docType,
       docTypeVersion,
+      fileChecksum,
+      fileLocationEngine,
+      fileLocationHash,
       encrypted,
-      bytes24,
       {from: user1}
     );
     assert(result);
   });
 
-  it('In Document1, User1 be able get documents index, but not someone else', async() => {
-    const result1 = await documents.getDocuments({from: user1});
+  it('In Document1, User1 be able get documents1 index, but not someone else', async() => {
+    const result1 = await documents1.getDocuments({from: user1});
     assert.equal(result1.toString(), 1);
     const result2 = await truffleAssert.fails(
-      documents.getDocuments({ from: someone })
+      documents1.getDocuments({ from: someone })
     );
     assert(!result2);
   });
 
   it('In Document1, User1 be able get document of ID 1, but not someone else', async() => {
-    const result1 = await documents.getDocument(1, {from: user1});
+    const result1 = await documents1.getDocument(1, {from: user1});
     assert.equal(
       result1.toString(),
       [
-        bytes32,
-        fileEngine,
         docType,
         docTypeVersion,
-        encrypted,
-        bytes24
+        user1,
+        fileChecksum,
+        fileLocationEngine,
+        fileLocationHash,
+        encrypted
       ]
     );
     const result2 = await truffleAssert.fails(
-      documents.getDocument(1, { from: someone })
+      documents1.getDocument(1, { from: someone })
     );
     assert(!result2);
   });
 
   it('User1 should add a new document ID = 2, index[1]', async() => {
-    const result = await documents.createDocument(
-      otherBytes32,
-      otherFileEngine,
+    const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherFileChecksum,
+      otherFileLocationEngine,
+      otherFileLocationHash,
       otherEncrypted,
-      otherBytes24,
       {from: user1}
     );
     assert(result);
   });
 
   it('User1 should add a new document ID = 3, index[2]', async() => {
-    const result = await documents.createDocument(
-      otherBytes32,
-      otherFileEngine,
+    const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherFileChecksum,
+      otherFileLocationEngine,
+      otherFileLocationHash,
       otherEncrypted,
-      otherBytes24,
       {from: user1}
     );
     assert(result);
   });
 
   it('User1 should add a new document ID = 4, index[3]', async() => {
-    const result = await documents.createDocument(
-      otherBytes32,
-      otherFileEngine,
+    const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherFileChecksum,
+      otherFileLocationEngine,
+      otherFileLocationHash,
       otherEncrypted,
-      otherBytes24,
       {from: user1}
     );
     assert(result);
   });
 
   it('User1 should delete document of ID = 2', async() => {
-    const result = await documents.deleteDocument(2, {from: user1});
+    const result = await documents1.deleteDocument(2, {from: user1});
     assert(result);
     truffleAssert.eventEmitted(result, 'DocumentRemoved');
   });
 
   it('getDocuments should return the correct array of doc IDs [1, 4, 3]', async() => {
-    const result = await documents.getDocuments({from: user1});
+    const result = await documents1.getDocuments({from: user1});
     assert.equal(
       result.toString(),
       '1,4,3'
@@ -178,14 +184,14 @@ contract('Documents', async (accounts) => {
   });
 
   it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
-    const result = await documents.updateDocument(
+    const result = await documents1.updateDocument(
       1,
-      otherBytes32,
-      otherFileEngine,
       otherDocType,
       otherDocTypeVersion,
+      otherFileChecksum,
+      otherFileLocationEngine,
+      otherFileLocationHash,
       otherEncrypted,
-      otherBytes24,
       {from: user1}
     );
     assert(result);
@@ -194,27 +200,27 @@ contract('Documents', async (accounts) => {
   });
 
   it('getDocuments should return the correct array of doc IDs [3, 4, 5]', async() => {
-    const result = await documents.getDocuments({from: user1});
+    const result = await documents1.getDocuments({from: user1});
     assert.equal(
       result.toString(),
       '3,4,5'
     );
   });
 
-  it('User1 gives key to User6 for profile & documents (ERC 725 20002)', async() => {
+  it('User1 gives key to User6 for profile & documents1 (ERC 725 20002)', async() => {
     const user6key = web3.utils.keccak256(user6);
-    const result = await documents.addKey(user6key, 20002, 1, {from: user1});
+    const result = await documents1.addKey(user6key, 20002, 1, {from: user1});
     assert(result);
   });
 
   it('User6 should add a new document', async() => {
-    const result = await documents.createDocument(
-      otherBytes32,
-      otherFileEngine,
+    const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherFileChecksum,
+      otherFileLocationEngine,
+      otherFileLocationHash,
       otherEncrypted,
-      otherBytes24,
       {from: user6}
     );
     assert(result);
