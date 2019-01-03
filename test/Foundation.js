@@ -79,11 +79,12 @@ contract('Foundation', async (accounts) => {
     assert(finalContract);
   });
 
-  it('contractsIndex should contain 1 contract addresses', async() => {
-    const result = await foundation.getContractsIndex({from: someone});
+  it('contractsIndex should contain 1 contract addresses and be only accessible by Foundation owner', async() => {
+    const result = await foundation.getContractsIndex({from: defaultUser});
     assert.equal(result.toString(), [
       finalContract.address
     ]);
+    truffleAssert.fails(foundation.getContractsIndex({from: someone}));
   });
 
   it('User1 should transfer his contract to User2', async() => {

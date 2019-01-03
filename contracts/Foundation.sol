@@ -18,7 +18,7 @@ contract Foundation is Ownable {
     mapping(address => address) public contractsToOwners;
 
     // Index of known contract addresses.
-    address[] public contractsIndex;
+    address[] private contractsIndex;
 
     // Members (EOA) to contract addresses relationships.
     // In a Partnership.sol inherited contract, this allows us to create a
@@ -166,7 +166,12 @@ contract Foundation is Ownable {
      * @dev Getter for contractsIndex.
      * The automatic getter can not return array.
      */
-    function getContractsIndex() external view returns (address[]) {
+    function getContractsIndex()
+        onlyOwner
+        external
+        view
+        returns (address[])
+    {
         return contractsIndex;
     }
 
