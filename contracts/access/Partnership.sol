@@ -203,8 +203,9 @@ contract Partnership is Identity {
             // Record date of partnership creation.
             partnershipContracts[_hisContract].created = uint40(now);
             // Give the Partnership contrat's owner an ERC 725 "Claim" key.
-            // So he can submit claims on our contract (certificate of work, ...).
             addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
+            // Give the Partnership contract an ERC 725 "Claim" key.
+            addKey(keccak256(abi.encodePacked(_hisContract)), 3, 1);
             // Increment our number of partnerships.
             partnershipsNumber = partnershipsNumber.add(1);
         }
@@ -263,8 +264,9 @@ contract Partnership is Identity {
         // Record the date of partnership creation.
         partnershipContracts[_hisContract].created = uint40(now);
         // Give the Partnership contrat's owner an ERC 725 "Claim" key.
-        // So he can submit claims on our contract (certificate of work, ...).
         addKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3, 1);
+        // Give the Partnership contract an ERC 725 "Claim" key.
+        addKey(keccak256(abi.encodePacked(_hisContract)), 3, 1);
         // Increment our number of partnerships.
         partnershipsNumber = partnershipsNumber.add(1);
         // Log an event in the new authorized partner contract.
@@ -332,6 +334,10 @@ contract Partnership is Identity {
             if (keyHasPurpose(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3)) {
                 removeKey(keccak256(abi.encodePacked(foundation.contractsToOwners(_hisContract))), 3);
             }
+            // If there is one, remove ERC 725 "Claim" key for Partnership contract.
+            if (keyHasPurpose(keccak256(abi.encodePacked(_hisContract)), 3)) {
+                removeKey(keccak256(abi.encodePacked(_hisContract)), 3);
+            }
             // Change his partnership to Removed in our contract.
             // We want to have Removed instead of resetting to Unknown,
             // otherwise if partnership is initiated again with him,
@@ -355,13 +361,9 @@ contract Partnership is Identity {
             // Decrement our number of partnerships.
             partnershipsNumber = partnershipsNumber.sub(1);
         }
-        // If there is one, remove ERC 725 "Claim" key for Partnership contract owner.
-        // TODO: unfortunately we can not automate this. Indeed it would require
-        // the Partnership contract to have an ERC 725 Management key,
-        // In order to remove a key.
-        /* if (keyHasPurpose(keccak256(abi.encodePacked(foundation.contractsToOwners(msg.sender))), 3)) {
-            removeKey(keccak256(abi.encodePacked(foundation.contractsToOwners(msg.sender))), 3);
-        } */
+        // Would have liked to remove ERC 725 "Claim" keys.
+        // Unfortunately we can not automate this. Indeed it would require
+        // the Partnership contract to have an ERC 725 Management key.
         // Remove his authorization.
         partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Removed;
         // We return to the calling contract that it's done.

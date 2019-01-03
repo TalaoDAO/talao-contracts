@@ -5,6 +5,8 @@ import "../access/Permissions.sol";
 
 /**
  * @title A Documents contract allows to manage documents and share them.
+ * @notice Also contracts that have an ERC 725 Certificate key ()
+ * can add certified documents.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
 contract Documents is Permissions {
@@ -14,36 +16,45 @@ contract Documents is Permissions {
     // Document struct.
     struct Document {
 
-        // File hash.
-        // SSTORAGE 1 filled after this.
-        bytes32 fileHash;
-
-        // File engine.
-        // 30 bytes remaining in SSTORAGE 2 after this.
-        uint16 fileEngine;
-
-        // Position in index.
-        // 28 bytes remaining in SSTORAGE 2 after this.
-        uint16 index;
-
-        // Type of document: 1 = work experience, ...
-        // 27 bytes remaining in SSTORAGE 2 after this.
-        uint8 docType;
-
-        // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
-        // 26 bytes remaining in SSTORAGE 2 after this.
-        uint8 docTypeVersion;
-
         // True if "published", false if "unpublished".
-        // 25 bytes remaining in SSTORAGE 2 after this.
+        // 31 bytes remaining in SSTORAGE 1 after this.
         bool published;
 
         // True if doc is encrypted.
-        // 24 bytes remaining in SSTORAGE 2 after this.
+        // 30 bytes remaining in SSTORAGE 1 after this.
         bool encrypted;
 
-        // To fill the 2nd SSTORAGE.
-        bytes24 additionalData;
+        // Type of document:
+        // 1 = issued experience (restricted)
+        // etc.
+        // 29 bytes remaining in SSTORAGE 1 after this.
+        uint8 docType;
+
+        // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
+        // 28 bytes remaining in SSTORAGE 1 after this.
+        uint8 docTypeVersion;
+
+        // Position in index.
+        // 26 bytes remaining in SSTORAGE 1 after this.
+        uint16 index;
+
+        // ID of the file location engine.
+        // 1 = IPFS, 2 = Swarm, 3 = Filecoin, ...
+        // 24 bytes remaining in SSTORAGE 1 after this.
+        uint16 fileLocationEngine;
+
+        // Issuer of the document.
+        // 4 bytes remaining in SSTORAGE 1 after this.
+        address issuer;
+
+        // Checksum of the file (SHA-256 offchain).
+        // SSTORAGE 2 filled after this.
+        bytes32 fileChecksum;
+
+        // Hash of the file location in a decentralized engine.
+        // Example: IPFS hash, Swarm hash, Filecoin hash...
+        // Uses 1 SSTORAGE for IPFS.
+        bytes fileLocationHash;
     }
 
     // Documents registry.
@@ -70,24 +81,26 @@ contract Documents is Permissions {
         view
         onlyReader
         returns (
+            uint8,
+            uint8,
+            address,
             bytes32,
             uint16,
-            uint8,
-            uint8,
-            bool,
-            bytes24
+            bytes,
+            bool
         )
     {
         Document memory doc = documents[_id];
         require(_id > 0, 'Document ID must be > 0');
         require(doc.published, 'Document does not exist');
         return(
-            doc.fileHash,
-            doc.fileEngine,
             doc.docType,
             doc.docTypeVersion,
-            doc.encrypted,
-            doc.additionalData
+            doc.issuer,
+            doc.fileChecksum,
+            doc.fileLocationEngine,
+            doc.fileLocationHash,
+            doc.encrypted
         );
     }
 
@@ -102,24 +115,59 @@ contract Documents is Permissions {
      * @dev Create a document.
      */
     function createDocument(
-        bytes32 _fileHash,
-        uint16 _fileEngine,
         uint8 _docType,
         uint8 _docTypeVersion,
-        bool _encrypted,
-        bytes24 _additionalData
+        bytes32 _fileChecksum,
+        uint16 _fileLocationEngine,
+        bytes _fileLocationHash,
+        bool _encrypted
     )
         external
         onlyIdentityPurpose(20002)
         returns (uint)
     {
+        require(_docType != 1, 'Type 1 is restricted to issueDocument()');
         _createDocument(
-            _fileHash,
-            _fileEngine,
             _docType,
             _docTypeVersion,
-            _encrypted,
-            _additionalData
+            msg.sender,
+            _fileChecksum,
+            _fileLocationEngine,
+            _fileLocationHash,
+            _encrypted
+        );
+        return documentsCounter;
+    }
+
+    /**
+     * @dev Issue a document.
+     */
+    function issueDocument(
+        uint8 _docTypeVersion,
+        bytes32 _fileChecksum,
+        uint16 _fileLocationEngine,
+        bytes _fileLocationHash,
+        bool _encrypted,
+    )
+        external
+        returns (uint)
+    {
+        require(_docType == 1, 'Only doc type 1');
+        require(
+            (
+                keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
+                isActiveIdentity()
+            ),
+            'Access denied'
+        );
+        _createDocument(
+            1,
+            _docTypeVersion,
+            foundation.membersToContracts(msg.sender),
+            _fileChecksum,
+            _fileLocationEngine,
+            _fileLocationHash,
+            _encrypted
         );
         return documentsCounter;
     }
@@ -128,32 +176,35 @@ contract Documents is Permissions {
      * @dev Create a document.
      */
     function _createDocument(
-        bytes32 _fileHash,
-        uint16 _fileEngine,
         uint8 _docType,
         uint8 _docTypeVersion,
-        bool _encrypted,
-        bytes24 _additionalData
+        address _issuer,
+        bytes32 _fileChecksum,
+        uint16 _fileLocationEngine,
+        bytes32 _fileLocationHash,
+        bool _encrypted
     )
         internal
     {
-        require(_fileHash[0] != 0, 'File hash must exist');
-        require(_fileEngine > 0, 'File engine must be > 0');
         require(_docType > 0, 'Type of document must be > 0');
         require(_docTypeVersion > 0, 'Version of document type must be > 0');
+        require(_fileChecksum[0] != 0, 'File checksum must exist');
+        require(_fileLocationEngine > 0, 'File engine must be > 0');
+        require(_fileLocationHash[0] != 0, 'File hash must exist');
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
         // Storage pointer.
         Document storage doc = documents[documentsCounter];
         // Write data.
-        doc.fileHash = _fileHash;
-        doc.fileEngine = _fileEngine;
-        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
-        doc.docType = _docType;
-        doc.docTypeVersion = _docTypeVersion;
         doc.published = true;
         doc.encrypted = _encrypted;
-        doc.additionalData = _additionalData;
+        doc.docType = _docType;
+        doc.docTypeVersion = _docTypeVersion;
+        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
+        doc.fileLocationEngine = _fileLocationEngine;
+        doc.issuer = _issuer;
+        doc.fileChecksum = _fileChecksum;
+        doc.fileLocationHash = _fileLocationHash;
         // Emit event.
         emit DocumentAdded(documentsCounter);
     }
@@ -198,25 +249,26 @@ contract Documents is Permissions {
      */
     function updateDocument(
         uint _id,
-        bytes32 _fileHash,
-        uint16 _fileEngine,
         uint8 _docType,
         uint8 _docTypeVersion,
-        bool _encrypted,
-        bytes24 _additionalData
+        bytes32 _fileChecksum,
+        uint16 _fileLocationEngine,
+        bytes32 _fileLocationHash,
+        bool _encrypted
     )
         external
         onlyIdentityPurpose(20002)
         returns (uint)
     {
+        require(_docType != 1, 'Type 1 is restricted to issueDocument()');
         _deleteDocument(_id);
         _createDocument(
-            _fileHash,
-            _fileEngine,
             _docType,
             _docTypeVersion,
-            _encrypted,
-            _additionalData
+            _fileChecksum,
+            _fileLocationEngine,
+            _fileLocationHash,
+            _encrypted
         );
         return documentsCounter;
     }
