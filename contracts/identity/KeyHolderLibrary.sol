@@ -2,12 +2,17 @@ pragma solidity ^0.4.24;
 
 /**
  * @title Library for KeyHolder.
- * @notice Implementation by Origin Protocol
- * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolderLibrary.sol
+ * @notice Fork of Origin Protocol's implementation at
+ * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolderLibrary.sol
+ * We want to add purpose to already existing key.
+ * We do not want to have purpose J if you have purpose I and I < J
+ * Exception: we want a key of purpose 1 to have all purposes.
+ * @author Talao, Polynomial.
  */
 library KeyHolderLibrary {
     event KeyAdded(bytes32 indexed key, uint256 indexed purpose, uint256 indexed keyType);
     event KeyRemoved(bytes32 indexed key, uint256 indexed purpose, uint256 indexed keyType);
+    event PurposeAdded(bytes32 indexed key, uint256 indexed purpose);
     event ExecutionRequested(uint256 indexed executionId, address indexed to, uint256 indexed value, bytes data);
     event ExecutionFailed(uint256 indexed executionId, address indexed to, uint256 indexed value, bytes data);
     event Executed(uint256 indexed executionId, address indexed to, uint256 indexed value, bytes data);
@@ -89,6 +94,25 @@ library KeyHolderLibrary {
         _keyHolderData.keysByPurpose[_purpose].push(_key);
 
         emit KeyAdded(_key, _purpose, _type);
+
+        return true;
+    }
+
+    // We want to be able to add purpose to an existing key.
+    function addPurpose(KeyHolderData storage _keyHolderData, bytes32 _key, uint256 _purpose)
+        public
+        returns (bool)
+    {
+        require(_keyHolderData.keys[_key].key == _key, "Key does not exist"); // Key should already exist
+        if (msg.sender != address(this)) {
+            require(keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)), 1), "Sender does not have management key"); // Sender has MANAGEMENT_KEY
+        }
+
+        _keyHolderData.keys[_key].purposes.push(_purpose);
+
+        _keyHolderData.keysByPurpose[_purpose].push(_key);
+
+        emit PurposeAdded(_key, _purpose);
 
         return true;
     }
@@ -192,20 +216,20 @@ library KeyHolderLibrary {
     function keyHasPurpose(KeyHolderData storage _keyHolderData, bytes32 _key, uint256 _purpose)
         public
         view
-        returns(bool result)
+        returns(bool isThere)
     {
-        bool isThere;
         if (_keyHolderData.keys[_key].key == 0) {
-            return false;
+            isThere = false;
         }
 
         uint256[] storage purposes = _keyHolderData.keys[_key].purposes;
         for (uint i = 0; i < purposes.length; i++) {
-            if (purposes[i] <= _purpose) {
+            // We do not want to have purpose J if you have purpose I and I < J
+            // Exception: we want purpose 1 to have all purposes.
+            if (purposes[i] == _purpose || purposes[i] == 1) {
                 isThere = true;
                 break;
             }
         }
-        return isThere;
     }
 }

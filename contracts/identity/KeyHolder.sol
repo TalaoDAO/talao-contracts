@@ -5,13 +5,14 @@ import "./KeyHolderLibrary.sol";
 
 /**
  * @title Manages an ERC 725 identity keys.
- * @notice Implementation by Origin Protocol
- * @dev https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolder.sol
+ * @notice Fork of Origin Protocol's implementation at
+ * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolder.sol
  * We defined our own set of "sub-ACTION" keys:
- * - 20002 = write Profile & Documents
+ * - 20002 = write "Private profile" & Documents
  * - 20003 = manage Partnerships
  * - 20004 = use Filebox
  * - 20005 = buy Services
+ * Moreover we can add purpose to already existing key.
  */
 contract KeyHolder is ERC725 {
     KeyHolderLibrary.KeyHolderData keyHolderData;
@@ -49,6 +50,13 @@ contract KeyHolder is ERC725 {
         returns (bool success)
     {
         return KeyHolderLibrary.addKey(keyHolderData, _key, _purpose, _type);
+    }
+
+    function addPurpose(bytes32 _key, uint256 _purpose)
+        public
+        returns (bool)
+    {
+        return KeyHolderLibrary.addPurpose(keyHolderData, _key, _purpose);
     }
 
     function approve(uint256 _id, bool _approve)
