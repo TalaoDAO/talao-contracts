@@ -100,6 +100,14 @@ contract('Workspace', async (accounts) => {
     assert(result2);
   });
 
+  it('User1 should add User3 as a member, User3 should be a partnerShip member of Workspace2', async() => {
+    await foundation.addMember(user3, {from: user1});
+    const result1 = await foundation.membersToContracts(user3);
+    assert.equal(result1, workspace1.address);
+    const result2 = await workspace2.isPartnershipMember({from: user3});
+    assert(result2);
+  });
+
   it('User1 should destroy his Workspace', async() => {
     const result = await workspace1.destroyWorkspace({from: user1});
     assert(result);
@@ -109,9 +117,11 @@ contract('Workspace', async (accounts) => {
     truffleAssert.fails(workspace1.identityInformation());
   });
 
-  it('User1 should not be recognized as a partnership member in Workspace2', async() => {
+  it('User1 and User3 should not be recognized as partnership members in Workspace2', async() => {
     const result1 = await workspace2.isPartnershipMember({ from: user1 });
     assert(!result1);
+    const result2 = await workspace2.isPartnershipMember({ from: user3 });
+    assert(!result2);
   });
 
 });
