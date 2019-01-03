@@ -183,7 +183,7 @@ contract('Documents', async (accounts) => {
     );
   });
 
-  it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc.', async() => {
+  it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc ID=5.', async() => {
     const result = await documents1.updateDocument(
       1,
       otherDocType,
@@ -213,7 +213,7 @@ contract('Documents', async (accounts) => {
     assert(result);
   });
 
-  it('User6 should add a new document', async() => {
+  it('User6 should add a new document ID6', async() => {
     const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
@@ -224,6 +224,86 @@ contract('Documents', async (accounts) => {
       {from: user6}
     );
     assert(result);
+  });
+
+  it('User1 should ask Workspace2 in partnership && User2 should accept', async() => {
+    await documents1.requestPartnership(
+      documents2.address,
+      '0x91',
+      { from: user1 }
+    );
+    await documents2.authorizePartnership(
+      documents1.address,
+      '0x92',
+      { from: user2 }
+    );
+    const result1 = await documents2.isPartnershipMember({ from: user1 });
+    assert(result1);
+    const result2 = await documents1.isPartnershipMember({ from: user2 });
+    assert(result2);
+  });
+
+  it('User2 (Marketplace owner) should issue a Document ID7 in User1\'s contract (Freelance)', async() => {
+    const result = await documents1.issueDocument(
+      docTypeVersion,
+      fileChecksum,
+      fileLocationEngine,
+      fileLocationHash,
+      encrypted,
+      {from: user2}
+    );
+    assert(result);
+  });
+
+  it('Issued document should have correct data', async() => {
+    const result = await documents1.getDocument(7, {from: user1});
+    assert.equal(
+      result.toString(),
+      [
+        1,
+        docTypeVersion,
+        documents2.address,
+        fileChecksum,
+        fileLocationEngine,
+        fileLocationHash,
+        encrypted
+      ]
+    );
+  });
+
+  it('User2 should add User3 as a member of his contract and User3 (Marketplace manager) should issue a document ID8 in User1\'s contract (Freelance)', async() => {
+    await foundation.addMember(user3, {from: user2});
+    const result = await documents1.issueDocument(
+      otherDocTypeVersion,
+      otherFileChecksum,
+      otherFileLocationEngine,
+      otherFileLocationHash,
+      otherEncrypted,
+      {from: user3}
+    );
+    assert(result);
+  });
+
+  it('User4 has no right to issue a document in User1\'s contract', async() => {
+    truffleAssert.fails(
+      documents1.issueDocument(
+        otherDocTypeVersion,
+        otherFileChecksum,
+        otherFileLocationEngine,
+        otherFileLocationHash,
+        otherEncrypted,
+        {from: user4}
+      )
+    );
+  });
+
+  it('User1 should remove issued document ID7 and getDocuments should return the correct array of doc IDs [3, 4, 5, 6, 8]', async() => {
+    await documents1.deleteDocument(7, {from: user1});
+    const result = await documents1.getDocuments({from: user1});
+    assert.equal(
+      result.toString(),
+      '3,4,5,6,8'
+    );
   });
 
 });
