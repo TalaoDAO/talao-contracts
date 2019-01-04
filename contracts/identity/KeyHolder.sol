@@ -11,7 +11,7 @@ import "./KeyHolderLibrary.sol";
  * We defined our own set of "sub-ACTION" keys:
  * - 20001 = read private profile & documents (grants isReader()).
  *  Usefull for contracts, for instance to add import contracts.
- * - 20002 = write "Private profile" & Documents
+ * - 20002 = write "Private profile" & Documents (except issueDocument)
  * - 20003 = read Partnerships
  * - 20004 = blacklist / unblacklist for identityboxSendtext/identityboxSendfile
  * We also use:
