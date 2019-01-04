@@ -14,6 +14,8 @@ import "./KeyHolderLibrary.sol";
  * - 20003 = read Partnerships
  * - 20004 = use Filebox
  * - 20005 = buy Services
+ * We use also:
+ * - 3 = CLAIM = to issueDocument
  * Moreover we can add purpose to already existing key.
  */
 contract KeyHolder is ERC725 {

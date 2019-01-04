@@ -152,7 +152,7 @@ contract('Permissions', async (accounts) => {
     assert(result);
   });
 
-  it('User2 an ERC 725 20001 key "Reader" to contract5. Contract5 should be able to read its "private" content', async() => {
+  it('User2 adds an ERC 725 20001 key "Reader" to contract5. Contract5 should be able to read its "private" content', async() => {
     await permissions2.addKey(web3.utils.keccak256(contract5), 20001, 1, {from: user2});
     const result = await permissions2.isReader({from: contract5});
     assert(result);

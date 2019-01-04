@@ -111,8 +111,7 @@ contract('Workspace', async (accounts) => {
 
   it('User1 should destroy his Workspace', async() => {
     const result = await truffleCost.log(
-      workspace1.destroyWorkspace({from: user1}),
-      'EUR'
+      workspace1.destroyWorkspace({from: user1})
     );
     assert(result);
   });

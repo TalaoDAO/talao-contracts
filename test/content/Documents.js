@@ -27,7 +27,7 @@ contract('Documents', async (accounts) => {
   const user2 = accounts[2];
   const user3 = accounts[3];
   const user4 = accounts[4];
-  const user5 = accounts[5];
+  const contract5 = accounts[5];
   const user6 = accounts[6];
   const factory = accounts[8];
   const someone = accounts[9];
@@ -303,6 +303,30 @@ contract('Documents', async (accounts) => {
     assert.equal(
       result.toString(),
       '3,4,5,6,8'
+    );
+  });
+
+  it('User1 adds an ERC 725 20001 key "Reader" to Contract5. Contract5 should be able to read its "private" content', async() => {
+    await documents1.addKey(web3.utils.keccak256(contract5), 20001, 1, {from: user1});
+    const result1 = await documents1.isReader({from: contract5});
+    assert(result1);
+    const result2 = await documents1.getDocuments({from: contract5});
+    assert.equal(
+      result2.toString(),
+      '3,4,5,6,8'
+    );
+    const result3 = await documents1.getDocument(3, {from: contract5});
+    assert.equal(
+      result3.toString(),
+      [
+        otherDocType,
+        otherDocTypeVersion,
+        user1,
+        otherFileChecksum,
+        otherFileLocationEngine,
+        otherFileLocationHash,
+        otherEncrypted
+      ]
     );
   });
 
