@@ -1,4 +1,4 @@
-const web3 = require('web3');
+const web31 = require('web3');
 const truffleAssert = require('truffle-assertions');
 const truffleCost = require('truffle-cost');
 
@@ -15,6 +15,10 @@ let token, foundation, mpp1, mpp2, freelance1, freelance2, service1;
 
 // Events.
 let freelancer3events, freelancer4events;
+
+// Tx of buy service;
+let buyTx;
+let receivedTextHash;
 
 contract('Service1', async (accounts) => {
   const defaultUser = accounts[0];
@@ -65,7 +69,7 @@ contract('Service1', async (accounts) => {
     );
     assert(mpp1);
     await foundation.setInitialOwnerInFoundation(mpp1.address, user1, {from: factory});
-    await mpp1.addKey(web3.utils.keccak256(user1), 1, 1, {from: factory});
+    await mpp1.addKey(web31.utils.keccak256(user1), 1, 1, {from: factory});
     // MPP2
     mpp2 = await Workspace.new(
       foundation.address,
@@ -79,7 +83,7 @@ contract('Service1', async (accounts) => {
     );
     assert(mpp2);
     await foundation.setInitialOwnerInFoundation(mpp2.address, user2, {from: factory});
-    await mpp2.addKey(web3.utils.keccak256(user2), 1, 1, {from: factory});
+    await mpp2.addKey(web31.utils.keccak256(user2), 1, 1, {from: factory});
     // Freelance3
     freelance3 = await Workspace.new(
       foundation.address,
@@ -93,7 +97,7 @@ contract('Service1', async (accounts) => {
     );
     assert(freelance3);
     await foundation.setInitialOwnerInFoundation(freelance3.address, user3, {from: factory});
-    await freelance3.addKey(web3.utils.keccak256(user3), 1, 1, {from: factory});
+    await freelance3.addKey(web31.utils.keccak256(user3), 1, 1, {from: factory});
     freelancer3events = freelance3.allEvents({fromBlock: 0, toBlock: 'latest'});
     // Freelance4
     freelance4 = await Workspace.new(
@@ -108,7 +112,7 @@ contract('Service1', async (accounts) => {
     );
     assert(freelance4);
     await foundation.setInitialOwnerInFoundation(freelance4.address, user4, {from: factory});
-    await freelance4.addKey(web3.utils.keccak256(user4), 1, 1, {from: factory});
+    await freelance4.addKey(web31.utils.keccak256(user4), 1, 1, {from: factory});
     freelancer4events = freelance4.allEvents({fromBlock: 0, toBlock: 'latest'});
   });
 
@@ -147,8 +151,8 @@ contract('Service1', async (accounts) => {
       {from: user1}
     );
     assert(service1);
-    await mpp1.addKey(web3.utils.keccak256(service1.address), 20003, 1, {from: user1});
-    const result = await mpp1.keyHasPurpose(web3.utils.keccak256(service1.address), 20003);
+    await mpp1.addKey(web31.utils.keccak256(service1.address), 20003, 1, {from: user1});
+    const result = await mpp1.keyHasPurpose(web31.utils.keccak256(service1.address), 20003);
     assert(result);
   });
 
@@ -161,10 +165,12 @@ contract('Service1', async (accounts) => {
     const result = await token.approveAndCall(
       service1.address,
       10000,
-      web3.utils.asciiToHex('Hi dear freelancers of MPP1!'),
+      web31.utils.asciiToHex('Hi dear freelancers of MPP1!'),
       {from: user2}
     );
     assert(result);
+    // Store TX for later.
+    buyTx = result;
   });
 
   it('User2 should have spent 10000 TALAO', async() => {
@@ -182,7 +188,17 @@ contract('Service1', async (accounts) => {
       assert.equal(logs[5].event, 'TextReceived');
       assert.equal(logs[5].args.sender, service1.address);
       assert.equal(logs[5].args.category.toNumber(), 100000);
-      assert.equal(web3.utils.hexToAscii(logs[5].args.text), 'Hi dear freelancers of MPP1!');
+      assert.equal(web31.utils.hexToAscii(logs[5].args.text), 'Hi dear freelancers of MPP1!');
+      // Store TX hash of event for next test.
+      receivedTextHash = logs[5].transactionHash;
+      // It is the same TX hash.
+      assert.equal(receivedTextHash, buyTx.tx)
+    });
+  });
+
+  it('Should proove that message was sent by User2', async() => {
+    web3.eth.getTransaction(receivedTextHash, function(error, result) {
+      assert.equal(result.from, user2);
     });
   });
 
@@ -191,7 +207,7 @@ contract('Service1', async (accounts) => {
       assert.equal(logs[5].event, 'TextReceived');
       assert.equal(logs[5].args.sender, service1.address);
       assert.equal(logs[5].args.category.toNumber(), 100000);
-      assert.equal(web3.utils.hexToAscii(logs[5].args.text), 'Hi dear freelancers of MPP1!');
+      assert.equal(web31.utils.hexToAscii(logs[5].args.text), 'Hi dear freelancers of MPP1!');
     });
   });
 
