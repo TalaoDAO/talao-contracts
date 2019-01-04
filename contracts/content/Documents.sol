@@ -277,3 +277,22 @@ contract Documents is Permissions {
         return documentsCounter;
     }
 }
+
+
+/**
+ * @title Interface with clones, inherited contracts or services.
+ */
+interface DocumentsInterface {
+    function getDocuments() external returns(uint[]);
+    function getDocument(uint)
+        external
+        returns (
+            uint8,
+            uint8,
+            address,
+            bytes32,
+            uint16,
+            bytes,
+            bool
+        );
+}
