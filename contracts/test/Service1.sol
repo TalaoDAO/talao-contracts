@@ -93,8 +93,8 @@ contract Service1 is Ownable {
                     hisAuthorization == uint(PartnershipAuthorization.Authorized)
                 ) {
                     // Send message.
-                    IdentityInterface sellerIdentity = IdentityInterface(seller);
-                    sellerIdentity.identityboxSendtext(100000, _extraData);
+                    IdentityInterface recipientIdentity = IdentityInterface(recipients[i]);
+                    recipientIdentity.identityboxSendtext(100000, _extraData);
                 }
             }
             // _from is not used here but I wanted to keep it as a parameter,
