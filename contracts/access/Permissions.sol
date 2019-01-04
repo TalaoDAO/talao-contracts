@@ -68,7 +68,8 @@ contract Permissions is Partnership {
         // 2) Owner has open Vault in the token and:
         // 2.1) Sender is a member of this contract,
         // 2.2) Sender is a member of an authorized Partner contract
-        // 2.3) Owner has a free vaultAccess in the token
+        // 2.3) Sender has an ERC 725 20001 key "Reader"
+        // 2.4) Owner has a free vaultAccess in the token
         return(
             token.hasVaultAccess(identityOwner(), msg.sender) ||
             (
@@ -76,6 +77,7 @@ contract Permissions is Partnership {
                 (
                     isMember() ||
                     isPartnershipMember() ||
+                    hasIdentityPurpose(20001) ||
                     accessPrice == 0
                 )
             )

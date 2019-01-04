@@ -17,7 +17,7 @@ contract('Permissions', async (accounts) => {
   const user2 = accounts[2];
   const user3 = accounts[3];
   const user4 = accounts[4];
-  const user5 = accounts[5];
+  const contract5 = accounts[5];
   const factory = accounts[8];
   const someone = accounts[9];
 
@@ -149,6 +149,12 @@ contract('Permissions', async (accounts) => {
 
   it('User4 is a member of Permissions2, he should be able to read its "private" content', async() => {
     const result = await permissions2.isReader({from: user4});
+    assert(result);
+  });
+
+  it('User2 an ERC 725 20001 key "Reader" to contract5. Contract5 should be able to read its "private" content', async() => {
+    await permissions2.addKey(web3.utils.keccak256(contract5), 20001, 1, {from: user2});
+    const result = await permissions2.isReader({from: contract5});
     assert(result);
   });
 

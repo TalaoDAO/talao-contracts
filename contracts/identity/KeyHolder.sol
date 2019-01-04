@@ -8,6 +8,8 @@ import "./KeyHolderLibrary.sol";
  * @notice Fork of Origin Protocol's implementation at
  * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolder.sol
  * We defined our own set of "sub-ACTION" keys:
+ * - 20001 = read private profile & documents (grants isReader()).
+ *  Usefull for contracts, for instance to add import contracts.
  * - 20002 = write "Private profile" & Documents
  * - 20003 = read Partnerships
  * - 20004 = use Filebox
