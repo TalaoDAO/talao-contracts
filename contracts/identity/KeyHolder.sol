@@ -7,15 +7,16 @@ import "./KeyHolderLibrary.sol";
  * @title Manages an ERC 725 identity keys.
  * @notice Fork of Origin Protocol's implementation at
  * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolder.sol
+ *
  * We defined our own set of "sub-ACTION" keys:
  * - 20001 = read private profile & documents (grants isReader()).
  *  Usefull for contracts, for instance to add import contracts.
  * - 20002 = write "Private profile" & Documents
  * - 20003 = read Partnerships
- * - 20004 = use Filebox
- * - 20005 = buy Services
- * We use also:
+ * - 20004 = blacklist / unblacklist for identityboxSendtext/identityboxSendfile
+ * We also use:
  * - 3 = CLAIM = to issueDocument
+ *
  * Moreover we can add purpose to already existing key.
  */
 contract KeyHolder is ERC725 {
