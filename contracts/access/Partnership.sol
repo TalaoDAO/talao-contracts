@@ -172,7 +172,7 @@ contract Partnership is Identity {
      */
     function requestPartnership(address _hisContract, bytes _ourPassphrase)
         external
-        onlyIdentityPurpose(20003)
+        onlyIdentityPurpose(1)
     {
         // We can only request partnership with a contract
         // if he's not already Known or Removed in our registry.
@@ -253,7 +253,7 @@ contract Partnership is Identity {
      */
     function authorizePartnership(address _hisContract, bytes _ourPassphrase)
         external
-        onlyIdentityPurpose(20003)
+        onlyIdentityPurpose(1)
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
@@ -293,7 +293,7 @@ contract Partnership is Identity {
      */
     function rejectPartnership(address _hisContract)
         external
-        onlyIdentityPurpose(20003)
+        onlyIdentityPurpose(1)
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
@@ -307,7 +307,7 @@ contract Partnership is Identity {
      */
     function removePartnership(address _hisContract)
         external
-        onlyIdentityPurpose(20003)
+        onlyIdentityPurpose(1)
     {
         require(
             (

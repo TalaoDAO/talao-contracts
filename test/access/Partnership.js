@@ -9,7 +9,7 @@ const Foundation = artifacts.require('Foundation');
 const Partnership = artifacts.require('Partnership');
 
 // Contract instances.
-let foundation, token, partnership1, partnership2, partnership3, partnership4;
+let foundation, token, partnership1, partnership2, partnership3;
 
 contract('Partnership', async (accounts) => {
   const defaultUser = accounts[0];
@@ -19,6 +19,7 @@ contract('Partnership', async (accounts) => {
   const user4 = accounts[4];
   const user5 = accounts[5];
   const user6 = accounts[6];
+  const contract7 = accounts[7];
   const someone = accounts[8];
   const factory = accounts[9];
 
@@ -38,6 +39,7 @@ contract('Partnership', async (accounts) => {
     await token.transfer(user1, 1000);
     await token.transfer(user2, 1000);
     await token.transfer(user3, 1000);
+    await token.transfer(user4, 1000);
     await token.createVaultAccess(10, { from: user1 });
     await token.createVaultAccess(0, { from: user2 });
     await token.createVaultAccess(50, { from: user3 });
@@ -80,19 +82,9 @@ contract('Partnership', async (accounts) => {
       '0x32',
       {from: factory}
     );
-    partnership4 = await Partnership.new(
-      foundation.address,
-      token.address,
-      2001,
-      1,
-      1,
-      '0x41',
-      '0x42',
-      {from: factory}
-    );
   });
 
-  it('Should register to User1, User2, User3 and User4, and add an ERC 725 key 1 = management for each of them', async() => {
+  it('Should register to User1, User2 and User3 and add an ERC 725 key 1 = management for each of them', async() => {
     await foundation.setInitialOwnerInFoundation(partnership1.address, user1, {from: factory});
     const result1 = await foundation.contractsToOwners(partnership1.address);
     assert.equal(result1, user1);
@@ -111,12 +103,6 @@ contract('Partnership', async (accounts) => {
     const user3key = web3.utils.keccak256(user3);
     const result3b = await partnership3.addKey(user3key, 1, 1, {from: factory});
     assert(result3b);
-    await foundation.setInitialOwnerInFoundation(partnership4.address, user4, {from: factory});
-    const result4 = await foundation.contractsToOwners(partnership4.address);
-    assert.equal(result4, user4);
-    const user4key = web3.utils.keccak256(user4);
-    const result4b = await partnership4.addKey(user4key, 1, 1, {from: factory});
-    assert(result4b);
   });
 
   it('User1 should request partnership of his contract partnership1 to the contract partnership2, PartnershipRequested event should have been emitted by partnership2 contract', async() => {
@@ -248,17 +234,6 @@ contract('Partnership', async (accounts) => {
     assert(result);
   });
 
-  it('User4 should not be able to request partnership of his contract partnership4 to the contract partnership2 because they have the same category', async() => {
-    const result = await truffleAssert.fails(
-      partnership4.requestPartnership(
-        partnership2.address,
-        '0x94',
-        { from: user4 }
-      )
-    )
-    assert(!result);
-  });
-
   it('User5 is not a member of User3\'s contract, so he should not be recognized as a partnership member in Partnership2', async() => {
     const result = await partnership2.isPartnershipMember({from: user4});
     assert(!result);
@@ -313,12 +288,25 @@ contract('Partnership', async (accounts) => {
     assert.equal(result.toNumber(), 2);
   });
 
-  it('User2 should remove partnership with Partnership3', async() => {
-    const result = await partnership2.removePartnership(partnership3.address, {from: user2});
+  // See also ../test/Service1.js
+  it('User2 should add ERC 725 key 20003 to Contract7 so it can read partnerships', async() =>  {
+    await partnership2.addKey(web3.utils.keccak256(contract7), 20003, 1, {from: user2});
+    const result = await partnership2.getKnownPartnershipsContracts({ from: contract7 });
+    assert.equal(result.toString(), [partnership1.address, partnership3.address]);
+  });
+
+  it('User2 should add ERC 725 key 1 to User4 so he can manage partnerships', async() =>  {
+    await partnership2.addKey(web3.utils.keccak256(user4), 1, 1, {from: user2});
+    const result = await partnership2.hasIdentityPurpose(1, {from: user4});
     assert(result);
   });
 
-  it('User2 should have 1 partnerships', async() => {
+  it('User4 should remove partnership of Partnership2 with Partnership3', async() =>  {
+    const result = await partnership2.removePartnership(partnership3.address, {from: user4});
+    assert(result);
+  });
+
+  it('User2 should have 1 partnership in Partnership2', async() => {
     const result = await partnership2.partnershipsNumber();
     assert.equal(result.toNumber(), 1);
   });

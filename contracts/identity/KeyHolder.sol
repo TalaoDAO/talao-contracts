@@ -9,7 +9,7 @@ import "./KeyHolderLibrary.sol";
  * https://github.com/OriginProtocol/origin/blob/master/origin-contracts/contracts/identity/KeyHolder.sol
  * We defined our own set of "sub-ACTION" keys:
  * - 20002 = write "Private profile" & Documents
- * - 20003 = manage Partnerships
+ * - 20003 = read Partnerships
  * - 20004 = use Filebox
  * - 20005 = buy Services
  * Moreover we can add purpose to already existing key.
