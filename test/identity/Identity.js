@@ -19,7 +19,7 @@ const asymetricEncryptionAlgorithm = 1; // RSA 2048 with defaults from https://g
 let asymetricEncryptionKey, asymetricEncryptionPublickey, asymetricEncryptionPrivatekey;
 
 // Symetric encryption key.
-const symetricEncryptionPassphrase = 'This is the passphrase for the symetric key I chose at contract creation.';
+const key128 = 'This is the passphrase for the symetric key I chose at contract creation.';
 const symetricEncryptionAlgorithm = 1; // aes-128-ctr
 
 // Data samples.
@@ -46,8 +46,10 @@ contract('Identity', async (accounts) => {
     asymetricEncryptionKey = new NodeRSA({b: 2048});
     asymetricEncryptionPublickey = asymetricEncryptionKey.exportKey('public');
     asymetricEncryptionPrivatekey = asymetricEncryptionKey.exportKey('private');
-    // 2. Encrypt symetric key passphrase with public asymetric key.
-    symetricEncryptionEncryptedpassphrase = asymetricEncryptionKey.encrypt(symetricEncryptionPassphrase, 'base64');
+    // 2. Generate symetric encryption key AES 128.
+    const buffer = Buffer.alloc(16);
+    const key128 = await crypto.randomFill(buffer);
+    symetricEncryptionEncryptedKey = asymetricEncryptionKey.encrypt(key128, 'base64');
     // 3. Deploy & link librairies.
     keyHolderLibrary = await KeyHolderLibrary.new();
     await ClaimHolderLibrary.link(KeyHolderLibrary, keyHolderLibrary.address);
@@ -77,7 +79,7 @@ contract('Identity', async (accounts) => {
       asymetricEncryptionAlgorithm,
       symetricEncryptionAlgorithm,
       web3.utils.asciiToHex(asymetricEncryptionPublickey),
-      web3.utils.asciiToHex(symetricEncryptionEncryptedpassphrase),
+      web3.utils.asciiToHex(symetricEncryptionEncryptedKey),
       {from: factory}
     );
     assert(identity);
@@ -114,17 +116,17 @@ contract('Identity', async (accounts) => {
   it('Anyone should get the encrypted symetric encryption passphrase, but only those who have User1\'s asymetric encryption private key should decipher it', async() => {
     const result = await identity.identityInformation({from: someone});
     const symKeyPassphraseEncrypted = web3.utils.hexToAscii(result[5]);
-    assert.equal(symKeyPassphraseEncrypted, symetricEncryptionEncryptedpassphrase);
+    assert.equal(symKeyPassphraseEncrypted, symetricEncryptionEncryptedKey);
     // Regenerate the asymetric key from the private PEM, only User1 has it.
     const asymKey = new NodeRSA(asymetricEncryptionPrivatekey);
     const symKeyPassphrase = asymKey.decrypt(symKeyPassphraseEncrypted);
-    assert.equal(symKeyPassphrase, symetricEncryptionPassphrase);
+    assert.equal(symKeyPassphrase, key128);
   });
 
   it('User1 should encrypt something with symetric key and someone who has the passphrase should be able to decipher it. This concerns for instance all encryptions of content available to Partner Members and users that bought his Vault access in the token. User1 can send his symetric key encrypted on the public encryption key of another user who has an Identity contract, as well', async() => {
     // 1. User1 encrypts some text.
     // First, derive key from passphrase. TODO: use salt, which one?
-    const symetricEncryptionKey = crypto.scryptSync(symetricEncryptionPassphrase, '', 16);
+    const symetricEncryptionKey = crypto.scryptSync(key128, '', 16);
     // Convert text to encrypt to bytes.
     const textBytes = aesjs.utils.utf8.toBytes(textToEncrypt);
     // Counter.
@@ -140,7 +142,7 @@ contract('Identity', async (accounts) => {
     // so we just test encryption and decryption here.
     // 2. User2 decrypts the text.
     // User2 has the passphrase, let's generate the key.
-    const symetricEncryptionKey2 = crypto.scryptSync(symetricEncryptionPassphrase, '', 16);
+    const symetricEncryptionKey2 = crypto.scryptSync(key128, '', 16);
     // Remove 0x from BC encrypted text.
     const encryptedHex2 = bcEncryptedHex.substr(2);
     // To bytes.
