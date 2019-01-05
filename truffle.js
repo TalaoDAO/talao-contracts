@@ -1,3 +1,9 @@
+// Comment this for local testing.
+// Uncomment this and fill in ./secret.js to deploy on real networks
+const secret = require('./secret');
+const mnemonic = secret.mnemonic();
+const infuraApiKey = secret.infuraApiKey();
+
 /*
  * NB: since truffle-hdwallet-provider 0.0.5 you must wrap HDWallet providers in a
  * function when declaring them. Failure to do so will cause commands to hang. ex:
@@ -20,6 +26,12 @@ module.exports = {
       host: "127.0.0.1",
       port: 7545,
       network_id: "5777"
+    },
+    rinkeby: {
+      network_id: "4",
+      provider: function() {
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/" + infuraApiKey, 6);
+      }
     }
   },
   solc: {

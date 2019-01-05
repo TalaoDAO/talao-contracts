@@ -1,4 +1,4 @@
-var Foundation = artifacts.require("./Foundation.sol");
+const Foundation = artifacts.require('./Foundation.sol');
 
 module.exports = function(deployer) {
   deployer.deploy(Foundation);
