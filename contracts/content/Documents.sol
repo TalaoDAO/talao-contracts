@@ -5,7 +5,7 @@ import "../access/Permissions.sol";
 
 /**
  * @title A Documents contract allows to manage documents and share them.
- * @notice Also contracts that have an ERC 725 Certificate key ()
+ * @notice Also contracts that have an ERC 725 Claim key (3)
  * can add certified documents.
  * @author Talao, Polynomial, SlowSense, Blockchain Partners.
  */
@@ -246,9 +246,9 @@ contract Documents is Permissions {
 
     /**
      * @dev "Update" a document.
-     * @dev Updating a document makes no sense technically.
-     * @dev Here we provide a function that deletes a doc & create a new one.
-     * @dev But for UX it's very important to have this in 1 transaction.
+     * Updating a document makes no sense technically.
+     * Here we provide a function that deletes a doc & create a new one.
+     * But for UX it's very important to have this in 1 transaction.
      */
     function updateDocument(
         uint _id,

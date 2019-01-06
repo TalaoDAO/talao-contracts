@@ -38,7 +38,7 @@ contract Identity is ClaimHolder {
 
         // Asymetric encryption key algorithm.
         // We use an integer to store algo with offchain references.
-        // 1 => RSA
+        // 1 => RSA 2048
         // bytes12 left after this on SSTORAGE 1.
         uint16 asymetricEncryptionAlgorithm;
 
@@ -54,12 +54,12 @@ contract Identity is ClaimHolder {
         // offchain of course.
         bytes asymetricEncryptionPublickey;
 
-        // Encrypted symetric encryption passphrase.
+        // Encrypted symetric encryption key (in Hex).
         // When decrypted, this passphrase can regenerate
         // the symetric encryption key.
         // This key encrypts and decrypts data to be shared with many people.
         // Uses 0.5 SSTORAGE for AES 128.
-        bytes symetricEncryptionEncryptedPassphrase;
+        bytes symetricEncryptionEncryptedKey;
     }
     // This contract Identity information.
     IdentityInformation public identityInformation;
@@ -103,15 +103,15 @@ contract Identity is ClaimHolder {
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
+        identityInformation.symetricEncryptionEncryptedKey = symetricEncryptionEncryptedpassphrase;
     }
 
     /**
      * @dev Owner of this contract, in the Foundation sense.
-     * @dev We do not allow this to be used externally,
-     * @dev since a contract could fake ownership.
-     * @dev In other contracts, you have to call the Foundation to
-     * @dev know the real owner of this contract.
+     * We do not allow this to be used externally,
+     * since a contract could fake ownership.
+     * In other contracts, you have to call the Foundation to
+     * know the real owner of this contract.
      */
     function identityOwner() internal view returns (address) {
         return foundation.contractsToOwners(address(this));
@@ -119,7 +119,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev Check in Foundation if msg.sender is the owner of this contract.
-     * @dev Same remark.
+     * Same remark.
      */
     function isIdentityOwner() internal view returns (bool) {
         return msg.sender == identityOwner();

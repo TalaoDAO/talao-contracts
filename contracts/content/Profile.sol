@@ -10,7 +10,8 @@ contract Profile is Permissions {
 
     // "Private" profile.
     // Access controlled by Permissions.sol.
-    // Nothing is really private on the blockchain.
+    // Nothing is really private on the blockchain,
+    // so data should be encrypted on symetric key.
     struct PrivateProfile {
         // Private email.
         bytes email;

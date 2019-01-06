@@ -1,6 +1,3 @@
-const crypto = require('crypto');
-const NodeRSA = require('node-rsa');
-const aesjs = require('aes-js');
 const web3 = require('web3');
 const truffleAssert = require('truffle-assertions');
 

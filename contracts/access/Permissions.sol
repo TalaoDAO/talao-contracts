@@ -5,7 +5,7 @@ import "./Partnership.sol";
 /**
  * @title Permissions contract.
  * @author Talao, Polynomial.
- * @notice See ../identity/KeyHolder as well.
+ * @notice See ../identity/KeyHolder.sol as well.
  */
 contract Permissions is Partnership {
 
