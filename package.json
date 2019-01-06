@@ -9,6 +9,7 @@
     "node-rsa": "^1.0.2",
     "truffle-assertions": "^0.7.1",
     "truffle-cost": "^1.0.1",
+    "truffle-hdwallet-provider": "^1.0.2",
     "web3": "^1.0.0-beta.37"
   },
   "devDependencies": {}
