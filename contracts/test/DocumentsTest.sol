@@ -17,8 +17,8 @@ contract DocumentsTest is Permissions, Documents {
         uint16 _category,
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
-        bytes _asymetricEncryptionPublickey,
-        bytes symetricEncryptionEncryptedpassphrase
+        bytes _asymetricEncryptionPublicKey,
+        bytes _symetricEncryptionEncryptedKey
     )
         Permissions(
             _foundation,
@@ -26,8 +26,8 @@ contract DocumentsTest is Permissions, Documents {
             _category,
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
-            _asymetricEncryptionPublickey,
-            symetricEncryptionEncryptedpassphrase
+            _asymetricEncryptionPublicKey,
+            _symetricEncryptionEncryptedKey
         )
         public
     {
@@ -37,7 +37,7 @@ contract DocumentsTest is Permissions, Documents {
         identityInformation.category = _category;
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
-        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
+        identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
+        identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
     }
 }

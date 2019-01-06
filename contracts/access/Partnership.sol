@@ -6,7 +6,7 @@ import "../math/SafeMath.sol";
 /**
  * @title Provides partnership features between contracts.
  * @notice If msg.sender is the owner, in the Foundation sense
- * (see OwnableInFoundation), of another partnership contract that is
+ * (see Foundation.sol, of another partnership contract that is
  * authorized in this partnership contract,
  * then he passes isPartnershipMember().
  * Obviously this function is meant to be used in modifiers
@@ -17,8 +17,8 @@ import "../math/SafeMath.sol";
  * This is done through symetrical functions,
  * where the user submits a tx on his own Partnership contract to ask partnership
  * to another and not on the other contract.
+ * Convention here: _function = to be called by another partnership contract.
  * @author Talao, Polynomial.
- * @dev Convention here: _function = to be called by another partnership contract.
  */
 contract Partnership is Identity {
 
@@ -40,9 +40,9 @@ contract Partnership is Identity {
         // a lot sooner! It costs nothing, so...
         // bytes26 left after this on SSTORAGE 1.
         uint40 created;
-        // His symetric encryption passphrase,
+        // His symetric encryption key,
         // encrypted on our asymetric encryption public key.
-        bytes passphrase;
+        bytes symetricEncryptionEncryptedKey;
     }
     // Our main registry of Partnership contracts.
     mapping(address => PartnershipContract) internal partnershipContracts;
@@ -68,8 +68,8 @@ contract Partnership is Identity {
         uint16 _category,
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
-        bytes _asymetricEncryptionPublickey,
-        bytes symetricEncryptionEncryptedpassphrase
+        bytes _asymetricEncryptionPublicKey,
+        bytes _symetricEncryptionEncryptedKey
     )
         Identity(
             _foundation,
@@ -77,8 +77,8 @@ contract Partnership is Identity {
             _category,
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
-            _asymetricEncryptionPublickey,
-            symetricEncryptionEncryptedpassphrase
+            _asymetricEncryptionPublicKey,
+            _symetricEncryptionEncryptedKey
         )
         public
     {
@@ -88,14 +88,14 @@ contract Partnership is Identity {
         identityInformation.category = _category;
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
-        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
+        identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
+        identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
     }
 
     /**
      * @dev This function will be used in inherited contracts,
-     * @dev to restrict read access to members of Partnership contracts
-     * @dev which are authorized in this contract.
+     * to restrict read access to members of Partnership contracts
+     * which are authorized in this contract.
      */
     function isPartnershipMember() public view returns (bool) {
         return partnershipContracts[foundation.membersToContracts(msg.sender)].authorization == PartnershipAuthorization.Authorized;
@@ -103,7 +103,7 @@ contract Partnership is Identity {
 
     /**
      * @dev Modifier version of isPartnershipMember.
-     * @dev Not used for now, but could be useful.
+     * Not used for now, but could be useful.
      */
     modifier onlyPartnershipMember() {
         require(
@@ -157,7 +157,7 @@ contract Partnership is Identity {
               hisCategory,
               uint(partnershipContracts[_hisContract].authorization),
               partnershipContracts[_hisContract].created,
-              partnershipContracts[_hisContract].passphrase
+              partnershipContracts[_hisContract].symetricEncryptionEncryptedKey
           );
     }
 
@@ -166,11 +166,11 @@ contract Partnership is Identity {
      * The owner of this contract requests a partnership
      * with another Partnership contract
      * through THIS contract.
-     * We send him our symetric encryption passphrase as well,
+     * We send him our symetric encryption key as well,
      * encrypted on his symetric encryption public key.
      * Encryption done offchain before submitting this TX.
      */
-    function requestPartnership(address _hisContract, bytes _ourPassphrase)
+    function requestPartnership(address _hisContract, bytes _ourSymetricKey)
         external
         onlyIdentityPurpose(1)
     {
@@ -190,7 +190,7 @@ contract Partnership is Identity {
         // Request partnership in the other contract.
         // Open interface on his contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
-        bool success = hisInterface._requestPartnership(_ourPassphrase);
+        bool success = hisInterface._requestPartnership(_ourSymetricKey);
         // If partnership request was a success,
         if (success) {
             // If we do not know the Partnership contract yet,
@@ -214,11 +214,11 @@ contract Partnership is Identity {
     /**
      * @dev Symetry of requestPartnership.
      * Called by Partnership contract wanting to partnership.
-     * He sends us his symetric encryption passphrase as well,
+     * He sends us his symetric encryption key as well,
      * encrypted on our symetric encryption public key.
      * So we can decipher all his content.
      */
-    function _requestPartnership(bytes _hisPassphrase)
+    function _requestPartnership(bytes _hisSymetricKey)
         external
         returns (bool success)
     {
@@ -236,9 +236,9 @@ contract Partnership is Identity {
         }
         // Write Pending to our partnerships contract registry.
         partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Pending;
-        // Record his symetric encryption passphrase,
+        // Record his symetric encryption key,
         // encrypted on our asymetric encryption public key.
-        partnershipContracts[msg.sender].passphrase = _hisPassphrase;
+        partnershipContracts[msg.sender].symetricEncryptionEncryptedKey = _hisSymetricKey;
         // Event for this contrat owner's UI.
         emit PartnershipRequested();
         // Return success.
@@ -248,10 +248,9 @@ contract Partnership is Identity {
     /**
      * @dev Authorize Partnership.
      * Before submitting this TX, we must have encrypted our
-     * symetric encryption passphrase
-     * on his asymetric encryption public key.
+     * symetric encryption key on his asymetric encryption public key.
      */
-    function authorizePartnership(address _hisContract, bytes _ourPassphrase)
+    function authorizePartnership(address _hisContract, bytes _ourSymetricKey)
         external
         onlyIdentityPurpose(1)
     {
@@ -271,20 +270,20 @@ contract Partnership is Identity {
         partnershipsNumber = partnershipsNumber.add(1);
         // Log an event in the new authorized partner contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
-        hisInterface._authorizePartnership(_ourPassphrase);
+        hisInterface._authorizePartnership(_ourSymetricKey);
     }
 
     /**
      * @dev Allows other Partnership contract to send an event when authorizing.
-     * He sends us also his symetric encryption passphrase,
+     * He sends us also his symetric encryption key,
      * encrypted on our asymetric encryption public key.
      */
-    function _authorizePartnership(bytes _hisPassphrase) external {
+    function _authorizePartnership(bytes _hisSymetricKey) external {
         require(
             partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized,
             'You have no authorized partnership'
         );
-        partnershipContracts[msg.sender].passphrase = _hisPassphrase;
+        partnershipContracts[msg.sender].symetricEncryptionEncryptedKey = _hisSymetricKey;
         emit PartnershipAccepted();
     }
 
@@ -325,8 +324,8 @@ contract Partnership is Identity {
             if (partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized) {
                 // Remove the partnership creation date.
                 delete partnershipContracts[_hisContract].created;
-                // Remove his passphrase.
-                delete partnershipContracts[_hisContract].passphrase;
+                // Remove his symetric encryption key.
+                delete partnershipContracts[_hisContract].symetricEncryptionEncryptedKey;
                 // Decrement our number of partnerships.
                 partnershipsNumber = partnershipsNumber.sub(1);
             }
@@ -348,7 +347,7 @@ contract Partnership is Identity {
 
     /**
      * @dev Symetry of removePartnership.
-     * @dev Called by Partnership contract breaking partnership with us.
+     * Called by the Partnership contract breaking partnership with us.
      */
     function _removePartnership() external returns (bool success) {
         // He wants to break partnership with us, so we break too.
@@ -356,14 +355,15 @@ contract Partnership is Identity {
         if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized) {
             // Remove date of partnership creation.
             delete partnershipContracts[msg.sender].created;
-            // Remove his passphrase.
-            delete partnershipContracts[msg.sender].passphrase;
+            // Remove his symetric encryption key.
+            delete partnershipContracts[msg.sender].symetricEncryptionEncryptedKey;
             // Decrement our number of partnerships.
             partnershipsNumber = partnershipsNumber.sub(1);
         }
-        // Would have liked to remove ERC 725 "Claim" keys.
+        // Would have liked to remove ERC 725 "Claim" keys here.
         // Unfortunately we can not automate this. Indeed it would require
         // the Partnership contract to have an ERC 725 Management key.
+
         // Remove his authorization.
         partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Removed;
         // We return to the calling contract that it's done.

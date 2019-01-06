@@ -38,7 +38,7 @@ contract Identity is ClaimHolder {
 
         // Asymetric encryption key algorithm.
         // We use an integer to store algo with offchain references.
-        // 1 => RSA
+        // 1 => RSA 2048
         // bytes12 left after this on SSTORAGE 1.
         uint16 asymetricEncryptionAlgorithm;
 
@@ -52,14 +52,14 @@ contract Identity is ClaimHolder {
         // This one can be used to encrypt content especially for this
         // contract owner, which is the only one to have the private key,
         // offchain of course.
-        bytes asymetricEncryptionPublickey;
+        bytes asymetricEncryptionPublicKey;
 
-        // Encrypted symetric encryption passphrase.
+        // Encrypted symetric encryption key (in Hex).
         // When decrypted, this passphrase can regenerate
         // the symetric encryption key.
         // This key encrypts and decrypts data to be shared with many people.
         // Uses 0.5 SSTORAGE for AES 128.
-        bytes symetricEncryptionEncryptedPassphrase;
+        bytes symetricEncryptionEncryptedKey;
     }
     // This contract Identity information.
     IdentityInformation public identityInformation;
@@ -91,8 +91,8 @@ contract Identity is ClaimHolder {
         uint16 _category,
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
-        bytes _asymetricEncryptionPublickey,
-        bytes symetricEncryptionEncryptedpassphrase
+        bytes _asymetricEncryptionPublicKey,
+        bytes _symetricEncryptionEncryptedKey
     )
         public
     {
@@ -102,16 +102,16 @@ contract Identity is ClaimHolder {
         identityInformation.category = _category;
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
-        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
+        identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
+        identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
     }
 
     /**
      * @dev Owner of this contract, in the Foundation sense.
-     * @dev We do not allow this to be used externally,
-     * @dev since a contract could fake ownership.
-     * @dev In other contracts, you have to call the Foundation to
-     * @dev know the real owner of this contract.
+     * We do not allow this to be used externally,
+     * since a contract could fake ownership.
+     * In other contracts, you have to call the Foundation to
+     * know the real owner of this contract.
      */
     function identityOwner() internal view returns (address) {
         return foundation.contractsToOwners(address(this));
@@ -119,7 +119,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev Check in Foundation if msg.sender is the owner of this contract.
-     * @dev Same remark.
+     * Same remark.
      */
     function isIdentityOwner() internal view returns (bool) {
         return msg.sender == identityOwner();
@@ -176,7 +176,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev "Send" a text to this contract.
-     * Text can be encrypted on this contract asymetricEncryptionPublickey,
+     * Text can be encrypted on this contract asymetricEncryptionPublicKey,
      * before submitting a TX here.
      */
     function identityboxSendtext(uint _category, bytes _text) external {
@@ -186,7 +186,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev "Send" a "file" to this contract.
-     * File should be encrypted on this contract asymetricEncryptionPublickey,
+     * File should be encrypted on this contract asymetricEncryptionPublicKey,
      * before upload on decentralized file storage,
      * before submitting a TX here.
      */
