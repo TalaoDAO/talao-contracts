@@ -24,8 +24,8 @@ contract Permissions is Partnership {
         uint16 _category,
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
-        bytes _asymetricEncryptionPublickey,
-        bytes symetricEncryptionEncryptedpassphrase
+        bytes _asymetricEncryptionPublicKey,
+        bytes _symetricEncryptionEncryptedKey
     )
         Partnership(
             _foundation,
@@ -33,8 +33,8 @@ contract Permissions is Partnership {
             _category,
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
-            _asymetricEncryptionPublickey,
-            symetricEncryptionEncryptedpassphrase
+            _asymetricEncryptionPublicKey,
+            _symetricEncryptionEncryptedKey
         )
         public
     {
@@ -44,8 +44,8 @@ contract Permissions is Partnership {
         identityInformation.category = _category;
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
-        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedpassphrase;
+        identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
+        identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
     }
 
     /**

@@ -68,8 +68,8 @@ contract Partnership is Identity {
         uint16 _category,
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
-        bytes _asymetricEncryptionPublickey,
-        bytes symetricEncryptionEncryptedsymetricEncryptionEncryptedKey
+        bytes _asymetricEncryptionPublicKey,
+        bytes _symetricEncryptionEncryptedKey
     )
         Identity(
             _foundation,
@@ -77,8 +77,8 @@ contract Partnership is Identity {
             _category,
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
-            _asymetricEncryptionPublickey,
-            symetricEncryptionEncryptedsymetricEncryptionEncryptedKey
+            _asymetricEncryptionPublicKey,
+            _symetricEncryptionEncryptedKey
         )
         public
     {
@@ -88,8 +88,8 @@ contract Partnership is Identity {
         identityInformation.category = _category;
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
-        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedPassphrase = symetricEncryptionEncryptedsymetricEncryptionEncryptedKey;
+        identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
+        identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
     }
 
     /**

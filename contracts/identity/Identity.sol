@@ -52,7 +52,7 @@ contract Identity is ClaimHolder {
         // This one can be used to encrypt content especially for this
         // contract owner, which is the only one to have the private key,
         // offchain of course.
-        bytes asymetricEncryptionPublickey;
+        bytes asymetricEncryptionPublicKey;
 
         // Encrypted symetric encryption key (in Hex).
         // When decrypted, this passphrase can regenerate
@@ -91,8 +91,8 @@ contract Identity is ClaimHolder {
         uint16 _category,
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
-        bytes _asymetricEncryptionPublickey,
-        bytes symetricEncryptionEncryptedpassphrase
+        bytes _asymetricEncryptionPublicKey,
+        bytes _symetricEncryptionEncryptedKey
     )
         public
     {
@@ -102,8 +102,8 @@ contract Identity is ClaimHolder {
         identityInformation.category = _category;
         identityInformation.asymetricEncryptionAlgorithm = _asymetricEncryptionAlgorithm;
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
-        identityInformation.asymetricEncryptionPublickey = _asymetricEncryptionPublickey;
-        identityInformation.symetricEncryptionEncryptedKey = symetricEncryptionEncryptedpassphrase;
+        identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
+        identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
     }
 
     /**
@@ -176,7 +176,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev "Send" a text to this contract.
-     * Text can be encrypted on this contract asymetricEncryptionPublickey,
+     * Text can be encrypted on this contract asymetricEncryptionPublicKey,
      * before submitting a TX here.
      */
     function identityboxSendtext(uint _category, bytes _text) external {
@@ -186,7 +186,7 @@ contract Identity is ClaimHolder {
 
     /**
      * @dev "Send" a "file" to this contract.
-     * File should be encrypted on this contract asymetricEncryptionPublickey,
+     * File should be encrypted on this contract asymetricEncryptionPublicKey,
      * before upload on decentralized file storage,
      * before submitting a TX here.
      */
