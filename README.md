@@ -6,10 +6,17 @@
 
 ![Talao smart contracts architecture](https://raw.githubusercontent.com/TalaoDAO/talao-contracts/gh-pages/smart-contracts-architecture.png)
 
-+ **Orange and red: deployed smart contracts** (there is also WorkspaceFactory that is not represented here)
++ **Orange and red: deployed smart contracts** (or to be very soon deployed ; there is also WorkspaceFactory that is not represented here)
 + Green: ERC
 + Blue: Contracts not deployed, but used in inheritance
 + Gray: Librairies
+
+## Overview of final contracts
+
+![Talao smart contracts overview](https://raw.githubusercontent.com/TalaoDAO/talao-contracts/gh-pages/smart-contracts-overview.png)
+
++ **Orange: deployed smart contracts** (or to be very soon deployed)
++ Green: prototypes and possible other future smart contracts
 
 ## Credits
 
