@@ -5,3 +5,12 @@
 ## Architecture
 
 ![Talao smart contracts architecture](https://raw.githubusercontent.com/TalaoDAO/talao-contracts/gh-pages/smart-contracts-architecture.png)
+
++ **Orange and red: deployed smart contracts** (there is also WorkspaceFactory that is not represented here)
++ Green: ERC
++ Blue: Contracts not deployed, but used in inheritance
++ Gray: Librairies
+
+## Credits
+
+*Huge thanks to the awesome Ethereum community which provide us with great tools, Solidity code and inspiration. Special thanks to [OriginProtocol](https://www.originprotocol.com) for their implementation of ERC 725 and ERC 735, which we use with slight modifications.*
