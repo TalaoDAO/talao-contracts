@@ -2,16 +2,9 @@
 
 *If you are looking for the real code of the Talao token deployed in the mainnet ICO, please go here: https://github.com/TalaoDAO/talao-crowdsale. The token code is here as well but it's an updated version, just to get rid of warnings.*
 
-**Welcome to the Talao protocol bug bounty program**
-
-+ Please start by reading [Talao announces a new release of its protocol together with a bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
-+ Then, please read **Bug bounty campaign** below.
-+ You'll also find a diagram to help you understand the smart contracts architecture.
-+ Installation and tests work as usual. Truffle v4 is required and contracts are written in Solidity 0.4.24.
-
-*Thanks for your attention, and have a good bug hunt!*
-
 ## Bug bounty program
+
+### Rules
 
 Anyone able to find security flaws or other problems in our smart contracts is encouraged to take part in our bounty program and submit the bug with the following details:
 
@@ -37,6 +30,12 @@ The rewards for accepted bugs are as follows:
 The total bug bounty program allocation is Eth 50.
 
 The team reserves the right to change the suggested severity level or ignore the bug report if they will find it not applicable. Only the first person who sends the particular vulnerability will be authorized to receive the bounty. Please send all vulnerabilities to bugbounty@talao.io. We thank you in advance for helping us to develop even more secure software.
+
+### Additional information
+
++ Please read [Talao announces a new release of its protocol together with a bug bounty program](https://github.com/TalaoDAO/talao-contracts) to understand the purposes of those contracts (link coming soon).
++ You'll also find a diagram below to help you understand the smart contracts architecture.
++ Installation and tests work as usual. Truffle v4.1.14 is required and contracts are written in Solidity 0.4.24.
 
 ## Smart contracts architecture
 
