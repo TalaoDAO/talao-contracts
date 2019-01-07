@@ -4,11 +4,10 @@
 
 **Welcome to the Talao protocol bug bounty program.**
 
-Please start by reading [Talao announces a new release of its protocol together with a bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
-
-Then, please check the [Talao protocol bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
-
-Below, you'll also find a diagram to help you understand the smart contracts architecture.
++ Please start by reading [Talao announces a new release of its protocol together with a bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
++ Then, please check the [Talao protocol bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
++ Below, you'll also find a diagram to help you understand the smart contracts architecture.
++ Installation and tests work as usual, nothing special here.
 
 *Thanks for your attention, and have a good bug hunt!*
 

@@ -61,8 +61,7 @@ contract('Workspace Factory', async (accounts) => {
         '0x11',
         '0x12',
         {from: user1}
-      ),
-      'EUR'
+      )
     );
     assert(result);
   });
