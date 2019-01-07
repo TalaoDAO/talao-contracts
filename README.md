@@ -2,14 +2,41 @@
 
 *If you are looking for the real code of the Talao token deployed in the mainnet ICO, please go here: https://github.com/TalaoDAO/talao-crowdsale. The token code is here as well but it's an updated version, just to get rid of warnings.*
 
-**Welcome to the Talao protocol bug bounty program.**
+**Welcome to the Talao protocol bug bounty program**
 
 + Please start by reading [Talao announces a new release of its protocol together with a bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
-+ Then, please check the [Talao protocol bug bounty program](https://github.com/TalaoDAO/talao-contracts) (link coming soon).
-+ Below, you'll also find a diagram to help you understand the smart contracts architecture.
-+ Installation and tests work as usual, nothing special here.
++ Then, please read **Bug bounty campaign** below.
++ You'll also find a diagram to help you understand the smart contracts architecture.
++ Installation and tests work as usual. Truffle v4 is required and contracts are written in Solidity 0.4.24.
 
 *Thanks for your attention, and have a good bug hunt!*
+
+## Bug bounty program
+
+Anyone able to find security flaws or other problems in our smart contracts is encouraged to take part in our bounty program and submit the bug with the following details:
+
++ Short description of vulnerability
++ Long description of vulnerability
++ Vulnerable application name
++ Steps to reproduce bug
++ Severity (Note, Low, Medium, High, Critical)
++ Impact
++ Screenshots (if applicable)
++ Recommended fix
+
+The [TALAO token](https://github.com/TalaoDAO/talao-contracts/tree/master/contracts/token), encryption code which is done off-chain and the [service prototype](https://github.com/TalaoDAO/talao-contracts/blob/master/contracts/test/Service1.sol) are not in the scope of the bug bounty program.
+
+The rewards for accepted bugs are as follows:
+
++ Critical: Eth 5 to 10
++ High: Eth 1 to 5
++ Medium: Eth 0.5 to 1
++ Low: Eth 0.1 to 0.5
++ Note: up to Eth 0.1
+
+The total bug bounty program allocation is Eth 50.
+
+The team reserves the right to change the suggested severity level or ignore the bug report if they will find it not applicable. Only the first person who sends the particular vulnerability will be authorized to receive the bounty. Please send all vulnerabilities to bugbounty@talao.io. We thank you in advance for helping us to develop even more secure software.
 
 ## Smart contracts architecture
 
