@@ -16,6 +16,7 @@ Anyone able to find security flaws or other problems in our smart contracts is e
 + Impact
 + Screenshots (if applicable)
 + Recommended fix
++ Your Ethereum address
 
 The [TALAO token](https://github.com/TalaoDAO/talao-contracts/tree/master/contracts/token), encryption code which is done off-chain and the [service prototype](https://github.com/TalaoDAO/talao-contracts/blob/master/contracts/test/Service1.sol) are not in the scope of the bug bounty program.
 
