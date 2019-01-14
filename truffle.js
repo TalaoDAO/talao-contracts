@@ -1,4 +1,5 @@
 // Fill in ./secret.js to deploy on real networks
+const HDWalletProvider = require('truffle-hdwallet-provider');
 const secret = require('./secret');
 const mnemonic = secret.mnemonic();
 const infuraApiKey = secret.infuraApiKey();
@@ -29,7 +30,7 @@ module.exports = {
     rinkeby: {
       network_id: "4",
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infuraApiKey, 6);
+        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infuraApiKey, 7);
       }
     }
   },

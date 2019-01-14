@@ -1,6 +1,6 @@
 const Foundation = artifacts.require('./Foundation.sol');
-const KeyHolderLibrary = artifacts.require("./identity/KeyHolderLibrary.sol");
-const ClaimHolderLibrary = artifacts.require("./identity/ClaimHolderLibrary.sol");
+const KeyHolderLibrary = artifacts.require('./identity/KeyHolderLibrary.sol');
+const ClaimHolderLibrary = artifacts.require('./identity/ClaimHolderLibrary.sol');
 const WorkspaceFactory = artifacts.require('./WorkspaceFactory.sol');
 
 module.exports = function(deployer) {
