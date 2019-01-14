@@ -34,7 +34,7 @@ The team reserves the right to change the suggested severity level or ignore the
 
 ### Additional information
 
-+ Please read [Talao announces a new release of its protocol together with a bug bounty program](https://github.com/TalaoDAO/talao-contracts) to understand the purposes of those contracts (link coming soon).
++ Please read [Talao announces a new release of its protocol together with a bug bounty program](https://medium.com/@talao/talao-announces-a-new-release-of-its-protocol-together-with-a-bug-bounty-program-f45fdc5fe511) to understand the purposes of those contracts (link coming soon).
 + You'll also find a diagram below to help you understand the smart contracts architecture.
 + Installation and tests work as usual. Truffle v4.1.14 is required and contracts are written in Solidity 0.4.24.
 
