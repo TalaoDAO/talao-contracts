@@ -6,6 +6,8 @@
 
 ### Rules
 
+#### Reporting
+
 Anyone able to find security flaws or other problems in our smart contracts is encouraged to take part in our bounty program and submit the bug with the following details:
 
 + Short description of vulnerability
@@ -18,7 +20,15 @@ Anyone able to find security flaws or other problems in our smart contracts is e
 + Recommended fix
 + Your Ethereum address
 
+#### Scope
+
 The [TALAO token](https://github.com/TalaoDAO/talao-contracts/tree/master/contracts/token), encryption code which is done off-chain and the [service prototype](https://github.com/TalaoDAO/talao-contracts/blob/master/contracts/test/Service1.sol) are not in the scope of the bug bounty program.
+
+Those known problems are not in the scope, as well:
+
++ in the token, getVaultAccess(freelance, '0x0000000000000000000000000000000000000000') always returns true. By default, when no account is provided, like for instance when connecting through Infura without a wallet, msg.sender = 0x0000000000000000000000000000000000000000. So we need to update isReader() in Permissions.sol in order to allow only msg.sender = 0x0000000000000000000000000000000000000000 when the Vault access price = 0
+
+#### Rewards & attribution
 
 The rewards for accepted bugs are as follows:
 
