@@ -11,7 +11,7 @@ import "../content/Documents.sol";
 contract WorkspaceV2 is Ownable {
 
     struct Document {
-        uint8 docType;
+        uint16 docType;
         address issuer;
         uint16 fileLocationEngine;
         bytes fileLocationHash;
@@ -25,7 +25,7 @@ contract WorkspaceV2 is Ownable {
         public
         view
         returns (
-            uint8,
+            uint16,
             address,
             uint16,
             bytes

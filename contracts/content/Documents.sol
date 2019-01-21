@@ -27,24 +27,24 @@ contract Documents is Permissions {
         // Type of document:
         // 1 = issued experience (restricted)
         // etc.
-        // 29 bytes remaining in SSTORAGE 1 after this.
-        uint8 docType;
+        // 28 bytes remaining in SSTORAGE 1 after this.
+        uint16 docType;
 
         // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
-        // 28 bytes remaining in SSTORAGE 1 after this.
-        uint8 docTypeVersion;
+        // 26 bytes remaining in SSTORAGE 1 after this.
+        uint16 docTypeVersion;
 
         // Position in index.
-        // 26 bytes remaining in SSTORAGE 1 after this.
+        // 24 bytes remaining in SSTORAGE 1 after this.
         uint16 index;
 
         // ID of the file location engine.
         // 1 = IPFS, 2 = Swarm, 3 = Filecoin, ...
-        // 24 bytes remaining in SSTORAGE 1 after this.
+        // 22 bytes remaining in SSTORAGE 1 after this.
         uint16 fileLocationEngine;
 
         // Issuer of the document.
-        // 4 bytes remaining in SSTORAGE 1 after this.
+        // 2 bytes remaining in SSTORAGE 1 after this.
         address issuer;
 
         // Checksum of the file (SHA-256 offchain).
@@ -84,8 +84,8 @@ contract Documents is Permissions {
         view
         onlyReader
         returns (
-            uint8,
-            uint8,
+            uint16,
+            uint16,
             address,
             bytes32,
             uint16,
@@ -118,8 +118,8 @@ contract Documents is Permissions {
      * @dev Create a document.
      */
     function createDocument(
-        uint8 _docType,
-        uint8 _docTypeVersion,
+        uint16 _docType,
+        uint16 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -129,7 +129,7 @@ contract Documents is Permissions {
         onlyIdentityPurpose(20002)
         returns (uint)
     {
-        require(_docType != 1, 'Type 1 is restricted to issueDocument()');
+        require(_docType != 20000, 'Type 20000 is restricted to issueDocument()');
         _createDocument(
             _docType,
             _docTypeVersion,
@@ -146,7 +146,7 @@ contract Documents is Permissions {
      * @dev Issue a document.
      */
     function issueDocument(
-        uint8 _docTypeVersion,
+        uint16 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -163,7 +163,7 @@ contract Documents is Permissions {
             'Access denied'
         );
         _createDocument(
-            1,
+            20000,
             _docTypeVersion,
             foundation.membersToContracts(msg.sender),
             _fileChecksum,
@@ -179,8 +179,8 @@ contract Documents is Permissions {
      * @dev Create a document.
      */
     function _createDocument(
-        uint8 _docType,
-        uint8 _docTypeVersion,
+        uint16 _docType,
+        uint16 _docTypeVersion,
         address _issuer,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
@@ -252,8 +252,8 @@ contract Documents is Permissions {
      */
     function updateDocument(
         uint _id,
-        uint8 _docType,
-        uint8 _docTypeVersion,
+        uint16 _docType,
+        uint16 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -263,7 +263,7 @@ contract Documents is Permissions {
         onlyIdentityPurpose(20002)
         returns (uint)
     {
-        require(_docType != 1, 'Type 1 is restricted to issueDocument()');
+        require(_docType != 20000, 'Type 20000 is restricted to issueDocument()');
         _deleteDocument(_id);
         _createDocument(
             _docType,
@@ -287,8 +287,8 @@ interface DocumentsInterface {
     function getDocument(uint)
         external
         returns (
-            uint8,
-            uint8,
+            uint16,
+            uint16,
             address,
             bytes32,
             uint16,

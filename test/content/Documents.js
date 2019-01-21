@@ -14,7 +14,7 @@ let token, foundation, documents1;
 // Sample data.
 const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
 const otherBytes32 = '0x8468697320737472696e67206a7573742066696c6c7320612062797465733332';
-const issuedDocType = 1; const docType = 2; const otherDocType = 3;
+const issuedDocType = 20000; const docType = 10000; const otherDocType = 30000;
 const docTypeVersion = 1; const otherDocTypeVersion = 2;
 const fileChecksum = bytes32; const otherFileChecksum = otherBytes32;
 const fileLocationEngine = 1; const otherFileLocationEngine = 2;
@@ -260,7 +260,7 @@ contract('Documents', async (accounts) => {
     assert.equal(
       result.toString(),
       [
-        1,
+        20000,
         docTypeVersion,
         documents2.address,
         fileChecksum,
