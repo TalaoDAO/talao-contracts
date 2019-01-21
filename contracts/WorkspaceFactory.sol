@@ -35,7 +35,8 @@ contract WorkspaceFactory is Ownable {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         external
         returns (address)
@@ -63,7 +64,8 @@ contract WorkspaceFactory is Ownable {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         );
         // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
         newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);

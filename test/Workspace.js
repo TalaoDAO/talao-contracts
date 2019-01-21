@@ -61,8 +61,9 @@ contract('Workspace', async (accounts) => {
       1001,
       0,
       0,
-      '0x',
-      '0x',
+      '0x11',
+      '0x12',
+      '0x13',
       {from: factory}
     );
     assert(workspace1);
@@ -75,8 +76,9 @@ contract('Workspace', async (accounts) => {
       2001,
       0,
       0,
-      '0x',
-      '0x',
+      '0x21',
+      '0x22',
+      '0x23',
       {from: factory}
     );
     assert(workspace2);
