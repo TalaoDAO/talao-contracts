@@ -1586,6 +1586,9 @@ contract Identity is ClaimHolder {
         // This key encrypts and decrypts data to be shared with many people.
         // Uses 0.5 SSTORAGE for AES 128.
         bytes symetricEncryptionEncryptedKey;
+
+        // Other encrypted secret we might use.
+        bytes encryptedSecret;
     }
     // This contract Identity information.
     IdentityInformation public identityInformation;
@@ -1618,7 +1621,8 @@ contract Identity is ClaimHolder {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         public
     {
@@ -1630,6 +1634,7 @@ contract Identity is ClaimHolder {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
@@ -1753,7 +1758,7 @@ interface IdentityInterface {
     function identityInformation()
         external
         view
-        returns (address, uint16, uint16, uint16, bytes, bytes);
+        returns (address, uint16, uint16, uint16, bytes, bytes, bytes);
     function identityboxSendtext(uint, bytes) external;
 }
 
@@ -1825,7 +1830,8 @@ contract Partnership is Identity {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Identity(
             _foundation,
@@ -1834,7 +1840,8 @@ contract Partnership is Identity {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -1846,6 +1853,7 @@ contract Partnership is Identity {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
@@ -1907,7 +1915,7 @@ contract Partnership is Identity {
         returns (address, uint, uint, uint40, bytes)
     {
           IdentityInterface hisInterface = IdentityInterface(_hisContract);
-          (,uint16 hisCategory,,,,) = hisInterface.identityInformation();
+          (,uint16 hisCategory,,,,,) = hisInterface.identityInformation();
           return (
               foundation.contractsToOwners(_hisContract),
               hisCategory,
@@ -2182,7 +2190,8 @@ contract Permissions is Partnership {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Partnership(
             _foundation,
@@ -2191,7 +2200,8 @@ contract Permissions is Partnership {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -2203,6 +2213,7 @@ contract Permissions is Partnership {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
@@ -2236,7 +2247,7 @@ contract Permissions is Partnership {
                     isMember() ||
                     isPartnershipMember() ||
                     hasIdentityPurpose(20001) ||
-                    accessPrice == 0
+                    (accessPrice == 0 && msg.sender != address(0))
                 )
             )
         );
@@ -2325,27 +2336,32 @@ contract Documents is Permissions {
         // 30 bytes remaining in SSTORAGE 1 after this.
         bool encrypted;
 
+        // Position in index.
+        // 28 bytes remaining in SSTORAGE 1 after this.
+        uint16 index;
+
         // Type of document:
-        // 1 = issued experience (restricted)
-        // etc.
-        // 29 bytes remaining in SSTORAGE 1 after this.
-        uint8 docType;
+        // ...
+        // 50000 => 59999: experiences
+        // 60000 => max: certificates
+        // 26 bytes remaining in SSTORAGE 1 after this.
+        uint16 docType;
 
         // Version of document type: 1 = "work experience version 1" document, if type_doc = 1
-        // 28 bytes remaining in SSTORAGE 1 after this.
-        uint8 docTypeVersion;
+        // 24 bytes remaining in SSTORAGE 1 after this.
+        uint16 docTypeVersion;
 
-        // Position in index.
-        // 26 bytes remaining in SSTORAGE 1 after this.
-        uint16 index;
+        // ID of related experience, for certificates.
+        // 22 bytes remaining in SSTORAGE 1 after this.
+        uint16 related;
 
         // ID of the file location engine.
         // 1 = IPFS, 2 = Swarm, 3 = Filecoin, ...
-        // 24 bytes remaining in SSTORAGE 1 after this.
+        // 20 bytes remaining in SSTORAGE 1 after this.
         uint16 fileLocationEngine;
 
         // Issuer of the document.
-        // 4 bytes remaining in SSTORAGE 1 after this.
+        // SSTORAGE 1 full after this.
         address issuer;
 
         // Checksum of the file (SHA-256 offchain).
@@ -2373,8 +2389,11 @@ contract Documents is Permissions {
     // Event: document removed.
     event DocumentRemoved (uint id);
 
-    // Event: document issued.
-    event DocumentIssued (bytes32 indexed checksum, address indexed issuer);
+    // Event: certificate issued.
+    event CertificateIssued (bytes32 indexed checksum, address indexed issuer, uint id);
+
+    // Event: certificate accepted.
+    event CertificateAccepted (bytes32 indexed checksum, address indexed issuer, uint id);
 
     /**
      * @dev Document getter.
@@ -2385,18 +2404,18 @@ contract Documents is Permissions {
         view
         onlyReader
         returns (
-            uint8,
-            uint8,
+            uint16,
+            uint16,
             address,
             bytes32,
             uint16,
             bytes,
-            bool
+            bool,
+            uint16
         )
     {
         Document memory doc = documents[_id];
-        require(_id > 0, 'Document ID must be > 0');
-        require(doc.published, 'Document does not exist');
+        require(doc.published);
         return(
             doc.docType,
             doc.docTypeVersion,
@@ -2404,7 +2423,8 @@ contract Documents is Permissions {
             doc.fileChecksum,
             doc.fileLocationEngine,
             doc.fileLocationHash,
-            doc.encrypted
+            doc.encrypted,
+            doc.related
         );
     }
 
@@ -2419,8 +2439,8 @@ contract Documents is Permissions {
      * @dev Create a document.
      */
     function createDocument(
-        uint8 _docType,
-        uint8 _docTypeVersion,
+        uint16 _docType,
+        uint16 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -2428,9 +2448,9 @@ contract Documents is Permissions {
     )
         external
         onlyIdentityPurpose(20002)
-        returns (uint)
+        returns(uint)
     {
-        require(_docType != 1, 'Type 1 is restricted to issueDocument()');
+        require(_docType < 60000);
         _createDocument(
             _docType,
             _docTypeVersion,
@@ -2438,79 +2458,106 @@ contract Documents is Permissions {
             _fileChecksum,
             _fileLocationEngine,
             _fileLocationHash,
-            _encrypted
+            _encrypted,
+            0
         );
         return documentsCounter;
     }
 
     /**
-     * @dev Issue a document.
+     * @dev Issue a certificate.
      */
-    function issueDocument(
-        uint8 _docTypeVersion,
+    function issueCertificate(
+        uint16 _docType,
+        uint16 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
-        bool _encrypted
+        bool _encrypted,
+        uint16 _related
     )
         external
-        returns (uint)
+        returns(uint)
     {
         require(
-            (
-                keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
-                isActiveIdentity()
-            ),
-            'Access denied'
+          keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
+          isActiveIdentity() &&
+          _docType >= 60000
         );
-        _createDocument(
-            1,
+        uint id = _createDocument(
+            _docType,
             _docTypeVersion,
             foundation.membersToContracts(msg.sender),
             _fileChecksum,
             _fileLocationEngine,
             _fileLocationHash,
-            _encrypted
+            _encrypted,
+            _related
         );
-        emit DocumentIssued(_fileChecksum, foundation.membersToContracts(msg.sender));
+        emit CertificateIssued(_fileChecksum, foundation.membersToContracts(msg.sender), id);
         return documentsCounter;
+    }
+
+    /**
+     * @dev Accept a certificate.
+     */
+    function acceptCertificate(uint _id) external onlyIdentityPurpose(20002) {
+        Document storage doc = documents[_id];
+        require(!doc.published && doc.docType >= 60000);
+        // Add to index.
+        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
+        // Publish.
+        doc.published = true;
+        // Unpublish related experience.
+        _deleteDocument(doc.related);
+        // Emit event.
+        emit CertificateAccepted(doc.fileChecksum, doc.issuer, _id);
     }
 
     /**
      * @dev Create a document.
      */
     function _createDocument(
-        uint8 _docType,
-        uint8 _docTypeVersion,
+        uint16 _docType,
+        uint16 _docTypeVersion,
         address _issuer,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
-        bool _encrypted
+        bool _encrypted,
+        uint16 _related
     )
         internal
+        returns(uint)
     {
-        require(_docType > 0, 'Type of document must be > 0');
-        require(_docTypeVersion > 0, 'Version of document type must be > 0');
-        require(_fileChecksum[0] != 0, 'File checksum must exist');
-        require(_fileLocationEngine > 0, 'File engine must be > 0');
-        require(_fileLocationHash[0] != 0, 'File hash must exist');
         // Increment documents counter.
         documentsCounter = documentsCounter.add(1);
         // Storage pointer.
         Document storage doc = documents[documentsCounter];
-        // Write data.
-        doc.published = true;
+        // For certificates:
+        // - add the related experience
+        // - do not add to index
+        // - do not publish.
+        if (_docType >= 60000) {
+            doc.related = _related;
+        } else {
+            // Add to index.
+            doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
+            // Publish.
+            doc.published = true;
+        }
+        // Common data.
         doc.encrypted = _encrypted;
         doc.docType = _docType;
         doc.docTypeVersion = _docTypeVersion;
-        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
         doc.fileLocationEngine = _fileLocationEngine;
         doc.issuer = _issuer;
         doc.fileChecksum = _fileChecksum;
         doc.fileLocationHash = _fileLocationHash;
         // Emit event.
         emit DocumentAdded(documentsCounter);
+        // Return document ID.
+        return documentsCounter;
     }
 
     /**
@@ -2525,8 +2572,8 @@ contract Documents is Permissions {
      */
     function _deleteDocument (uint _id) internal {
         Document storage docToDelete = documents[_id];
-        require (_id > 0, 'Document ID must be > 0');
-        require(docToDelete.published, 'Document does not exist');
+        require (_id > 0);
+        require(docToDelete.published);
         // If the removed document is not the last in the index,
         if (docToDelete.index < (documentsIndex.length).sub(1)) {
             // Find the last document of the index.
@@ -2553,8 +2600,8 @@ contract Documents is Permissions {
      */
     function updateDocument(
         uint _id,
-        uint8 _docType,
-        uint8 _docTypeVersion,
+        uint16 _docType,
+        uint16 _docTypeVersion,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -2564,7 +2611,7 @@ contract Documents is Permissions {
         onlyIdentityPurpose(20002)
         returns (uint)
     {
-        require(_docType != 1, 'Type 1 is restricted to issueDocument()');
+        require(_docType < 60000);
         _deleteDocument(_id);
         _createDocument(
             _docType,
@@ -2573,7 +2620,8 @@ contract Documents is Permissions {
             _fileChecksum,
             _fileLocationEngine,
             _fileLocationHash,
-            _encrypted
+            _encrypted,
+            0
         );
         return documentsCounter;
     }
@@ -2588,13 +2636,14 @@ interface DocumentsInterface {
     function getDocument(uint)
         external
         returns (
-            uint8,
-            uint8,
+            uint16,
+            uint16,
             address,
             bytes32,
             uint16,
             bytes,
-            bool
+            bool,
+            uint16
         );
 }
 
@@ -2616,7 +2665,8 @@ contract Workspace is Permissions, Profile, Documents {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Permissions(
             _foundation,
@@ -2625,7 +2675,8 @@ contract Workspace is Permissions, Profile, Documents {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -2637,6 +2688,7 @@ contract Workspace is Permissions, Profile, Documents {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
