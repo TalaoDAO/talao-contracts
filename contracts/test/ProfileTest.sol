@@ -18,7 +18,8 @@ contract ProfileTest is Permissions, Profile {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Permissions(
             _foundation,
@@ -27,7 +28,8 @@ contract ProfileTest is Permissions, Profile {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -39,5 +41,6 @@ contract ProfileTest is Permissions, Profile {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 }

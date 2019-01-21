@@ -14,7 +14,7 @@ let token, foundation, documents1;
 // Sample data.
 const bytes32 = '0x7468697320737472696e67206a7573742066696c6c7320612062797465733332';
 const otherBytes32 = '0x8468697320737472696e67206a7573742066696c6c7320612062797465733332';
-const issuedDocType = 1; const docType = 2; const otherDocType = 3;
+const docTypeCertificate = 60000; const docTypeExperience = 50000; const docType = 10000; const otherDocType = 20000;
 const docTypeVersion = 1; const otherDocTypeVersion = 2;
 const fileChecksum = bytes32; const otherFileChecksum = otherBytes32;
 const fileLocationEngine = 1; const otherFileLocationEngine = 2;
@@ -67,6 +67,7 @@ contract('Documents', async (accounts) => {
       1,
       '0x11',
       '0x12',
+      '0x13',
       {from: factory}
     );
     assert(documents1);
@@ -79,8 +80,9 @@ contract('Documents', async (accounts) => {
       2001,
       1,
       1,
-      '0x11',
-      '0x12',
+      '0x21',
+      '0x22',
+      '0x23',
       {from: factory}
     );
     assert(documents2);
@@ -88,7 +90,8 @@ contract('Documents', async (accounts) => {
     await documents2.addKey(web3.utils.keccak256(user2), 1, 1, {from: factory});
   });
 
-  it('User1 should add a document ID = 1, index[0]', async() => {
+  it('User1 should add a document ID = 1', async() => {
+    // index = []
     const result = await documents1.createDocument(
       docType,
       docTypeVersion,
@@ -98,10 +101,12 @@ contract('Documents', async (accounts) => {
       encrypted,
       {from: user1}
     );
+    // index = [1]
     assert(result);
+    truffleAssert.eventEmitted(result, 'DocumentAdded');
   });
 
-  it('In Document1, User1 be able get documents1 index, but not someone else', async() => {
+  it('In Document1, User1 should be able get documents1 index, but not someone else', async() => {
     const result1 = await documents1.getDocuments({from: user1});
     assert.equal(result1.toString(), 1);
     const result2 = await truffleAssert.fails(
@@ -110,7 +115,7 @@ contract('Documents', async (accounts) => {
     assert(!result2);
   });
 
-  it('In Document1, User1 be able get document of ID 1, but not someone else', async() => {
+  it('In Document1, User1 should be able get document of ID 1, but not someone else', async() => {
     const result1 = await documents1.getDocument(1, {from: user1});
     assert.equal(
       result1.toString(),
@@ -121,7 +126,8 @@ contract('Documents', async (accounts) => {
         fileChecksum,
         fileLocationEngine,
         fileLocationHash,
-        encrypted
+        encrypted,
+        0
       ]
     );
     const result2 = await truffleAssert.fails(
@@ -130,7 +136,8 @@ contract('Documents', async (accounts) => {
     assert(!result2);
   });
 
-  it('User1 should add a new document ID = 2, index[1]', async() => {
+  it('User1 should add a new document ID = 2', async() => {
+    // index = [1]
     const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
@@ -140,12 +147,14 @@ contract('Documents', async (accounts) => {
       otherEncrypted,
       {from: user1}
     );
+    // index = [1,2]
     assert(result);
   });
 
-  it('User1 should add a new document ID = 3, index[2]', async() => {
+  it('User1 should add a new experience ID = 3', async() => {
+    //index = [1,2]
     const result = await documents1.createDocument(
-      otherDocType,
+      docTypeExperience,
       otherDocTypeVersion,
       otherFileChecksum,
       otherFileLocationEngine,
@@ -153,12 +162,14 @@ contract('Documents', async (accounts) => {
       otherEncrypted,
       {from: user1}
     );
+    // index = [1,2,3]
     assert(result);
   });
 
-  it('User1 should add a new document ID = 4, index[3]', async() => {
+  it('User1 should add a new experience ID = 4', async() => {
+    // index = [1,2,3]
     const result = await documents1.createDocument(
-      otherDocType,
+      docTypeExperience,
       otherDocTypeVersion,
       otherFileChecksum,
       otherFileLocationEngine,
@@ -166,11 +177,14 @@ contract('Documents', async (accounts) => {
       otherEncrypted,
       {from: user1}
     );
+    // index = [1,2,3,4]
     assert(result);
   });
 
   it('User1 should delete document of ID = 2', async() => {
+    // index = [1,2,3,4]
     const result = await documents1.deleteDocument(2, {from: user1});
+    // index = [1,4,3] (see Documents.sol)
     assert(result);
     truffleAssert.eventEmitted(result, 'DocumentRemoved');
   });
@@ -183,10 +197,11 @@ contract('Documents', async (accounts) => {
     );
   });
 
-  it('User1 should "update" the doc ID = 1, index[0]. In fact this will delete the doc and add a new doc ID=5.', async() => {
+  it('User1 should "update" the experience ID = 1, index[0]. In fact this will delete the experience and add a new experience ID=5.', async() => {
+    // index = [1,4,3]
     const result = await documents1.updateDocument(
       1,
-      otherDocType,
+      docTypeExperience,
       otherDocTypeVersion,
       otherFileChecksum,
       otherFileLocationEngine,
@@ -194,6 +209,8 @@ contract('Documents', async (accounts) => {
       otherEncrypted,
       {from: user1}
     );
+    // delete => index = [3,4]
+    // create => index = [3,4,5]
     assert(result);
     truffleAssert.eventEmitted(result, 'DocumentAdded');
     truffleAssert.eventEmitted(result, 'DocumentRemoved');
@@ -214,6 +231,7 @@ contract('Documents', async (accounts) => {
   });
 
   it('User6 should add a new document ID6', async() => {
+    // index = [3,4,5]
     const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
@@ -223,6 +241,7 @@ contract('Documents', async (accounts) => {
       otherEncrypted,
       {from: user6}
     );
+    // index = [3,4,5,6]
     assert(result);
   });
 
@@ -243,66 +262,87 @@ contract('Documents', async (accounts) => {
     assert(result2);
   });
 
-  it('User2 (Marketplace owner) should issue a Document ID7 in User1\'s contract (Freelance)', async() => {
-    const result = await documents1.issueDocument(
+  it('User2 (Marketplace owner) should issue a Certificate ID 7 in User1\'s contract (Freelance), related to experience ID 3', async() => {
+    // index = [3,4,5,6]
+    const result = await documents1.issueCertificate(
+      docTypeCertificate,
       docTypeVersion,
       fileChecksum,
       fileLocationEngine,
       fileLocationHash,
       encrypted,
+      3,
       {from: user2}
     );
+    // index = [3,4,5,6] (7 not added because it's a certificate)
     assert(result);
+    truffleAssert.eventEmitted(result, 'CertificateIssued');
   });
 
-  it('Issued document should have correct data', async() => {
-    const result = await documents1.getDocument(7, {from: user1});
+  it('getDocuments should not return the certificate, yet', async() => {
+    const result = await documents1.getDocuments({from: user1});
     assert.equal(
       result.toString(),
-      [
-        1,
-        docTypeVersion,
-        documents2.address,
-        fileChecksum,
-        fileLocationEngine,
-        fileLocationHash,
-        encrypted
-      ]
+      '3,4,5,6'
     );
   });
 
-  it('User2 should add User3 as a member of his contract and User3 (Marketplace manager) should issue a document ID8 in User1\'s contract (Freelance)', async() => {
+  it('User1 should accept the certificate', async() => {
+    // index = [3,4,5,6]
+    const result1 = await documents1.acceptCertificate(7, {from: user1});
+    // accept =
+    // 1) publish and add to index => index = [3,4,5,6,7]
+    // 2) remove experience 3 => index = [7,4,5,6]
+    assert(result1);
+    truffleAssert.eventEmitted(result1, 'CertificateAccepted');
+    truffleAssert.eventEmitted(result1, 'DocumentRemoved');
+    const result2 = await documents1.getDocuments({from: user1});
+    assert.equal(
+      result2.toString(),
+      '7,4,5,6'
+    );
+  })
+
+  it('User2 should add User3 as a member of his contract and User3 (Marketplace manager) should issue a document ID8 in User1\'s contract (Freelance) corresponding to experience 4', async() => {
     await foundation.addMember(user3, {from: user2});
-    const result = await documents1.issueDocument(
+    // index = [7,4,5,6]
+    const result = await documents1.issueCertificate(
+      docTypeCertificate,
       otherDocTypeVersion,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,
       otherEncrypted,
+      4,
       {from: user3}
     );
+    // index = [7,4,5,6] (ID 8 not added, certificate)
     assert(result);
   });
 
-  it('User4 has no right to issue a document in User1\'s contract', async() => {
+  it('User4 has no right to issue a document in User1\'s contract, corresponding to experience 5', async() => {
     truffleAssert.fails(
-      documents1.issueDocument(
+      documents1.issueCertificate(
+        docTypeCertificate,
         otherDocTypeVersion,
         otherFileChecksum,
         otherFileLocationEngine,
         otherFileLocationHash,
         otherEncrypted,
+        5,
         {from: user4}
       )
     );
   });
 
-  it('User1 should remove issued document ID7 and getDocuments should return the correct array of doc IDs [3, 4, 5, 6, 8]', async() => {
+  it('User1 should remove issued certificate ID7 and getDocuments should return the correct index', async() => {
+    // index = [7,4,5,6]
     await documents1.deleteDocument(7, {from: user1});
+    // index = [6,4,5]
     const result = await documents1.getDocuments({from: user1});
     assert.equal(
       result.toString(),
-      '3,4,5,6,8'
+      '6,4,5'
     );
   });
 
@@ -313,19 +353,20 @@ contract('Documents', async (accounts) => {
     const result2 = await documents1.getDocuments({from: contract5});
     assert.equal(
       result2.toString(),
-      '3,4,5,6,8'
+      '6,4,5'
     );
-    const result3 = await documents1.getDocument(3, {from: contract5});
+    const result3 = await documents1.getDocument(5, {from: contract5});
     assert.equal(
       result3.toString(),
       [
-        otherDocType,
+        docTypeExperience,
         otherDocTypeVersion,
         user1,
         otherFileChecksum,
         otherFileLocationEngine,
         otherFileLocationHash,
-        otherEncrypted
+        otherEncrypted,
+        0
       ]
     );
   });

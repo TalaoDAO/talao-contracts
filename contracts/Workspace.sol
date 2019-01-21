@@ -20,7 +20,8 @@ contract Workspace is Permissions, Profile, Documents {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Permissions(
             _foundation,
@@ -29,7 +30,8 @@ contract Workspace is Permissions, Profile, Documents {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -41,6 +43,7 @@ contract Workspace is Permissions, Profile, Documents {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**

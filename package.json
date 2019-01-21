@@ -3,10 +3,8 @@
   "version": "5.0.0",
   "private": true,
   "dependencies": {
-    "aes-js": "^3.1.2",
     "erc735js": "^0.0.2",
     "mocha-truffle-reporter": "^1.0.1",
-    "node-rsa": "^1.0.2",
     "truffle-assertions": "^0.7.1",
     "truffle-cost": "^1.0.1",
     "truffle-hdwallet-provider": "^1.0.2",

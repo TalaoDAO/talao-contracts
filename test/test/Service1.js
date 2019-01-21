@@ -63,8 +63,9 @@ contract('Service1', async (accounts) => {
       2001,
       0,
       0,
-      '0x',
-      '0x',
+      '0x11',
+      '0x12',
+      '0x13',
       {from: factory}
     );
     assert(mpp1);
@@ -77,8 +78,9 @@ contract('Service1', async (accounts) => {
       2001,
       0,
       0,
-      '0x',
-      '0x',
+      '0x21',
+      '0x22',
+      '0x23',
       {from: factory}
     );
     assert(mpp2);
@@ -91,8 +93,9 @@ contract('Service1', async (accounts) => {
       1001,
       0,
       0,
-      '0x',
-      '0x',
+      '0x31',
+      '0x32',
+      '0x33',
       {from: factory}
     );
     assert(freelance3);
@@ -106,8 +109,9 @@ contract('Service1', async (accounts) => {
       1001,
       0,
       0,
-      '0x',
-      '0x',
+      '0x41',
+      '0x42',
+      '0x43',
       {from: factory}
     );
     assert(freelance4);

@@ -60,6 +60,7 @@ contract('Partnership', async (accounts) => {
       1,
       '0x11',
       '0x12',
+      '0x13',
       {from: factory}
     );
     partnership2 = await Partnership.new(
@@ -70,6 +71,7 @@ contract('Partnership', async (accounts) => {
       1,
       '0x21',
       '0x22',
+      '0x23',
       {from: factory}
     );
     partnership3 = await Partnership.new(
@@ -80,6 +82,7 @@ contract('Partnership', async (accounts) => {
       1,
       '0x31',
       '0x32',
+      '0x33',
       {from: factory}
     );
   });

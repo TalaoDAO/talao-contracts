@@ -25,7 +25,8 @@ contract Permissions is Partnership {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Partnership(
             _foundation,
@@ -34,7 +35,8 @@ contract Permissions is Partnership {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -46,6 +48,7 @@ contract Permissions is Partnership {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
@@ -79,7 +82,7 @@ contract Permissions is Partnership {
                     isMember() ||
                     isPartnershipMember() ||
                     hasIdentityPurpose(20001) ||
-                    accessPrice == 0
+                    (accessPrice == 0 && msg.sender != address(0))
                 )
             )
         );
