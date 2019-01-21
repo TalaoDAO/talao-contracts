@@ -69,7 +69,8 @@ contract Partnership is Identity {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         Identity(
             _foundation,
@@ -78,7 +79,8 @@ contract Partnership is Identity {
             _asymetricEncryptionAlgorithm,
             _symetricEncryptionAlgorithm,
             _asymetricEncryptionPublicKey,
-            _symetricEncryptionEncryptedKey
+            _symetricEncryptionEncryptedKey,
+            _encryptedSecret
         )
         public
     {
@@ -90,6 +92,7 @@ contract Partnership is Identity {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
@@ -151,7 +154,7 @@ contract Partnership is Identity {
         returns (address, uint, uint, uint40, bytes)
     {
           IdentityInterface hisInterface = IdentityInterface(_hisContract);
-          (,uint16 hisCategory,,,,) = hisInterface.identityInformation();
+          (,uint16 hisCategory,,,,,) = hisInterface.identityInformation();
           return (
               foundation.contractsToOwners(_hisContract),
               hisCategory,

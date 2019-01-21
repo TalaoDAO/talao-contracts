@@ -61,6 +61,7 @@ contract WorkspaceV2 is Ownable {
             bytes32 checksum,
             ,
             ,
+            ,
         ) = previous.getDocument(_id);
         Document storage doc = documents[checksum];
         (
@@ -70,6 +71,7 @@ contract WorkspaceV2 is Ownable {
             ,
             doc.fileLocationEngine,
             doc.fileLocationHash,
+            ,
         ) = previous.getDocument(_id);
         documentsIndex.push(checksum);
     }

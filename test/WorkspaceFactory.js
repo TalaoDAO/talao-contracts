@@ -60,6 +60,7 @@ contract('Workspace Factory', async (accounts) => {
         1,
         '0x11',
         '0x12',
+        '0x13',
         {from: user1}
       )
     );
@@ -97,6 +98,7 @@ contract('Workspace Factory', async (accounts) => {
         1,
         '0x11',
         '0x12',
+        '0x13',
         {from: user1}
       )
     );
@@ -109,8 +111,9 @@ contract('Workspace Factory', async (accounts) => {
         12345689,
         1,
         1,
-        '0x11',
-        '0x12',
+        '0x21',
+        '0x22',
+        '0x23',
         {from: user2}
       )
     );

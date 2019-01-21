@@ -60,6 +60,9 @@ contract Identity is ClaimHolder {
         // This key encrypts and decrypts data to be shared with many people.
         // Uses 0.5 SSTORAGE for AES 128.
         bytes symetricEncryptionEncryptedKey;
+
+        // Other encrypted secret we might use.
+        bytes encryptedSecret;
     }
     // This contract Identity information.
     IdentityInformation public identityInformation;
@@ -92,7 +95,8 @@ contract Identity is ClaimHolder {
         uint16 _asymetricEncryptionAlgorithm,
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
-        bytes _symetricEncryptionEncryptedKey
+        bytes _symetricEncryptionEncryptedKey,
+        bytes _encryptedSecret
     )
         public
     {
@@ -104,6 +108,7 @@ contract Identity is ClaimHolder {
         identityInformation.symetricEncryptionAlgorithm = _symetricEncryptionAlgorithm;
         identityInformation.asymetricEncryptionPublicKey = _asymetricEncryptionPublicKey;
         identityInformation.symetricEncryptionEncryptedKey = _symetricEncryptionEncryptedKey;
+        identityInformation.encryptedSecret = _encryptedSecret;
     }
 
     /**
@@ -227,6 +232,6 @@ interface IdentityInterface {
     function identityInformation()
         external
         view
-        returns (address, uint16, uint16, uint16, bytes, bytes);
+        returns (address, uint16, uint16, uint16, bytes, bytes, bytes);
     function identityboxSendtext(uint, bytes) external;
 }

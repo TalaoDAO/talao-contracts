@@ -63,6 +63,7 @@ contract('Foundation', async (accounts) => {
       1,
       '0x11',
       '0x12',
+      '0x13',
       {from: user1}
     );
     assert(result);

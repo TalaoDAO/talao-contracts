@@ -58,6 +58,7 @@ contract('Profile', async (accounts) => {
       1,
       '0x11',
       '0x12',
+      '0x13',
       {from: factory}
     );
     assert(profile);
