@@ -2495,7 +2495,7 @@ contract Documents is Permissions {
             _related
         );
         emit CertificateIssued(_fileChecksum, foundation.membersToContracts(msg.sender), id);
-        return documentsCounter;
+        return id;
     }
 
     /**
@@ -2505,11 +2505,13 @@ contract Documents is Permissions {
         Document storage doc = documents[_id];
         require(!doc.published && doc.docType >= 60000);
         // Add to index.
-        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
+        doc.index = uint16(documentsIndex.push(_id).sub(1));
         // Publish.
         doc.published = true;
-        // Unpublish related experience.
-        _deleteDocument(doc.related);
+        // Unpublish related experience, if published.
+        if (documents[doc.related].published) {
+            _deleteDocument(doc.related);
+        }
         // Emit event.
         emit CertificateAccepted(doc.fileChecksum, doc.issuer, _id);
     }
@@ -2741,7 +2743,8 @@ contract WorkspaceFactory is Ownable {
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
         bytes _symetricEncryptionEncryptedKey,
-        bytes _encryptedSecret
+        bytes _encryptedSecret,
+        bytes _email
     )
         external
         returns (address)
@@ -2772,6 +2775,9 @@ contract WorkspaceFactory is Ownable {
             _symetricEncryptionEncryptedKey,
             _encryptedSecret
         );
+        // Add the email.
+        // @see https://github.com/ethereum/EIPs/issues/735#issuecomment-450647097
+        newWorkspace.addClaim(101109097105108, 1, msg.sender, "", _email, "");
         // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
         newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);
         // Remove this factory ERC 725 MANAGER key.
