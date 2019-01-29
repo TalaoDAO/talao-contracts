@@ -36,7 +36,8 @@ contract WorkspaceFactory is Ownable {
         uint16 _symetricEncryptionAlgorithm,
         bytes _asymetricEncryptionPublicKey,
         bytes _symetricEncryptionEncryptedKey,
-        bytes _encryptedSecret
+        bytes _encryptedSecret,
+        bytes _email
     )
         external
         returns (address)
@@ -67,6 +68,9 @@ contract WorkspaceFactory is Ownable {
             _symetricEncryptionEncryptedKey,
             _encryptedSecret
         );
+        // Add the email.
+        // @see https://github.com/ethereum/EIPs/issues/735#issuecomment-450647097
+        newWorkspace.addClaim(101109097105108, 1, msg.sender, "", _email, "");
         // Add an ECDSA ERC 725 key for initial owner with MANAGER purpose
         newWorkspace.addKey(keccak256(abi.encodePacked(msg.sender)), 1, 1);
         // Remove this factory ERC 725 MANAGER key.
