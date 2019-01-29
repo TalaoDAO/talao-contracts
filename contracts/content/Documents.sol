@@ -183,7 +183,7 @@ contract Documents is Permissions {
             _related
         );
         emit CertificateIssued(_fileChecksum, foundation.membersToContracts(msg.sender), id);
-        return documentsCounter;
+        return id;
     }
 
     /**
@@ -193,11 +193,13 @@ contract Documents is Permissions {
         Document storage doc = documents[_id];
         require(!doc.published && doc.docType >= 60000);
         // Add to index.
-        doc.index = uint16(documentsIndex.push(documentsCounter).sub(1));
+        doc.index = uint16(documentsIndex.push(_id).sub(1));
         // Publish.
         doc.published = true;
-        // Unpublish related experience.
-        _deleteDocument(doc.related);
+        // Unpublish related experience, if published.
+        if (documents[doc.related].published) {
+            _deleteDocument(doc.related);
+        }
         // Emit event.
         emit CertificateAccepted(doc.fileChecksum, doc.issuer, _id);
     }
