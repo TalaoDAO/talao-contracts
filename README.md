@@ -2,6 +2,16 @@
 
 *If you are looking for the real code of the Talao token deployed in the mainnet ICO, please go here: https://github.com/TalaoDAO/talao-crowdsale. The token code is here as well but it's an updated version, just to get rid of warnings.*
 
+## Deployed contracts
+
+### Rinkeby
+
+*  TalaoToken: https://rinkeby.etherscan.io/address/0xb8a0a9ee2e780281637bd93c13076cc5e342c9ae
+*  Foundation: https://rinkeby.etherscan.io/address/0xb7f53e277e38c2fb2087922cf8231b18fb8e117f
+*  WorkspaceFactory: https://rinkeby.etherscan.io/address/0x9cff58392d3791745b7f31cd90797b1bba7e461a
+*  KeyHolderLibrary: https://rinkeby.etherscan.io/address/0x4b65f43c625ca40bd83f6885b5fb69dadc09ab4c
+*  ClaimHolderLibrary: https://rinkeby.etherscan.io/address/0x8d9353e0ec57571ada26dc0711ded819a15e1483
+
 ## Bug bounty program
 
 ### Rules
