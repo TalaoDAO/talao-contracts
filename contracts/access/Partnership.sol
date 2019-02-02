@@ -110,8 +110,8 @@ contract Partnership is Identity {
      */
     modifier onlyPartnershipMember() {
         require(
-          isPartnershipMember(),
-          'You are not member of a partnership'
+            isPartnershipMember(),
+            "You are not member of a partnership"
         );
         _;
     }
