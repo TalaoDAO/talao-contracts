@@ -92,7 +92,7 @@ contract Permissions is Partnership {
      * @dev Modifier version of isReader.
      */
     modifier onlyReader() {
-        require(isReader(), 'Access denied');
+        require(isReader(), "Access denied");
         _;
     }
 }

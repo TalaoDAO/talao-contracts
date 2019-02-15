@@ -45,7 +45,7 @@ contract WorkspaceFactory is Ownable {
         // Sender must have access to his Vault in the Token.
         require(
             token.hasVaultAccess(msg.sender, msg.sender),
-            'Sender has no access to Vault.'
+            "Sender has no access to Vault"
         );
         require(
             (
@@ -55,7 +55,7 @@ contract WorkspaceFactory is Ownable {
                 _category == 4001 ||
                 _category == 5001
             ),
-            'Invalid category'
+            "Invalid category"
         );
         // Create contract.
         Workspace newWorkspace = new Workspace(
@@ -85,6 +85,6 @@ contract WorkspaceFactory is Ownable {
      * @dev Prevents accidental sending of ether.
      */
     function() public {
-        revert();
+        revert("Prevent accidental sending of ether");
     }
 }
