@@ -56,6 +56,9 @@ contract Documents is Permissions {
         // SSTORAGE 2 filled after this.
         bytes32 fileChecksum;
 
+        // Expiration date.
+        uint40 expires;
+
         // Hash of the file location in a decentralized engine.
         // Example: IPFS hash, Swarm hash, Filecoin hash...
         // Uses 1 SSTORAGE for IPFS.
@@ -94,6 +97,7 @@ contract Documents is Permissions {
         returns (
             uint16,
             uint16,
+            uint40,
             address,
             bytes32,
             uint16,
@@ -107,6 +111,7 @@ contract Documents is Permissions {
         return(
             doc.docType,
             doc.docTypeVersion,
+            doc.expires,
             doc.issuer,
             doc.fileChecksum,
             doc.fileLocationEngine,
@@ -129,6 +134,7 @@ contract Documents is Permissions {
     function createDocument(
         uint16 _docType,
         uint16 _docTypeVersion,
+        uint40 _expires,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -142,6 +148,7 @@ contract Documents is Permissions {
         _createDocument(
             _docType,
             _docTypeVersion,
+            _expires,
             msg.sender,
             _fileChecksum,
             _fileLocationEngine,
@@ -168,13 +175,14 @@ contract Documents is Permissions {
         returns(uint)
     {
         require(
-          keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
-          isActiveIdentity() &&
-          _docType >= 60000
+            keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
+            isActiveIdentity() &&
+            _docType >= 60000
         );
         uint id = _createDocument(
             _docType,
             _docTypeVersion,
+            0,
             foundation.membersToContracts(msg.sender),
             _fileChecksum,
             _fileLocationEngine,
@@ -210,6 +218,7 @@ contract Documents is Permissions {
     function _createDocument(
         uint16 _docType,
         uint16 _docTypeVersion,
+        uint40 _expires,
         address _issuer,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
@@ -240,6 +249,7 @@ contract Documents is Permissions {
         doc.encrypted = _encrypted;
         doc.docType = _docType;
         doc.docTypeVersion = _docTypeVersion;
+        doc.expires = _expires;
         doc.fileLocationEngine = _fileLocationEngine;
         doc.issuer = _issuer;
         doc.fileChecksum = _fileChecksum;
@@ -292,6 +302,7 @@ contract Documents is Permissions {
         uint _id,
         uint16 _docType,
         uint16 _docTypeVersion,
+        uint40 _expires,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -306,6 +317,7 @@ contract Documents is Permissions {
         _createDocument(
             _docType,
             _docTypeVersion,
+            _expires,
             msg.sender,
             _fileChecksum,
             _fileLocationEngine,
@@ -328,6 +340,7 @@ interface DocumentsInterface {
         returns (
             uint16,
             uint16,
+            uint40,
             address,
             bytes32,
             uint16,

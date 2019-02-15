@@ -109,10 +109,7 @@ contract Partnership is Identity {
      * Not used for now, but could be useful.
      */
     modifier onlyPartnershipMember() {
-        require(
-            isPartnershipMember(),
-            "You are not member of a partnership"
-        );
+        require(isPartnershipMember());
         _;
     }
 
@@ -183,12 +180,8 @@ contract Partnership is Identity {
         // Indeed when he asked a partnership with us,
         // he added us in authorized partnerships.
         require(
-            (
-                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Unknown ||
-                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Removed
-            )
-            ,
-            'Partnership contract must be Unknown or Removed'
+            partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Unknown ||
+            partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Removed
         );
         // Request partnership in the other contract.
         // Open interface on his contract.

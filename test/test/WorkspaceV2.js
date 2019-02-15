@@ -20,6 +20,8 @@ const docType = 2
 const otherDocType = 3
 const docTypeVersion = 1
 const otherDocTypeVersion = 2
+const expires = 1550242036
+const otherExpires = 1573829236
 const fileChecksum = bytes32
 const otherFileChecksum = otherBytes32
 const fileLocationEngine = 1
@@ -81,6 +83,7 @@ contract('WorkspaceV2', async (accounts) => {
     const result = await workspace1.createDocument(
       docType,
       docTypeVersion,
+      expires,
       fileChecksum,
       fileLocationEngine,
       fileLocationHash,
@@ -94,6 +97,7 @@ contract('WorkspaceV2', async (accounts) => {
     const result = await workspace1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherExpires,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,

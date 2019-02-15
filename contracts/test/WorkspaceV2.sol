@@ -58,6 +58,7 @@ contract WorkspaceV2 is Ownable {
             ,
             ,
             ,
+            ,
             bytes32 checksum,
             ,
             ,
@@ -66,6 +67,7 @@ contract WorkspaceV2 is Ownable {
         Document storage doc = documents[checksum];
         (
             doc.docType,
+            ,
             ,
             doc.issuer,
             ,

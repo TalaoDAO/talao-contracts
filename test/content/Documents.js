@@ -20,6 +20,8 @@ const docType = 10000
 const otherDocType = 20000
 const docTypeVersion = 1
 const otherDocTypeVersion = 2
+const expires = 1550242036
+const otherExpires = 1573829236
 const fileChecksum = bytes32
 const otherFileChecksum = otherBytes32
 const fileLocationEngine = 1
@@ -103,6 +105,7 @@ contract('Documents', async (accounts) => {
     const result = await documents1.createDocument(
       docType,
       docTypeVersion,
+      expires,
       fileChecksum,
       fileLocationEngine,
       fileLocationHash,
@@ -130,6 +133,7 @@ contract('Documents', async (accounts) => {
       [
         docType,
         docTypeVersion,
+        expires,
         user1,
         fileChecksum,
         fileLocationEngine,
@@ -149,6 +153,7 @@ contract('Documents', async (accounts) => {
     const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherExpires,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,
@@ -164,6 +169,7 @@ contract('Documents', async (accounts) => {
     const result = await documents1.createDocument(
       docTypeExperience,
       otherDocTypeVersion,
+      otherExpires,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,
@@ -179,6 +185,7 @@ contract('Documents', async (accounts) => {
     const result = await documents1.createDocument(
       docTypeExperience,
       otherDocTypeVersion,
+      otherExpires,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,
@@ -211,6 +218,7 @@ contract('Documents', async (accounts) => {
       1,
       docTypeExperience,
       otherDocTypeVersion,
+      otherExpires,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,
@@ -243,6 +251,7 @@ contract('Documents', async (accounts) => {
     const result = await documents1.createDocument(
       otherDocType,
       otherDocTypeVersion,
+      otherExpires,
       otherFileChecksum,
       otherFileLocationEngine,
       otherFileLocationHash,
@@ -312,12 +321,13 @@ contract('Documents', async (accounts) => {
     const result3 = await documents1.getDocument(7, {from: user1})
     assert.equal(result3[0].toNumber(), docTypeCertificate)
     assert.equal(result3[1].toNumber(), docTypeVersion)
-    assert.equal(result3[2], documents2.address)
-    assert.equal(result3[3], fileChecksum)
-    assert.equal(result3[4].toNumber(), fileLocationEngine)
-    assert.equal(result3[5], fileLocationHash)
-    assert.equal(result3[6], encrypted)
-    assert.equal(result3[7].toNumber(), 3)
+    assert.equal(result3[2].toNumber(), 0)
+    assert.equal(result3[3], documents2.address)
+    assert.equal(result3[4], fileChecksum)
+    assert.equal(result3[5].toNumber(), fileLocationEngine)
+    assert.equal(result3[6], fileLocationHash)
+    assert.equal(result3[7], encrypted)
+    assert.equal(result3[8].toNumber(), 3)
   })
 
   it('User2 should add User3 as a member of his contract and User3 (Marketplace manager) should issue a document ID8 in User1\'s contract (Freelance) corresponding to experience 4', async() => {
@@ -385,19 +395,15 @@ contract('Documents', async (accounts) => {
       '6,4,5,7'
     )
     const result3 = await documents1.getDocument(5, {from: contract5})
-    assert.equal(
-      result3.toString(),
-      [
-        docTypeExperience,
-        otherDocTypeVersion,
-        user1,
-        otherFileChecksum,
-        otherFileLocationEngine,
-        otherFileLocationHash,
-        otherEncrypted,
-        0
-      ]
-    )
+    assert.equal(result3[0].toNumber(), docTypeExperience)
+    assert.equal(result3[1].toNumber(), otherDocTypeVersion)
+    assert.equal(result3[2].toNumber(), otherExpires)
+    assert.equal(result3[3], user1)
+    assert.equal(result3[4], otherFileChecksum)
+    assert.equal(result3[5].toNumber(), otherFileLocationEngine)
+    assert.equal(result3[6], otherFileLocationHash)
+    assert.equal(result3[7], otherEncrypted)
+    assert.equal(result3[8].toNumber(), 0)
   })
 
 })
