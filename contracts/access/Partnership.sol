@@ -399,5 +399,5 @@ interface PartnershipInterface {
     function getKnownPartnershipsContracts() external returns (address[]);
     function getPartnership(address)
         external
-        returns (address, uint, uint, uint40, bytes, bytes);
+        returns (uint, uint, uint40, bytes, bytes);
 }
