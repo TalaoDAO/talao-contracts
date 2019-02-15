@@ -219,16 +219,15 @@ contract Partnership is Identity {
         returns (bool success)
     {
         require(
-            (
-                partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
-                partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Removed
-            ),
-            'Partnership already pending, authorized or rejected'
+            partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
+            partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Removed
         );
         // If this Partnership contract is Unknown,
         if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown) {
             // Add the new partnership to our partnerships index.
             knownPartnershipContracts.push(msg.sender);
+            // Record date of partnership creation.
+            partnershipContracts[msg.sender].created = uint40(now);
         }
         // Write Pending to our partnerships contract registry.
         partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Pending;
