@@ -148,17 +148,23 @@ contract Partnership is Identity {
         external
         view
         onlyIdentityPurpose(20003)
-        returns (address, uint, uint, uint40, bytes)
+        returns (uint, uint, uint40, bytes, bytes)
     {
-          IdentityInterface hisInterface = IdentityInterface(_hisContract);
-          (,uint16 hisCategory,,,,,) = hisInterface.identityInformation();
-          return (
-              foundation.contractsToOwners(_hisContract),
-              hisCategory,
-              uint(partnershipContracts[_hisContract].authorization),
-              partnershipContracts[_hisContract].created,
-              partnershipContracts[_hisContract].symetricEncryptionEncryptedKey
-          );
+        (
+            ,
+            uint16 hisCategory,
+            ,
+            ,
+            bytes memory hisAsymetricEncryptionPublicKey,
+            ,
+        ) = IdentityInterface(_hisContract).identityInformation();
+        return (
+            hisCategory,
+            uint(partnershipContracts[_hisContract].authorization),
+            partnershipContracts[_hisContract].created,
+            hisAsymetricEncryptionPublicKey,
+            partnershipContracts[_hisContract].symetricEncryptionEncryptedKey
+        );
     }
 
     /**
@@ -251,7 +257,7 @@ contract Partnership is Identity {
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
-            'Partnership must be Pending'
+            "Partnership must be Pending"
         );
         // Authorize the Partnership contract in our contract.
         partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Authorized;
@@ -276,7 +282,7 @@ contract Partnership is Identity {
     function _authorizePartnership(bytes _hisSymetricKey) external {
         require(
             partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized,
-            'You have no authorized partnership'
+            "You have no authorized partnership"
         );
         partnershipContracts[msg.sender].symetricEncryptionEncryptedKey = _hisSymetricKey;
         emit PartnershipAccepted();
@@ -291,7 +297,7 @@ contract Partnership is Identity {
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
-            'Partner must be Pending'
+            "Partner must be Pending"
         );
         partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Rejected;
     }
@@ -308,7 +314,7 @@ contract Partnership is Identity {
                 partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized ||
                 partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Rejected
             ),
-            'Partnership must be Authorized or Rejected'
+            "Partnership must be Authorized or Rejected"
         );
         // Remove ourselves in the other Partnership contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
@@ -393,5 +399,5 @@ interface PartnershipInterface {
     function getKnownPartnershipsContracts() external returns (address[]);
     function getPartnership(address)
         external
-        returns (address, uint, uint, uint40, bytes);
+        returns (address, uint, uint, uint40, bytes, bytes);
 }

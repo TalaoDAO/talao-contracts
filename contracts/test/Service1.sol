@@ -86,6 +86,7 @@ contract Service1 is Ownable {
                     hisCategory,
                     hisAuthorization,
                     ,
+                    ,
                 ) = sellerPartnership.getPartnership(recipients[i]);
                 // If active Freelancer
                 if (
