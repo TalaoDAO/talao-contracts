@@ -83,30 +83,30 @@ contract Ownable {
  * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
  */
 library SafeMath {
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
-      return 0;
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) {
+            return 0;
+        }
+        uint256 c = a * b;
+        assert(c / a == b);
+        return c;
     }
-    uint256 c = a * b;
-    assert(c / a == b);
-    return c;
-  }
 
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a / b;
-    return c;
-  }
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a / b;
+        return c;
+    }
 
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a);
-    return a - b;
-  }
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
 
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a + b;
-    assert(c >= a);
-    return c;
-  }
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
 }
 
 // File: contracts/token/TalaoToken.sol
@@ -708,7 +708,7 @@ contract Foundation is Ownable {
     modifier onlyFactory() {
         require(
             factories[msg.sender],
-            'You are not a factory'
+            "You are not a factory"
         );
         _;
     }
@@ -725,11 +725,11 @@ contract Foundation is Ownable {
     {
         require(
             contractsToOwners[_contract] == address(0),
-            'Contract already has owner'
+            "Contract already has owner"
         );
         require(
             ownersToContracts[_account] == address(0),
-            'Account already has contract'
+            "Account already has contract"
         );
         contractsToOwners[_contract] = _account;
         contractsIndex.push(_contract);
@@ -751,7 +751,7 @@ contract Foundation is Ownable {
                 ownersToContracts[msg.sender] == _contract &&
                 contractsToOwners[_contract] == msg.sender
             ),
-            'You are not the owner'
+            "You are not the owner"
         );
         ownersToContracts[msg.sender] = address(0);
         membersToContracts[msg.sender] = address(0);
@@ -783,11 +783,11 @@ contract Foundation is Ownable {
     function addMember(address _member) external {
         require(
             ownersToContracts[msg.sender] != address(0),
-            'You own no contract'
+            "You own no contract"
         );
         require(
             membersToContracts[_member] == address(0),
-            'Address is already member of a contract'
+            "Address is already member of a contract"
         );
         membersToContracts[_member] = ownersToContracts[msg.sender];
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
@@ -799,11 +799,11 @@ contract Foundation is Ownable {
     function removeMember(address _member) external {
         require(
             ownersToContracts[msg.sender] != address(0),
-            'You own no contract'
+            "You own no contract"
         );
         require(
             membersToContracts[_member] == ownersToContracts[msg.sender],
-            'Address is not member of this contract'
+            "Address is not member of this contract"
         );
         membersToContracts[_member] = address(0);
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
@@ -814,8 +814,8 @@ contract Foundation is Ownable {
      * The automatic getter can not return array.
      */
     function getContractsIndex()
-        onlyOwner
         external
+        onlyOwner
         view
         returns (address[])
     {
@@ -826,7 +826,7 @@ contract Foundation is Ownable {
      * @dev Prevents accidental sending of ether.
      */
     function() public {
-        revert();
+        revert("Prevent accidental sending of ether");
     }
 }
 
@@ -839,10 +839,42 @@ contract Foundation is Ownable {
  */
 contract ERC735 {
 
-    event ClaimRequested(uint256 indexed claimRequestId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
-    event ClaimAdded(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
-    event ClaimRemoved(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
-    event ClaimChanged(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
+    event ClaimRequested(
+        uint256 indexed claimRequestId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
+    event ClaimAdded(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
+    event ClaimRemoved(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
+    event ClaimChanged(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
 
     struct Claim {
         uint256 topic;
@@ -853,10 +885,14 @@ contract ERC735 {
         string uri;
     }
 
-    function getClaim(bytes32 _claimId) public view returns(uint256 topic, uint256 scheme, address issuer, bytes signature, bytes data, string uri);
-    function getClaimIdsByTopic(uint256 _topic) public view returns(bytes32[] claimIds);
-    function addClaim(uint256 _topic, uint256 _scheme, address issuer, bytes _signature, bytes _data, string _uri) public returns (bytes32 claimRequestId);
-    function removeClaim(bytes32 _claimId) public returns (bool success);
+    function getClaim(bytes32 _claimId)
+        public view returns(uint256 topic, uint256 scheme, address issuer, bytes signature, bytes data, string uri);
+    function getClaimIdsByTopic(uint256 _topic)
+        public view returns(bytes32[] claimIds);
+    function addClaim(uint256 _topic, uint256 _scheme, address issuer, bytes _signature, bytes _data, string _uri)
+        public returns (bytes32 claimRequestId);
+    function removeClaim(bytes32 _claimId)
+        public returns (bool success);
 }
 
 // File: contracts/identity/ERC725.sol
@@ -1054,7 +1090,10 @@ library KeyHolderLibrary {
 
         emit ExecutionRequested(_keyHolderData.executionNonce, _to, _value, _data);
 
-        if (keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),1) || keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),2)) {
+        if (
+            keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),1) ||
+            keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),2)
+        ) {
             approve(_keyHolderData, _keyHolderData.executionNonce, true);
         }
 
@@ -1227,8 +1266,24 @@ contract KeyHolder is ERC725 {
  * @author Talao, Polynomial.
  */
 library ClaimHolderLibrary {
-    event ClaimAdded(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
-    event ClaimRemoved(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
+    event ClaimAdded(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
+    event ClaimRemoved(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
 
     struct Claim {
         uint256 topic;
@@ -1870,10 +1925,7 @@ contract Partnership is Identity {
      * Not used for now, but could be useful.
      */
     modifier onlyPartnershipMember() {
-        require(
-          isPartnershipMember(),
-          'You are not member of a partnership'
-        );
+        require(isPartnershipMember());
         _;
     }
 
@@ -1912,17 +1964,23 @@ contract Partnership is Identity {
         external
         view
         onlyIdentityPurpose(20003)
-        returns (address, uint, uint, uint40, bytes)
+        returns (uint, uint, uint40, bytes, bytes)
     {
-          IdentityInterface hisInterface = IdentityInterface(_hisContract);
-          (,uint16 hisCategory,,,,,) = hisInterface.identityInformation();
-          return (
-              foundation.contractsToOwners(_hisContract),
-              hisCategory,
-              uint(partnershipContracts[_hisContract].authorization),
-              partnershipContracts[_hisContract].created,
-              partnershipContracts[_hisContract].symetricEncryptionEncryptedKey
-          );
+        (
+            ,
+            uint16 hisCategory,
+            ,
+            ,
+            bytes memory hisAsymetricEncryptionPublicKey,
+            ,
+        ) = IdentityInterface(_hisContract).identityInformation();
+        return (
+            hisCategory,
+            uint(partnershipContracts[_hisContract].authorization),
+            partnershipContracts[_hisContract].created,
+            hisAsymetricEncryptionPublicKey,
+            partnershipContracts[_hisContract].symetricEncryptionEncryptedKey
+        );
     }
 
     /**
@@ -1944,12 +2002,8 @@ contract Partnership is Identity {
         // Indeed when he asked a partnership with us,
         // he added us in authorized partnerships.
         require(
-            (
-                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Unknown ||
-                partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Removed
-            )
-            ,
-            'Partnership contract must be Unknown or Removed'
+            partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Unknown ||
+            partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Removed
         );
         // Request partnership in the other contract.
         // Open interface on his contract.
@@ -1987,16 +2041,15 @@ contract Partnership is Identity {
         returns (bool success)
     {
         require(
-            (
-                partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
-                partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Removed
-            ),
-            'Partnership already pending, authorized or rejected'
+            partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown ||
+            partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Removed
         );
         // If this Partnership contract is Unknown,
         if (partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Unknown) {
             // Add the new partnership to our partnerships index.
             knownPartnershipContracts.push(msg.sender);
+            // Record date of partnership creation.
+            partnershipContracts[msg.sender].created = uint40(now);
         }
         // Write Pending to our partnerships contract registry.
         partnershipContracts[msg.sender].authorization = PartnershipAuthorization.Pending;
@@ -2020,7 +2073,7 @@ contract Partnership is Identity {
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
-            'Partnership must be Pending'
+            "Partnership must be Pending"
         );
         // Authorize the Partnership contract in our contract.
         partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Authorized;
@@ -2045,7 +2098,7 @@ contract Partnership is Identity {
     function _authorizePartnership(bytes _hisSymetricKey) external {
         require(
             partnershipContracts[msg.sender].authorization == PartnershipAuthorization.Authorized,
-            'You have no authorized partnership'
+            "You have no authorized partnership"
         );
         partnershipContracts[msg.sender].symetricEncryptionEncryptedKey = _hisSymetricKey;
         emit PartnershipAccepted();
@@ -2060,7 +2113,7 @@ contract Partnership is Identity {
     {
         require(
             partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Pending,
-            'Partner must be Pending'
+            "Partner must be Pending"
         );
         partnershipContracts[_hisContract].authorization = PartnershipAuthorization.Rejected;
     }
@@ -2077,7 +2130,7 @@ contract Partnership is Identity {
                 partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Authorized ||
                 partnershipContracts[_hisContract].authorization == PartnershipAuthorization.Rejected
             ),
-            'Partnership must be Authorized or Rejected'
+            "Partnership must be Authorized or Rejected"
         );
         // Remove ourselves in the other Partnership contract.
         PartnershipInterface hisInterface = PartnershipInterface(_hisContract);
@@ -2162,7 +2215,7 @@ interface PartnershipInterface {
     function getKnownPartnershipsContracts() external returns (address[]);
     function getPartnership(address)
         external
-        returns (address, uint, uint, uint40, bytes);
+        returns (uint, uint, uint40, bytes, bytes);
 }
 
 // File: contracts/access/Permissions.sol
@@ -2257,7 +2310,7 @@ contract Permissions is Partnership {
      * @dev Modifier version of isReader.
      */
     modifier onlyReader() {
-        require(isReader(), 'Access denied');
+        require(isReader(), "Access denied");
         _;
     }
 }
@@ -2368,6 +2421,9 @@ contract Documents is Permissions {
         // SSTORAGE 2 filled after this.
         bytes32 fileChecksum;
 
+        // Expiration date.
+        uint40 expires;
+
         // Hash of the file location in a decentralized engine.
         // Example: IPFS hash, Swarm hash, Filecoin hash...
         // Uses 1 SSTORAGE for IPFS.
@@ -2406,6 +2462,7 @@ contract Documents is Permissions {
         returns (
             uint16,
             uint16,
+            uint40,
             address,
             bytes32,
             uint16,
@@ -2419,6 +2476,7 @@ contract Documents is Permissions {
         return(
             doc.docType,
             doc.docTypeVersion,
+            doc.expires,
             doc.issuer,
             doc.fileChecksum,
             doc.fileLocationEngine,
@@ -2441,6 +2499,7 @@ contract Documents is Permissions {
     function createDocument(
         uint16 _docType,
         uint16 _docTypeVersion,
+        uint40 _expires,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -2454,6 +2513,7 @@ contract Documents is Permissions {
         _createDocument(
             _docType,
             _docTypeVersion,
+            _expires,
             msg.sender,
             _fileChecksum,
             _fileLocationEngine,
@@ -2480,13 +2540,14 @@ contract Documents is Permissions {
         returns(uint)
     {
         require(
-          keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
-          isActiveIdentity() &&
-          _docType >= 60000
+            keyHasPurpose(keccak256(abi.encodePacked(foundation.membersToContracts(msg.sender))), 3) &&
+            isActiveIdentity() &&
+            _docType >= 60000
         );
         uint id = _createDocument(
             _docType,
             _docTypeVersion,
+            0,
             foundation.membersToContracts(msg.sender),
             _fileChecksum,
             _fileLocationEngine,
@@ -2522,6 +2583,7 @@ contract Documents is Permissions {
     function _createDocument(
         uint16 _docType,
         uint16 _docTypeVersion,
+        uint40 _expires,
         address _issuer,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
@@ -2552,6 +2614,7 @@ contract Documents is Permissions {
         doc.encrypted = _encrypted;
         doc.docType = _docType;
         doc.docTypeVersion = _docTypeVersion;
+        doc.expires = _expires;
         doc.fileLocationEngine = _fileLocationEngine;
         doc.issuer = _issuer;
         doc.fileChecksum = _fileChecksum;
@@ -2604,6 +2667,7 @@ contract Documents is Permissions {
         uint _id,
         uint16 _docType,
         uint16 _docTypeVersion,
+        uint40 _expires,
         bytes32 _fileChecksum,
         uint16 _fileLocationEngine,
         bytes _fileLocationHash,
@@ -2618,6 +2682,7 @@ contract Documents is Permissions {
         _createDocument(
             _docType,
             _docTypeVersion,
+            _expires,
             msg.sender,
             _fileChecksum,
             _fileLocationEngine,
@@ -2640,6 +2705,7 @@ interface DocumentsInterface {
         returns (
             uint16,
             uint16,
+            uint40,
             address,
             bytes32,
             uint16,
@@ -2752,7 +2818,7 @@ contract WorkspaceFactory is Ownable {
         // Sender must have access to his Vault in the Token.
         require(
             token.hasVaultAccess(msg.sender, msg.sender),
-            'Sender has no access to Vault.'
+            "Sender has no access to Vault"
         );
         require(
             (
@@ -2762,7 +2828,7 @@ contract WorkspaceFactory is Ownable {
                 _category == 4001 ||
                 _category == 5001
             ),
-            'Invalid category'
+            "Invalid category"
         );
         // Create contract.
         Workspace newWorkspace = new Workspace(
@@ -2792,6 +2858,6 @@ contract WorkspaceFactory is Ownable {
      * @dev Prevents accidental sending of ether.
      */
     function() public {
-        revert();
+        revert("Prevent accidental sending of ether");
     }
 }
