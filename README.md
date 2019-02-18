@@ -7,10 +7,10 @@
 ### Rinkeby
 
 *  TalaoToken: https://rinkeby.etherscan.io/address/0xb8a0a9ee2e780281637bd93c13076cc5e342c9ae
-*  Foundation: https://rinkeby.etherscan.io/address/0x3142e434cb8f07ab2a2afd4346f1b0aa0acf6bd6
-*  WorkspaceFactory: https://rinkeby.etherscan.io/address/0x3cf7e59f312af321abe379cf1c62b75b718dba91
-*  KeyHolderLibrary: https://rinkeby.etherscan.io/address/0x22d4611ecb247445374b30f92a32bf6c57010f62
-*  ClaimHolderLibrary: https://rinkeby.etherscan.io/address/0x503301375d2085dd24decc255fbcb362fd33e648
+*  Foundation: https://rinkeby.etherscan.io/address/0xde4cf27d1cefc4a6fa000a5399c59c59da1bf253
+*  WorkspaceFactory: https://rinkeby.etherscan.io/address/0x22d0e5639caef577bedead4b94d3215a6c2ac0a8
+*  KeyHolderLibrary: https://rinkeby.etherscan.io/address/0x4addcf220663facada7666412805d2814ec988a1
+*  ClaimHolderLibrary: https://rinkeby.etherscan.io/address/0xdf0dfcdc08c98a0518ee9cbafedb729a240dd13d
 
 ## Bug bounty program
 
