@@ -177,21 +177,23 @@ contract('Partnership', async (accounts) => {
 
   it('User2 should get partnership1 information in his contract', async() => {
     const result = await partnership2.getPartnership(partnership1.address, {from: user2})
-    assert.equal(result[0], user1)
-    assert.equal(result[1], 1001)
-    assert.equal(result[2], 1)
+    assert.equal(result[0], 1001)
+    assert.equal(result[1], 1)
     const now = Date.now()
-    assert.isBelow(result[3].toNumber(), now)
+    assert.isAbove(result[2].toNumber(), 0)
+    assert.isBelow(result[2].toNumber(), now)
+    assert.equal(result[3], '0x11')
     assert.equal(result[4], '0x91')
   })
 
   it('User1 should get partnership2 information in his contract', async() => {
     const result = await partnership1.getPartnership(partnership2.address, { from: user1 })
-    assert.equal(result[0], user2)
-    assert.equal(result[1], 2001)
-    assert.equal(result[2], 1)
+    assert.equal(result[0], 2001)
+    assert.equal(result[1], 1)
     const now = Date.now()
-    assert.isBelow(result[3].toNumber(), now)
+    assert.isAbove(result[2].toNumber(), 0)
+    assert.isBelow(result[2].toNumber(), now)
+    assert.equal(result[3], '0x21')
     assert.equal(result[4], '0x92')
   })
 
@@ -278,11 +280,12 @@ contract('Partnership', async (accounts) => {
 
   it('User2 should get partnership3 information by its contract address', async() => {
     const result = await partnership2.getPartnership(partnership3.address, { from: user2 })
-    assert.equal(result[0], user6)
-    assert.equal(result[1], 3001)
-    assert.equal(result[2], 1)
+    assert.equal(result[0], 3001)
+    assert.equal(result[1], 1)
     const now = Date.now()
-    assert.isBelow(result[3].toNumber(), now)
+    assert.isAbove(result[2].toNumber(), 0)
+    assert.isBelow(result[2].toNumber(), now)
+    assert.equal(result[3], '0x31')
     assert.equal(result[4], '0x93')
   })
 

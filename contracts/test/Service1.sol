@@ -44,9 +44,9 @@ contract Service1 is Ownable {
     )
         external
     {
-        require(msg.sender == address(token), 'Only Talao token');
-        require(_token == address(token), 'Only Talao token');
-        require(_value == price, 'Bad price');
+        require(msg.sender == address(token), "Only Talao token");
+        require(_token == address(token), "Only Talao token");
+        require(_value == price, "Bad price");
         // Try to run the service.
         // If success, transfer tokens to service owner.
         if (runService(_from, _extraData)) {
@@ -82,9 +82,9 @@ contract Service1 is Ownable {
             for (uint i = 0; i < recipients.length; i++) {
                 // Get partnership info.
                 (
-                    ,
                     hisCategory,
                     hisAuthorization,
+                    ,
                     ,
                 ) = sellerPartnership.getPartnership(recipients[i]);
                 // If active Freelancer

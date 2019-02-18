@@ -56,7 +56,7 @@ contract Foundation is Ownable {
     modifier onlyFactory() {
         require(
             factories[msg.sender],
-            'You are not a factory'
+            "You are not a factory"
         );
         _;
     }
@@ -73,11 +73,11 @@ contract Foundation is Ownable {
     {
         require(
             contractsToOwners[_contract] == address(0),
-            'Contract already has owner'
+            "Contract already has owner"
         );
         require(
             ownersToContracts[_account] == address(0),
-            'Account already has contract'
+            "Account already has contract"
         );
         contractsToOwners[_contract] = _account;
         contractsIndex.push(_contract);
@@ -99,7 +99,7 @@ contract Foundation is Ownable {
                 ownersToContracts[msg.sender] == _contract &&
                 contractsToOwners[_contract] == msg.sender
             ),
-            'You are not the owner'
+            "You are not the owner"
         );
         ownersToContracts[msg.sender] = address(0);
         membersToContracts[msg.sender] = address(0);
@@ -131,11 +131,11 @@ contract Foundation is Ownable {
     function addMember(address _member) external {
         require(
             ownersToContracts[msg.sender] != address(0),
-            'You own no contract'
+            "You own no contract"
         );
         require(
             membersToContracts[_member] == address(0),
-            'Address is already member of a contract'
+            "Address is already member of a contract"
         );
         membersToContracts[_member] = ownersToContracts[msg.sender];
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
@@ -147,11 +147,11 @@ contract Foundation is Ownable {
     function removeMember(address _member) external {
         require(
             ownersToContracts[msg.sender] != address(0),
-            'You own no contract'
+            "You own no contract"
         );
         require(
             membersToContracts[_member] == ownersToContracts[msg.sender],
-            'Address is not member of this contract'
+            "Address is not member of this contract"
         );
         membersToContracts[_member] = address(0);
         contractsToKnownMembersIndexes[ownersToContracts[msg.sender]].push(_member);
@@ -162,8 +162,8 @@ contract Foundation is Ownable {
      * The automatic getter can not return array.
      */
     function getContractsIndex()
-        onlyOwner
         external
+        onlyOwner
         view
         returns (address[])
     {
@@ -174,6 +174,6 @@ contract Foundation is Ownable {
      * @dev Prevents accidental sending of ether.
      */
     function() public {
-        revert();
+        revert("Prevent accidental sending of ether");
     }
 }

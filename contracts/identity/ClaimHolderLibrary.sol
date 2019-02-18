@@ -9,8 +9,24 @@ import "./KeyHolderLibrary.sol";
  * @author Talao, Polynomial.
  */
 library ClaimHolderLibrary {
-    event ClaimAdded(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
-    event ClaimRemoved(bytes32 indexed claimId, uint256 indexed topic, uint256 scheme, address indexed issuer, bytes signature, bytes data, string uri);
+    event ClaimAdded(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
+    event ClaimRemoved(
+        bytes32 indexed claimId,
+        uint256 indexed topic,
+        uint256 scheme,
+        address indexed issuer,
+        bytes signature,
+        bytes data,
+        string uri
+    );
 
     struct Claim {
         uint256 topic;

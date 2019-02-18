@@ -164,7 +164,10 @@ library KeyHolderLibrary {
 
         emit ExecutionRequested(_keyHolderData.executionNonce, _to, _value, _data);
 
-        if (keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),1) || keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),2)) {
+        if (
+            keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),1) ||
+            keyHasPurpose(_keyHolderData, keccak256(abi.encodePacked(msg.sender)),2)
+        ) {
             approve(_keyHolderData, _keyHolderData.executionNonce, true);
         }
 
