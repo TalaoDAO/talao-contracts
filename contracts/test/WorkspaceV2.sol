@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../ownership/Ownable.sol";
+import "../ownership/OwnableUpdated.sol";
 import "../content/Documents.sol";
 
 /**
@@ -8,7 +8,7 @@ import "../content/Documents.sol";
  * @author Talao, Polynomial, Blockchain Partners.
  * @notice We use a totally different and basic contract on purpose.
  */
-contract WorkspaceV2 is Ownable {
+contract WorkspaceV2 is OwnableUpdated {
 
     struct Document {
         uint16 docType;

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../ownership/Ownable.sol";
+import "../ownership/OwnableUpdated.sol";
 import "../Workspace.sol";
 
 /**
@@ -9,7 +9,7 @@ import "../Workspace.sol";
  * Even if they are ownable, owner has only one privilege: change the price.
  * @author Talao, Polynomial.
  */
-contract Service1 is Ownable {
+contract Service1 is OwnableUpdated {
 
     // Talao token contract.
     TalaoToken public token;

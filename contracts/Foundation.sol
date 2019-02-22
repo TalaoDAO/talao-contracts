@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "./ownership/Ownable.sol";
+import "./ownership/OwnableUpdated.sol";
 
 /**
  * @title Foundation contract.
  * @author Talao, Polynomial.
  */
-contract Foundation is Ownable {
+contract Foundation is OwnableUpdated {
 
     // Registered foundation factories.
     mapping(address => bool) public factories;
