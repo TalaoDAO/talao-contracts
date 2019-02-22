@@ -9,7 +9,6 @@ module.exports = function(deployer) {
    deployer.link(KeyHolderLibrary, Workspace);
    deployer.deploy(ClaimHolderLibrary, {overwrite: false});
    deployer.link(ClaimHolderLibrary, Workspace);
-   // TODO Mainnet: replace by Mainnet token.
    deployer.deploy(
      Workspace,
      Foundation.address,
