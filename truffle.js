@@ -32,6 +32,12 @@ module.exports = {
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infuraApiKey, 7);
       }
+    },
+    mainnet: {
+      network_id: "1",
+      provider: function() {
+        return new HDWalletProvider(mnemonic, "https://mainnet.infura.io/" + infuraApiKey, 0);
+      }
     }
   },
   solc: {
