@@ -134,7 +134,7 @@ contract Identity is ClaimHolder {
      * @dev Modifier version of isIdentityOwner.
      */
     modifier onlyIdentityOwner() {
-        require(isIdentityOwner(), 'Access denied');
+        require(isIdentityOwner(), "Access denied");
         _;
     }
 
@@ -149,7 +149,7 @@ contract Identity is ClaimHolder {
      * @dev Modifier version of isActiveOwner.
      */
     modifier onlyActiveIdentityOwner() {
-        require(isActiveIdentityOwner(), 'Access denied');
+        require(isActiveIdentityOwner(), "Access denied");
         _;
     }
 
@@ -175,7 +175,7 @@ contract Identity is ClaimHolder {
      * @dev Modifier version of hasKeyForPurpose
      */
     modifier onlyIdentityPurpose(uint256 _purpose) {
-        require(hasIdentityPurpose(_purpose), 'Access denied');
+        require(hasIdentityPurpose(_purpose), "Access denied");
         _;
     }
 
@@ -185,7 +185,7 @@ contract Identity is ClaimHolder {
      * before submitting a TX here.
      */
     function identityboxSendtext(uint _category, bytes _text) external {
-        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        require(!identityboxBlacklisted[msg.sender], "You are blacklisted");
         emit TextReceived(msg.sender, _category, _text);
     }
 
@@ -200,7 +200,7 @@ contract Identity is ClaimHolder {
     )
         external
     {
-        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        require(!identityboxBlacklisted[msg.sender], "You are blacklisted");
         emit FileReceived(msg.sender, _fileType, _fileEngine, _fileHash);
     }
 
