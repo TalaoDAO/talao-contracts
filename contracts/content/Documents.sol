@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../math/SafeMath.sol";
+import "../math/SafeMathUpdated.sol";
 import "../access/Permissions.sol";
 
 /**
@@ -11,7 +11,7 @@ import "../access/Permissions.sol";
  */
 contract Documents is Permissions {
 
-    using SafeMath for uint;
+    using SafeMathUpdated for uint;
 
     // Document struct.
     struct Document {

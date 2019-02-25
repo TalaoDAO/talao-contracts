@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "../identity/Identity.sol";
-import "../math/SafeMath.sol";
+import "../math/SafeMathUpdated.sol";
 
 /**
  * @title Provides partnership features between contracts.
@@ -22,7 +22,7 @@ import "../math/SafeMath.sol";
  */
 contract Partnership is Identity {
 
-    using SafeMath for uint;
+    using SafeMathUpdated for uint;
 
     // Foundation contract.
     Foundation foundation;

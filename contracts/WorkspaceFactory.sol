@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./ownership/Ownable.sol";
+import "./ownership/OwnableUpdated.sol";
 import "./token/TalaoToken.sol";
 import "./Foundation.sol";
 import "./Workspace.sol";
@@ -11,7 +11,7 @@ import "./Workspace.sol";
  * @author Talao, Polynomial, Slowsense, Blockchain Partner.
  */
 
-contract WorkspaceFactory is Ownable {
+contract WorkspaceFactory is OwnableUpdated {
 
     // Foundation contract.
     Foundation foundation;
