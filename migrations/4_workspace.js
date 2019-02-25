@@ -12,7 +12,7 @@ module.exports = function(deployer) {
    deployer.deploy(
      Workspace,
      Foundation.address,
-     '0x1D4cCC31dAB6EA20f461d329a0562C1c58412515',
+     '0x1d4ccc31dab6ea20f461d329a0562c1c58412515',
      1001,
      1,
      1,
