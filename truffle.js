@@ -30,7 +30,7 @@ module.exports = {
     rinkeby: {
       network_id: "4",
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infuraApiKey, 7);
+        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infuraApiKey, 0);
       }
     },
     mainnet: {

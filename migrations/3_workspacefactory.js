@@ -9,5 +9,5 @@ module.exports = function(deployer) {
    deployer.link(KeyHolderLibrary, [ClaimHolderLibrary, WorkspaceFactory]);
    deployer.deploy(ClaimHolderLibrary);
    deployer.link(ClaimHolderLibrary, WorkspaceFactory);
-   deployer.deploy(WorkspaceFactory, Foundation.address, '0x1d4ccc31dab6ea20f461d329a0562c1c58412515');
+   deployer.deploy(WorkspaceFactory, Foundation.address, '0xcbc408e1962001f489d296b5a05a16db87fb86e3');
 };
