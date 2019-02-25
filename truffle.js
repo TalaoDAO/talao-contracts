@@ -29,21 +29,21 @@ module.exports = {
     },
     rinkeby: {
       network_id: "4",
-      gasPrice: 100000000,
+      gasPrice: 1000000000,
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infuraApiKey, 0);
       }
     },
     ropsten: {
       network_id: "3",
-      gasPrice: 100000000,
+      gasPrice: 1000000000,
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/" + infuraApiKey, 0);
       }
     },
     mainnet: {
       network_id: "1",
-      gasPrice: 100000000,
+      gasPrice: 5000000000,
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://mainnet.infura.io/" + infuraApiKey, 0);
       }
