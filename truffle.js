@@ -36,14 +36,17 @@ module.exports = {
     mainnet: {
       network_id: "1",
       gas: 8000000,
+      gasPrice: 1500000000,
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://mainnet.infura.io/" + infuraApiKey, 0);
       }
     }
   },
   solc: {
+    version: "0.4.24",
     optimizer: {
-      enabled: true
+      enabled: true,
+      runs: 200
     }
   },
   mocha: {
