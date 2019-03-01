@@ -6,6 +6,8 @@
 
 ### Mainnet
 
+Deployed code, except Talao token: https://github.com/TalaoDAO/talao-contracts/tree/mainnet.1
+
 *  TalaoToken: https://etherscan.io/address/0x1d4ccc31dab6ea20f461d329a0562c1c58412515
 *  Foundation: https://etherscan.io/address/0xd46883ddff92cc0474255f2f8134c63f8209171d
 *  WorkspaceFactory: https://etherscan.io/address/0x7a237f06f85710b66184afcdc55e2845f1b8f0eb
