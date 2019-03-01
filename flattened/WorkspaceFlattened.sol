@@ -753,7 +753,7 @@ contract ClaimHolder is KeyHolder, ERC735 {
     }
 }
 
-// File: contracts/ownership/Ownable.sol
+// File: contracts/ownership/OwnableUpdated.sol
 
 /**
  * @title Ownable
@@ -762,7 +762,7 @@ contract ClaimHolder is KeyHolder, ERC735 {
  * functions, this simplifies the implementation of "user permissions".
  * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/ownership/Ownable.sol
  */
-contract Ownable {
+contract OwnableUpdated {
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -834,7 +834,7 @@ contract Ownable {
  * @title Foundation contract.
  * @author Talao, Polynomial.
  */
-contract Foundation is Ownable {
+contract Foundation is OwnableUpdated {
 
     // Registered foundation factories.
     mapping(address => bool) public factories;
@@ -1006,47 +1006,199 @@ contract Foundation is Ownable {
     }
 }
 
-// File: contracts/math/SafeMath.sol
+// File: contracts/token/TalaoToken.sol
 
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
- * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
  */
 library SafeMath {
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
     }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
 
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a / b;
-        return c;
-    }
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a / b;
+    return c;
+  }
 
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
 
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
 }
 
-// File: contracts/token/TalaoToken.sol
+/**
+ * @title Ownable
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
+contract Ownable {
+  address public owner;
+
+
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  function Ownable() public {
+    owner = msg.sender;
+  }
+
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    OwnershipTransferred(owner, newOwner);
+    owner = newOwner;
+  }
+
+}
 
 /**
- * This is a modified version of Talao token and all contracts it inherits from,
- * in order to remove warnings in the now deprecated code of the ICO on mainnet.
- * ICO mainnet Talao token code: https://github.com/TalaoDAO/talao-crowdsale
+ * @title TalaoMarketplace
+ * @dev This contract is allowing users to buy or sell Talao tokens at a price set by the owner
+ * @author Blockchain Partner
  */
+contract TalaoMarketplace is Ownable {
+  using SafeMath for uint256;
+
+  TalaoToken public token;
+
+  struct MarketplaceData {
+    uint buyPrice;
+    uint sellPrice;
+    uint unitPrice;
+  }
+
+  MarketplaceData public marketplace;
+
+  event SellingPrice(uint sellingPrice);
+  event TalaoBought(address buyer, uint amount, uint price, uint unitPrice);
+  event TalaoSold(address seller, uint amount, uint price, uint unitPrice);
+
+  /**
+  * @dev Constructor of the marketplace pointing to the TALAO token address
+  * @param talao the talao token address
+  **/
+  constructor(address talao)
+      public
+  {
+      token = TalaoToken(talao);
+  }
+
+  /**
+  * @dev Allow users to buy tokens for `newBuyPrice` eth and sell tokens for `newSellPrice` eth
+  * @param newSellPrice price the users can sell to the contract
+  * @param newBuyPrice price users can buy from the contract
+  * @param newUnitPrice to manage decimal issue 0,35 = 35 /100 (100 is unit)
+  */
+  function setPrices(uint256 newSellPrice, uint256 newBuyPrice, uint256 newUnitPrice)
+      public
+      onlyOwner
+  {
+      require (newSellPrice > 0 && newBuyPrice > 0 && newUnitPrice > 0, "wrong inputs");
+      marketplace.sellPrice = newSellPrice;
+      marketplace.buyPrice = newBuyPrice;
+      marketplace.unitPrice = newUnitPrice;
+  }
+
+  /**
+  * @dev Allow anyone to buy tokens against ether, depending on the buyPrice set by the contract owner.
+  * @return amount the amount of tokens bought
+  **/
+  function buy()
+      public
+      payable
+      returns (uint amount)
+  {
+      amount = msg.value.mul(marketplace.unitPrice).div(marketplace.buyPrice);
+      token.transfer(msg.sender, amount);
+      emit TalaoBought(msg.sender, amount, marketplace.buyPrice, marketplace.unitPrice);
+      return amount;
+  }
+
+  /**
+  * @dev Allow anyone to sell tokens for ether, depending on the sellPrice set by the contract owner.
+  * @param amount the number of tokens to be sold
+  * @return revenue ethers sent in return
+  **/
+  function sell(uint amount)
+      public
+      returns (uint revenue)
+  {
+      require(token.balanceOf(msg.sender) >= amount, "sender has not enough tokens");
+      token.transferFrom(msg.sender, this, amount);
+      revenue = amount.mul(marketplace.sellPrice).div(marketplace.unitPrice);
+      msg.sender.transfer(revenue);
+      emit TalaoSold(msg.sender, amount, marketplace.sellPrice, marketplace.unitPrice);
+      return revenue;
+  }
+
+  /**
+   * @dev Allows the owner to withdraw ethers from the contract.
+   * @param ethers quantity of ethers to be withdrawn
+   * @return true if withdrawal successful ; false otherwise
+   */
+  function withdrawEther(uint256 ethers)
+      public
+      onlyOwner
+  {
+      if (this.balance >= ethers) {
+          msg.sender.transfer(ethers);
+      }
+  }
+
+  /**
+   * @dev Allow the owner to withdraw tokens from the contract.
+   * @param tokens quantity of tokens to be withdrawn
+   */
+  function withdrawTalao(uint256 tokens)
+      public
+      onlyOwner
+  {
+      token.transfer(msg.sender, tokens);
+  }
+
+
+  /**
+  * @dev Fallback function ; only owner can send ether.
+  **/
+  function ()
+      public
+      payable
+      onlyOwner
+  {
+
+  }
+
+}
 
 /**
  * @title ERC20Basic
@@ -1093,6 +1245,498 @@ library SafeERC20 {
 
 
 /**
+ * @title TokenTimelock
+ * @dev TokenTimelock is a token holder contract that will allow a
+ * beneficiary to extract the tokens after a given release time
+ */
+contract TokenTimelock {
+  using SafeERC20 for ERC20Basic;
+
+  // ERC20 basic token contract being held
+  ERC20Basic public token;
+
+  // beneficiary of tokens after they are released
+  address public beneficiary;
+
+  // timestamp when token release is enabled
+  uint256 public releaseTime;
+
+  function TokenTimelock(ERC20Basic _token, address _beneficiary, uint256 _releaseTime) public {
+    require(_releaseTime > now);
+    token = _token;
+    beneficiary = _beneficiary;
+    releaseTime = _releaseTime;
+  }
+
+  /**
+   * @notice Transfers tokens held by timelock to beneficiary.
+   * @dev Removed original require that amount released was > 0 ; releasing 0 is fine
+   */
+  function release() public {
+    require(now >= releaseTime);
+
+    uint256 amount = token.balanceOf(this);
+
+    token.safeTransfer(beneficiary, amount);
+  }
+}
+
+
+/**
+ * @title TokenVesting
+ * @dev A token holder contract that can release its token balance gradually like a
+ * typical vesting scheme, with a cliff and vesting period. Optionally revocable by the
+ * owner.
+ * @notice Talao token transfer function cannot fail thus there's no need for revocation.
+ */
+contract TokenVesting is Ownable {
+  using SafeMath for uint256;
+  using SafeERC20 for ERC20Basic;
+
+  event Released(uint256 amount);
+  event Revoked();
+
+  // beneficiary of tokens after they are released
+  address public beneficiary;
+
+  uint256 public cliff;
+  uint256 public start;
+  uint256 public duration;
+
+  bool public revocable;
+
+  mapping (address => uint256) public released;
+  mapping (address => bool) public revoked;
+
+  /**
+   * @dev Creates a vesting contract that vests its balance of any ERC20 token to the
+   * _beneficiary, gradually in a linear fashion until _start + _duration. By then all
+   * of the balance will have vested.
+   * @param _beneficiary address of the beneficiary to whom vested tokens are transferred
+   * @param _cliff duration in seconds of the cliff in which tokens will begin to vest
+   * @param _duration duration in seconds of the period in which the tokens will vest
+   * @param _revocable whether the vesting is revocable or not
+   */
+  function TokenVesting(address _beneficiary, uint256 _start, uint256 _cliff, uint256 _duration, bool _revocable) public {
+    require(_beneficiary != address(0));
+    require(_cliff <= _duration);
+
+    beneficiary = _beneficiary;
+    revocable = _revocable;
+    duration = _duration;
+    cliff = _start.add(_cliff);
+    start = _start;
+  }
+
+  /**
+   * @notice Transfers vested tokens to beneficiary.
+   * @dev Removed original require that amount released was > 0 ; releasing 0 is fine
+   * @param token ERC20 token which is being vested
+   */
+  function release(ERC20Basic token) public {
+    uint256 unreleased = releasableAmount(token);
+
+    released[token] = released[token].add(unreleased);
+
+    token.safeTransfer(beneficiary, unreleased);
+
+    Released(unreleased);
+  }
+
+  /**
+   * @notice Allows the owner to revoke the vesting. Tokens already vested
+   * remain in the contract, the rest are returned to the owner.
+   * @param token ERC20 token which is being vested
+   */
+  function revoke(ERC20Basic token) public onlyOwner {
+    require(revocable);
+    require(!revoked[token]);
+
+    uint256 balance = token.balanceOf(this);
+
+    uint256 unreleased = releasableAmount(token);
+    uint256 refund = balance.sub(unreleased);
+
+    revoked[token] = true;
+
+    token.safeTransfer(owner, refund);
+
+    Revoked();
+  }
+
+  /**
+   * @dev Calculates the amount that has already vested but hasn't been released yet.
+   * @param token ERC20 token which is being vested
+   */
+  function releasableAmount(ERC20Basic token) public view returns (uint256) {
+    return vestedAmount(token).sub(released[token]);
+  }
+
+  /**
+   * @dev Calculates the amount that has already vested.
+   * @param token ERC20 token which is being vested
+   */
+  function vestedAmount(ERC20Basic token) public view returns (uint256) {
+    uint256 currentBalance = token.balanceOf(this);
+    uint256 totalBalance = currentBalance.add(released[token]);
+
+    if (now < cliff) {
+      return 0;
+    } else if (now >= start.add(duration) || revoked[token]) {
+      return totalBalance;
+    } else {
+      return totalBalance.mul(now.sub(start)).div(duration);
+    }
+  }
+}
+
+/**
+ * @title Crowdsale
+ * @dev Crowdsale is a base contract for managing a token crowdsale.
+ * Crowdsales have a start and end timestamps, where investors can make
+ * token purchases and the crowdsale will assign them tokens based
+ * on a token per ETH rate. Funds collected are forwarded to a wallet
+ * as they arrive.
+ */
+contract Crowdsale {
+  using SafeMath for uint256;
+
+  // The token being sold
+  MintableToken public token;
+
+  // start and end timestamps where investments are allowed (both inclusive)
+  uint256 public startTime;
+  uint256 public endTime;
+
+  // address where funds are collected
+  address public wallet;
+
+  // how many token units a buyer gets per wei
+  uint256 public rate;
+
+  // amount of raised money in wei
+  uint256 public weiRaised;
+
+  /**
+   * event for token purchase logging
+   * @param purchaser who paid for the tokens
+   * @param beneficiary who got the tokens
+   * @param value weis paid for purchase
+   * @param amount amount of tokens purchased
+   */
+  event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
+
+  function Crowdsale(uint256 _rate, uint256 _startTime, uint256 _endTime, address _wallet) public {
+    require(_rate > 0);
+    require(_startTime >= now);
+    require(_endTime >= _startTime);
+    require(_wallet != address(0));
+
+    token = createTokenContract();
+    startTime = _startTime;
+    endTime = _endTime;
+    wallet = _wallet;
+  }
+
+  // creates the token to be sold.
+  // override this method to have crowdsale of a specific mintable token.
+  function createTokenContract() internal returns (MintableToken) {
+    return new MintableToken();
+  }
+
+
+  // fallback function can be used to buy tokens
+  function () external payable {
+    buyTokens(msg.sender);
+  }
+
+  // low level token purchase function
+  function buyTokens(address beneficiary) public payable {
+    require(beneficiary != address(0));
+    require(validPurchase());
+
+    uint256 weiAmount = msg.value;
+
+    // calculate token amount to be created
+    uint256 tokens = weiAmount.mul(rate);
+
+    // update state
+    weiRaised = weiRaised.add(weiAmount);
+
+    token.mint(beneficiary, tokens);
+    TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+
+    forwardFunds();
+  }
+
+  // send ether to the fund collection wallet
+  // override to create custom fund forwarding mechanisms
+  function forwardFunds() internal {
+    wallet.transfer(msg.value);
+  }
+
+  // @return true if the transaction can buy tokens
+  // removed view to be overriden
+  function validPurchase() internal returns (bool) {
+    bool withinPeriod = now >= startTime && now <= endTime;
+    bool nonZeroPurchase = msg.value != 0;
+    return withinPeriod && nonZeroPurchase;
+  }
+
+  // @return true if crowdsale event has ended
+  function hasEnded() public view returns (bool) {
+    return now > endTime;
+  }
+
+
+}
+
+
+/**
+ * @title FinalizableCrowdsale
+ * @dev Extension of Crowdsale where an owner can do extra work
+ * after finishing.
+ */
+contract FinalizableCrowdsale is Crowdsale, Ownable {
+  using SafeMath for uint256;
+
+  bool public isFinalized = false;
+
+  event Finalized();
+
+  /**
+   * @dev Must be called after crowdsale ends, to do some extra finalization
+   * work. Calls the contract's finalization function.
+   */
+  function finalize() public {
+    require(!isFinalized);
+    require(hasEnded());
+
+    finalization();
+    Finalized();
+
+    isFinalized = true;
+  }
+
+  /**
+   * @dev Can be overridden to add finalization logic. The overriding function
+   * should call super.finalization() to ensure the chain of finalization is
+   * executed entirely.
+   */
+  function finalization() internal {
+  }
+}
+
+
+/**
+ * @title RefundVault
+ * @dev This contract is used for storing funds while a crowdsale
+ * is in progress. Supports refunding the money if crowdsale fails,
+ * and forwarding it if crowdsale is successful.
+ */
+contract RefundVault is Ownable {
+  using SafeMath for uint256;
+
+  enum State { Active, Refunding, Closed }
+
+  mapping (address => uint256) public deposited;
+  address public wallet;
+  State public state;
+
+  event Closed();
+  event RefundsEnabled();
+  event Refunded(address indexed beneficiary, uint256 weiAmount);
+
+  function RefundVault(address _wallet) public {
+    require(_wallet != address(0));
+    wallet = _wallet;
+    state = State.Active;
+  }
+
+  function deposit(address investor) onlyOwner public payable {
+    require(state == State.Active);
+    deposited[investor] = deposited[investor].add(msg.value);
+  }
+
+  function close() onlyOwner public {
+    require(state == State.Active);
+    state = State.Closed;
+    Closed();
+    wallet.transfer(this.balance);
+  }
+
+  function enableRefunds() onlyOwner public {
+    require(state == State.Active);
+    state = State.Refunding;
+    RefundsEnabled();
+  }
+
+  function refund(address investor) public {
+    require(state == State.Refunding);
+    uint256 depositedValue = deposited[investor];
+    deposited[investor] = 0;
+    investor.transfer(depositedValue);
+    Refunded(investor, depositedValue);
+  }
+}
+
+
+
+/**
+ * @title RefundableCrowdsale
+ * @dev Extension of Crowdsale contract that adds a funding goal, and
+ * the possibility of users getting a refund if goal is not met.
+ * Uses a RefundVault as the crowdsale's vault.
+ */
+contract RefundableCrowdsale is FinalizableCrowdsale {
+  using SafeMath for uint256;
+
+  // minimum amount of funds to be raised in weis
+  uint256 public goal;
+
+  // refund vault used to hold funds while crowdsale is running
+  RefundVault public vault;
+
+  function RefundableCrowdsale(uint256 _goal) public {
+    require(_goal > 0);
+    vault = new RefundVault(wallet);
+    goal = _goal;
+  }
+
+  // We're overriding the fund forwarding from Crowdsale.
+  // In addition to sending the funds, we want to call
+  // the RefundVault deposit function
+  function forwardFunds() internal {
+    vault.deposit.value(msg.value)(msg.sender);
+  }
+
+  // if crowdsale is unsuccessful, investors can claim refunds here
+  function claimRefund() public {
+    require(isFinalized);
+    require(!goalReached());
+
+    vault.refund(msg.sender);
+  }
+
+  // vault finalization task, called when owner calls finalize()
+  function finalization() internal {
+    if (goalReached()) {
+      vault.close();
+    } else {
+      vault.enableRefunds();
+    }
+
+    super.finalization();
+  }
+
+  function goalReached() public view returns (bool) {
+    return weiRaised >= goal;
+  }
+
+}
+
+
+/**
+ * @title CappedCrowdsale
+ * @dev Extension of Crowdsale with a max amount of funds raised
+ */
+contract CappedCrowdsale is Crowdsale {
+  using SafeMath for uint256;
+
+  uint256 public cap;
+
+  function CappedCrowdsale(uint256 _cap) public {
+    require(_cap > 0);
+    cap = _cap;
+  }
+
+  // overriding Crowdsale#validPurchase to add extra cap logic
+  // @return true if investors can buy at the moment
+  // removed view to be overriden
+  function validPurchase() internal returns (bool) {
+    bool withinCap = weiRaised.add(msg.value) <= cap;
+    return super.validPurchase() && withinCap;
+  }
+
+  // overriding Crowdsale#hasEnded to add cap logic
+  // @return true if crowdsale event has ended
+  function hasEnded() public view returns (bool) {
+    bool capReached = weiRaised >= cap;
+    return super.hasEnded() || capReached;
+  }
+
+}
+
+/**
+ * @title ProgressiveIndividualCappedCrowdsale
+ * @dev Extension of Crowdsale with a progressive individual cap
+ * @dev This contract is not made for crowdsale superior to 256 * TIME_PERIOD_IN_SEC
+ * @author Request.network ; some modifications by Blockchain Partner
+ */
+contract ProgressiveIndividualCappedCrowdsale is RefundableCrowdsale, CappedCrowdsale {
+
+    uint public startGeneralSale;
+    uint public constant TIME_PERIOD_IN_SEC = 1 days;
+    uint public constant minimumParticipation = 10 finney;
+    uint public constant GAS_LIMIT_IN_WEI = 5E10 wei; // limit gas price -50 Gwei wales stopper
+    uint256 public baseEthCapPerAddress;
+
+    mapping(address=>uint) public participated;
+
+    function ProgressiveIndividualCappedCrowdsale(uint _baseEthCapPerAddress, uint _startGeneralSale)
+        public
+    {
+        baseEthCapPerAddress = _baseEthCapPerAddress;
+        startGeneralSale = _startGeneralSale;
+    }
+
+    /**
+     * @dev setting cap before the general sale starts
+     * @param _newBaseCap the new cap
+     */
+    function setBaseCap(uint _newBaseCap)
+        public
+        onlyOwner
+    {
+        require(now < startGeneralSale);
+        baseEthCapPerAddress = _newBaseCap;
+    }
+
+    /**
+     * @dev overriding CappedCrowdsale#validPurchase to add an individual cap
+     * @return true if investors can buy at the moment
+     */
+    function validPurchase()
+        internal
+        returns(bool)
+    {
+        bool gasCheck = tx.gasprice <= GAS_LIMIT_IN_WEI;
+        uint ethCapPerAddress = getCurrentEthCapPerAddress();
+        participated[msg.sender] = participated[msg.sender].add(msg.value);
+        bool enough = participated[msg.sender] >= minimumParticipation;
+        return participated[msg.sender] <= ethCapPerAddress && enough && gasCheck;
+    }
+
+    /**
+     * @dev Get the current individual cap.
+     * @dev This amount increase everyday in an exponential way. Day 1: base cap, Day 2: 2 * base cap, Day 3: 4 * base cap ...
+     * @return individual cap in wei
+     */
+    function getCurrentEthCapPerAddress()
+        public
+        constant
+        returns(uint)
+    {
+        if (block.timestamp < startGeneralSale) return 0;
+        uint timeSinceStartInSec = block.timestamp.sub(startGeneralSale);
+        uint currentPeriod = timeSinceStartInSec.div(TIME_PERIOD_IN_SEC).add(1);
+
+        // for currentPeriod > 256 will always return 0
+        return (2 ** currentPeriod.sub(1)).mul(baseEthCapPerAddress);
+    }
+}
+
+/**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances.
  */
@@ -1113,7 +1757,7 @@ contract BasicToken is ERC20Basic {
     // SafeMath.sub will throw if there is not enough balance.
     balances[msg.sender] = balances[msg.sender].sub(_value);
     balances[_to] = balances[_to].add(_value);
-    emit Transfer(msg.sender, _to, _value);
+    Transfer(msg.sender, _to, _value);
     return true;
   }
 
@@ -1155,7 +1799,7 @@ contract StandardToken is ERC20, BasicToken {
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
     allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-    emit Transfer(_from, _to, _value);
+    Transfer(_from, _to, _value);
     return true;
   }
 
@@ -1171,7 +1815,7 @@ contract StandardToken is ERC20, BasicToken {
    */
   function approve(address _spender, uint256 _value) public returns (bool) {
     allowed[msg.sender][_spender] = _value;
-    emit Approval(msg.sender, _spender, _value);
+    Approval(msg.sender, _spender, _value);
     return true;
   }
 
@@ -1197,7 +1841,7 @@ contract StandardToken is ERC20, BasicToken {
    */
   function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
     allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
 
@@ -1218,7 +1862,7 @@ contract StandardToken is ERC20, BasicToken {
     } else {
       allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
     }
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
 
@@ -1252,8 +1896,8 @@ contract MintableToken is StandardToken, Ownable {
   function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) {
     totalSupply = totalSupply.add(_amount);
     balances[_to] = balances[_to].add(_amount);
-    emit Mint(_to, _amount);
-    emit Transfer(address(0), _to, _amount);
+    Mint(_to, _amount);
+    Transfer(address(0), _to, _amount);
     return true;
   }
 
@@ -1263,7 +1907,7 @@ contract MintableToken is StandardToken, Ownable {
    */
   function finishMinting() onlyOwner canMint public returns (bool) {
     mintingFinished = true;
-    emit MintFinished();
+    MintFinished();
     return true;
   }
 }
@@ -1715,7 +2359,7 @@ contract Identity is ClaimHolder {
      * @dev Modifier version of isIdentityOwner.
      */
     modifier onlyIdentityOwner() {
-        require(isIdentityOwner(), 'Access denied');
+        require(isIdentityOwner(), "Access denied");
         _;
     }
 
@@ -1730,7 +2374,7 @@ contract Identity is ClaimHolder {
      * @dev Modifier version of isActiveOwner.
      */
     modifier onlyActiveIdentityOwner() {
-        require(isActiveIdentityOwner(), 'Access denied');
+        require(isActiveIdentityOwner(), "Access denied");
         _;
     }
 
@@ -1756,7 +2400,7 @@ contract Identity is ClaimHolder {
      * @dev Modifier version of hasKeyForPurpose
      */
     modifier onlyIdentityPurpose(uint256 _purpose) {
-        require(hasIdentityPurpose(_purpose), 'Access denied');
+        require(hasIdentityPurpose(_purpose), "Access denied");
         _;
     }
 
@@ -1766,7 +2410,7 @@ contract Identity is ClaimHolder {
      * before submitting a TX here.
      */
     function identityboxSendtext(uint _category, bytes _text) external {
-        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        require(!identityboxBlacklisted[msg.sender], "You are blacklisted");
         emit TextReceived(msg.sender, _category, _text);
     }
 
@@ -1781,7 +2425,7 @@ contract Identity is ClaimHolder {
     )
         external
     {
-        require(!identityboxBlacklisted[msg.sender], 'You are blacklisted');
+        require(!identityboxBlacklisted[msg.sender], "You are blacklisted");
         emit FileReceived(msg.sender, _fileType, _fileEngine, _fileHash);
     }
 
@@ -1817,6 +2461,40 @@ interface IdentityInterface {
     function identityboxSendtext(uint, bytes) external;
 }
 
+// File: contracts/math/SafeMathUpdated.sol
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
+ */
+library SafeMathUpdated {
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) {
+            return 0;
+        }
+        uint256 c = a * b;
+        assert(c / a == b);
+        return c;
+    }
+
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a / b;
+        return c;
+    }
+
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
+
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
+}
+
 // File: contracts/access/Partnership.sol
 
 /**
@@ -1838,7 +2516,7 @@ interface IdentityInterface {
  */
 contract Partnership is Identity {
 
-    using SafeMath for uint;
+    using SafeMathUpdated for uint;
 
     // Foundation contract.
     Foundation foundation;
@@ -2376,7 +3054,7 @@ contract Profile is Permissions {
  */
 contract Documents is Permissions {
 
-    using SafeMath for uint;
+    using SafeMathUpdated for uint;
 
     // Document struct.
     struct Document {
