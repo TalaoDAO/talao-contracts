@@ -4,6 +4,14 @@
 
 ## Deployed contracts
 
+### Mainnet
+
+*  TalaoToken: https://etherscan.io/address/0x1d4ccc31dab6ea20f461d329a0562c1c58412515
+*  Foundation: https://etherscan.io/address/0xd46883ddff92cc0474255f2f8134c63f8209171d
+*  WorkspaceFactory: https://etherscan.io/address/0x7a237f06f85710b66184afcdc55e2845f1b8f0eb
+*  KeyHolderLibrary: https://etherscan.io/address/0x66d1a905667807f0b86734b4dee3c784e180bbe9
+*  ClaimHolderLibrary: https://etherscan.io/address/0x4cbfa8c91e8e5ed0ea9d86127806435a6d5c0672
+
 ### Rinkeby
 
 *  TalaoToken: https://rinkeby.etherscan.io/address/0xb8a0a9ee2e780281637bd93c13076cc5e342c9ae
