@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-// File: contracts/ownership/Ownable.sol
+// File: contracts/ownership/OwnableUpdated.sol
 
 /**
  * @title Ownable
@@ -9,7 +9,7 @@ pragma solidity ^0.4.24;
  * functions, this simplifies the implementation of "user permissions".
  * https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/ownership/Ownable.sol
  */
-contract Ownable {
+contract OwnableUpdated {
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -81,7 +81,7 @@ contract Ownable {
  * @title Foundation contract.
  * @author Talao, Polynomial.
  */
-contract Foundation is Ownable {
+contract Foundation is OwnableUpdated {
 
     // Registered foundation factories.
     mapping(address => bool) public factories;
